@@ -1,18 +1,32 @@
-package net.revanced.patcher.sigscan
+package net.revanced.patcher.signatures
 
 import org.jf.dexlib2.Opcode
-import kotlin.reflect.KClass
 
-data class Sig(
+/**
+ * An ASM signature.
+ *
+ * ```
+ * Signature(
+ *    arrayOf(Opcode.ADD_INT),
+ *    Modifier.PUBLIC or Modifier.STATIC,
+ *    "Ljava/lang/String;"
+ * )
+ * ```
+ *
+ * @param opcodes the opcode signature
+ * @param attributes the modifiers of the method you are searching for
+ * @param returnType the return type of the method as string, see: https://stackoverflow.com/a/9909370
+ */
+data class Signature(
     val opcodes: Array<Opcode>,
     val attributes: Int,
-    val returnType: KClass<*>
+    val returnType: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Sig
+        other as Signature
 
         if (!opcodes.contentEquals(other.opcodes)) return false
         if (attributes != other.attributes) return false

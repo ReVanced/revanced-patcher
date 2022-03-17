@@ -1,25 +1,26 @@
 package net.revanced.patcher
 
-import net.revanced.patcher.sigscan.Sig
-import net.revanced.patcher.sigscan.SigScanner
-import org.jf.dexlib2.Opcode
+import net.revanced.patcher.version.YTVersion
+import org.jf.dexlib2.DexFileFactory
 import java.io.File
-import java.lang.reflect.Modifier
 
-class Patcher {
-    companion object {
-        /**
-         * Invokes the patcher on the given input file.
-         *
-         * @param input the input file
-         * @param output the output file
-         */
-        fun invoke(input: File, output: File) {
-            SigScanner(Sig(
-                arrayOf(Opcode.ADD_INT),
-                Modifier.PUBLIC or Modifier.STATIC,
-                String.Companion::class
-            )).scan(emptyArray())
-        }
+/**
+ * Creates a patcher.
+ *
+ * @param input the input dex file
+ * @param output the output dex file
+ * @param version the YT version of this dex file
+ */
+class Patcher(private val input: File, private val output: File, private val version: YTVersion) {
+    // setting opcodes to null causes it to autodetect, perfect!
+    private val dexFile = DexFileFactory.loadDexFile(input, null)
+
+    /**
+     * Runs the patcher.
+     */
+    fun run() {
+
     }
 }
+
+
