@@ -1,5 +1,7 @@
 package net.revanced.patcher.store
 
-object MethodStore {
-    val methods: Map<String, MethodNode> = mutableMapOf()
+import org.objectweb.asm.tree.MethodNode
+
+class MethodStore {
+    val methods: MutableMap<String, MethodNode> = mutableMapOf()
 }
