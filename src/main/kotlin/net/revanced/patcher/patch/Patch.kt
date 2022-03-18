@@ -1,7 +1,3 @@
 package net.revanced.patcher.patch
 
-class Patch {
-    fun Execute(){
-        TODO()
-    }
-}
+class Patch(val fn: Function<PatchResult>)

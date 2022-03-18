@@ -12,6 +12,11 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    testImplementation(kotlin("test"))
 
-    implementation("org.smali:dexlib2:2.5.2")
+    implementation("org.ow2.asm:asm:9.2")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
