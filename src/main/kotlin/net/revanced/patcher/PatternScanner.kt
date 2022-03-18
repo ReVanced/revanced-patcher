@@ -6,5 +6,4 @@ class PatternScanner(signatures: Array<Signature>) {
     fun resolve() {
         TODO("Not yet implemented")
     }
-
 }
