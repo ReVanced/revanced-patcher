@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import net.revanced.patcher.cache.PatchData
 import net.revanced.patcher.cache.ScanData
 import net.revanced.patcher.signature.Signature
+import net.revanced.patcher.util.ExtraTypes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.InsnList
@@ -51,16 +52,32 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
     }
 
     private fun cmp(method: MethodNode, signature: Signature): Pair<Boolean, ScanResult?> {
-        if (signature.returns != Type.getReturnType(method.desc)) {
-            logger.debug { "Comparing sig ${signature.name}: invalid return type:\nexpected ${signature.returns},\ngot ${Type.getReturnType(method.desc)}" }
+        val returns = Type.getReturnType(method.desc).convertObject()
+        if (signature.returns != returns) {
+            logger.debug {
+                """
+                    Comparing sig ${signature.name}: invalid return type:
+                    expected ${signature.returns}},
+                    got $returns
+                """.trimIndent()
+            }
             return false to null
         }
+
         if (signature.accessors != method.access) {
             logger.debug { "Comparing sig ${signature.name}: invalid accessors:\nexpected ${signature.accessors},\ngot ${method.access}" }
             return false to null
         }
-        if (!signature.parameters.contentEquals(Type.getArgumentTypes(method.desc))) {
-            logger.debug { "Comparing sig ${signature.name}: invalid parameter types:\nexpected ${signature.parameters},\ngot ${Type.getArgumentTypes(method.desc)}" }
+
+        val parameters = Type.getArgumentTypes(method.desc).convertObjects()
+        if (!signature.parameters.contentEquals(parameters)) {
+            logger.debug {
+                """
+                    Comparing sig ${signature.name}: invalid parameter types:
+                    expected ${signature.parameters.joinToString()}},
+                    got ${parameters.joinToString()}
+                """.trimIndent()
+            }
             return false to null
         }
 
@@ -95,4 +112,16 @@ private fun InsnList.scanFor(pattern: Array<Int>): ScanResult {
     }
 
     return ScanResult(false)
+}
+
+private fun Type.convertObject(): Type {
+    return when (this.sort) {
+        Type.OBJECT -> ExtraTypes.Any
+        Type.ARRAY -> ExtraTypes.ArrayAny
+        else -> this
+    }
+}
+
+private fun Array<Type>.convertObjects(): Array<Type> {
+    return this.map { it.convertObject() }.toTypedArray()
 }

@@ -4,6 +4,7 @@ import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.patch.PatchResultSuccess
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.ExtraTypes
+import net.revanced.patcher.writer.ASMWriter.testingWow
 import org.junit.jupiter.api.Test
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
@@ -11,12 +12,10 @@ import org.objectweb.asm.Type
 internal class PatcherTest {
     private val testSigs: Array<Signature> = arrayOf(
         Signature(
-            "testMethod",
+            "mainMethod",
             Type.VOID_TYPE,
             ACC_PUBLIC or ACC_STATIC,
-            arrayOf(
-                ExtraTypes.ArrayAny,
-            ),
+            arrayOf(ExtraTypes.ArrayAny),
             arrayOf(
                 GETSTATIC,
                 LDC,
@@ -32,7 +31,8 @@ internal class PatcherTest {
 
         patcher.addPatches(
             Patch ("TestPatch") {
-                patcher.cache.methods["testMethod"]
+                val main = patcher.cache.methods["mainMethod"]
+                //main.method.instructions!!.testingWow()
                 PatchResultSuccess()
             }
         )
