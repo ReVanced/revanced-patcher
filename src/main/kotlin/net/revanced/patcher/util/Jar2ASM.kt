@@ -6,15 +6,15 @@ import java.io.InputStream
 import java.util.jar.JarInputStream
 
 object Jar2ASM {
-    fun jar2asm(input: InputStream): List<ClassNode> {
-        return buildList {
+    fun jar2asm(input: InputStream): Map<String, ClassNode> {
+        return buildMap {
             val jar = JarInputStream(input)
             while (true) {
                 val e = jar.nextJarEntry ?: break
                 if (e.name.endsWith(".class")) {
                     val classNode = ClassNode()
                     ClassReader(jar.readAllBytes()).accept(classNode, ClassReader.EXPAND_FRAMES)
-                    this.add(classNode)
+                    this[e.name] = classNode
                 }
             }
         }

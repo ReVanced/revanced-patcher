@@ -7,12 +7,14 @@ import net.revanced.patcher.resolver.MethodResolver
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Jar2ASM
 import java.io.InputStream
+import java.io.OutputStream
 import java.util.jar.JarFile
 
 /**
  * The patcher. (docs WIP)
  *
- * @param input the input stream to read from, must be a JAR file (for now)
+ * @param input the input stream to read from, must be a JAR
+ * @param signatures the signatures
  */
 class Patcher (
     input: InputStream,
@@ -22,7 +24,8 @@ class Patcher (
     private val patches: MutableList<Patch> = mutableListOf()
 
     init {
-        cache.methods.putAll(MethodResolver(Jar2ASM.jar2asm(input), signatures).resolve())
+        cache.classes.putAll(Jar2ASM.jar2asm(input))
+        cache.methods.putAll(MethodResolver(cache.classes.values.toList(), signatures).resolve())
     }
 
     fun addPatches(vararg patches: Patch) {
@@ -42,5 +45,9 @@ class Patcher (
                 this[patch.patchName] = result
             }
         }
+    }
+
+    fun save(output: OutputStream) {
+        
     }
 }
