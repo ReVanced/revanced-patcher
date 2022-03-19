@@ -32,7 +32,8 @@ internal class PatcherTest {
         patcher.addPatches(
             Patch ("TestPatch") {
                 val main = patcher.cache.methods["mainMethod"]
-                //main.method.instructions!!.testingWow()
+                val insn = main.method.instructions!!
+
                 PatchResultSuccess()
             }
         )
