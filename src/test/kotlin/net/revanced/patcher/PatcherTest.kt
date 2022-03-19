@@ -37,7 +37,7 @@ internal class PatcherTest {
             }
         )
 
-        val result = patcher.executePatches()
+        val result = patcher.applyPatches()
         for ((s, r) in result) {
             if (r.isFailure) {
                 throw Exception("Patch $s failed", r.exceptionOrNull()!!)

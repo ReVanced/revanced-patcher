@@ -2,13 +2,11 @@ package net.revanced.patcher
 
 import net.revanced.patcher.cache.Cache
 import net.revanced.patcher.patch.Patch
-import net.revanced.patcher.patch.PatchResult
 import net.revanced.patcher.resolver.MethodResolver
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Jar2ASM
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.jar.JarFile
 
 /**
  * The patcher. (docs WIP)
@@ -32,7 +30,7 @@ class Patcher (
         this.patches.addAll(patches)
     }
 
-    fun executePatches(): Map<String, Result<Nothing?>> {
+    fun applyPatches(stopOnError: Boolean = false): Map<String, Result<Nothing?>> {
         return buildMap {
             for (patch in patches) {
                 val result: Result<Nothing?> = try {
@@ -43,11 +41,12 @@ class Patcher (
                     Result.failure(e)
                 }
                 this[patch.patchName] = result
+                if (stopOnError && result.isFailure) break
             }
         }
     }
 
-    fun save(output: OutputStream) {
-        
+    fun saveTo(output: OutputStream) {
+
     }
 }
