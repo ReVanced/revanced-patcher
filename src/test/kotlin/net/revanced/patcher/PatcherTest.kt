@@ -5,10 +5,12 @@ import net.revanced.patcher.patch.PatchResultSuccess
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.ExtraTypes
 import net.revanced.patcher.writer.ASMWriter.setAt
-import org.junit.jupiter.api.Test
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.LdcInsnNode
+import java.io.ByteArrayOutputStream
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 internal class PatcherTest {
     private val testSigs: Array<Signature> = arrayOf(
@@ -65,5 +67,13 @@ internal class PatcherTest {
                 throw Exception("Patch $s failed", r.exceptionOrNull()!!)
             }
         }
+
+        val out = ByteArrayOutputStream()
+        patcher.saveTo(out)
+        assertTrue(
+            // 8 is a random value, it's just weird if it's any lower than that
+            out.size() > 8,
+            "Output must be at least 8 bytes"
+        )
     }
 }
