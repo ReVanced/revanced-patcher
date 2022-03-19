@@ -1,4 +1,4 @@
-package net.revanced.patcher.signature.model
+package net.revanced.patcher.signature
 
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ParameterNode
@@ -13,13 +13,14 @@ import org.objectweb.asm.tree.ParameterNode
  * This method name will be used to find the corresponding patch.
  * @param returns The return type/signature of the method.
  * @param accessors The accessors of the method.
- * @param parameters The parameter types/signatures of the method.
- * @param opcodes The opcode pattern of the method, used to find the method by signature scanning.
+ * @param parameters The parameter types of the method.
+ * @param opcodes The opcode pattern of the method, used to find the method by pattern scanning.
  */
+@Suppress("ArrayInDataClass")
 data class Signature(
     val name: String,
     val returns: Type,
-    @Suppress("ArrayInDataClass") val accessors: Int,
-    @Suppress("ArrayInDataClass") val parameters: Array<ParameterNode>,
-    @Suppress("ArrayInDataClass") val opcodes: Array<Int>
+    val accessors: Int,
+    val parameters: Array<Type>,
+    val opcodes: Array<Int>
 )

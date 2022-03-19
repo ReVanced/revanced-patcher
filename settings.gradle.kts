@@ -1,2 +1,1 @@
-rootProject.name = "ReVanced Patcher"
-
+rootProject.name = "revanced-patcher"

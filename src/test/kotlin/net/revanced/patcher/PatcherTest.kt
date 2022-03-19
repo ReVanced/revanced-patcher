@@ -1,30 +1,47 @@
 package net.revanced.patcher
 
 import net.revanced.patcher.patch.Patch
-import net.revanced.patcher.patch.PatchResultError
 import net.revanced.patcher.patch.PatchResultSuccess
-import net.revanced.patcher.signature.SignatureLoader
+import net.revanced.patcher.signature.Signature
+import net.revanced.patcher.util.ExtraTypes
 import org.junit.jupiter.api.Test
+import org.objectweb.asm.Opcodes.*
+import org.objectweb.asm.Type
 
 internal class PatcherTest {
-    @Test
-    fun template() {
-        val patcher = Patcher.loadFromFile(
-            "some.apk",
-            SignatureLoader.LoadFromJson("signatures.json").toMutableList()
+    private val testSigs: Array<Signature> = arrayOf(
+        Signature(
+            "testMethod",
+            Type.BOOLEAN_TYPE,
+            ACC_PUBLIC or ACC_STATIC,
+            arrayOf(
+                ExtraTypes.ArrayAny,
+            ),
+            arrayOf(
+                GETSTATIC,
+                LDC,
+                INVOKEVIRTUAL
+            )
         )
+    )
 
-        val patches = mutableListOf(
-            Patch ("RemoveVideoAds") {
-                val videoAdShowMethodInstr = patcher.cache.Methods["SomeMethod"]?.instructions
+    @Test
+    fun testPatcher() {
+        val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
+        val patcher = Patcher(testData, testSigs)
+
+        patcher.addPatches(
+            Patch ("TestPatch") {
+                patcher.cache.methods["testMethod"]
                 PatchResultSuccess()
-            },
-            Patch ("TweakLayout")  {
-                val layoutMethod = patcher.cache.Methods["SomeMethod2"]
-                PatchResultError("Failed")
             }
         )
 
-        patcher.executePatches()
+        val result = patcher.executePatches()
+        for ((s, r) in result) {
+            if (r.isFailure) {
+                throw Exception("Patch $s failed", r.exceptionOrNull()!!)
+            }
+        }
     }
 }
