@@ -7,6 +7,7 @@ import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Jar2ASM
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.jar.JarOutputStream
 
 /**
  * The patcher. (docs WIP)
@@ -16,7 +17,7 @@ import java.io.OutputStream
  * @sample net.revanced.patcher.PatcherTest
  */
 class Patcher(
-    input: InputStream,
+    private val input: InputStream,
     signatures: Array<Signature>,
 ) {
     val cache = Cache()
@@ -48,6 +49,6 @@ class Patcher(
     }
 
     fun saveTo(output: OutputStream) {
-
+        Jar2ASM.asm2jar(input, output, cache.classes)
     }
 }
