@@ -12,7 +12,7 @@ import org.objectweb.asm.tree.MethodNode
 
 private val logger = KotlinLogging.logger("MethodResolver")
 
-internal class MethodResolver(private val classList: List<ClassNode>, private val signatures: Array<Signature>)  {
+internal class MethodResolver(private val classList: List<ClassNode>, private val signatures: Array<Signature>) {
     fun resolve(): MutableMap<String, PatchData> {
         val patchData = mutableMapOf<String, PatchData>()
 

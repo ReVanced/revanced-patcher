@@ -1,7 +1,6 @@
 package net.revanced.patcher.signature
 
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.ParameterNode
 
 /**
  * An ASM signature list for the Patcher.

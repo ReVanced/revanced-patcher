@@ -14,7 +14,7 @@ import java.io.OutputStream
  * @param input the input stream to read from, must be a JAR
  * @param signatures the signatures
  */
-class Patcher (
+class Patcher(
     input: InputStream,
     signatures: Array<Signature>,
 ) {
