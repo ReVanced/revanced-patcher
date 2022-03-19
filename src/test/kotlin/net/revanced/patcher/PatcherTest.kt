@@ -12,7 +12,7 @@ internal class PatcherTest {
     private val testSigs: Array<Signature> = arrayOf(
         Signature(
             "testMethod",
-            Type.BOOLEAN_TYPE,
+            Type.VOID_TYPE,
             ACC_PUBLIC or ACC_STATIC,
             arrayOf(
                 ExtraTypes.ArrayAny,
