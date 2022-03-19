@@ -6,7 +6,7 @@ import org.objectweb.asm.tree.MethodNode
 data class PatchData(
     val cls: ClassNode,
     val method: MethodNode,
-    val sr: ScanData
+    val sd: ScanData
 )
 
 data class ScanData(

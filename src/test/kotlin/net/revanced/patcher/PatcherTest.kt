@@ -4,9 +4,11 @@ import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.patch.PatchResultSuccess
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.ExtraTypes
+import net.revanced.patcher.writer.ASMWriter.setAt
 import org.junit.jupiter.api.Test
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
+import org.objectweb.asm.tree.LdcInsnNode
 
 internal class PatcherTest {
     private val testSigs: Array<Signature> = arrayOf(
@@ -40,9 +42,19 @@ internal class PatcherTest {
 
         patcher.addPatches(
             Patch ("TestPatch") {
+                // Get the method from the resolver cache
                 val main = patcher.cache.methods["mainMethod"]
+                // Get the instruction list
                 val insn = main.method.instructions!!
-
+                // Let's modify it, so it prints "Hello, ReVanced!"
+                // Get the start index of our signature
+                // This will be the index of the LDC instruction
+                val startIndex = main.sd.startIndex
+                insn.setAt(startIndex, LdcInsnNode("Hello, ReVanced!"))
+                // Finally, tell the patcher that this patch was a success.
+                // You can also return PatchResultError with a message.
+                // If an exception is thrown inside this function,
+                // a PatchResultError will be returned with the error message.
                 PatchResultSuccess()
             }
         )
