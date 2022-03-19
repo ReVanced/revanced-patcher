@@ -4,20 +4,29 @@ import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.patch.PatchResultSuccess
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.ExtraTypes
-import net.revanced.patcher.writer.ASMWriter.testingWow
 import org.junit.jupiter.api.Test
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 
 internal class PatcherTest {
     private val testSigs: Array<Signature> = arrayOf(
+        // Java:
+        // public static void main(String[] args) {
+        //     System.out.println("Hello, world!");
+        // }
+        // Bytecode:
+        // public static main(java.lang.String[] arg0) { // Method signature: ([Ljava/lang/String;)V
+        //     getstatic java/lang/System.out:java.io.PrintStream
+        //     ldc "Hello, world!" (java.lang.String)
+        //     invokevirtual java/io/PrintStream.println(Ljava/lang/String;)V
+        //     return
+        // }
         Signature(
             "mainMethod",
             Type.VOID_TYPE,
             ACC_PUBLIC or ACC_STATIC,
             arrayOf(ExtraTypes.ArrayAny),
             arrayOf(
-                GETSTATIC,
                 LDC,
                 INVOKEVIRTUAL
             )
