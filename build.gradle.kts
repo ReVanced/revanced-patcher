@@ -4,7 +4,6 @@ plugins {
 }
 
 group = "net.revanced"
-version = "1.0"
 
 repositories {
     mavenCentral()
