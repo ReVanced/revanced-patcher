@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm") version "1.6.10"
-    java
+    `maven-publish`
 }
 
 group = "net.revanced"
@@ -24,5 +24,23 @@ tasks.test {
     useJUnitPlatform()
     testLogging {
         events("PASSED", "SKIPPED", "FAILED")
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ReVancedTeam/revanced-patcher")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
+        }
     }
 }
