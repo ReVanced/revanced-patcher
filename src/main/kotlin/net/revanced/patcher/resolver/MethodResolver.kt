@@ -10,6 +10,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodNode
+import kotlin.math.sign
 
 private val logger = KotlinLogging.logger("MethodResolver")
 
@@ -70,25 +71,30 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             return false to null
         }
 
-        val parameters = Type.getArgumentTypes(method.desc).convertObjects()
-        if (!signature.parameters.contentEquals(parameters)) {
-            logger.debug {
-                """
+        if (signature.parameters != null) {
+            val parameters = Type.getArgumentTypes(method.desc).convertObjects()
+            if (!signature.parameters.contentEquals(parameters)) {
+                logger.debug {
+                    """
                     Comparing sig ${signature.name}: invalid parameter types:
                     expected ${signature.parameters.joinToString()}},
                     got ${parameters.joinToString()}
                 """.trimIndent()
+                }
+                return false to null
             }
-            return false to null
         }
 
-        val result = method.instructions.scanFor(signature.opcodes)
-        if (!result.found) {
-            logger.debug { "Comparing sig ${signature.name}: invalid opcode pattern" }
-            return false to null
+        if (signature.opcodes != null) {
+            val result = method.instructions.scanFor(signature.opcodes)
+            if (!result.found) {
+                logger.debug { "Comparing sig ${signature.name}: invalid opcode pattern" }
+                return false to null
+            }
+            return true to result
         }
 
-        return true to result
+        return true to ScanResult(false)
     }
 }
 
