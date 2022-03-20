@@ -1,3 +1,15 @@
+# [1.0.0-dev.2](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2022-03-20)
+
+
+### Code Refactoring
+
+* convert Patch to abstract class ([111b9c9](https://github.com/ReVancedTeam/revanced-patcher/commit/111b9c911fd149d11e0fa77683bae0a403c1bb4e))
+
+
+### BREAKING CHANGES
+
+* Patch class is now an abstract class. You must implement it. You can use anonymous implements, like done in the tests.
+
 # 1.0.0-dev.1 (2022-03-20)
 
 
