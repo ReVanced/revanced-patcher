@@ -1,3 +1,15 @@
+# [1.0.0-dev.3](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2022-03-20)
+
+
+### Bug Fixes
+
+* Patch should have access to the Cache ([12c9b8f](https://github.com/ReVancedTeam/revanced-patcher/commit/12c9b8f5ba98ee9014193c4b47e24f0e0303d70d))
+
+
+### BREAKING CHANGES
+
+* Method signature of execute() was changed to include the cache, this will break existing implementations of the Patch class.
+
 # [1.0.0-dev.2](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2022-03-20)
 
 
