@@ -23,7 +23,7 @@ class Patcher(
     private val patches: MutableList<Patch> = mutableListOf()
 
     init {
-        val classes = Io.readClassesFromJar(input);
+        val classes = Io.readClassesFromJar(input)
         cache = Cache(classes, MethodResolver(classes, signatures).resolve())
     }
 
@@ -35,7 +35,7 @@ class Patcher(
         return buildMap {
             for (patch in patches) {
                 val result: Result<Nothing?> = try {
-                    val pr = patch.execute()
+                    val pr = patch.execute(cache)
                     if (pr.isSuccess()) continue
                     Result.failure(Exception(pr.error()?.errorMessage() ?: "Unknown error"))
                 } catch (e: Exception) {
