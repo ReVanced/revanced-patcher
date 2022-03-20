@@ -4,12 +4,12 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 
 data class PatchData(
-    val cls: ClassNode,
+    val declaringClass: ClassNode,
     val method: MethodNode,
-    val sd: ScanData
+    val scanData: PatternScanData
 )
 
-data class ScanData(
+data class PatternScanData(
     val startIndex: Int,
     val endIndex: Int
 )

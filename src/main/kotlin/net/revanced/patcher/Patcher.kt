@@ -7,7 +7,6 @@ import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Jar2ASM
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.jar.JarOutputStream
 
 /**
  * The patcher. (docs WIP)
@@ -20,12 +19,12 @@ class Patcher(
     private val input: InputStream,
     signatures: Array<Signature>,
 ) {
-    val cache = Cache()
+    var cache: Cache
     private val patches: MutableList<Patch> = mutableListOf()
 
     init {
-        cache.classes.putAll(Jar2ASM.jar2asm(input))
-        cache.methods.putAll(MethodResolver(cache.classes.values.toList(), signatures).resolve())
+        val classes = Jar2ASM.jar2asm(input);
+        cache = Cache(classes, MethodResolver(classes, signatures).resolve())
     }
 
     fun addPatches(vararg patches: Patch) {

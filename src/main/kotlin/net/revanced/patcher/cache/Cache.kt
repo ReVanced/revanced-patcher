@@ -2,14 +2,14 @@ package net.revanced.patcher.cache
 
 import org.objectweb.asm.tree.ClassNode
 
-class Cache {
-    val classes: MutableMap<String, ClassNode> = mutableMapOf()
-    val methods: MethodMap = MethodMap()
-}
+class Cache (
+    val classes: List<ClassNode>,
+    val methods: MethodMap
+)
 
 class MethodMap : LinkedHashMap<String, PatchData>() {
     override fun get(key: String): PatchData {
-        return super.get(key) ?: throw MethodNotFoundException("Method $key not found in method cache")
+        return super.get(key) ?: throw MethodNotFoundException("Method $key was not found in the method cache")
     }
 }
 

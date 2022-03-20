@@ -1,8 +1,9 @@
 package net.revanced.patcher.resolver
 
 import mu.KotlinLogging
+import net.revanced.patcher.cache.MethodMap
 import net.revanced.patcher.cache.PatchData
-import net.revanced.patcher.cache.ScanData
+import net.revanced.patcher.cache.PatternScanData
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.ExtraTypes
 import org.objectweb.asm.Type
@@ -13,13 +14,13 @@ import org.objectweb.asm.tree.MethodNode
 private val logger = KotlinLogging.logger("MethodResolver")
 
 internal class MethodResolver(private val classList: List<ClassNode>, private val signatures: Array<Signature>) {
-    fun resolve(): MutableMap<String, PatchData> {
-        val patchData = mutableMapOf<String, PatchData>()
+    fun resolve(): MethodMap {
+        val methodMap = MethodMap()
 
         for ((classNode, methods) in classList) {
             for (method in methods) {
                 for (signature in signatures) {
-                    if (patchData.containsKey(signature.name)) { // method already found for this sig
+                    if (methodMap.containsKey(signature.name)) { // method already found for this sig
                         logger.debug { "Sig ${signature.name} already found, skipping." }
                         continue
                     }
@@ -30,10 +31,10 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
                         continue
                     }
                     logger.debug { "Method for sig ${signature.name} found!" }
-                    patchData[signature.name] = PatchData(
+                    methodMap[signature.name] = PatchData(
                         classNode,
                         method,
-                        ScanData(
+                        PatternScanData(
                             // sadly we cannot create contracts for a data class, so we must assert
                             sr.startIndex!!,
                             sr.endIndex!!
@@ -44,11 +45,11 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
         }
 
         for (signature in signatures) {
-            if (patchData.containsKey(signature.name)) continue
+            if (methodMap.containsKey(signature.name)) continue
             logger.error { "Could not find method for sig ${signature.name}!" }
         }
 
-        return patchData
+        return methodMap
     }
 
     private fun cmp(method: MethodNode, signature: Signature): Pair<Boolean, ScanResult?> {

@@ -7,11 +7,8 @@ import net.revanced.patcher.util.ExtraTypes
 import net.revanced.patcher.writer.ASMWriter.setAt
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.LdcInsnNode
-import java.io.ByteArrayOutputStream
+import org.objectweb.asm.tree.*
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 internal class PatcherTest {
     private val testSigs: Array<Signature> = arrayOf(
@@ -46,14 +43,24 @@ internal class PatcherTest {
         patcher.addPatches(
             Patch ("TestPatch") {
                 // Get the method from the resolver cache
-                val main = patcher.cache.methods["mainMethod"]
+                val mainMethod = patcher.cache.methods["mainMethod"]
                 // Get the instruction list
-                val insn = main.method.instructions!!
+                val instructions = mainMethod.method.instructions!!
                 // Let's modify it, so it prints "Hello, ReVanced!"
-                // Get the start index of our signature
+                // Get the start index of our opcode pattern
                 // This will be the index of the LDC instruction
-                val startIndex = main.sd.startIndex
-                insn.setAt(startIndex, LdcInsnNode("Hello, ReVanced!"))
+                val startIndex = mainMethod.scanData.startIndex
+                // Create a new Ldc node and replace the LDC instruction
+                val stringNode = LdcInsnNode("Hello, ReVanced!");
+                instructions.setAt(startIndex, stringNode)
+                // Now lets print our string to the console output
+                // First create a list of instructions
+                val printCode = InsnList();
+                printCode.add(LdcInsnNode("Hello, ReVanced!"))
+                printCode.add(MethodInsnNode(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V"))
+                // Add the list after the second instruction by our pattern
+                instructions.insert(instructions[startIndex + 1], printCode)
+
                 // Finally, tell the patcher that this patch was a success.
                 // You can also return PatchResultError with a message.
                 // If an exception is thrown inside this function,
@@ -62,7 +69,9 @@ internal class PatcherTest {
             }
         )
 
+        // Apply all patches loaded in the patcher
         val result = patcher.applyPatches()
+        // You can check if an error occurred
         for ((s, r) in result) {
             if (r.isFailure) {
                 throw Exception("Patch $s failed", r.exceptionOrNull()!!)
@@ -70,30 +79,30 @@ internal class PatcherTest {
         }
 
         // TODO Doesn't work, needs to be fixed.
-//        val out = ByteArrayOutputStream()
-//        patcher.saveTo(out)
-//        assertTrue(
-//            // 8 is a random value, it's just weird if it's any lower than that
-//            out.size() > 8,
-//            "Output must be at least 8 bytes"
-//        )
-//
-//        out.close()
+        //val out = ByteArrayOutputStream()
+        //patcher.saveTo(out)
+        //assertTrue(
+        //    // 8 is a random value, it's just weird if it's any lower than that
+        //    out.size() > 8,
+        //    "Output must be at least 8 bytes"
+        //)
+        //
+        //out.close()
         testData.close()
     }
 
     // TODO Doesn't work, needs to be fixed.
-//    @Test
-//    fun noChanges() {
-//        val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
-//        val available = testData.available()
-//        val patcher = Patcher(testData, testSigs)
-//
-//        val out = ByteArrayOutputStream()
-//        patcher.saveTo(out)
-//        assertEquals(available, out.size())
-//
-//        out.close()
-//        testData.close()
-//    }
+    //@Test
+    //fun noChanges() {
+    //    val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
+    //    val available = testData.available()
+    //    val patcher = Patcher(testData, testSigs)
+    //
+    //    val out = ByteArrayOutputStream()
+    //    patcher.saveTo(out)
+    //    assertEquals(available, out.size())
+    //
+    //    out.close()
+    //    testData.close()
+    //}
 }
