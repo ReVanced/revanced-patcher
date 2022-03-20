@@ -7,4 +7,14 @@ object ASMWriter {
     fun InsnList.setAt(index: Int, node: AbstractInsnNode) {
         this[this.get(index)] = node
     }
+    fun InsnList.insertAt(index: Int, vararg nodes: AbstractInsnNode) {
+        this.insert(this.get(index), nodes.toInsnList())
+    }
+
+    // TODO(Sculas): Should this be public?
+    private fun Array<out AbstractInsnNode>.toInsnList(): InsnList {
+        val list = InsnList()
+        this.forEach { list.add(it) }
+        return list
+    }
 }
