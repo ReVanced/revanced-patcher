@@ -4,7 +4,7 @@ import net.revanced.patcher.cache.Cache
 import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.resolver.MethodResolver
 import net.revanced.patcher.signature.Signature
-import net.revanced.patcher.util.Jar2ASM
+import net.revanced.patcher.util.Io
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -23,7 +23,7 @@ class Patcher(
     private val patches: MutableList<Patch> = mutableListOf()
 
     init {
-        val classes = Jar2ASM.jar2asm(input);
+        val classes = Io.readClassesFromJar(input);
         cache = Cache(classes, MethodResolver(classes, signatures).resolve())
     }
 
@@ -48,6 +48,6 @@ class Patcher(
     }
 
     fun saveTo(output: OutputStream) {
-        Jar2ASM.asm2jar(input, output, cache.classes)
+        Io.writeClassesToJar(input, output, cache.classes)
     }
 }

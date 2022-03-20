@@ -9,8 +9,8 @@ import java.util.jar.JarEntry
 import java.util.jar.JarInputStream
 import java.util.jar.JarOutputStream
 
-object Jar2ASM {
-    fun jar2asm(input: InputStream) = mutableListOf<ClassNode>().apply {
+object Io {
+    fun readClassesFromJar(input: InputStream) = mutableListOf<ClassNode>().apply {
         val jar = JarInputStream(input)
             while (true) {
                 val e = jar.nextJarEntry ?: break
@@ -23,7 +23,7 @@ object Jar2ASM {
             }
     }
 
-    fun asm2jar(input: InputStream, output: OutputStream, classes: List<ClassNode>) {
+    fun writeClassesToJar(input: InputStream, output: OutputStream, classes: List<ClassNode>) {
         val jis = JarInputStream(input)
         val jos = JarOutputStream(output)
 
