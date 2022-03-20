@@ -1,3 +1,10 @@
+# [1.0.0-dev.5](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2022-03-20)
+
+
+### Bug Fixes
+
+* **Io:** fix finding classes by name ([1e1b522](https://github.com/ReVancedTeam/revanced-patcher/commit/1e1b5224fac33498c2bc47fc02f2a1b140961cb8))
+
 # [1.0.0-dev.4](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2022-03-20)
 
 
