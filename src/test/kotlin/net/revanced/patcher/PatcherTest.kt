@@ -1,5 +1,6 @@
 package net.revanced.patcher
 
+import net.revanced.patcher.cache.Cache
 import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.patch.PatchResult
 import net.revanced.patcher.patch.PatchResultSuccess
@@ -48,7 +49,7 @@ internal class PatcherTest {
 
         patcher.addPatches(
             object : Patch("TestPatch") {
-                override fun execute(): PatchResult {
+                override fun execute(cache: Cache): PatchResult {
                     // Get the method from the resolver cache
                     val mainMethod = patcher.cache.methods["mainMethod"]
                     // Get the instruction list
