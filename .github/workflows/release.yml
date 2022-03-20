@@ -20,8 +20,8 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
-          java-version: 17
-          distribution: zulu
+          java-version: '8'
+          distribution: 'adopt'
           cache: gradle
       - name: Setup Node.js
         uses: actions/setup-node@v2

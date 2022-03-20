@@ -16,7 +16,7 @@ object Io {
                 val e = jar.nextJarEntry ?: break
                 if (e.name.endsWith(".class")) {
                     val classNode = ClassNode()
-                    ClassReader(jar.readAllBytes()).accept(classNode, ClassReader.EXPAND_FRAMES)
+                    ClassReader(jar.readBytes()).accept(classNode, ClassReader.EXPAND_FRAMES)
                     this.add(classNode)
                 }
                 jar.closeEntry()
@@ -41,7 +41,7 @@ object Io {
                 clazz.accept(cw)
                 jos.write(cw.toByteArray())
             } else {
-                jos.write(jis.readAllBytes())
+                jos.write(jis.readBytes())
             }
             jos.closeEntry()
         }
