@@ -1,3 +1,10 @@
+# [1.0.0-dev.4](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2022-03-20)
+
+
+### Bug Fixes
+
+* set index for insertAt to 0 by default ([f7a6437](https://github.com/ReVancedTeam/revanced-patcher/commit/f7a6437c7903a08f272f9ec67def4816d1aa72bc))
+
 # [1.0.0-dev.3](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2022-03-20)
 
 
