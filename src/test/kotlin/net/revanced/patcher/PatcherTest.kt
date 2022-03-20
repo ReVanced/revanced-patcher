@@ -14,29 +14,31 @@ import java.io.PrintStream
 import kotlin.test.Test
 
 internal class PatcherTest {
-    private val testSigs: Array<Signature> = arrayOf(
-        // Java:
-        // public static void main(String[] args) {
-        //     System.out.println("Hello, world!");
-        // }
-        // Bytecode:
-        // public static main(java.lang.String[] arg0) { // Method signature: ([Ljava/lang/String;)V
-        //     getstatic java/lang/System.out:java.io.PrintStream
-        //     ldc "Hello, world!" (java.lang.String)
-        //     invokevirtual java/io/PrintStream.println(Ljava/lang/String;)V
-        //     return
-        // }
-        Signature(
-            "mainMethod",
-            Type.VOID_TYPE,
-            ACC_PUBLIC or ACC_STATIC,
-            arrayOf(ExtraTypes.ArrayAny),
-            arrayOf(
-                LDC,
-                INVOKEVIRTUAL
+    companion object {
+        val testSigs: Array<Signature> = arrayOf(
+            // Java:
+            // public static void main(String[] args) {
+            //     System.out.println("Hello, world!");
+            // }
+            // Bytecode:
+            // public static main(java.lang.String[] arg0) { // Method signature: ([Ljava/lang/String;)V
+            //     getstatic java/lang/System.out:java.io.PrintStream
+            //     ldc "Hello, world!" (java.lang.String)
+            //     invokevirtual java/io/PrintStream.println(Ljava/lang/String;)V
+            //     return
+            // }
+            Signature(
+                "mainMethod",
+                Type.VOID_TYPE,
+                ACC_PUBLIC or ACC_STATIC,
+                arrayOf(ExtraTypes.ArrayAny),
+                arrayOf(
+                    LDC,
+                    INVOKEVIRTUAL
+                )
             )
         )
-    )
+    }
 
     @Test
     fun testPatcher() {
@@ -127,7 +129,7 @@ internal class PatcherTest {
 
     // TODO Doesn't work, needs to be fixed.
     //@Test
-    //fun noChanges() {
+    //fun `test patcher with no changes`() {
     //    val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
     //    val available = testData.available()
     //    val patcher = Patcher(testData, testSigs)
