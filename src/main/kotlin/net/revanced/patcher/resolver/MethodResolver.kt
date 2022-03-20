@@ -104,9 +104,9 @@ private fun InsnList.scanFor(pattern: Array<Int>): ScanResult {
     for (i in 0 until this.size()) {
         var occurrence = 0
         while (i + occurrence < this.size()) {
-            val current = i + occurrence
-            if (this[current].opcode != pattern[occurrence]) break
+            if (this[i + occurrence].opcode != pattern[occurrence]) break
             if (++occurrence >= pattern.size) {
+                val current = i + occurrence
                 return ScanResult(true, current - pattern.size, current)
             }
         }
