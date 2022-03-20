@@ -5,7 +5,7 @@ import kotlin.test.assertTrue
 
 object TestUtil {
     fun <T: AbstractInsnNode> assertNodeEqual(a: T, b: T) {
-        assertTrue()
+
     }
 
     private fun AbstractInsnNode.nodeString(): String {
