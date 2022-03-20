@@ -17,7 +17,7 @@ object Io {
                 if (e.name.endsWith(".class")) {
                     val classNode = ClassNode()
                     ClassReader(jar.readAllBytes()).accept(classNode, ClassReader.EXPAND_FRAMES)
-                        this.add(classNode)
+                    this.add(classNode)
                 }
                 jar.closeEntry()
             }
