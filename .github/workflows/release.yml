@@ -3,7 +3,9 @@ on:
   push:
     branches:
       - main
-      - dev
+  pull_request:
+    branches:
+      - main
 jobs:
   release:
     name: Release
@@ -28,7 +30,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
       - name: Setup semantic-release
-        run: npm install -g semantic-release @semantic-release/git @semantic-release/changelog -D
+        run: npm install -g semantic-release @semantic-release/git @semantic-release/changelog gradle-semantic-release-plugin -D
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
