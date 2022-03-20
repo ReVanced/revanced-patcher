@@ -34,7 +34,7 @@ object Io {
             jos.putNextEntry(e)
 
             val clazz = classes.singleOrNull {
-                    clazz -> clazz.name == e.name
+                clazz -> clazz.name+".class" == e.name // clazz.name is the class name only while e.name is the full filename with extension
             };
             if (clazz != null) {
                 val cw = ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)
