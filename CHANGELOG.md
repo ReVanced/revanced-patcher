@@ -1,3 +1,15 @@
+# [1.0.0-dev.10](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.9...v1.0.0-dev.10) (2022-03-21)
+
+
+### Code Refactoring
+
+* Rename `net.revanced` to `app.revanced` ([f0ca1fb](https://github.com/ReVancedTeam/revanced-patcher/commit/f0ca1fb793557884d716954d2d4a3ecd4f1cb466))
+
+
+### BREAKING CHANGES
+
+* Package name was changed from "net.revanced" to "app.revanced"
+
 # [1.0.0-dev.9](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.8...v1.0.0-dev.9) (2022-03-21)
 
 
