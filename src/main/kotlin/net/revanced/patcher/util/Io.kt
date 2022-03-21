@@ -26,10 +26,10 @@ internal class Io(
 
         // read all entries from the input stream
         // we use JarEntry because we only read .class files
-        var jarEntry: JarEntry?
-        while (jis.nextJarEntry.also { jarEntry = it } != null) {
+        lateinit var jarEntry: JarEntry
+        while (jis.nextJarEntry.also { if (it != null) jarEntry = it } != null) {
             // if the current entry ends with .class (indicating a java class file), add it to our list of classes to return
-            if (jarEntry!!.name.endsWith(".class")) {
+            if (jarEntry.name.endsWith(".class")) {
                 // create a new ClassNode
                 val classNode = ClassNode()
                 // read the bytes with a ClassReader into the ClassNode
@@ -59,7 +59,7 @@ internal class Io(
             if (zipEntry.name.endsWith(".class")) continue
 
             // create a new zipEntry and write the contents of the zipEntry to the output stream
-            jos.putNextEntry(ZipEntry(zipEntry.name))
+            jos.putNextEntry(ZipEntry(zipEntry))
             jos.write(jis.readBytes())
 
             // close the newly created zipEntry
