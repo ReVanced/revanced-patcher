@@ -9,7 +9,7 @@ import net.revanced.patcher.util.ExtraTypes
 import net.revanced.patcher.util.TestUtil
 import net.revanced.patcher.writer.ASMWriter.insertAt
 import net.revanced.patcher.writer.ASMWriter.setAt
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.FieldInsnNode
@@ -18,7 +18,6 @@ import org.objectweb.asm.tree.MethodInsnNode
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 internal class PatcherTest {
     companion object {
@@ -140,27 +139,23 @@ internal class PatcherTest {
         out.close()
     }
 
-    @Test
-    fun `should raise an exception because opcodes is empty`() {
+    @Test()
+    fun `should not raise an exception if any signature member except the name is missing`() {
         val sigName = "testMethod"
-        val e = assertThrows<IllegalArgumentException>("Should raise an exception because opcodes is empty") {
+
+        assertDoesNotThrow("Should raise an exception because opcodes is empty") {
             Patcher(
                 PatcherTest::class.java.getResourceAsStream("/test1.jar")!!,
                 ByteArrayOutputStream(),
                 arrayOf(
                     Signature(
                         sigName,
-                        Type.VOID_TYPE,
-                        ACC_PUBLIC or ACC_STATIC,
-                        arrayOf(ExtraTypes.ArrayAny),
-                        emptyArray() // this is not allowed for non-search signatures!
-                    )
-                )
+                        null,
+                        null,
+                        null,
+                        null
+                    ))
             )
         }
-        assertEquals(
-            "Opcode list for signature $sigName is empty. This is not allowed for non-search signatures.",
-            e.message
-        )
     }
 }
