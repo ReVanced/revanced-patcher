@@ -6,16 +6,19 @@ import net.revanced.patcher.resolver.MethodResolver
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Io
 import org.objectweb.asm.tree.ClassNode
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * The patcher. (docs WIP)
+ * The Patcher class.
+ * ***It is of utmost importance that the input and output streams are NEVER closed.***
  *
  * @param input the input stream to read from, must be a JAR
- * @param output the output stream to write to, must be a JAR
+ * @param output the output stream to write to
  * @param signatures the signatures
  * @sample net.revanced.patcher.PatcherTest
+ * @throws IOException if one of the streams are closed
  */
 class Patcher(
     private val input: InputStream,
@@ -34,6 +37,13 @@ class Patcher(
         cache = Cache(classes, MethodResolver(classes, signatures).resolve())
     }
 
+    /**
+     * Saves the output to the output stream.
+     * Calling this method will close the input and output streams,
+     * meaning this method should NEVER be called after.
+     *
+     * @throws IOException if one of the streams are closed
+     */
     fun save() {
         io.saveAsJar()
     }
