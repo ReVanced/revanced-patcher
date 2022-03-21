@@ -52,14 +52,14 @@ internal class Io(
 
         // first write all non .class zip entries from the original input stream to the output stream
         // we read it first to close the input stream as fast as possible
-        var zipEntry: ZipEntry?
-        while (jis.nextEntry.also { zipEntry = it } != null) {
+        lateinit var zipEntry: ZipEntry
+        while (jis.nextEntry.also { if (it != null) zipEntry = it } != null) {
             // skip all class files because we added them in the loop above
             // TODO(oSumAtrIX): Check for zipEntry.isDirectory
-            if (zipEntry!!.name.endsWith(".class")) continue
+            if (zipEntry.name.endsWith(".class")) continue
 
             // create a new zipEntry and write the contents of the zipEntry to the output stream
-            jos.putNextEntry(ZipEntry(zipEntry!!.name))
+            jos.putNextEntry(ZipEntry(zipEntry.name))
             jos.write(jis.readBytes())
 
             // close the newly created zipEntry
@@ -70,7 +70,6 @@ internal class Io(
         jis.close()
         bufferedInputStream.close()
         input.close()
-
 
         // now write all the patched classes to the output stream
         for (patchedClass in classes) {
