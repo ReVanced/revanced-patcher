@@ -4,7 +4,6 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.ClassNode
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import java.io.OutputStream
 import java.util.jar.JarEntry
 import java.util.jar.JarInputStream

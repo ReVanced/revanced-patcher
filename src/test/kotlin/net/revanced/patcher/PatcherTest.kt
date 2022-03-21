@@ -13,7 +13,6 @@ import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
 import java.io.ByteArrayOutputStream
-import java.io.FileOutputStream
 import java.io.PrintStream
 import kotlin.test.Test
 

@@ -5,7 +5,6 @@ import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.resolver.MethodResolver
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Io
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
