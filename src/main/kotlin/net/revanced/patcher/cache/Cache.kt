@@ -2,7 +2,7 @@ package net.revanced.patcher.cache
 
 import org.objectweb.asm.tree.ClassNode
 
-class Cache (
+class Cache(
     val classes: List<ClassNode>,
     val methods: MethodMap
 )
