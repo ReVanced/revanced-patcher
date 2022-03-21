@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-group = "net.revanced"
+group = "app.revanced"
 
 repositories {
     mavenCentral()

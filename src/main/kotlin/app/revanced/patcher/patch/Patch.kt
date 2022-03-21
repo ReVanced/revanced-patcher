@@ -1,6 +1,6 @@
-package net.revanced.patcher.patch
+package app.revanced.patcher.patch
 
-import net.revanced.patcher.cache.Cache
+import app.revanced.patcher.cache.Cache
 
 abstract class Patch(val patchName: String) {
     abstract fun execute(cache: Cache): PatchResult

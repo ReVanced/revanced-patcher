@@ -1,4 +1,4 @@
-package net.revanced.patcher.cache
+package app.revanced.patcher.cache
 
 import org.objectweb.asm.tree.ClassNode
 

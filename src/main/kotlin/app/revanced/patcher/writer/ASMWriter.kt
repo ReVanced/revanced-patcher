@@ -1,4 +1,4 @@
-package net.revanced.patcher.writer
+package app.revanced.patcher.writer
 
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.InsnList

@@ -1,10 +1,10 @@
-package net.revanced.patcher
+package app.revanced.patcher
 
-import net.revanced.patcher.cache.Cache
-import net.revanced.patcher.patch.Patch
-import net.revanced.patcher.resolver.MethodResolver
-import net.revanced.patcher.signature.Signature
-import net.revanced.patcher.util.Io
+import app.revanced.patcher.cache.Cache
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.resolver.MethodResolver
+import app.revanced.patcher.signature.Signature
+import app.revanced.patcher.util.Io
 import org.objectweb.asm.tree.ClassNode
 import java.io.IOException
 import java.io.InputStream
@@ -17,7 +17,7 @@ import java.io.OutputStream
  * @param input the input stream to read from, must be a JAR
  * @param output the output stream to write to
  * @param signatures the signatures
- * @sample net.revanced.patcher.PatcherTest
+ * @sample app.revanced.patcher.PatcherTest
  * @throws IOException if one of the streams are closed
  */
 class Patcher(
