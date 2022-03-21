@@ -10,8 +10,9 @@ data class PatchData(
     val method: MethodNode,
     val scanData: PatternScanData
 ) {
+    @Suppress("Unused") // TODO(Sculas): remove this when we have coverage for this method.
     fun findParentMethod(signature: Signature): PatchData? {
-       return MethodResolver.resolveMethod(declaringClass, signature)
+        return MethodResolver.resolveMethod(declaringClass, signature)
     }
 }
 

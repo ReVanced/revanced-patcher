@@ -7,6 +7,7 @@ object ASMWriter {
     fun InsnList.setAt(index: Int, node: AbstractInsnNode) {
         this[this.get(index)] = node
     }
+
     fun InsnList.insertAt(index: Int = 0, vararg nodes: AbstractInsnNode) {
         this.insert(this.get(index), nodes.toInsnList())
     }

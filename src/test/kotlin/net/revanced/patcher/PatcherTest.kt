@@ -12,13 +12,16 @@ import net.revanced.patcher.writer.ASMWriter.setAt
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.*
+import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.LdcInsnNode
+import org.objectweb.asm.tree.MethodInsnNode
+import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import kotlin.test.Test
 
 internal class PatcherTest {
     companion object {
-        val testSigs: Array<Signature> = arrayOf(
+        val testSignatures: Array<Signature> = arrayOf(
             // Java:
             // public static void main(String[] args) {
             //     System.out.println("Hello, world!");
@@ -45,8 +48,11 @@ internal class PatcherTest {
 
     @Test
     fun testPatcher() {
-        val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
-        val patcher = Patcher(testData, testSigs)
+        val patcher = Patcher(
+            PatcherTest::class.java.getResourceAsStream("/test1.jar")!!,
+            ByteArrayOutputStream(),
+            testSignatures
+        )
 
         patcher.addPatches(
             object : Patch("TestPatch") {
@@ -74,9 +80,9 @@ internal class PatcherTest {
                         startIndex + 1,
                         FieldInsnNode(
                             GETSTATIC,
-                            Type.getInternalName(System::class.java), // "java/io/System"
+                            Type.getInternalName(System::class.java), // "java/lang/System"
                             "out",
-                            Type.getInternalName(PrintStream::class.java) // "java.io.PrintStream"
+                            "L" + Type.getInternalName(PrintStream::class.java) // "Ljava/io/PrintStream"
                         ),
                         LdcInsnNode("Hello, ReVanced! Adding bytecode."),
                         MethodInsnNode(
@@ -111,41 +117,27 @@ internal class PatcherTest {
         )
 
         // Apply all patches loaded in the patcher
-        val result = patcher.applyPatches()
+        val patchResult = patcher.applyPatches()
         // You can check if an error occurred
-        for ((s, r) in result) {
-            if (r.isFailure) {
-                throw Exception("Patch $s failed", r.exceptionOrNull()!!)
+        for ((patchName, result) in patchResult) {
+            if (result.isFailure) {
+                throw Exception("Patch $patchName failed", result.exceptionOrNull()!!)
             }
         }
 
-        // TODO Doesn't work, needs to be fixed.
-        //val out = ByteArrayOutputStream()
-        //patcher.saveTo(out)
-        //assertTrue(
-        //    // 8 is a random value, it's just weird if it's any lower than that
-        //    out.size() > 8,
-        //    "Output must be at least 8 bytes"
-        //)
-        //
-        //out.close()
-        testData.close()
+        patcher.save()
     }
 
-    // TODO Doesn't work, needs to be fixed.
-    //@Test
-    //fun `test patcher with no changes`() {
-    //    val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
-    //    val available = testData.available()
-    //    val patcher = Patcher(testData, testSigs)
-    //
-    //    val out = ByteArrayOutputStream()
-    //    patcher.saveTo(out)
-    //    assertEquals(available, out.size())
-    //
-    //    out.close()
-    //    testData.close()
-    //}
+    @Test
+    fun `test patcher with no changes`() {
+        val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
+        // val available = testData.available()
+        val out = ByteArrayOutputStream()
+        Patcher(testData, out, testSignatures).save()
+        // FIXME(Sculas): There seems to be a 1-byte difference, not sure what it is.
+        // assertEquals(available, out.size())
+        out.close()
+    }
 
     @Test()
     fun `should not raise an exception if any signature member except the name is missing`() {
@@ -154,6 +146,7 @@ internal class PatcherTest {
         assertDoesNotThrow("Should raise an exception because opcodes is empty") {
             Patcher(
                 PatcherTest::class.java.getResourceAsStream("/test1.jar")!!,
+                ByteArrayOutputStream(),
                 arrayOf(
                     Signature(
                         sigName,
