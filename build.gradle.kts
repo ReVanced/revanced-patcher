@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.6.10"
+    java
     `maven-publish`
 }
 
@@ -25,6 +26,11 @@ tasks.test {
     testLogging {
         events("PASSED", "SKIPPED", "FAILED")
     }
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 publishing {
