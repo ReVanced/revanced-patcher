@@ -1,3 +1,10 @@
+# [1.0.0-dev.7](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2022-03-21)
+
+
+### Bug Fixes
+
+* nullable signature members ([#10](https://github.com/ReVancedTeam/revanced-patcher/issues/10)) ([ba256eb](https://github.com/ReVancedTeam/revanced-patcher/commit/ba256eb331da5dad4f5f1aff30bed9077fe78cd3))
+
 # [1.0.0-dev.6](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2022-03-21)
 
 
