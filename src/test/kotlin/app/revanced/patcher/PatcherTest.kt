@@ -38,7 +38,7 @@ internal class PatcherTest {
                 Type.VOID_TYPE,
                 ACC_PUBLIC or ACC_STATIC,
                 arrayOf(ExtraTypes.ArrayAny),
-                arrayOf(
+                intArrayOf(
                     LDC,
                     INVOKEVIRTUAL
                 )
