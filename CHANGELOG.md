@@ -1,3 +1,10 @@
+# [1.0.0-dev.6](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2022-03-21)
+
+
+### Features
+
+* Add `findParentMethod` utility method ([#4](https://github.com/ReVancedTeam/revanced-patcher/issues/4)) ([632ae8a](https://github.com/ReVancedTeam/revanced-patcher/commit/632ae8a6b52cd224195225c1d7c2d4442937d9cb))
+
 # [1.0.0-dev.5](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2022-03-20)
 
 
