@@ -10,10 +10,14 @@ import org.objectweb.asm.Type
  * If you are unable to guess a method name, doing something like "patch-name-1" is fine too.
  * For example: "override-codec-1".
  * This method name will be used to find the corresponding patch.
+ * Even though this is technically not needed for the `findParentMethod` method,
+ * it is still recommended giving the method a name, so it can be identified easily.
  * @param returns The return type/signature of the method.
  * @param accessors The accessors of the method.
  * @param parameters The parameter types of the method.
  * @param opcodes The opcode pattern of the method, used to find the method by pattern scanning.
+ * ***Only if*** **you are using **`findParentMethod`** are you allowed to specify an empty array.**
+ * This parameter will be ignored when using the `findParentMethod` method.
  */
 @Suppress("ArrayInDataClass")
 data class Signature(
