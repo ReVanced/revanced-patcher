@@ -55,8 +55,9 @@ object Io {
             jos.closeEntry()
         }
 
-        inputStream.close()
+        jis.close()
         jos.close()
+        inputStream.close()
         output.close()
     }
 }
