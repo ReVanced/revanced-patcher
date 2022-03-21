@@ -1,3 +1,10 @@
+# [1.0.0-dev.9](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.8...v1.0.0-dev.9) (2022-03-21)
+
+
+### Bug Fixes
+
+* **Io:** JAR loading and saving ([#8](https://github.com/ReVancedTeam/revanced-patcher/issues/8)) ([834b427](https://github.com/ReVancedTeam/revanced-patcher/commit/834b427fb7c801fd9cc8d616456d62639c58b1c0))
+
 # [1.0.0-dev.8](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.7...v1.0.0-dev.8) (2022-03-21)
 
 
