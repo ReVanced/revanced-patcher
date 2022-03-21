@@ -1,3 +1,10 @@
+# [1.0.0-dev.8](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.7...v1.0.0-dev.8) (2022-03-21)
+
+
+### Bug Fixes
+
+* **gradle:** publish source and javadocs ([9ae5011](https://github.com/ReVancedTeam/revanced-patcher/commit/9ae5011ea9274cbc7ed397662d39f5ca93a59c6e))
+
 # [1.0.0-dev.7](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2022-03-21)
 
 
