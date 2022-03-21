@@ -55,7 +55,7 @@ internal class Io(
         var zipEntry: ZipEntry?
         while (jis.nextEntry.also { zipEntry = it } != null) {
             // skip all class files because we added them in the loop above
-            // TODO: check for zipEntry.isDirectory
+            // TODO(oSumAtrIX): Check for zipEntry.isDirectory
             if (zipEntry!!.name.endsWith(".class")) continue
 
             // create a new zipEntry and write the contents of the zipEntry to the output stream

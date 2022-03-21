@@ -17,7 +17,7 @@ object TestUtil {
     private fun AbstractInsnNode.nodeString(): String {
         val sb = NodeStringBuilder()
         when (this) {
-            // TODO: Add more types
+            // TODO(Sculas): Add more types
             is LdcInsnNode -> sb
                 .addType("cst", cst)
             is FieldInsnNode -> sb
