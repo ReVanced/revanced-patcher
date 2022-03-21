@@ -12,7 +12,9 @@ import net.revanced.patcher.writer.ASMWriter.setAt
 import org.junit.jupiter.api.assertThrows
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.*
+import org.objectweb.asm.tree.FieldInsnNode
+import org.objectweb.asm.tree.LdcInsnNode
+import org.objectweb.asm.tree.MethodInsnNode
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import kotlin.test.Test
@@ -129,13 +131,13 @@ internal class PatcherTest {
 
     @Test
     fun `test patcher with no changes`() {
-        val patcher = Patcher(
-            PatcherTest::class.java.getResourceAsStream("/test1.jar")!!,
-            ByteArrayOutputStream(),
-            testSignatures
-        )
-
-        patcher.save()
+        val testData = PatcherTest::class.java.getResourceAsStream("/test1.jar")!!
+        // val available = testData.available()
+        val out = ByteArrayOutputStream()
+        Patcher(testData, out, testSignatures).save()
+        // FIXME(Sculas): There seems to be a 1-byte difference, not sure what it is.
+        // assertEquals(available, out.size())
+        out.close()
     }
 
     @Test
