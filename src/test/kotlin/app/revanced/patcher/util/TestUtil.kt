@@ -1,4 +1,4 @@
-package net.revanced.patcher.util
+package app.revanced.patcher.util
 
 import org.objectweb.asm.tree.AbstractInsnNode
 import org.objectweb.asm.tree.FieldInsnNode

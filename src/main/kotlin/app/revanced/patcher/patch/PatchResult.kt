@@ -1,4 +1,4 @@
-package net.revanced.patcher.patch
+package app.revanced.patcher.patch
 
 interface PatchResult {
     fun error(): PatchResultError? {

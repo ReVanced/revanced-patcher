@@ -1,14 +1,14 @@
-package net.revanced.patcher
+package app.revanced.patcher
 
-import net.revanced.patcher.cache.Cache
-import net.revanced.patcher.patch.Patch
-import net.revanced.patcher.patch.PatchResult
-import net.revanced.patcher.patch.PatchResultSuccess
-import net.revanced.patcher.signature.Signature
-import net.revanced.patcher.util.ExtraTypes
-import net.revanced.patcher.util.TestUtil
-import net.revanced.patcher.writer.ASMWriter.insertAt
-import net.revanced.patcher.writer.ASMWriter.setAt
+import app.revanced.patcher.cache.Cache
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.signature.Signature
+import app.revanced.patcher.util.ExtraTypes
+import app.revanced.patcher.util.TestUtil
+import app.revanced.patcher.writer.ASMWriter.insertAt
+import app.revanced.patcher.writer.ASMWriter.setAt
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type

@@ -1,4 +1,4 @@
-package net.revanced.patcher.resolver
+package app.revanced.patcher.resolver
 
 internal data class ScanResult(
     val found: Boolean,

@@ -1,7 +1,7 @@
-package net.revanced.patcher.cache
+package app.revanced.patcher.cache
 
-import net.revanced.patcher.resolver.MethodResolver
-import net.revanced.patcher.signature.Signature
+import app.revanced.patcher.resolver.MethodResolver
+import app.revanced.patcher.signature.Signature
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 
