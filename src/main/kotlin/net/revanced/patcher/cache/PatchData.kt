@@ -11,7 +11,7 @@ data class PatchData(
     val scanData: PatternScanData
 ) {
     fun findParentMethod(signature: Signature): PatchData? {
-       return MethodResolver.resolveMethod(declaringClass, signature)
+        return MethodResolver.resolveMethod(declaringClass, signature)
     }
 }
 

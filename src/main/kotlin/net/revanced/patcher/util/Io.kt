@@ -16,13 +16,12 @@ internal class Io(
     private val input: InputStream,
     private val output: OutputStream,
     private val classes: MutableList<ClassNode>
-    )
-{
+) {
     private val bufferedInputStream = BufferedInputStream(input)
 
     fun readFromJar() {
         bufferedInputStream.mark(0)
-       // create a BufferedInputStream in order to read the input stream again when calling saveAsJar(..)
+        // create a BufferedInputStream in order to read the input stream again when calling saveAsJar(..)
         val jis = JarInputStream(bufferedInputStream)
 
         // read all entries from the input stream
