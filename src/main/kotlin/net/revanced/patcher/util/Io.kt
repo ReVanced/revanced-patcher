@@ -52,6 +52,7 @@ internal class Io(
 
         // first write all non .class zip entries from the original input stream to the output stream
         // we read it first to close the input stream as fast as possible
+        // TODO(oSumAtrIX): There is currently no way to remove non .class files.
         lateinit var zipEntry: ZipEntry
         while (jis.nextEntry.also { if (it != null) zipEntry = it } != null) {
             // skip all class files because we added them in the loop above
