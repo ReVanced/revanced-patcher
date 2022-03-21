@@ -5,6 +5,7 @@ import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.resolver.MethodResolver
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Io
+import org.objectweb.asm.tree.ClassNode
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -12,19 +13,29 @@ import java.io.OutputStream
  * The patcher. (docs WIP)
  *
  * @param input the input stream to read from, must be a JAR
+ * @param output the output stream to write to, must be a JAR
  * @param signatures the signatures
  * @sample net.revanced.patcher.PatcherTest
  */
 class Patcher(
     private val input: InputStream,
+    private val output: OutputStream,
     signatures: Array<Signature>,
 ) {
     var cache: Cache
-    private val patches: MutableList<Patch> = mutableListOf()
+
+    private var io: Io
+    private val patches = mutableListOf<Patch>()
 
     init {
-        val classes = Io.readClassesFromJar(input)
+        val classes = mutableListOf<ClassNode>()
+        io = Io(input, output, classes)
+        io.readFromJar()
         cache = Cache(classes, MethodResolver(classes, signatures).resolve())
+    }
+
+    fun save() {
+        io.saveAsJar()
     }
 
     fun addPatches(vararg patches: Patch) {
@@ -45,9 +56,5 @@ class Patcher(
                 if (stopOnError && result.isFailure) break
             }
         }
-    }
-
-    fun saveTo(output: OutputStream) {
-        Io.writeClassesToJar(input, output, cache.classes)
     }
 }
