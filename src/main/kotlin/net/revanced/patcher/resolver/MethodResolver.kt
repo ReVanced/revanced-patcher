@@ -56,7 +56,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
     companion object {
         fun resolveMethod(classNode: ClassNode, signature: Signature): PatchData? {
             for (method in classNode.methods) {
-                val (r, sr) = cmp(method, signature, true)
+                val (r, sr) = cmp(method, signature)
                 if (!r || sr == null) continue
                 return PatchData(
                     classNode,
@@ -67,52 +67,55 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             return null
         }
 
-        private fun cmp(method: MethodNode, signature: Signature, search: Boolean = false): Pair<Boolean, ScanResult?> {
-            val returns = Type.getReturnType(method.desc).convertObject()
-            if (signature.returns != returns) {
-                logger.debug {
-                    """
-                    Comparing sig ${signature.name}: invalid return type:
-                    expected ${signature.returns}},
-                    got $returns
-                """.trimIndent()
+        private fun cmp(method: MethodNode, signature: Signature): Pair<Boolean, ScanResult?> {
+            signature.returns?.let { _ ->
+                val methodReturns = Type.getReturnType(method.desc).convertObject()
+                if (signature.returns != methodReturns) {
+                    logger.debug {
+                        """
+                            Comparing sig ${signature.name}: invalid return type:
+                            expected ${signature.returns},
+                            got $methodReturns
+                        """.trimIndent()
+                    }
+                    return@cmp false to null
                 }
-                return false to null
             }
 
-            if (signature.accessors != method.access) {
-                logger.debug {
-                    """
-                    Comparing sig ${signature.name}: invalid accessors:
-                    expected ${signature.accessors}},
-                    got ${method.access}
-                """.trimIndent()
+            signature.accessors?.let { _ ->
+                if (signature.accessors != method.access) {
+                    logger.debug {
+                        """
+                            Comparing sig ${signature.name}: invalid accessors:
+                            expected ${signature.accessors},
+                            got ${method.access}
+                        """.trimIndent()
+                    }
+                    return@cmp false to null
                 }
-                return false to null
             }
 
-            val parameters = Type.getArgumentTypes(method.desc).convertObjects()
-            if (!signature.parameters.contentEquals(parameters)) {
-                logger.debug {
-                    """
-                    Comparing sig ${signature.name}: invalid parameter types:
-                    expected ${signature.parameters.joinToString()}},
-                    got ${parameters.joinToString()}
-                """.trimIndent()
+            signature.parameters?.let { _ ->
+                val parameters = Type.getArgumentTypes(method.desc).convertObjects()
+                if (!signature.parameters.contentEquals(parameters)) {
+                    logger.debug {
+                        """
+                            Comparing sig ${signature.name}: invalid parameter types:
+                            expected ${signature.parameters.joinToString()}},
+                            got ${parameters.joinToString()}
+                        """.trimIndent()
+                    }
+                    return@cmp false to null
                 }
-                return false to null
             }
 
-            if (!search) {
-                if (signature.opcodes.isEmpty()) {
-                    throw IllegalArgumentException("Opcode list for signature ${signature.name} is empty. This is not allowed for non-search signatures.")
-                }
+            signature.opcodes?.let { _ ->
                 val result = method.instructions.scanFor(signature.opcodes)
                 if (!result.found) {
                     logger.debug { "Comparing sig ${signature.name}: invalid opcode pattern" }
-                    return false to null
+                    return@cmp false to null
                 }
-                return true to result
+                return@cmp true to result
             }
 
             return true to ScanResult(true)
