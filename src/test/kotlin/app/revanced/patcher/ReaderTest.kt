@@ -1,4 +1,4 @@
-package net.revanced.patcher
+package app.revanced.patcher
 
 import java.io.ByteArrayOutputStream
 import kotlin.test.Test

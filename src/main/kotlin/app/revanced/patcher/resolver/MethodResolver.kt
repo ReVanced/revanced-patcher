@@ -1,11 +1,11 @@
-package net.revanced.patcher.resolver
+package app.revanced.patcher.resolver
 
 import mu.KotlinLogging
-import net.revanced.patcher.cache.MethodMap
-import net.revanced.patcher.cache.PatchData
-import net.revanced.patcher.cache.PatternScanData
-import net.revanced.patcher.signature.Signature
-import net.revanced.patcher.util.ExtraTypes
+import app.revanced.patcher.cache.MethodMap
+import app.revanced.patcher.cache.PatchData
+import app.revanced.patcher.cache.PatternScanData
+import app.revanced.patcher.signature.Signature
+import app.revanced.patcher.util.ExtraTypes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.InsnList

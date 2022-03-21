@@ -1,4 +1,4 @@
-package net.revanced.patcher.signature
+package app.revanced.patcher.signature
 
 import org.objectweb.asm.Type
 
