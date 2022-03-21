@@ -12,6 +12,8 @@ import net.revanced.patcher.writer.ASMWriter.setAt
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
+import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
 import java.io.PrintStream
 import kotlin.test.Test
 
@@ -119,15 +121,15 @@ internal class PatcherTest {
         }
 
         // TODO Doesn't work, needs to be fixed.
-        //val out = ByteArrayOutputStream()
-        //patcher.saveTo(out)
+        val out = ByteArrayOutputStream()
+        patcher.saveTo(out) // TODO: this does produce a jar but does not make sense to test yet because it is just a copy of the classes of the input file. See: Io.kt
         //assertTrue(
         //    // 8 is a random value, it's just weird if it's any lower than that
         //    out.size() > 8,
         //    "Output must be at least 8 bytes"
         //)
         //
-        //out.close()
+        out.close()
         testData.close()
     }
 

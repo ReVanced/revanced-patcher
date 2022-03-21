@@ -5,6 +5,8 @@ import net.revanced.patcher.patch.Patch
 import net.revanced.patcher.resolver.MethodResolver
 import net.revanced.patcher.signature.Signature
 import net.revanced.patcher.util.Io
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -21,9 +23,21 @@ class Patcher(
 ) {
     var cache: Cache
     private val patches: MutableList<Patch> = mutableListOf()
+    private var inputBytes: ByteArray
 
     init {
-        val classes = Io.readClassesFromJar(input)
+        // Copy input stream or else there is no way to reset it (required because we read multiple times)
+        val inputCopy = ByteArrayOutputStream()
+        val buffer = ByteArray(1024)
+        var len: Int
+        while (input.read(buffer).also { len = it } > -1) {
+            inputCopy.write(buffer, 0, len)
+        }
+        inputCopy.flush()
+        inputBytes = inputCopy.toByteArray()
+        inputCopy.close()
+
+        val classes = Io.readClassesFromJar(inputBytes)
         cache = Cache(classes, MethodResolver(classes, signatures).resolve())
     }
 
@@ -48,6 +62,6 @@ class Patcher(
     }
 
     fun saveTo(output: OutputStream) {
-        Io.writeClassesToJar(input, output, cache.classes)
+        Io.writeClassesToJar(inputBytes, output, cache.classes)
     }
 }

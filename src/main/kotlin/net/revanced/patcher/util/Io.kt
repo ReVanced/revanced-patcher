@@ -3,6 +3,7 @@ package net.revanced.patcher.util
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.ClassNode
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.jar.JarEntry
@@ -10,8 +11,9 @@ import java.util.jar.JarInputStream
 import java.util.jar.JarOutputStream
 
 object Io {
-    fun readClassesFromJar(input: InputStream) = mutableListOf<ClassNode>().apply {
-        val jar = JarInputStream(input)
+    fun readClassesFromJar(input: ByteArray) = mutableListOf<ClassNode>().apply {
+        val inputStream = ByteArrayInputStream(input)
+        val jar = JarInputStream(inputStream)
             while (true) {
                 val e = jar.nextJarEntry ?: break
                 if (e.name.endsWith(".class")) {
@@ -21,10 +23,13 @@ object Io {
                 }
                 jar.closeEntry()
             }
+        jar.close()
+        inputStream.close()
     }
 
-    fun writeClassesToJar(input: InputStream, output: OutputStream, classes: List<ClassNode>) {
-        val jis = JarInputStream(input)
+    fun writeClassesToJar(input: ByteArray, output: OutputStream, classes: List<ClassNode>) {
+        val inputStream = ByteArrayInputStream(input)
+        val jis = JarInputStream(inputStream)
         val jos = JarOutputStream(output)
 
         // TODO: Add support for adding new/custom classes
@@ -36,14 +41,22 @@ object Io {
             val clazz = classes.singleOrNull {
                 clazz -> clazz.name+".class" == e.name // clazz.name is the class name only while e.name is the full filename with extension
             };
-            if (clazz != null) {
-                val cw = ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)
-                clazz.accept(cw)
-                jos.write(cw.toByteArray())
-            } else {
-                jos.write(jis.readBytes())
-            }
+
+            // TODO: write modded classes does not work currently, so always copy from input for now:
+            jos.write(jis.readBytes())
+//            if (clazz != null) {
+//                val cw = ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)
+//                clazz.accept(cw)
+//                jos.write(cw.toByteArray())
+//            } else {
+//                jos.write(jis.readBytes())
+//            }
+
             jos.closeEntry()
         }
+
+        inputStream.close()
+        jos.close()
+        output.close()
     }
 }
