@@ -10,7 +10,6 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.InsnList
 import org.objectweb.asm.tree.MethodNode
-import kotlin.math.sign
 
 private val logger = KotlinLogging.logger("MethodResolver")
 
@@ -26,7 +25,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
                         continue
                     }
                     logger.debug { "Resolving sig ${signature.name}: ${classNode.name} / ${method.name}" }
-                    val (r, sr) = this.cmp(method, signature)
+                    val (r, sr) = cmp(method, signature)
                     if (!r || sr == null) {
                         logger.debug { "Compare result for sig ${signature.name} has failed!" }
                         continue
@@ -53,25 +52,45 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
         return methodMap
     }
 
-    private fun cmp(method: MethodNode, signature: Signature): Pair<Boolean, ScanResult?> {
-        val returns = Type.getReturnType(method.desc).convertObject()
-        if (signature.returns != returns) {
-            logger.debug {
-                """
+    // These functions do not require the constructor values, so they can be static.
+    companion object {
+        fun resolveMethod(classNode: ClassNode, signature: Signature): PatchData? {
+            for (method in classNode.methods) {
+                val (r, sr) = cmp(method, signature, true)
+                if (!r || sr == null) continue
+                return PatchData(
+                    classNode,
+                    method,
+                    PatternScanData(0, 0) // opcode list is always ignored.
+                )
+            }
+            return null
+        }
+
+        private fun cmp(method: MethodNode, signature: Signature, search: Boolean = false): Pair<Boolean, ScanResult?> {
+            val returns = Type.getReturnType(method.desc).convertObject()
+            if (signature.returns != returns) {
+                logger.debug {
+                    """
                     Comparing sig ${signature.name}: invalid return type:
                     expected ${signature.returns}},
                     got $returns
                 """.trimIndent()
+                }
+                return false to null
             }
-            return false to null
-        }
 
-        if (signature.accessors != method.access) {
-            logger.debug { "Comparing sig ${signature.name}: invalid accessors:\nexpected ${signature.accessors},\ngot ${method.access}" }
-            return false to null
-        }
+            if (signature.accessors != method.access) {
+                logger.debug {
+                    """
+                    Comparing sig ${signature.name}: invalid accessors:
+                    expected ${signature.accessors}},
+                    got ${method.access}
+                """.trimIndent()
+                }
+                return false to null
+            }
 
-        if (signature.parameters != null) {
             val parameters = Type.getArgumentTypes(method.desc).convertObjects()
             if (!signature.parameters.contentEquals(parameters)) {
                 logger.debug {
@@ -83,18 +102,21 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
                 }
                 return false to null
             }
-        }
 
-        if (signature.opcodes != null) {
-            val result = method.instructions.scanFor(signature.opcodes)
-            if (!result.found) {
-                logger.debug { "Comparing sig ${signature.name}: invalid opcode pattern" }
-                return false to null
+            if (!search) {
+                if (signature.opcodes.isEmpty()) {
+                    throw IllegalArgumentException("Opcode list for signature ${signature.name} is empty. This is not allowed for non-search signatures.")
+                }
+                val result = method.instructions.scanFor(signature.opcodes)
+                if (!result.found) {
+                    logger.debug { "Comparing sig ${signature.name}: invalid opcode pattern" }
+                    return false to null
+                }
+                return true to result
             }
-            return true to result
-        }
 
-        return true to ScanResult(false)
+            return true to ScanResult(true)
+        }
     }
 }
 
