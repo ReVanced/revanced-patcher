@@ -1,6 +1,5 @@
 package app.revanced.patcher.util
 
-import app.revanced.patcher.writer.SafeClassWriter
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.ClassNode
@@ -50,21 +49,21 @@ internal class Io(
     fun saveAsJar() {
         val jis = ZipInputStream(bufferedInputStream)
         val jos = ZipOutputStream(output)
+        val classReaders = mutableMapOf<String, ClassReader>()
 
         // first write all non .class zip entries from the original input stream to the output stream
         // we read it first to close the input stream as fast as possible
         // TODO(oSumAtrIX): There is currently no way to remove non .class files.
         lateinit var zipEntry: ZipEntry
         while (jis.nextEntry.also { if (it != null) zipEntry = it } != null) {
-            // skip all class files because we added them in the loop above
-            // TODO(oSumAtrIX): Check for zipEntry.isDirectory
-            if (zipEntry.name.endsWith(".class")) continue
+            if (zipEntry.name.endsWith(".class")) {
+                classReaders[zipEntry.name] = ClassReader(jis.readBytes())
+                continue
+            }
 
-            // create a new zipEntry and write the contents of the zipEntry to the output stream
+            // create a new zipEntry and write the contents of the zipEntry to the output stream and close it
             jos.putNextEntry(ZipEntry(zipEntry))
             jos.write(jis.readBytes())
-
-            // close the newly created zipEntry
             jos.closeEntry()
         }
 
@@ -76,10 +75,12 @@ internal class Io(
         // now write all the patched classes to the output stream
         for (patchedClass in classes) {
             // create a new entry of the patched class
-            jos.putNextEntry(JarEntry(patchedClass.name + ".class"))
+            val name = patchedClass.name + ".class"
+            jos.putNextEntry(JarEntry(name))
 
             // parse the patched class to a byte array and write it to the output stream
-            val cw: ClassWriter = SafeClassWriter(
+            val cw = ClassWriter(
+                classReaders[name]!!,
                 ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS
             )
             patchedClass.accept(cw)
