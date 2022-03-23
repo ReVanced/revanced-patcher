@@ -131,7 +131,7 @@ private operator fun ClassNode.component2(): List<MethodNode> {
     return this.methods
 }
 
-private fun InsnList.scanFor(pattern: Array<Int>): ScanResult {
+private fun InsnList.scanFor(pattern: IntArray): ScanResult {
     for (i in 0 until this.size()) {
         var occurrence = 0
         while (i + occurrence < this.size()) {

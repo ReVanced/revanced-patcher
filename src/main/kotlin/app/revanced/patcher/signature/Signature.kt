@@ -23,5 +23,5 @@ data class Signature(
     val returns: Type?,
     val accessors: Int?,
     val parameters: Array<Type>?,
-    val opcodes: Array<Int>?
+    val opcodes: IntArray?
 )
