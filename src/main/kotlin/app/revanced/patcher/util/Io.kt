@@ -1,5 +1,6 @@
 package app.revanced.patcher.util
 
+import app.revanced.patcher.writer.SafeClassWriter
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.tree.ClassNode
@@ -78,7 +79,9 @@ internal class Io(
             jos.putNextEntry(JarEntry(patchedClass.name + ".class"))
 
             // parse the patched class to a byte array and write it to the output stream
-            val cw = ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)
+            val cw: ClassWriter = SafeClassWriter(
+                ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS
+            )
             patchedClass.accept(cw)
             jos.write(cw.toByteArray())
 
