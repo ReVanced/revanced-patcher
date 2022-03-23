@@ -1,3 +1,10 @@
+# [1.0.0-dev.3](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2022-03-23)
+
+
+### Features
+
+* add SafeClassWriter ([ca6b94d](https://github.com/ReVancedTeam/revanced-patcher/commit/ca6b94d943b7067aae87a4e282cfb323811c0462))
+
 # [1.0.0-dev.2](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2022-03-23)
 
 
