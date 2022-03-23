@@ -20,7 +20,7 @@ internal class Io(
     private val bufferedInputStream = BufferedInputStream(input)
 
     fun readFromJar() {
-        bufferedInputStream.mark(0)
+        bufferedInputStream.mark(Integer.MAX_VALUE)
         // create a BufferedInputStream in order to read the input stream again when calling saveAsJar(..)
         val jis = JarInputStream(bufferedInputStream)
 
