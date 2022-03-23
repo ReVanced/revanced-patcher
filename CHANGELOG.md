@@ -1,3 +1,10 @@
+# [1.0.0-dev.4](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2022-03-23)
+
+
+### Bug Fixes
+
+* give ClassWriter a ClassReader for symtable ([e8f6973](https://github.com/ReVancedTeam/revanced-patcher/commit/e8f6973938c70002f04a86f329aa5b134f6ef649))
+
 # [1.0.0-dev.3](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.2...v1.0.0-dev.3) (2022-03-23)
 
 
