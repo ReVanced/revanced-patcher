@@ -1,3 +1,10 @@
+# [1.0.0-dev.2](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2022-03-23)
+
+
+### Bug Fixes
+
+* set marklimit to Integer.MAX_VALUE ([ab6453c](https://github.com/ReVancedTeam/revanced-patcher/commit/ab6453ca8a02af70da4468c1a63c68dde4d392ef))
+
 # 1.0.0-dev.1 (2022-03-23)
 
 
