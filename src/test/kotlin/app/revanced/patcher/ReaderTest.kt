@@ -7,6 +7,6 @@ internal class ReaderTest {
     @Test
     fun `read jar containing multiple classes`() {
         val testData = PatcherTest::class.java.getResourceAsStream("/test2.jar")!!
-        Patcher(testData, ByteArrayOutputStream(), PatcherTest.testSignatures) // reusing test sigs from PatcherTest
+        Patcher(testData, ByteArrayOutputStream(), PatcherTest.testSignatures).save() // reusing test sigs from PatcherTest
     }
 }
