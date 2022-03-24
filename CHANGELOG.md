@@ -1,3 +1,10 @@
+# [1.0.0-dev.7](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2022-03-24)
+
+
+### Bug Fixes
+
+* **MethodResolver:** fix cd57a8c9a0db7e3ae5ad0bca202e5955930319ab ([1af31b2](https://github.com/ReVancedTeam/revanced-patcher/commit/1af31b2aa3772a7473c04d27bf835c8eae13438d))
+
 # [1.0.0-dev.6](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2022-03-24)
 
 
