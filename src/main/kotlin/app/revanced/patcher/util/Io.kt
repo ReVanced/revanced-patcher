@@ -79,10 +79,7 @@ internal class Io(
             jos.putNextEntry(JarEntry(name))
 
             // parse the patched class to a byte array and write it to the output stream
-            val cw = ClassWriter(
-                classReaders[name]!!,
-                ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS
-            )
+            val cw = ClassWriter(classReaders[name]!!, ClassWriter.COMPUTE_MAXS)
             patchedClass.accept(cw)
             jos.write(cw.toByteArray())
 
