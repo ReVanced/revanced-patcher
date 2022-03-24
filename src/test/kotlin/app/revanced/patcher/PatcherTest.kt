@@ -157,7 +157,9 @@ internal class PatcherTest {
     fun `should not raise an exception if any signature member except the name is missing`() {
         val sigName = "testMethod"
 
-        assertDoesNotThrow("Should raise an exception because opcodes is empty") {
+        assertDoesNotThrow(
+            "Should not raise an exception if any signature member except the name is missing"
+        ) {
             Patcher(
                 PatcherTest::class.java.getResourceAsStream("/test1.jar")!!,
                 ByteArrayOutputStream(),
