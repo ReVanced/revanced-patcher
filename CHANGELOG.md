@@ -1,3 +1,10 @@
+# [1.0.0-dev.8](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.7...v1.0.0-dev.8) (2022-03-24)
+
+
+### Performance Improvements
+
+* check type instead of class ([47eb493](https://github.com/ReVancedTeam/revanced-patcher/commit/47eb493f5425dc27a4d6e79e6b02a36ef760e8da))
+
 # [1.0.0-dev.7](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2022-03-24)
 
 
