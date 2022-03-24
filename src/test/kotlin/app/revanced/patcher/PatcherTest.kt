@@ -39,8 +39,10 @@ internal class PatcherTest {
                 ACC_PUBLIC or ACC_STATIC,
                 arrayOf(ExtraTypes.ArrayAny),
                 intArrayOf(
+                    GETSTATIC,
                     LDC,
-                    INVOKEVIRTUAL
+                    INVOKEVIRTUAL,
+                    RETURN
                 )
             )
         )
@@ -66,7 +68,19 @@ internal class PatcherTest {
                     // Get the start index of our opcode pattern.
                     // This will be the index of the LDC instruction.
                     val startIndex = mainMethod.scanData.startIndex
-                    TestUtil.assertNodeEqual(LdcInsnNode("Hello, world!"), instructions[startIndex]!!)
+
+                    // Ignore this, just testing if the method resolver works :)
+                    TestUtil.assertNodeEqual(
+                        FieldInsnNode(
+                            GETSTATIC,
+                            Type.getInternalName(System::class.java),
+                            "out",
+                            // for whatever reason, it adds an "L" and ";" to the node string
+                            "L${Type.getInternalName(PrintStream::class.java)};"
+                        ),
+                        instructions[startIndex]!!
+                    )
+
                     // Create a new LDC node and replace the LDC instruction.
                     val stringNode = LdcInsnNode("Hello, ReVanced! Editing bytecode.")
                     instructions.setAt(startIndex, stringNode)
@@ -82,7 +96,7 @@ internal class PatcherTest {
                             GETSTATIC,
                             Type.getInternalName(System::class.java), // "java/lang/System"
                             "out",
-                            "L" + Type.getInternalName(PrintStream::class.java) // "Ljava/io/PrintStream"
+                            Type.getInternalName(PrintStream::class.java) // "java/io/PrintStream"
                         ),
                         LdcInsnNode("Hello, ReVanced! Adding bytecode."),
                         MethodInsnNode(
