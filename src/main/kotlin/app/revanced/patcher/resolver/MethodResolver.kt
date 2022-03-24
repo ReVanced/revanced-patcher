@@ -1,15 +1,13 @@
 package app.revanced.patcher.resolver
 
-import mu.KotlinLogging
 import app.revanced.patcher.cache.MethodMap
 import app.revanced.patcher.cache.PatchData
 import app.revanced.patcher.cache.PatternScanData
 import app.revanced.patcher.signature.Signature
 import app.revanced.patcher.util.ExtraTypes
+import mu.KotlinLogging
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
-import kotlin.reflect.KType
-import kotlin.reflect.typeOf
 
 private val logger = KotlinLogging.logger("MethodResolver")
 
@@ -133,8 +131,8 @@ private fun InsnList.scanFor(pattern: IntArray): ScanResult {
             val n = this[i + occurrence]
             if (
                 !n.anyOf(
-                    typeOf<LabelNode>(),
-                    typeOf<LineNumberNode>()
+                    LabelNode::class.java,
+                    LineNumberNode::class.java
                 ) &&
                 n.opcode != pattern[occurrence]
             ) break
@@ -160,6 +158,5 @@ private fun Array<Type>.convertObjects(): Array<Type> {
     return this.map { it.convertObject() }.toTypedArray()
 }
 
-private fun AbstractInsnNode.anyOf(vararg types: KType): Boolean {
-    return types.any { it.javaClass.isAssignableFrom(this.javaClass) }
-}
+private fun AbstractInsnNode.anyOf(vararg types: Class<*>): Boolean =
+    types.any { this@anyOf.javaClass == it }
