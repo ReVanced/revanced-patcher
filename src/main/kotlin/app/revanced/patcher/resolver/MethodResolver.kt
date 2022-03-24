@@ -7,9 +7,7 @@ import app.revanced.patcher.cache.PatternScanData
 import app.revanced.patcher.signature.Signature
 import app.revanced.patcher.util.ExtraTypes
 import org.objectweb.asm.Type
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.InsnList
-import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.tree.*
 
 private val logger = KotlinLogging.logger("MethodResolver")
 
@@ -110,7 +108,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             }
 
             signature.opcodes?.let { _ ->
-                val result = method.instructions.scanFor(signature.opcodes)
+                val result = method.instructions.stripLabels().scanFor(signature.opcodes)
                 if (!result.found) {
                     logger.debug { "Comparing sig ${signature.name}: invalid opcode pattern" }
                     return@cmp false to null
@@ -123,13 +121,8 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
     }
 }
 
-private operator fun ClassNode.component1(): ClassNode {
-    return this
-}
-
-private operator fun ClassNode.component2(): List<MethodNode> {
-    return this.methods
-}
+private operator fun ClassNode.component1() = this
+private operator fun ClassNode.component2() = this.methods
 
 private fun InsnList.scanFor(pattern: IntArray): ScanResult {
     for (i in 0 until this.size()) {
@@ -156,4 +149,9 @@ private fun Type.convertObject(): Type {
 
 private fun Array<Type>.convertObjects(): Array<Type> {
     return this.map { it.convertObject() }.toTypedArray()
+}
+
+private fun InsnList.stripLabels(): InsnList {
+    this.removeAll { it is LabelNode || it is LineNumberNode }
+    return this
 }

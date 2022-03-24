@@ -38,7 +38,8 @@ private class NodeStringBuilder {
     }
 
     override fun toString(): String {
+        if (sb.isEmpty()) return ""
         val s = sb.toString()
-        return s.substring(0 until s.length - 2) // remove the last ", "
+        return s.substring(0 .. (s.length - 2).coerceAtLeast(0)) // remove the last ", "
     }
 }
