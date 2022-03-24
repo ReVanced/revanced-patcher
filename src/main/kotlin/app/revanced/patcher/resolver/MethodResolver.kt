@@ -8,6 +8,8 @@ import app.revanced.patcher.signature.Signature
 import app.revanced.patcher.util.ExtraTypes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.*
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 private val logger = KotlinLogging.logger("MethodResolver")
 
@@ -108,7 +110,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             }
 
             signature.opcodes?.let { _ ->
-                val result = method.instructions.stripLabels().scanFor(signature.opcodes)
+                val result = method.instructions.scanFor(signature.opcodes)
                 if (!result.found) {
                     logger.trace { "Comparing sig ${signature.name}: invalid opcode pattern" }
                     return@cmp false to null
@@ -128,7 +130,14 @@ private fun InsnList.scanFor(pattern: IntArray): ScanResult {
     for (i in 0 until this.size()) {
         var occurrence = 0
         while (i + occurrence < this.size()) {
-            if (this[i + occurrence].opcode != pattern[occurrence]) break
+            val n = this[i + occurrence]
+            if (
+                !n.anyOf(
+                    typeOf<LabelNode>(),
+                    typeOf<LineNumberNode>()
+                ) &&
+                n.opcode != pattern[occurrence]
+            ) break
             if (++occurrence >= pattern.size) {
                 val current = i + occurrence
                 return ScanResult(true, current - pattern.size, current)
@@ -151,7 +160,6 @@ private fun Array<Type>.convertObjects(): Array<Type> {
     return this.map { it.convertObject() }.toTypedArray()
 }
 
-private fun InsnList.stripLabels(): InsnList {
-    this.removeAll { it is LabelNode || it is LineNumberNode }
-    return this
+private fun AbstractInsnNode.anyOf(vararg types: KType): Boolean {
+    return types.any { it.javaClass.isAssignableFrom(this.javaClass) }
 }
