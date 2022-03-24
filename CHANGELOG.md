@@ -1,3 +1,10 @@
+# [1.0.0-dev.5](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2022-03-24)
+
+
+### Bug Fixes
+
+* **MethodResolver:** strip labels and line numbers so opcode patterns match ([8d1bb5f](https://github.com/ReVancedTeam/revanced-patcher/commit/8d1bb5f3d9da544cf6e3e3848bfcc56327cde810))
+
 # [1.0.0-dev.4](https://github.com/ReVancedTeam/revanced-patcher/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2022-03-23)
 
 
