@@ -129,13 +129,7 @@ private fun InsnList.scanFor(pattern: IntArray): ScanResult {
         var occurrence = 0
         while (i + occurrence < this.size()) {
             val n = this[i + occurrence]
-            if (
-                !n.anyOf(
-                    LabelNode::class.java,
-                    LineNumberNode::class.java
-                ) &&
-                n.opcode != pattern[occurrence]
-            ) break
+            if (!n.shouldSkip() && n.opcode != pattern[occurrence]) break
             if (++occurrence >= pattern.size) {
                 val current = i + occurrence
                 return ScanResult(true, current - pattern.size, current)
@@ -158,5 +152,5 @@ private fun Array<Type>.convertObjects(): Array<Type> {
     return this.map { it.convertObject() }.toTypedArray()
 }
 
-private fun AbstractInsnNode.anyOf(vararg types: Class<*>): Boolean =
-    types.any { this@anyOf.javaClass == it }
+private fun AbstractInsnNode.shouldSkip() =
+    type == AbstractInsnNode.LABEL || type == AbstractInsnNode.LINE
