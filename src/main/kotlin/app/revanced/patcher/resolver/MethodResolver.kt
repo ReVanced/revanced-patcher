@@ -19,16 +19,16 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             for (method in methods) {
                 for (signature in signatures) {
                     if (methodMap.containsKey(signature.name)) { // method already found for this sig
-                        logger.debug { "Sig ${signature.name} already found, skipping." }
+                        logger.trace { "Sig ${signature.name} already found, skipping." }
                         continue
                     }
-                    logger.debug { "Resolving sig ${signature.name}: ${classNode.name} / ${method.name}" }
+                    logger.trace { "Resolving sig ${signature.name}: ${classNode.name} / ${method.name}" }
                     val (r, sr) = cmp(method, signature)
                     if (!r || sr == null) {
-                        logger.debug { "Compare result for sig ${signature.name} has failed!" }
+                        logger.trace { "Compare result for sig ${signature.name} has failed!" }
                         continue
                     }
-                    logger.debug { "Method for sig ${signature.name} found!" }
+                    logger.trace { "Method for sig ${signature.name} found!" }
                     methodMap[signature.name] = PatchData(
                         classNode,
                         method,
@@ -69,7 +69,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             signature.returns?.let { _ ->
                 val methodReturns = Type.getReturnType(method.desc).convertObject()
                 if (signature.returns != methodReturns) {
-                    logger.debug {
+                    logger.trace {
                         """
                             Comparing sig ${signature.name}: invalid return type:
                             expected ${signature.returns},
@@ -82,7 +82,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
 
             signature.accessors?.let { _ ->
                 if (signature.accessors != method.access) {
-                    logger.debug {
+                    logger.trace {
                         """
                             Comparing sig ${signature.name}: invalid accessors:
                             expected ${signature.accessors},
@@ -96,7 +96,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             signature.parameters?.let { _ ->
                 val parameters = Type.getArgumentTypes(method.desc).convertObjects()
                 if (!signature.parameters.contentEquals(parameters)) {
-                    logger.debug {
+                    logger.trace {
                         """
                             Comparing sig ${signature.name}: invalid parameter types:
                             expected ${signature.parameters.joinToString()}},
@@ -110,7 +110,7 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             signature.opcodes?.let { _ ->
                 val result = method.instructions.stripLabels().scanFor(signature.opcodes)
                 if (!result.found) {
-                    logger.debug { "Comparing sig ${signature.name}: invalid opcode pattern" }
+                    logger.trace { "Comparing sig ${signature.name}: invalid opcode pattern" }
                     return@cmp false to null
                 }
                 return@cmp true to result
