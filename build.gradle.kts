@@ -12,10 +12,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.ow2.asm:asm:9.2")
-    implementation("org.ow2.asm:asm-util:9.2")
-    implementation("org.ow2.asm:asm-tree:9.2")
-    implementation("org.ow2.asm:asm-commons:9.2")
+    implementation("com.github.lanchon.dexpatcher:multidexlib2:2.3.4")
     implementation("io.github.microutils:kotlin-logging:2.1.21")
     testImplementation("ch.qos.logback:logback-classic:1.2.11") // use your own logger!
     testImplementation(kotlin("test"))
