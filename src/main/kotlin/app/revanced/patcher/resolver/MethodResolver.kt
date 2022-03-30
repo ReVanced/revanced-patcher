@@ -1,36 +1,31 @@
 package app.revanced.patcher.resolver
 
 import app.revanced.patcher.cache.MethodMap
-import app.revanced.patcher.cache.PatchData
-import app.revanced.patcher.cache.PatternScanData
-import app.revanced.patcher.signature.Signature
-import app.revanced.patcher.util.ExtraTypes
-import mu.KotlinLogging
-import org.objectweb.asm.Type
-import org.objectweb.asm.tree.*
+import app.revanced.patcher.signature.MethodSignatureScanResult
+import app.revanced.patcher.signature.PatternScanData
+import app.revanced.patcher.signature.MethodSignature
+import org.jf.dexlib2.Opcode
+import org.jf.dexlib2.iface.ClassDef
+import org.jf.dexlib2.iface.Method
 
-private val logger = KotlinLogging.logger("MethodResolver")
-
-internal class MethodResolver(private val classList: List<ClassNode>, private val signatures: Array<Signature>) {
+// TODO: add logger
+internal class MethodResolver(private val classes: Set<ClassDef>, private val signatures: Array<MethodSignature>) {
     fun resolve(): MethodMap {
         val methodMap = MethodMap()
 
-        for ((classNode, methods) in classList) {
-            for (method in methods) {
-                for (signature in signatures) {
-                    if (methodMap.containsKey(signature.name)) { // method already found for this sig
-                        logger.trace { "Sig ${signature.name} already found, skipping." }
+        for (classDef in classes) {
+            for (method in classDef.methods) {
+                for (methodSignature in signatures) {
+                    if (methodMap.containsKey(methodSignature.name)) { // method already found for this sig
                         continue
                     }
-                    logger.trace { "Resolving sig ${signature.name}: ${classNode.name} / ${method.name}" }
-                    val (r, sr) = cmp(method, signature)
+
+                    val (r, sr) = cmp(method, methodSignature)
                     if (!r || sr == null) {
-                        logger.trace { "Compare result for sig ${signature.name} has failed!" }
                         continue
                     }
-                    logger.trace { "Method for sig ${signature.name} found!" }
-                    methodMap[signature.name] = PatchData(
-                        classNode,
+
+                    methodMap[methodSignature.name] = MethodSignatureScanResult(
                         method,
                         PatternScanData(
                             // sadly we cannot create contracts for a data class, so we must assert
@@ -44,7 +39,6 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
 
         for (signature in signatures) {
             if (methodMap.containsKey(signature.name)) continue
-            logger.error { "Could not find method for sig ${signature.name}!" }
         }
 
         return methodMap
@@ -52,12 +46,11 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
 
     // These functions do not require the constructor values, so they can be static.
     companion object {
-        fun resolveMethod(classNode: ClassNode, signature: Signature): PatchData? {
+        fun resolveMethod(classNode: ClassDef, signature: MethodSignature): MethodSignatureScanResult? {
             for (method in classNode.methods) {
                 val (r, sr) = cmp(method, signature)
                 if (!r || sr == null) continue
-                return PatchData(
-                    classNode,
+                return MethodSignatureScanResult(
                     method,
                     PatternScanData(0, 0) // opcode list is always ignored.
                 )
@@ -65,92 +58,72 @@ internal class MethodResolver(private val classList: List<ClassNode>, private va
             return null
         }
 
-        private fun cmp(method: MethodNode, signature: Signature): Pair<Boolean, ScanResult?> {
-            signature.returns?.let { _ ->
-                val methodReturns = Type.getReturnType(method.desc).convertObject()
-                if (signature.returns != methodReturns) {
-                    logger.trace {
-                        """
-                            Comparing sig ${signature.name}: invalid return type:
-                            expected ${signature.returns},
-                            got $methodReturns
-                        """.trimIndent()
-                    }
+        private fun cmp(method: Method, signature: MethodSignature): Pair<Boolean, MethodResolverScanResult?> {
+            // TODO: compare as generic object if not primitive
+            signature.returnType?.let { _ ->
+                if (signature.returnType != method.returnType) {
                     return@cmp false to null
                 }
             }
 
-            signature.accessors?.let { _ ->
-                if (signature.accessors != method.access) {
-                    logger.trace {
-                        """
-                            Comparing sig ${signature.name}: invalid accessors:
-                            expected ${signature.accessors},
-                            got ${method.access}
-                        """.trimIndent()
-                    }
+            signature.accessFlags?.let { _ ->
+                if (signature.accessFlags != method.accessFlags) {
                     return@cmp false to null
                 }
             }
 
-            signature.parameters?.let { _ ->
-                val parameters = Type.getArgumentTypes(method.desc).convertObjects()
-                if (!signature.parameters.contentEquals(parameters)) {
-                    logger.trace {
-                        """
-                            Comparing sig ${signature.name}: invalid parameter types:
-                            expected ${signature.parameters.joinToString()}},
-                            got ${parameters.joinToString()}
-                        """.trimIndent()
-                    }
+            // TODO: compare as generic object if the parameter is not primitive
+            signature.methodParameters?.let { _ ->
+                if (signature.methodParameters != method.parameters) {
                     return@cmp false to null
                 }
             }
 
             signature.opcodes?.let { _ ->
-                val result = method.instructions.scanFor(signature.opcodes)
-                if (!result.found) {
-                    logger.trace { "Comparing sig ${signature.name}: invalid opcode pattern" }
-                    return@cmp false to null
-                }
-                return@cmp true to result
+                val result = method.implementation?.instructions?.scanFor(signature.opcodes)
+                return@cmp if (result != null && result.found) true to result else false to null
             }
 
-            return true to ScanResult(true)
+            return true to MethodResolverScanResult(true)
         }
     }
 }
 
-private operator fun ClassNode.component1() = this
-private operator fun ClassNode.component2() = this.methods
+private operator fun ClassDef.component1() = this
+private operator fun ClassDef.component2() = this.methods
 
-private fun InsnList.scanFor(pattern: IntArray): ScanResult {
-    for (i in 0 until this.size()) {
+private fun <T> MutableIterable<T>.scanFor(pattern: Array<Opcode>): MethodResolverScanResult {
+    // TODO: create var for count?
+    for (i in 0 until this.count()) {
         var occurrence = 0
-        while (i + occurrence < this.size()) {
-            val n = this[i + occurrence]
-            if (!n.shouldSkip() && n.opcode != pattern[occurrence]) break
+        while (i + occurrence < this.count()) {
+            val n = this.elementAt(i + occurrence)
+            if (!n.shouldSkip() && n != pattern[occurrence]) break
             if (++occurrence >= pattern.size) {
                 val current = i + occurrence
-                return ScanResult(true, current - pattern.size, current)
+                return MethodResolverScanResult(true, current - pattern.size, current)
             }
         }
     }
 
-    return ScanResult(false)
+    return MethodResolverScanResult(false)
 }
 
-private fun Type.convertObject(): Type {
-    return when (this.sort) {
-        Type.OBJECT -> ExtraTypes.Any
-        Type.ARRAY -> ExtraTypes.ArrayAny
-        else -> this
-    }
+// TODO: extend Opcode type, not T (requires a cast to Opcode)
+private fun <T> T.shouldSkip(): Boolean {
+    return this == Opcode.GOTO // TODO: and: this == AbstractInsnNode.LINE
 }
 
-private fun Array<Type>.convertObjects(): Array<Type> {
-    return this.map { it.convertObject() }.toTypedArray()
-}
+// TODO: use this somehow to compare types as generic objects if not primitive
+// private fun Type.convertObject(): Type {
+//     return when (this.sort) {
+//         Type.OBJECT -> ExtraTypes.Any
+//         Type.ARRAY -> ExtraTypes.ArrayAny
+//         else -> this
+//     }
+// }
+//
+// private fun Array<Type>.convertObjects(): Array<Type> {
+//     return this.map { it.convertObject() }.toTypedArray()
+// }
 
-private fun AbstractInsnNode.shouldSkip() =
-    type == AbstractInsnNode.LABEL || type == AbstractInsnNode.LINE

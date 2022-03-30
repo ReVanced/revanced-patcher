@@ -3,49 +3,51 @@ package app.revanced.patcher
 import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.resolver.MethodResolver
-import app.revanced.patcher.signature.Signature
-import app.revanced.patcher.util.Io
-import org.objectweb.asm.tree.ClassNode
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
+import app.revanced.patcher.signature.MethodSignature
+import lanchon.multidexlib2.BasicDexFileNamer
+import lanchon.multidexlib2.MultiDexIO
+import org.jf.dexlib2.Opcodes
+import org.jf.dexlib2.iface.ClassDef
+import org.jf.dexlib2.iface.DexFile
+import java.io.File
 
-/**
- * The Patcher class.
- * ***It is of utmost importance that the input and output streams are NEVER closed.***
- *
- * @param input the input stream to read from, must be a JAR
- * @param output the output stream to write to
- * @param signatures the signatures
- * @sample app.revanced.patcher.PatcherTest
- * @throws IOException if one of the streams are closed
- */
 class Patcher(
-    private val input: InputStream,
-    private val output: OutputStream,
-    signatures: Array<Signature>,
-) {
-    var cache: Cache
+    input: File,
+    private val output: File,
+    signatures: Array<MethodSignature>,
 
-    private var io: Io
-    private val patches = mutableListOf<Patch>()
+    ) {
+    private val cache: Cache
+    private val patches = mutableSetOf<Patch>()
 
     init {
-        val classes = mutableListOf<ClassNode>()
-        io = Io(input, output, classes)
-        io.readFromJar()
-        cache = Cache(classes, MethodResolver(classes, signatures).resolve())
+        // TODO: find a way to load all dex classes, the code below only loads the first .dex file
+        val dexFile = MultiDexIO.readDexFile(true, input, BasicDexFileNamer(), Opcodes.getDefault(), null)
+        cache = Cache(dexFile.classes, MethodResolver(dexFile.classes, signatures).resolve())
     }
 
-    /**
-     * Saves the output to the output stream.
-     * Calling this method will close the input and output streams,
-     * meaning this method should NEVER be called after.
-     *
-     * @throws IOException if one of the streams are closed
-     */
     fun save() {
-        io.saveAsJar()
+        val newDexFile = object : DexFile {
+            override fun getClasses(): MutableSet<out ClassDef> {
+                // TODO: find a way to return a set with a custom iterator
+                // TODO: the iterator would return the proxied class matching the current index of the list
+                // TODO: instead of the original class
+                for (classProxy in cache.classProxy) {
+                    if (!classProxy.proxyused) continue
+                    // TODO: merge this class with cache.classes somehow in an iterator
+                    classProxy.mutatedClass
+                }
+                return cache.classes.toMutableSet()
+            }
+
+            override fun getOpcodes(): Opcodes {
+                // TODO find a way to get the opcodes format
+                return Opcodes.getDefault()
+            }
+        }
+
+        // TODO: not sure about maxDexPoolSize & we should use the multithreading overload for writeDexFile
+        MultiDexIO.writeDexFile(true, output, BasicDexFileNamer(), newDexFile, 10, null)
     }
 
     fun addPatches(vararg patches: Patch) {
