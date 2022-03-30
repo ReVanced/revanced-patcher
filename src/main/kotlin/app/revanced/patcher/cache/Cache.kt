@@ -8,11 +8,15 @@ class Cache(
     internal val classes: Set<ClassDef>,
     val resolvedMethods: MethodMap
 ) {
-    internal val classProxy = mutableListOf<ClassProxy>()
+    internal val classProxy = mutableSetOf<ClassProxy>()
 
     fun findClass(predicate: (ClassDef) -> Boolean): ClassProxy? {
-        // if a class has been found with the given predicate,
-        val foundClass = classes.singleOrNull(predicate) ?: return null
+        // if we already proxied the class matching the predicate,
+        val proxiedClass = classProxy.singleOrNull{classProxy -> predicate(classProxy.immutableClass)}
+        // return that proxy
+        if (proxiedClass != null) return proxiedClass
+        // else search the original class list
+        val foundClass =  classes.singleOrNull(predicate) ?: return null
         // create a class proxy with the index of the class in the classes list
         // TODO: There might be a more elegant way to the comment above
         val classProxy = ClassProxy(foundClass, classes.indexOf(foundClass))

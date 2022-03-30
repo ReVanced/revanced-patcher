@@ -33,7 +33,7 @@ class Patcher(
                 // TODO: the iterator would return the proxied class matching the current index of the list
                 // TODO: instead of the original class
                 for (classProxy in cache.classProxy) {
-                    if (!classProxy.proxyused) continue
+                    if (!classProxy.proxyUsed) continue
                     // TODO: merge this class with cache.classes somehow in an iterator
                     classProxy.mutatedClass
                 }
