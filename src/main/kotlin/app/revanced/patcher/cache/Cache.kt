@@ -1,6 +1,6 @@
 package app.revanced.patcher.cache
 
-import app.revanced.patcher.cache.proxy.ClassProxy
+import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignatureScanResult
 import org.jf.dexlib2.iface.ClassDef
 

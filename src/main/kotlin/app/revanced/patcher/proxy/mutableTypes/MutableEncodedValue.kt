@@ -1,4 +1,4 @@
-package app.revanced.patcher.cache.proxy.mutableTypes
+package app.revanced.patcher.proxy.mutableTypes
 
 import org.jf.dexlib2.iface.value.EncodedValue
 

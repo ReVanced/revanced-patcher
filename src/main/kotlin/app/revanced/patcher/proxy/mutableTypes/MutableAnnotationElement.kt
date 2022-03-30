@@ -1,6 +1,6 @@
-package app.revanced.patcher.cache.proxy.mutableTypes
+package app.revanced.patcher.proxy.mutableTypes
 
-import app.revanced.patcher.cache.proxy.mutableTypes.MutableEncodedValue.Companion.toMutable
+import app.revanced.patcher.proxy.mutableTypes.MutableEncodedValue.Companion.toMutable
 import org.jf.dexlib2.base.BaseAnnotationElement
 import org.jf.dexlib2.iface.AnnotationElement
 import org.jf.dexlib2.iface.value.EncodedValue
