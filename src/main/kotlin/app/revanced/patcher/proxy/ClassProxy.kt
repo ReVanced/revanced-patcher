@@ -8,12 +8,12 @@ class ClassProxy(
     val immutableClass: ClassDef,
     val originalClassIndex: Int,
 ) {
-    internal var proxyused = false
+    internal var proxyUsed = false
     internal lateinit var mutatedClass: MutableClass
 
     fun resolve(): MutableClass {
-        if (!proxyused) {
-            proxyused = true
+        if (!proxyUsed) {
+            proxyUsed = true
             mutatedClass = MutableClass(immutableClass)
         }
         return mutatedClass
