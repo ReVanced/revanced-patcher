@@ -1,6 +1,6 @@
-package app.revanced.patcher.cache.proxy.mutableTypes
+package app.revanced.patcher.proxy.mutableTypes
 
-import app.revanced.patcher.cache.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
+import app.revanced.patcher.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
 import org.jf.dexlib2.base.BaseMethodParameter
 import org.jf.dexlib2.iface.MethodParameter
 

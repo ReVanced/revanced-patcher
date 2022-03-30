@@ -1,6 +1,6 @@
-package app.revanced.patcher.cache.proxy
+package app.revanced.patcher.proxy
 
-import app.revanced.patcher.cache.proxy.mutableTypes.MutableClass
+import app.revanced.patcher.proxy.mutableTypes.MutableClass
 import org.jf.dexlib2.iface.ClassDef
 
 
