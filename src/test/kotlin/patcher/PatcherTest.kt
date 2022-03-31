@@ -36,57 +36,55 @@ fun main() {
         signatures
     )
 
-    val mainMethodPatchViaClassProxy = object : Patch("main-method-patch-via-proxy") {
-        override fun execute(cache: Cache): PatchResult {
-            val proxy = cache.findClass { classDef ->
-                classDef.type.contains("XAdRemover")
-            } ?: return PatchResultError("Class 'XAdRemover' could not be found")
+    patcher.addPatches(
+        object : Patch("main-method-patch-via-proxy") {
+            override fun execute(cache: Cache): PatchResult {
+                val proxy = cache.findClass("XAdRemover")
+                    ?: return PatchResultError("Class 'XAdRemover' could not be found")
 
-            val xAdRemoverClass = proxy.resolve()
-            val hideReelMethod = xAdRemoverClass.methods.single { method -> method.name.contains("HideReel") }
+                val xAdRemoverClass = proxy.resolve()
+                val hideReelMethod = xAdRemoverClass.methods.single { method -> method.name.contains("HideReel") }
 
-            val readSettingsMethodRef = ImmutableMethodReference(
-                "Lfi/razerman/youtube/XGlobals;",
-                "ReadSettings",
-                emptyList(),
-                "V"
-            )
+                val readSettingsMethodRef = ImmutableMethodReference(
+                    "Lfi/razerman/youtube/XGlobals;",
+                    "ReadSettings",
+                    emptyList(),
+                    "V"
+                )
 
-            val instructions = hideReelMethod.implementation!!.instructions
+                val instructions = hideReelMethod.implementation!!.instructions
 
-            val readSettingsInstruction = BuilderInstruction35c(
-                Opcode.INVOKE_STATIC,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                readSettingsMethodRef
-            )
+                val readSettingsInstruction = BuilderInstruction35c(
+                    Opcode.INVOKE_STATIC,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    readSettingsMethodRef
+                )
 
-            // TODO: figure out control flow
-            //  otherwise the we would still jump over to the original instruction at index 21 instead to our new one
-            instructions.add(
-                21,
-                readSettingsInstruction
-            )
-            return PatchResultSuccess()
-        }
-    }
-
-    val mainMethodPatchViaSignature = object : Patch("main-method-patch-via-signature") {
-        override fun execute(cache: Cache): PatchResult {
-            val mainMethodMap = cache.resolvedMethods["main-method"]
-            mainMethodMap.definingClassProxy.immutableClass.methods.single { method ->
-                method.name == mainMethodMap.resolvedMethodName
+                // TODO: figure out control flow
+                //  otherwise the we would still jump over to the original instruction at index 21 instead to our new one
+                instructions.add(
+                    21,
+                    readSettingsInstruction
+                )
+                return PatchResultSuccess()
             }
-
-            return PatchResultSuccess()
+        },
+        object : Patch("main-method-patch-via-signature") {
+            override fun execute(cache: Cache): PatchResult {
+                val mainMethodMap = cache.resolvedMethods["main-method"]
+                mainMethodMap.definingClassProxy.immutableClass.methods.single { method ->
+                    method.name == mainMethodMap.resolvedMethodName
+                }
+                return PatchResultSuccess()
+            }
         }
-    }
+    )
 
-    patcher.addPatches(mainMethodPatchViaClassProxy, mainMethodPatchViaSignature)
     patcher.applyPatches()
     patcher.save()
 }
