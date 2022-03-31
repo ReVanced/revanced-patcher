@@ -29,12 +29,13 @@ class Patcher(
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
                 // this is a slow workaround for now
-                val mutableClassList = cache.classes.toMutableList()
+                val classes = cache.classes.toMutableSet()
                 cache.classProxy
                     .filter { it.proxyUsed }.forEach { proxy ->
-                        mutableClassList[proxy.originalIndex] = proxy.mutatedClass
+                        classes.remove(classes.elementAt(proxy.originalIndex))
+                        classes.add(proxy.mutatedClass)
                     }
-                return mutableClassList.toSet()
+                return classes
             }
 
             override fun getOpcodes(): Opcodes {
