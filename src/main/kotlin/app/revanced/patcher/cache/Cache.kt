@@ -19,14 +19,13 @@ class Cache(
      */
     fun findClass(predicate: (ClassDef) -> Boolean): ClassProxy? {
         // if we already proxied the class matching the predicate,
-        val proxiedClass = classProxy.singleOrNull { classProxy -> predicate(classProxy.immutableClass) }
+        val proxiedClass = classProxy.find { predicate(it.immutableClass) }
         // return that proxy
         if (proxiedClass != null) return proxiedClass
         // else search the original class list
-        val foundClass = classes.singleOrNull(predicate) ?: return null
+        val (foundClass, index) = classes.findIndexed(predicate) ?: return null
         // create a class proxy with the index of the class in the classes list
-        // TODO: There might be a more elegant way to the comment above
-        val classProxy = ClassProxy(foundClass, classes.indexOf(foundClass))
+        val classProxy = ClassProxy(foundClass, index)
         // add it to the cache and
         this.classProxy.add(classProxy)
         // return the proxy class
@@ -40,4 +39,22 @@ class MethodMap : LinkedHashMap<String, SignatureResolverResult>() {
     }
 }
 
-class MethodNotFoundException(s: String) : Exception(s)
+internal class MethodNotFoundException(s: String) : Exception(s)
+
+internal inline fun <T> Iterable<T>.find(predicate: (T) -> Boolean): T? {
+    for (element in this) {
+        if (predicate(element)) {
+            return element
+        }
+    }
+    return null
+}
+
+internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair<T, Int>? {
+    for ((index, element) in this.withIndex()) {
+        if (predicate(element)) {
+            return element to index
+        }
+    }
+    return null
+}
