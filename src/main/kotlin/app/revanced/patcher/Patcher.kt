@@ -23,12 +23,12 @@ class Patcher(
     input: File,
     private val output: File,
     signatures: Array<MethodSignature>,
-    ) {
+) {
     private val cache: Cache
     private val patches = mutableSetOf<Patch>()
 
     init {
-        val dexFile = MultiDexIO.readDexFile(true, input, BasicDexFileNamer(), Opcodes.getDefault(), null)
+        val dexFile = MultiDexIO.readDexFile(true, input, BasicDexFileNamer(), null, null)
         cache = Cache(dexFile.classes, SignatureResolver(dexFile.classes, signatures).resolve())
     }
 
