@@ -13,6 +13,10 @@ class Cache(
     //  if the class proxy already exists in the cached proxy list below
     internal val classProxy = mutableSetOf<ClassProxy>()
 
+    /**
+     * Find a class by a given predicate
+     * @return A proxy for the first class that matches the predicate
+     */
     fun findClass(predicate: (ClassDef) -> Boolean): ClassProxy? {
         // if we already proxied the class matching the predicate,
         val proxiedClass = classProxy.singleOrNull { classProxy -> predicate(classProxy.immutableClass) }
