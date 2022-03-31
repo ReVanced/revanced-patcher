@@ -2,6 +2,7 @@ package patcher
 
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.cache.Cache
+import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultError
@@ -18,7 +19,7 @@ fun main() {
         MethodSignature(
             "main-method",
             "V",
-            AccessFlags.STATIC.value or AccessFlags.PUBLIC.value,
+            AccessFlags.STATIC or AccessFlags.PUBLIC,
             listOf("[O"),
             arrayOf(
                 Opcode.SGET_OBJECT,
@@ -84,6 +85,7 @@ fun main() {
             return PatchResultSuccess()
         }
     }
+
     patcher.addPatches(mainMethodPatchViaClassProxy, mainMethodPatchViaSignature)
     patcher.applyPatches()
     patcher.save()
