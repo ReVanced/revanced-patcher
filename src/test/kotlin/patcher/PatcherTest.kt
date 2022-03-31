@@ -1,5 +1,6 @@
-package app.revanced.patcher
+package patcher
 
+import app.revanced.patcher.Patcher
 import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
@@ -8,12 +9,9 @@ import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.signature.MethodSignature
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcode
-import org.jf.dexlib2.builder.instruction.BuilderInstruction21c
-import org.jf.dexlib2.iface.instruction.formats.Instruction21c
-import org.jf.dexlib2.iface.reference.FieldReference
+import org.jf.dexlib2.builder.instruction.BuilderInstruction35c
 import org.jf.dexlib2.immutable.reference.ImmutableMethodReference
 import java.io.File
-
 
 fun main() {
     val signatures = arrayOf(
@@ -33,40 +31,57 @@ fun main() {
 
     val patcher = Patcher(
         File("black.apk"),
-        File("folder/"),
+        File("./"),
         signatures
     )
 
     val mainMethodPatchViaClassProxy = object : Patch("main-method-patch-via-proxy") {
         override fun execute(cache: Cache): PatchResult {
             val proxy = cache.findClass { classDef ->
-                classDef.methods.any { method ->
-                    method.name == "main"
-                }
-            } ?: return PatchResultError("Class with method 'mainMethod' could not be found")
+                classDef.type.contains("XAdRemover")
+            } ?: return PatchResultError("Class 'XAdRemover' could not be found")
 
-            val mainMethodClass = proxy.resolve()
-            val mainMethod = mainMethodClass.methods.single { method -> method.name == "main" }
+            val xAdRemoverClass = proxy.resolve()
+            val hideReelMethod = xAdRemoverClass.methods.single { method -> method.name.contains("HideReel") }
 
-            val hideReelMethodRef = ImmutableMethodReference(
-                "Lfi/razerman/youtube/XAdRemover;",
-                "HideReel",
-                listOf("Landroid/view/View;"),
+            val readSettingsMethodRef = ImmutableMethodReference(
+                "Lfi/razerman/youtube/XGlobals;",
+                "ReadSettings",
+                emptyList(),
                 "V"
             )
 
-            val mainMethodInstructions = mainMethod.implementation!!.instructions
-            val printStreamFieldRef = (mainMethodInstructions.first() as Instruction21c).reference as FieldReference
-            // TODO: not sure how to use the registers yet, find a way
-            mainMethodInstructions.add(BuilderInstruction21c(Opcode.SGET_OBJECT, 0, printStreamFieldRef))
+            val instructions = hideReelMethod.implementation!!.instructions
+
+            val readSettingsInstruction = BuilderInstruction35c(
+                Opcode.INVOKE_STATIC,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                readSettingsMethodRef
+            )
+
+            // TODO: figure out control flow
+            //  otherwise the we would still jump over to the original instruction at index 21 instead to our new one
+            instructions.add(
+                21,
+                readSettingsInstruction
+            )
             return PatchResultSuccess()
         }
     }
 
     val mainMethodPatchViaSignature = object : Patch("main-method-patch-via-signature") {
         override fun execute(cache: Cache): PatchResult {
-            cache.resolvedMethods["main-method"].method
-            return  PatchResultSuccess()
+            val mainMethodMap = cache.resolvedMethods["main-method"]
+            mainMethodMap.definingClassProxy.immutableClass.methods.single { method ->
+                method.name == mainMethodMap.resolvedMethodName
+            }
+
+            return PatchResultSuccess()
         }
     }
     patcher.addPatches(mainMethodPatchViaClassProxy, mainMethodPatchViaSignature)

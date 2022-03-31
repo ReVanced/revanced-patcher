@@ -1,43 +1,51 @@
 package app.revanced.patcher.resolver
 
 import app.revanced.patcher.cache.MethodMap
-import app.revanced.patcher.signature.MethodSignatureScanResult
-import app.revanced.patcher.signature.PatternScanData
+import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignature
+import app.revanced.patcher.signature.PatternScanResult
+import app.revanced.patcher.signature.SignatureResolverResult
 import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 
-// TODO: add logger
-internal class MethodResolver(private val classes: Set<ClassDef>, private val signatures: Array<MethodSignature>) {
+// TODO: add logger back
+internal class SignatureResolver(
+    private val classes: Set<ClassDef>,
+    private val methodSignatures: Array<MethodSignature>
+) {
     fun resolve(): MethodMap {
         val methodMap = MethodMap()
 
-        for (classDef in classes) {
-            for (method in classDef.methods) {
-                for (methodSignature in signatures) {
-                    if (methodMap.containsKey(methodSignature.name)) { // method already found for this sig
+        for ((index, classDef) in classes.withIndex()) {
+            for (signature in methodSignatures) {
+                if (methodMap.containsKey(signature.name)) {
+                    continue
+                }
+
+                for (method in classDef.methods) {
+                    val (isMatch, patternScanData) = compareSignatureToMethod(signature, method)
+
+                    if (!isMatch || patternScanData == null) {
                         continue
                     }
 
-                    val (r, sr) = cmp(method, methodSignature)
-                    if (!r || sr == null) {
-                        continue
-                    }
-
-                    methodMap[methodSignature.name] = MethodSignatureScanResult(
-                        method,
-                        PatternScanData(
-                            // sadly we cannot create contracts for a data class, so we must assert
-                            sr.startIndex!!,
-                            sr.endIndex!!
+                    // create class proxy, in case a patch needs mutability
+                    val classProxy = ClassProxy(classDef, index)
+                    methodMap[signature.name] = SignatureResolverResult(
+                        classProxy,
+                        method.name,
+                        PatternScanResult(
+                            patternScanData.startIndex!!,
+                            patternScanData.endIndex!!
                         )
                     )
                 }
             }
         }
 
-        for (signature in signatures) {
+        // TODO: remove?
+        for (signature in methodSignatures) {
             if (methodMap.containsKey(signature.name)) continue
         }
 
@@ -46,45 +54,49 @@ internal class MethodResolver(private val classes: Set<ClassDef>, private val si
 
     // These functions do not require the constructor values, so they can be static.
     companion object {
-        fun resolveMethod(classNode: ClassDef, signature: MethodSignature): MethodSignatureScanResult? {
-            for (method in classNode.methods) {
-                val (r, sr) = cmp(method, signature)
+        fun resolveFromProxy(classProxy: ClassProxy, signature: MethodSignature): SignatureResolverResult? {
+            for (method in classProxy.immutableClass.methods) {
+                val (r, sr) = compareSignatureToMethod(signature, method)
                 if (!r || sr == null) continue
-                return MethodSignatureScanResult(
-                    method,
-                    PatternScanData(0, 0) // opcode list is always ignored.
+                return SignatureResolverResult(
+                    classProxy,
+                    method.name,
+                    null
                 )
             }
             return null
         }
 
-        private fun cmp(method: Method, signature: MethodSignature): Pair<Boolean, MethodResolverScanResult?> {
+        private fun compareSignatureToMethod(
+            signature: MethodSignature,
+            method: Method
+        ): Pair<Boolean, PatternScanData?> {
             // TODO: compare as generic object if not primitive
             signature.returnType?.let { _ ->
                 if (signature.returnType != method.returnType) {
-                    return@cmp false to null
+                    return@compareSignatureToMethod false to null
                 }
             }
 
             signature.accessFlags?.let { _ ->
                 if (signature.accessFlags != method.accessFlags) {
-                    return@cmp false to null
+                    return@compareSignatureToMethod false to null
                 }
             }
 
             // TODO: compare as generic object if the parameter is not primitive
             signature.methodParameters?.let { _ ->
                 if (signature.methodParameters != method.parameters) {
-                    return@cmp false to null
+                    return@compareSignatureToMethod false to null
                 }
             }
 
             signature.opcodes?.let { _ ->
                 val result = method.implementation?.instructions?.scanFor(signature.opcodes)
-                return@cmp if (result != null && result.found) true to result else false to null
+                return@compareSignatureToMethod if (result != null && result.found) true to result else false to null
             }
 
-            return true to MethodResolverScanResult(true)
+            return true to PatternScanData(true)
         }
     }
 }
@@ -92,7 +104,7 @@ internal class MethodResolver(private val classes: Set<ClassDef>, private val si
 private operator fun ClassDef.component1() = this
 private operator fun ClassDef.component2() = this.methods
 
-private fun <T> MutableIterable<T>.scanFor(pattern: Array<Opcode>): MethodResolverScanResult {
+private fun <T> MutableIterable<T>.scanFor(pattern: Array<Opcode>): PatternScanData {
     // TODO: create var for count?
     for (i in 0 until this.count()) {
         var occurrence = 0
@@ -101,12 +113,12 @@ private fun <T> MutableIterable<T>.scanFor(pattern: Array<Opcode>): MethodResolv
             if (!n.shouldSkip() && n != pattern[occurrence]) break
             if (++occurrence >= pattern.size) {
                 val current = i + occurrence
-                return MethodResolverScanResult(true, current - pattern.size, current)
+                return PatternScanData(true, current - pattern.size, current)
             }
         }
     }
 
-    return MethodResolverScanResult(false)
+    return PatternScanData(false)
 }
 
 // TODO: extend Opcode type, not T (requires a cast to Opcode)
