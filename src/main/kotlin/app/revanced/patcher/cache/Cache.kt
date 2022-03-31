@@ -14,6 +14,12 @@ class Cache(
     internal val classProxy = mutableSetOf<ClassProxy>()
 
     /**
+     * Find a class by a given class name
+     * @return A proxy for the first class that matches the class name
+     */
+    fun findClass(className: String) = findClass { it.type.contains(className) }
+
+    /**
      * Find a class by a given predicate
      * @return A proxy for the first class that matches the predicate
      */
