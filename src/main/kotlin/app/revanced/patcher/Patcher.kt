@@ -2,7 +2,7 @@ package app.revanced.patcher
 
 import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.resolver.MethodResolver
+import app.revanced.patcher.resolver.SignatureResolver
 import app.revanced.patcher.signature.MethodSignature
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.MultiDexIO
@@ -21,23 +21,20 @@ class Patcher(
     private val patches = mutableSetOf<Patch>()
 
     init {
-        // TODO: find a way to load all dex classes, the code below only loads the first .dex file
         val dexFile = MultiDexIO.readDexFile(true, input, BasicDexFileNamer(), Opcodes.getDefault(), null)
-        cache = Cache(dexFile.classes, MethodResolver(dexFile.classes, signatures).resolve())
+        cache = Cache(dexFile.classes, SignatureResolver(dexFile.classes, signatures).resolve())
     }
 
     fun save() {
         val newDexFile = object : DexFile {
-            override fun getClasses(): MutableSet<out ClassDef> {
-                // TODO: find a way to return a set with a custom iterator
-                // TODO: the iterator would return the proxied class matching the current index of the list
-                // TODO: instead of the original class
-                for (classProxy in cache.classProxy) {
-                    if (!classProxy.proxyUsed) continue
-                    // TODO: merge this class with cache.classes somehow in an iterator
-                    classProxy.mutatedClass
-                }
-                return cache.classes.toMutableSet()
+            override fun getClasses(): Set<ClassDef> {
+                // this is a slow workaround for now
+                val mutableClassList = cache.classes.toMutableList()
+                cache.classProxy
+                    .filter { it.proxyUsed }.forEach { proxy ->
+                        mutableClassList[proxy.originalIndex] = proxy.mutatedClass
+                    }
+                return mutableClassList.toSet()
             }
 
             override fun getOpcodes(): Opcodes {
@@ -46,8 +43,8 @@ class Patcher(
             }
         }
 
-        // TODO: not sure about maxDexPoolSize & we should use the multithreading overload for writeDexFile
-        MultiDexIO.writeDexFile(true, output, BasicDexFileNamer(), newDexFile, 10, null)
+        // TODO: we should use the multithreading capable overload for writeDexFile
+        MultiDexIO.writeDexFile(true, output, BasicDexFileNamer(), newDexFile, 50000, null)
     }
 
     fun addPatches(vararg patches: Patch) {
@@ -56,6 +53,7 @@ class Patcher(
 
     fun applyPatches(stopOnError: Boolean = false): Map<String, Result<Nothing?>> {
         return buildMap {
+            // TODO: after each patch execution we could clear left overs like proxied classes to safe memory
             for (patch in patches) {
                 val result: Result<Nothing?> = try {
                     val pr = patch.execute(cache)
