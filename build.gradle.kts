@@ -12,9 +12,10 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("com.github.lanchon.dexpatcher:multidexlib2:2.3.4")
-    implementation("io.github.microutils:kotlin-logging:2.1.21")
-    testImplementation("ch.qos.logback:logback-classic:1.2.11") // use your own logger!
+
+    implementation("com.github.lanchon.dexpatcher:multidexlib2:2.3.4.r2")
+    implementation("org.smali:smali:2.3.4")
+
     testImplementation(kotlin("test"))
 }
 
