@@ -11,10 +11,10 @@ class MutableField(field: Field) : Field, BaseFieldReference() {
     private var type = field.type
     private var accessFlags = field.accessFlags
     private var initialValue = field.initialValue?.toMutable()
-    private val annotations = field.annotations.map { annotation -> annotation.toMutable() }.toMutableSet()
+    private val _annotations by lazy { field.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
 
     fun setDefiningClass(definingClass: String) {
-        this.definingClass
+        this.definingClass = definingClass
     }
 
     fun setName(name: String) {
@@ -46,7 +46,7 @@ class MutableField(field: Field) : Field, BaseFieldReference() {
     }
 
     override fun getAnnotations(): MutableSet<MutableAnnotation> {
-        return this.annotations
+        return this._annotations
     }
 
     override fun getAccessFlags(): Int {

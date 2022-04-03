@@ -19,7 +19,7 @@ class ClassProxy(
 
     /**
      * Creates and returns a mutable clone of the original class
-     * A patch should always use the original immutable class reference to avoid unnucessary allocations for the mutable class
+     * A patch should always use the original immutable class reference to avoid unnecessary allocations for the mutable class
      */
     fun resolve(): MutableClass {
         if (!proxyUsed) {

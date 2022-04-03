@@ -7,14 +7,14 @@ import org.jf.dexlib2.iface.Annotation
 class MutableAnnotation(annotation: Annotation) : BaseAnnotation() {
     private val visibility = annotation.visibility
     private val type = annotation.type
-    private val elements = annotation.elements.map { element -> element.toMutable() }.toMutableSet()
+    private val _elements by lazy { annotation.elements.map { element -> element.toMutable() }.toMutableSet() }
 
     override fun getType(): String {
         return type
     }
 
     override fun getElements(): MutableSet<MutableAnnotationElement> {
-        return elements
+        return _elements
     }
 
     override fun getVisibility(): Int {
