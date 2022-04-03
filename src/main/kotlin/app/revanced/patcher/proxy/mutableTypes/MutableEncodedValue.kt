@@ -11,7 +11,6 @@ class MutableEncodedValue(encodedValue: EncodedValue) : EncodedValue {
 
     override fun compareTo(other: EncodedValue): Int {
         return valueType - other.valueType
-
     }
 
     override fun getValueType(): Int {

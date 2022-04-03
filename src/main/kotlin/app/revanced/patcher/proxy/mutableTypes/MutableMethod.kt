@@ -14,9 +14,9 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
 
     // Create own mutable MethodImplementation (due to not being able to change members like register count)
     private var implementation = method.implementation?.let { MutableMethodImplementation(it) }
-    private val annotations = method.annotations.map { annotation -> annotation.toMutable() }.toMutableSet()
-    private val parameters = method.parameters.map { parameter -> parameter.toMutable() }.toMutableList()
-    private val parameterTypes = method.parameterTypes.toMutableList()
+    private val _annotations by lazy { method.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
+    private val _parameters by lazy { method.parameters.map { parameter -> parameter.toMutable() }.toMutableList() }
+    private val _parameterTypes by lazy { method.parameterTypes.toMutableList() }
 
     override fun getDefiningClass(): String {
         return this.definingClass
@@ -27,7 +27,7 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
     }
 
     override fun getParameterTypes(): MutableList<CharSequence> {
-        return parameterTypes
+        return _parameterTypes
     }
 
     override fun getReturnType(): String {
@@ -35,7 +35,7 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
     }
 
     override fun getAnnotations(): MutableSet<MutableAnnotation> {
-        return annotations
+        return _annotations
     }
 
     override fun getAccessFlags(): Int {
@@ -43,7 +43,7 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
     }
 
     override fun getParameters(): MutableList<MutableMethodParameter> {
-        return parameters
+        return _parameters
     }
 
     override fun getImplementation(): MutableMethodImplementation? {
