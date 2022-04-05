@@ -5,7 +5,7 @@ import app.revanced.patcher.signature.SignatureResolverResult
 import org.jf.dexlib2.iface.ClassDef
 
 class Cache(
-    internal val classes: Set<ClassDef>,
+    internal val classes: MutableSet<ClassDef>,
     val resolvedMethods: MethodMap
 ) {
     // TODO: currently we create ClassProxies at multiple places, which is why we could have merge conflicts

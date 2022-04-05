@@ -29,7 +29,7 @@ class Patcher(
 
     init {
         val dexFile = MultiDexIO.readDexFile(true, input, BasicDexFileNamer(), null, null)
-        cache = Cache(dexFile.classes, SignatureResolver(dexFile.classes, signatures).resolve())
+        cache = Cache(dexFile.classes.toMutableSet(), SignatureResolver(dexFile.classes, signatures).resolve())
     }
 
     /**
@@ -39,13 +39,13 @@ class Patcher(
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
                 // this is a slow workaround for now
-                val classes = cache.classes.toMutableSet()
                 cache.classProxy
                     .filter { it.proxyUsed }.forEach { proxy ->
-                        classes.remove(classes.elementAt(proxy.originalIndex))
-                        classes.add(proxy.mutatedClass)
+                        cache.classes.remove(cache.classes.elementAt(proxy.originalIndex))
+                        cache.classes.add(proxy.mutatedClass)
                     }
-                return classes
+
+                return setOf(cache.classProxy.first().mutatedClass)
             }
 
             override fun getOpcodes(): Opcodes {

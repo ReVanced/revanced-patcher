@@ -3,8 +3,10 @@ package app.revanced.patcher.proxy.mutableTypes
 import app.revanced.patcher.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import com.google.common.collect.Iterables
 import org.jf.dexlib2.base.reference.BaseTypeReference
 import org.jf.dexlib2.iface.ClassDef
+import org.jf.dexlib2.util.MethodUtil
 
 class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
     // Class
@@ -14,17 +16,23 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
     private var superclass = classDef.superclass
 
     private val _interfaces by lazy { classDef.interfaces.toMutableList() }
-    private val _annotations by lazy { classDef.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
+    private val _annotations by lazy {
+        classDef.annotations.map { annotation -> annotation.toMutable() }.toMutableSet()
+    }
 
     // Methods
     private val _methods by lazy { classDef.methods.map { method -> method.toMutable() }.toMutableSet() }
-    private val _directMethods by lazy { classDef.directMethods.map { directMethod -> directMethod.toMutable() }.toMutableSet() }
-    private val _virtualMethods by lazy { classDef.virtualMethods.map { virtualMethod -> virtualMethod.toMutable() }.toMutableSet() }
+    private val _directMethods by lazy { Iterables.filter(_methods, MethodUtil.METHOD_IS_DIRECT).toMutableSet() }
+    private val _virtualMethods by lazy { Iterables.filter(_methods, MethodUtil.METHOD_IS_VIRTUAL).toMutableSet() }
 
     // Fields
     private val _fields by lazy { classDef.fields.map { field -> field.toMutable() }.toMutableSet() }
-    private val _staticFields by lazy { classDef.staticFields.map { staticField -> staticField.toMutable() }.toMutableSet() }
-    private val _instanceFields by lazy { classDef.instanceFields.map { instanceFields -> instanceFields.toMutable() }.toMutableSet() }
+    private val _staticFields by lazy {
+        classDef.staticFields.map { staticField -> staticField.toMutable() }.toMutableSet()
+    }
+    private val _instanceFields by lazy {
+        classDef.instanceFields.map { instanceFields -> instanceFields.toMutable() }.toMutableSet()
+    }
 
     fun setType(type: String) {
         this.type = type

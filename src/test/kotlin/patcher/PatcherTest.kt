@@ -11,6 +11,7 @@ import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.smali.asInstruction
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcode
+import org.jf.dexlib2.builder.instruction.BuilderInstruction21t
 import org.jf.dexlib2.builder.instruction.BuilderInstruction35c
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.immutable.reference.ImmutableMethodReference
@@ -51,12 +52,12 @@ fun main() {
                     it.name.contains("HideReel")
                 }!!
 
-                val instructions = hideReelMethod.implementation!!
+                val implementation = hideReelMethod.implementation!!
 
-                val readInsn =
+                val readSettingsInstructionCompiled =
                     "invoke-static { }, Lfi/razerman/youtube/XGlobals;->ReadSettings()V"
                         .asInstruction() as BuilderInstruction35c
-                val testInsn = BuilderInstruction35c(
+                val readSettingsInstructionAssembled = BuilderInstruction35c(
                     Opcode.INVOKE_STATIC,
                     0, 0, 0, 0, 0, 0,
                     ImmutableMethodReference(
@@ -67,30 +68,40 @@ fun main() {
                     )
                 )
 
-                assertEquals(testInsn.opcode, readInsn.opcode)
-                assertEquals(testInsn.referenceType, readInsn.referenceType)
-                assertEquals(testInsn.registerCount, readInsn.registerCount)
-                assertEquals(testInsn.registerC, readInsn.registerC)
-                assertEquals(testInsn.registerD, readInsn.registerD)
-                assertEquals(testInsn.registerE, readInsn.registerE)
-                assertEquals(testInsn.registerF, readInsn.registerF)
-                assertEquals(testInsn.registerG, readInsn.registerG)
+                assertEquals(readSettingsInstructionAssembled.opcode, readSettingsInstructionCompiled.opcode)
+                assertEquals(
+                    readSettingsInstructionAssembled.referenceType,
+                    readSettingsInstructionCompiled.referenceType
+                )
+                assertEquals(
+                    readSettingsInstructionAssembled.registerCount,
+                    readSettingsInstructionCompiled.registerCount
+                )
+                assertEquals(readSettingsInstructionAssembled.registerC, readSettingsInstructionCompiled.registerC)
+                assertEquals(readSettingsInstructionAssembled.registerD, readSettingsInstructionCompiled.registerD)
+                assertEquals(readSettingsInstructionAssembled.registerE, readSettingsInstructionCompiled.registerE)
+                assertEquals(readSettingsInstructionAssembled.registerF, readSettingsInstructionCompiled.registerF)
+                assertEquals(readSettingsInstructionAssembled.registerG, readSettingsInstructionCompiled.registerG)
                 run {
-                    val tref = testInsn.reference as MethodReference
-                    val rref = readInsn.reference as MethodReference
+                    val compiledRef = readSettingsInstructionCompiled.reference as MethodReference
+                    val assembledRef = readSettingsInstructionAssembled.reference as MethodReference
 
-                    assertEquals(tref.name, rref.name)
-                    assertEquals(tref.definingClass, rref.definingClass)
-                    assertEquals(tref.returnType, rref.returnType)
-                    assertContentEquals(tref.parameterTypes, rref.parameterTypes)
+                    assertEquals(assembledRef.name, compiledRef.name)
+                    assertEquals(assembledRef.definingClass, compiledRef.definingClass)
+                    assertEquals(assembledRef.returnType, compiledRef.returnType)
+                    assertContentEquals(assembledRef.parameterTypes, compiledRef.parameterTypes)
                 }
 
-                // TODO: figure out control flow
-                //  otherwise the we would still jump over to the original instruction at index 21 instead to our new one
-                instructions.addInstruction(
+                implementation.addInstruction(
                     21,
-                    readInsn
+                    readSettingsInstructionCompiled
                 )
+
+                // fix labels
+                // create a new label for the instruction we want to jump to
+                val newLabel = implementation.newLabelForIndex(21)
+                // replace all instances of the old label with the new one
+                implementation.replaceInstruction(4, BuilderInstruction21t(Opcode.IF_NEZ, 0, newLabel))
                 return PatchResultSuccess()
             }
         },
