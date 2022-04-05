@@ -8,6 +8,7 @@ import app.revanced.patcher.signature.SignatureResolverResult
 import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
+import org.jf.dexlib2.iface.instruction.Instruction
 
 // TODO: add logger back
 internal class SignatureResolver(
@@ -24,21 +25,14 @@ internal class SignatureResolver(
                 }
 
                 for (method in classDef.methods) {
-                    val (isMatch, patternScanData) = compareSignatureToMethod(signature, method)
-
-                    if (!isMatch || patternScanData == null) {
-                        continue
-                    }
+                    val patternScanData = compareSignatureToMethod(signature, method) ?: continue
 
                     // create class proxy, in case a patch needs mutability
                     val classProxy = ClassProxy(classDef, index)
                     methodMap[signature.name] = SignatureResolverResult(
                         classProxy,
                         method.name,
-                        PatternScanResult(
-                            patternScanData.startIndex!!,
-                            patternScanData.endIndex!!
-                        )
+                        patternScanData
                     )
                 }
             }
@@ -56,12 +50,11 @@ internal class SignatureResolver(
     companion object {
         fun resolveFromProxy(classProxy: ClassProxy, signature: MethodSignature): SignatureResolverResult? {
             for (method in classProxy.immutableClass.methods) {
-                val (r, sr) = compareSignatureToMethod(signature, method)
-                if (!r || sr == null) continue
+                val result = compareSignatureToMethod(signature, method) ?: continue
                 return SignatureResolverResult(
                     classProxy,
                     method.name,
-                    null
+                    result
                 )
             }
             return null
@@ -70,33 +63,29 @@ internal class SignatureResolver(
         private fun compareSignatureToMethod(
             signature: MethodSignature,
             method: Method
-        ): Pair<Boolean, PatternScanData?> {
-            // TODO: compare as generic object if not primitive
+        ): PatternScanResult? {
             signature.returnType?.let { _ ->
-                if (signature.returnType != method.returnType) {
-                    return@compareSignatureToMethod false to null
-                }
+                if (!method.returnType.startsWith(signature.returnType)) return@compareSignatureToMethod null
             }
 
             signature.accessFlags?.let { _ ->
                 if (signature.accessFlags != method.accessFlags) {
-                    return@compareSignatureToMethod false to null
+                    return@compareSignatureToMethod null
                 }
             }
 
-            // TODO: compare as generic object if the parameter is not primitive
             signature.methodParameters?.let { _ ->
-                if (signature.methodParameters != method.parameters) {
-                    return@compareSignatureToMethod false to null
+                if (signature.methodParameters.all { signatureMethodParameter ->
+                        method.parameterTypes.any { methodParameter ->
+                            methodParameter.startsWith(signatureMethodParameter)
+                        }
+                    }) {
+                    return@compareSignatureToMethod null
                 }
             }
 
-            signature.opcodes?.let { _ ->
-                val result = method.implementation?.instructions?.scanFor(signature.opcodes)
-                return@compareSignatureToMethod if (result != null && result.found) true to result else false to null
-            }
-
-            return true to PatternScanData(true)
+            return if (signature.opcodes == null) null
+            else method.implementation?.instructions?.scanFor(signature.opcodes)!!
         }
     }
 }
@@ -104,38 +93,17 @@ internal class SignatureResolver(
 private operator fun ClassDef.component1() = this
 private operator fun ClassDef.component2() = this.methods
 
-private fun <T> MutableIterable<T>.scanFor(pattern: Array<Opcode>): PatternScanData {
+private fun MutableIterable<Instruction>.scanFor(pattern: Array<Opcode>): PatternScanResult? {
     // TODO: create var for count?
-    for (i in 0 until this.count()) {
-        var occurrence = 0
-        while (i + occurrence < this.count()) {
-            val n = this.elementAt(i + occurrence)
-            if (!n.shouldSkip() && n != pattern[occurrence]) break
-            if (++occurrence >= pattern.size) {
-                val current = i + occurrence
-                return PatternScanData(true, current - pattern.size, current)
-            }
+    for (instructionIndex in 0 until this.count()) {
+        var patternIndex = 0
+        while (instructionIndex + patternIndex < this.count()) {
+            if (this.elementAt(instructionIndex + patternIndex).opcode != pattern[patternIndex]) break
+            if (++patternIndex < pattern.size) continue
+
+            return PatternScanResult(instructionIndex, instructionIndex + patternIndex)
         }
     }
 
-    return PatternScanData(false)
+    return null
 }
-
-// TODO: extend Opcode type, not T (requires a cast to Opcode)
-private fun <T> T.shouldSkip(): Boolean {
-    return this == Opcode.GOTO // TODO: and: this == AbstractInsnNode.LINE
-}
-
-// TODO: use this somehow to compare types as generic objects if not primitive
-// private fun Type.convertObject(): Type {
-//     return when (this.sort) {
-//         Type.OBJECT -> ExtraTypes.Any
-//         Type.ARRAY -> ExtraTypes.ArrayAny
-//         else -> this
-//     }
-// }
-//
-// private fun Array<Type>.convertObjects(): Array<Type> {
-//     return this.map { it.convertObject() }.toTypedArray()
-// }
-
