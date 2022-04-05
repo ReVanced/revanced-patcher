@@ -6,6 +6,7 @@ import app.revanced.patcher.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import com.google.common.collect.Iterables
 import org.jf.dexlib2.base.reference.BaseTypeReference
 import org.jf.dexlib2.iface.ClassDef
+import org.jf.dexlib2.util.FieldUtil
 import org.jf.dexlib2.util.MethodUtil
 
 class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
@@ -27,12 +28,8 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
 
     // Fields
     private val _fields by lazy { classDef.fields.map { field -> field.toMutable() }.toMutableSet() }
-    private val _staticFields by lazy {
-        classDef.staticFields.map { staticField -> staticField.toMutable() }.toMutableSet()
-    }
-    private val _instanceFields by lazy {
-        classDef.instanceFields.map { instanceFields -> instanceFields.toMutable() }.toMutableSet()
-    }
+    private val _staticFields by lazy { Iterables.filter(_fields, FieldUtil.FIELD_IS_STATIC).toMutableSet() }
+    private val _instanceFields by lazy {Iterables.filter(_fields, FieldUtil.FIELD_IS_INSTANCE) .toMutableSet() }
 
     fun setType(type: String) {
         this.type = type
