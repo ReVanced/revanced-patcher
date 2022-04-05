@@ -9,7 +9,9 @@ class MutableMethodParameter(parameter: MethodParameter) : MethodParameter, Base
     private var type = parameter.type
     private var name = parameter.name
     private var signature = parameter.signature
-    private val _annotations by lazy { parameter.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
+    private val _annotations by lazy {
+        parameter.annotations.map { annotation -> annotation.toMutable() }.toMutableSet()
+    }
 
     override fun getType(): String {
         return type
