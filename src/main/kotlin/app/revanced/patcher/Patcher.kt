@@ -45,7 +45,7 @@ class Patcher(
                         cache.classes.add(proxy.mutatedClass)
                     }
 
-                return setOf(cache.classProxy.first().mutatedClass)
+                return setOf(cache.classes)
             }
 
             override fun getOpcodes(): Opcodes {
