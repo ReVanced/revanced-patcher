@@ -31,8 +31,8 @@ internal class SignatureResolver(
                     val classProxy = ClassProxy(classDef, index)
                     methodMap[signature.name] = SignatureResolverResult(
                         classProxy,
+                        patternScanData,
                         method.name,
-                        patternScanData
                     )
                 }
             }
@@ -53,8 +53,8 @@ internal class SignatureResolver(
                 val result = compareSignatureToMethod(signature, method) ?: continue
                 return SignatureResolverResult(
                     classProxy,
+                    result,
                     method.name,
-                    result
                 )
             }
             return null

@@ -29,7 +29,7 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
     // Fields
     private val _fields by lazy { classDef.fields.map { field -> field.toMutable() }.toMutableSet() }
     private val _staticFields by lazy { Iterables.filter(_fields, FieldUtil.FIELD_IS_STATIC).toMutableSet() }
-    private val _instanceFields by lazy {Iterables.filter(_fields, FieldUtil.FIELD_IS_INSTANCE) .toMutableSet() }
+    private val _instanceFields by lazy { Iterables.filter(_fields, FieldUtil.FIELD_IS_INSTANCE).toMutableSet() }
 
     fun setType(type: String) {
         this.type = type
