@@ -6,7 +6,7 @@ import org.jf.dexlib2.iface.ClassDef
 
 class Cache(
     internal val classes: MutableSet<ClassDef>,
-    val resolvedMethods: MethodMap
+    val methodMap: MethodMap
 ) {
     // TODO: currently we create ClassProxies at multiple places, which is why we could have merge conflicts
     //  this can be solved by creating a dedicated method for creating class proxies,
