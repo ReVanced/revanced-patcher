@@ -75,7 +75,7 @@ internal class SignatureResolver(
             }
 
             signature.methodParameters?.let { _ ->
-                if (signature.methodParameters.all { signatureMethodParameter ->
+                if (!signature.methodParameters.all { signatureMethodParameter ->
                         method.parameterTypes.any { methodParameter ->
                             methodParameter.startsWith(signatureMethodParameter)
                         }
