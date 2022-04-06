@@ -1,6 +1,7 @@
 package app.revanced.patcher.signature
 
 import app.revanced.patcher.proxy.ClassProxy
+import app.revanced.patcher.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.resolver.SignatureResolver
 
 /**
@@ -11,9 +12,14 @@ import app.revanced.patcher.resolver.SignatureResolver
  */
 data class SignatureResolverResult(
     val definingClassProxy: ClassProxy,
-    val resolvedMethodName: String,
-    val scanData: PatternScanResult?
+    val scanData: PatternScanResult,
+    private val resolvedMethodName: String,
 ) {
+
+    fun resolveAndGetMethod(): MutableMethod {
+        return definingClassProxy.resolve().methods.single { it.name == resolvedMethodName }
+    }
+
     @Suppress("Unused") // TODO(Sculas): remove this when we have coverage for this method.
     fun findParentMethod(signature: MethodSignature): SignatureResolverResult? {
         return SignatureResolver.resolveFromProxy(definingClassProxy, signature)
