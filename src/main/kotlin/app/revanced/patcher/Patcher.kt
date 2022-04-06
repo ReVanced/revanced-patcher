@@ -39,10 +39,13 @@ class Patcher(
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
                 // this is a slow workaround for now
+                cache.methodMap.values.forEach {
+                    if (!it.definingClassProxy.proxyUsed) return@forEach
+                    cache.classes.replace(it.definingClassProxy.originalIndex, it.definingClassProxy.mutatedClass)
+                }
                 cache.classProxy
                     .filter { it.proxyUsed }.forEach { proxy ->
-                        cache.classes.remove(cache.classes.elementAt(proxy.originalIndex))
-                        cache.classes.add(proxy.mutatedClass)
+                        cache.classes.replace(proxy.originalIndex, proxy.mutatedClass)
                     }
 
                 return cache.classes
@@ -86,4 +89,9 @@ class Patcher(
             }
         }
     }
+}
+
+private fun MutableSet<ClassDef>.replace(originalIndex: Int, mutatedClass: ClassDef) {
+    this.remove(this.elementAt(originalIndex))
+    this.add(mutatedClass)
 }
