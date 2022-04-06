@@ -10,7 +10,8 @@ class Cache(
 ) {
     // TODO: currently we create ClassProxies at multiple places, which is why we could have merge conflicts
     //  this can be solved by creating a dedicated method for creating class proxies,
-    //  if the class proxy already exists in the cached proxy list below
+    //  if the class proxy already exists in the cached proxy list below.
+    //  The to-do in the method findClass is related
     internal val classProxy = mutableSetOf<ClassProxy>()
 
     /**
@@ -24,10 +25,17 @@ class Cache(
      * @return A proxy for the first class that matches the predicate
      */
     fun findClass(predicate: (ClassDef) -> Boolean): ClassProxy? {
+        // TODO: find a cleaner way to store all proxied classes.
+        //  Currently we have to search the method map as well as the class proxy list which is not elegant
+
         // if we already proxied the class matching the predicate,
         val proxiedClass = classProxy.find { predicate(it.immutableClass) }
         // return that proxy
         if (proxiedClass != null) return proxiedClass
+        // if we already have the class matching the predicate in the method map,
+        val result = methodMap.entries.find { predicate(it.value.definingClassProxy.immutableClass) }?.value
+        if (result != null) return result.definingClassProxy
+
         // else search the original class list
         val (foundClass, index) = classes.findIndexed(predicate) ?: return null
         // create a class proxy with the index of the class in the classes list
