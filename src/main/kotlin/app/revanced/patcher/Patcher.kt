@@ -3,6 +3,7 @@ package app.revanced.patcher
 import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.extensions.replace
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.signature.MethodSignature
 import lanchon.multidexlib2.BasicDexFileNamer
@@ -79,13 +80,16 @@ class Patcher(
      * Apply patches loaded into the patcher.
      * @param stopOnError If true, the patches will stop on the first error.
      */
-    fun applyPatches(stopOnError: Boolean = false): Map<String, Result<Nothing?>> {
+    fun applyPatches(stopOnError: Boolean = false): Map<String, Result<PatchResult>> {
         return buildMap {
             for (patch in patches) {
-                val result: Result<Nothing?> = try {
+                val result: Result<PatchResult> = try {
                     val pr = patch.execute(cache)
-                    if (pr.isSuccess()) continue
-                    Result.failure(Exception(pr.error()?.errorMessage() ?: "Unknown error"))
+                    if (!pr.isSuccess()) {
+                        Result.success(pr)
+                    } else {
+                        Result.failure(Exception(pr.error()?.errorMessage() ?: "Unknown error"))
+                    }
                 } catch (e: Exception) {
                     Result.failure(e)
                 }
