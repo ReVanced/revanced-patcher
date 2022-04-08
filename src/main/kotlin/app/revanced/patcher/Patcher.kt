@@ -85,7 +85,7 @@ class Patcher(
             for (patch in patches) {
                 val result: Result<PatchResult> = try {
                     val pr = patch.execute(cache)
-                    if (!pr.isSuccess()) {
+                    if (pr.isSuccess()) {
                         Result.success(pr)
                     } else {
                         Result.failure(Exception(pr.error()?.errorMessage() ?: "Unknown error"))
