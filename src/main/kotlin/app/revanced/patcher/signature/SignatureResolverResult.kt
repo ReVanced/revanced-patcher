@@ -15,9 +15,8 @@ data class SignatureResolverResult(
     val scanData: PatternScanResult,
     private val resolvedMethodName: String,
 ) {
-
-    fun resolveAndGetMethod(): MutableMethod {
-        return definingClassProxy.resolve().methods.single { it.name == resolvedMethodName }
+    fun method(): MutableMethod {
+        return definingClassProxy.resolve().methods.first { it.name == resolvedMethodName }
     }
 
     @Suppress("Unused") // TODO(Sculas): remove this when we have coverage for this method.
