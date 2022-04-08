@@ -15,6 +15,6 @@ data class MethodSignature(
     val name: String,
     val returnType: String?,
     val accessFlags: Int?,
-    val methodParameters: Iterable<String>?,
+    val methodParameters: Array<String>?,
     val opcodes: Array<Opcode>?
 )
