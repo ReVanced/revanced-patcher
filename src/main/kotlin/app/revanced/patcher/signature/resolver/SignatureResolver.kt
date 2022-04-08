@@ -59,28 +59,33 @@ internal class SignatureResolver(
             signature: MethodSignature,
             method: Method
         ): PatternScanResult? {
-            signature.returnType?.let { _ ->
-                if (!method.returnType.startsWith(signature.returnType)) return@compareSignatureToMethod null
+            signature.returnType?.let {
+                if (!method.returnType.startsWith(signature.returnType)) {
+                    return null
+                }
             }
 
-            signature.accessFlags?.let { _ ->
+            signature.accessFlags?.let {
                 if (signature.accessFlags != method.accessFlags) {
-                    return@compareSignatureToMethod null
+                    return null
                 }
             }
 
-            signature.methodParameters?.let { _ ->
-                if (signature.methodParameters.count() != method.parameterTypes.count() || !signature.methodParameters.all { signatureMethodParameter ->
-                        method.parameterTypes.any { methodParameter ->
-                            methodParameter.startsWith(signatureMethodParameter)
-                        }
-                    }) {
-                    return@compareSignatureToMethod null
+            signature.methodParameters?.let {
+                if (compareParameterTypes(signature.methodParameters, method.parameterTypes)) {
+                    return null
                 }
             }
 
-            return if (signature.opcodes == null) null
-            else method.implementation?.instructions?.scanFor(signature.opcodes)!!
+            return if (signature.opcodes == null) {
+                null
+            } else {
+                method.implementation?.instructions?.scanFor(signature.opcodes)!!
+            }
+        }
+
+        private fun compareParameterTypes(signature: Array<String>, original: MutableList<out CharSequence>): Boolean {
+            return signature.size != original.size || !(signature.all { a -> original.any { it.startsWith(a) } })
         }
     }
 }
