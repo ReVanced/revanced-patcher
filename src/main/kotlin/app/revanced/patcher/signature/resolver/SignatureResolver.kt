@@ -77,8 +77,11 @@ internal class SignatureResolver(
                 }
             }
 
-            return if (signature.opcodes == null) PatternScanResult(0,0)
-            else method.implementation?.instructions?.scanFor(signature.opcodes)
+            return if (signature.opcodes == null) {
+                PatternScanResult(0, 0)
+            } else {
+                method.implementation?.instructions?.scanFor(signature.opcodes)!!
+            }
         }
 
         private fun compareParameterTypes(signature: Array<String>, original: MutableList<out CharSequence>): Boolean {
