@@ -2,7 +2,7 @@ package app.revanced.patcher.signature
 
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod
-import app.revanced.patcher.resolver.SignatureResolver
+import app.revanced.patcher.signature.resolver.SignatureResolver
 
 /**
  * Represents the result of a [SignatureResolver].

@@ -1,4 +1,4 @@
-package app.revanced.patcher.resolver
+package app.revanced.patcher.signature.resolver
 
 import app.revanced.patcher.cache.MethodMap
 import app.revanced.patcher.proxy.ClassProxy
@@ -38,11 +38,6 @@ internal class SignatureResolver(
             }
         }
 
-        // TODO: remove?
-        for (signature in methodSignatures) {
-            if (methodMap.containsKey(signature.name)) continue
-        }
-
         return methodMap
     }
 
@@ -75,7 +70,7 @@ internal class SignatureResolver(
             }
 
             signature.methodParameters?.let { _ ->
-                if (!signature.methodParameters.all { signatureMethodParameter ->
+                if (signature.methodParameters.count() != method.parameterTypes.count() || !signature.methodParameters.all { signatureMethodParameter ->
                         method.parameterTypes.any { methodParameter ->
                             methodParameter.startsWith(signatureMethodParameter)
                         }
@@ -94,10 +89,10 @@ private operator fun ClassDef.component1() = this
 private operator fun ClassDef.component2() = this.methods
 
 private fun MutableIterable<Instruction>.scanFor(pattern: Array<Opcode>): PatternScanResult? {
-    // TODO: create var for count?
-    for (instructionIndex in 0 until this.count()) {
+    val count = this.count()
+    for (instructionIndex in 0 until count) {
         var patternIndex = 0
-        while (instructionIndex + patternIndex < this.count()) {
+        while (instructionIndex + patternIndex < count) {
             if (this.elementAt(instructionIndex + patternIndex).opcode != pattern[patternIndex]) break
             if (++patternIndex < pattern.size) continue
 
