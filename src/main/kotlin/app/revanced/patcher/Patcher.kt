@@ -1,6 +1,7 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.cache.Cache
+import app.revanced.patcher.extensions.replace
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.signature.MethodSignature
@@ -12,12 +13,13 @@ import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
 import java.io.File
 
+val NAMER = BasicDexFileNamer()
+
 /**
  * ReVanced Patcher.
  * @param input The input file (an apk or any other multi dex container).
  * @param output The output folder.
  * @param signatures An array of method signatures for the patches
- *
  */
 class Patcher(
     input: File,
@@ -26,9 +28,11 @@ class Patcher(
 ) {
     private val cache: Cache
     private val patches = mutableSetOf<Patch>()
+    private val opcodes: Opcodes
 
     init {
-        val dexFile = MultiDexIO.readDexFile(true, input, BasicDexFileNamer(), null, null)
+        val dexFile = MultiDexIO.readDexFile(true, input, NAMER, null, null)
+        opcodes = dexFile.opcodes
         cache = Cache(dexFile.classes.toMutableSet(), SignatureResolver(dexFile.classes, signatures).resolve())
     }
 
@@ -40,25 +44,27 @@ class Patcher(
             override fun getClasses(): Set<ClassDef> {
                 // this is a slow workaround for now
                 cache.methodMap.values.forEach {
-                    if (!it.definingClassProxy.proxyUsed) return@forEach
-                    cache.classes.replace(it.definingClassProxy.originalIndex, it.definingClassProxy.mutatedClass)
-                }
-                cache.classProxy
-                    .filter { it.proxyUsed }.forEach { proxy ->
-                        cache.classes.replace(proxy.originalIndex, proxy.mutatedClass)
+                    if (it.definingClassProxy.proxyUsed) {
+                        cache.classes.replace(it.definingClassProxy.originalIndex, it.definingClassProxy.mutatedClass)
                     }
-
+                }
+                cache.classProxy.filter { it.proxyUsed }.forEach { proxy ->
+                    cache.classes.replace(proxy.originalIndex, proxy.mutatedClass)
+                }
                 return cache.classes
             }
 
             override fun getOpcodes(): Opcodes {
-                // TODO find a way to get the opcodes format
-                return Opcodes.getDefault()
+                return this@Patcher.opcodes
             }
         }
 
-        // TODO: we should use the multithreading capable overload for writeDexFile
-        MultiDexIO.writeDexFile(true, output, BasicDexFileNamer(), newDexFile, DexIO.DEFAULT_MAX_DEX_POOL_SIZE, null)
+        MultiDexIO.writeDexFile(
+            true, -1, // core count
+            output, NAMER, newDexFile,
+            DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
+            null
+        )
     }
 
     /**
@@ -75,7 +81,6 @@ class Patcher(
      */
     fun applyPatches(stopOnError: Boolean = false): Map<String, Result<Nothing?>> {
         return buildMap {
-            // TODO: after each patch execution we could clear left overs like proxied classes to safe memory
             for (patch in patches) {
                 val result: Result<Nothing?> = try {
                     val pr = patch.execute(cache)
@@ -85,13 +90,8 @@ class Patcher(
                     Result.failure(e)
                 }
                 this[patch.patchName] = result
-                if (stopOnError && result.isFailure) break
+                if (result.isFailure && stopOnError) break
             }
         }
     }
-}
-
-private fun MutableSet<ClassDef>.replace(originalIndex: Int, mutatedClass: ClassDef) {
-    this.remove(this.elementAt(originalIndex))
-    this.add(mutatedClass)
 }
