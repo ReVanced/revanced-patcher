@@ -27,7 +27,7 @@ internal class PatcherTest {
                 "main-method",
                 "V",
                 AccessFlags.PUBLIC or AccessFlags.STATIC,
-                setOf("[L"),
+                arrayOf("[L"),
                 arrayOf(
                     Opcode.CONST_STRING,
                     Opcode.INVOKE_VIRTUAL,
@@ -51,7 +51,7 @@ internal class PatcherTest {
                     // Get the result from the resolver cache
                     val result = cache.methodMap["main-method"]
                     // Get the implementation for the resolved method
-                    val implementation = result.resolveAndGetMethod().implementation!!
+                    val implementation = result.method().implementation!!
                     // Let's modify it, so it prints "Hello, ReVanced! Editing bytecode."
                     // Get the start index of our opcode pattern.
                     // This will be the index of the instruction with the opcode CONST_STRING.
