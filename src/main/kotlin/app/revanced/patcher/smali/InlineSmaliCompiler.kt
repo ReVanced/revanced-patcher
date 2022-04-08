@@ -29,6 +29,7 @@ class InlineSmaliCompiler {
          * as that will result in exceptions since the labels cannot be calculated.
          * Do not create dummy labels to fix the issue, since the code addresses will
          * be messed up and results in broken Dalvik bytecode.
+         * FIXME: Fix the above issue. When this is fixed, add the proper conversions in [InstructionConverter].
          */
         fun compileMethodInstructions(instructions: String): List<BuilderInstruction> {
             val input = METHOD_TEMPLATE.format(instructions)
