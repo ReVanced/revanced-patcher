@@ -2,7 +2,7 @@ package app.revanced.patcher
 
 import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.resolver.SignatureResolver
+import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.signature.MethodSignature
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
