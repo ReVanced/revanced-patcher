@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "1.6.10"
     java
     `maven-publish`
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "app.revanced"
@@ -26,6 +27,12 @@ tasks.test {
     }
 }
 
+tasks {
+    build {
+        dependsOn(shadowJar)
+    }
+}
+
 java {
     withSourcesJar()
     withJavadocJar()
@@ -45,6 +52,11 @@ publishing {
     publications {
         register<MavenPublication>("gpr") {
             from(components["java"])
+        }
+        register<MavenPublication>("shadow") {
+            project.extensions.configure<com.github.jengelman.gradle.plugins.shadow.ShadowExtension> {
+                component(this@register)
+            }
         }
     }
 }
