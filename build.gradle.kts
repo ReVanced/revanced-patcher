@@ -1,8 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
     java
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "app.revanced"
@@ -25,23 +24,19 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
 
-    implementation("app.revanced:multidexlib2:2.5.2.r2")
+    api("app.revanced:multidexlib2:2.5.2.r2")
     @Suppress("GradlePackageUpdate")
-    implementation("org.smali:smali:2.5.2")
+    api("org.smali:smali:2.5.2")
 
     testImplementation(kotlin("test"))
 }
 
-tasks.test {
-    useJUnitPlatform()
-    testLogging {
-        events("PASSED", "SKIPPED", "FAILED")
-    }
-}
-
 tasks {
-    build {
-        dependsOn(shadowJar)
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events("PASSED", "SKIPPED", "FAILED")
+        }
     }
 }
 
@@ -50,25 +45,26 @@ java {
     withJavadocJar()
 }
 
+val isGitHubCI = System.getenv("GITHUB_ACTOR") != null
+
 publishing {
     repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ReVancedTeam/revanced-patcher")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+        if (isGitHubCI) {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/ReVancedTeam/revanced-patcher")
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
             }
+        } else {
+            mavenLocal()
         }
     }
     publications {
         register<MavenPublication>("gpr") {
             from(components["java"])
-        }
-        register<MavenPublication>("shadow") {
-            project.extensions.configure<com.github.jengelman.gradle.plugins.shadow.ShadowExtension> {
-                component(this@register)
-            }
         }
     }
 }
