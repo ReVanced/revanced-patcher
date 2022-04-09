@@ -12,6 +12,7 @@ import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
+import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
 
 val NAMER = BasicDexFileNamer()
@@ -19,12 +20,10 @@ val NAMER = BasicDexFileNamer()
 /**
  * ReVanced Patcher.
  * @param input The input file (an apk or any other multi dex container).
- * @param output The output folder.
  * @param signatures An array of method signatures for the patches
  */
 class Patcher(
     input: File,
-    private val output: File,
     signatures: Array<MethodSignature>,
 ) {
     private val cache: Cache
@@ -57,7 +56,7 @@ class Patcher(
     /**
      * Save the patched dex file.
      */
-    fun save() {
+    fun save(): List<MemoryDataStore> {
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
                 // this is a slow workaround for now
@@ -77,12 +76,14 @@ class Patcher(
             }
         }
 
+        val list = mutableListOf<MemoryDataStore>()
         MultiDexIO.writeDexFile(
             true, -1, // core count
-            output, NAMER, newDexFile,
+            list, NAMER, newDexFile,
             DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
             null
         )
+        return list
     }
 
     /**
