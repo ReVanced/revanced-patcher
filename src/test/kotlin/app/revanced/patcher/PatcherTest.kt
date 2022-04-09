@@ -19,6 +19,7 @@ import org.jf.dexlib2.immutable.ImmutableMethodImplementation
 import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertTrue
 
 internal class PatcherTest {
     companion object {
@@ -41,7 +42,6 @@ internal class PatcherTest {
     fun testPatcher() {
         val patcher = Patcher(
             File(PatcherTest::class.java.getResource("/test1.dex")!!.toURI()),
-            File("."),
             testSignatures
         )
 
@@ -89,6 +89,7 @@ internal class PatcherTest {
                             null,
                             "Ljava/lang/String;",
                             AccessFlags.PRIVATE or AccessFlags.STATIC,
+                            null,
                             null,
                             ImmutableMethodImplementation(
                                 1,
@@ -156,17 +157,7 @@ internal class PatcherTest {
             }
         }
 
-        patcher.save()
-    }
-
-    @Test
-    fun `test patcher with no changes`() {
-        Patcher(
-            File(PatcherTest::class.java.getResource("/test1.dex")!!.toURI()),
-            File("."),
-            testSignatures
-        ).save()
-        // FIXME(Sculas): There seems to be a 1-byte difference, not sure what it is.
-        // assertEquals(available, out.size())
+        val out = patcher.save()
+        assertTrue(out.isNotEmpty(), "Expected the output of Patcher#save() to not be empty.")
     }
 }

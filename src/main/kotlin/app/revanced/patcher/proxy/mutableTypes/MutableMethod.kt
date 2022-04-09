@@ -2,6 +2,7 @@ package app.revanced.patcher.proxy.mutableTypes
 
 import app.revanced.patcher.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableMethodParameter.Companion.toMutable
+import org.jf.dexlib2.HiddenApiRestriction
 import org.jf.dexlib2.base.reference.BaseMethodReference
 import org.jf.dexlib2.builder.MutableMethodImplementation
 import org.jf.dexlib2.iface.Method
@@ -17,9 +18,10 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
     private val _annotations by lazy { method.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
     private val _parameters by lazy { method.parameters.map { parameter -> parameter.toMutable() }.toMutableList() }
     private val _parameterTypes by lazy { method.parameterTypes.toMutableList() }
+    private val _hiddenApiRestrictions by lazy { method.hiddenApiRestrictions }
 
     override fun getDefiningClass(): String {
-        return this.definingClass
+        return definingClass
     }
 
     override fun getName(): String {
@@ -40,6 +42,10 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
 
     override fun getAccessFlags(): Int {
         return accessFlags
+    }
+
+    override fun getHiddenApiRestrictions(): MutableSet<HiddenApiRestriction> {
+        return _hiddenApiRestrictions
     }
 
     override fun getParameters(): MutableList<MutableMethodParameter> {

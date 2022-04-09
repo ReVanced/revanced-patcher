@@ -2,6 +2,7 @@ package app.revanced.patcher.proxy.mutableTypes
 
 import app.revanced.patcher.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableEncodedValue.Companion.toMutable
+import org.jf.dexlib2.HiddenApiRestriction
 import org.jf.dexlib2.base.reference.BaseFieldReference
 import org.jf.dexlib2.iface.Field
 
@@ -12,6 +13,7 @@ class MutableField(field: Field) : Field, BaseFieldReference() {
     private var accessFlags = field.accessFlags
     private var initialValue = field.initialValue?.toMutable()
     private val _annotations by lazy { field.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
+    private val _hiddenApiRestrictions by lazy { field.hiddenApiRestrictions }
 
     fun setDefiningClass(definingClass: String) {
         this.definingClass = definingClass
@@ -51,6 +53,10 @@ class MutableField(field: Field) : Field, BaseFieldReference() {
 
     override fun getAccessFlags(): Int {
         return this.accessFlags
+    }
+
+    override fun getHiddenApiRestrictions(): MutableSet<HiddenApiRestriction> {
+        return this._hiddenApiRestrictions
     }
 
     override fun getInitialValue(): MutableEncodedValue? {

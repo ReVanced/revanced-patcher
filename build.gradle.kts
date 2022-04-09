@@ -9,13 +9,21 @@ group = "app.revanced"
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/ReVancedTeam/multidexlib2")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR") // DO NOT CHANGE!
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN") // DO NOT CHANGE!
+        }
+    }
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
 
-    implementation("com.github.lanchon.dexpatcher:multidexlib2:2.3.4.r2")
-    implementation("org.smali:smali:2.3.4")
+    implementation("app.revanced:multidexlib2:2.5.2")
+    @Suppress("GradlePackageUpdate")
+    implementation("org.smali:smali:2.5.2")
 
     testImplementation(kotlin("test"))
 }
