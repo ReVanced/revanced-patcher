@@ -56,7 +56,7 @@ class Patcher(
     /**
      * Save the patched dex file.
      */
-    fun save(): List<MemoryDataStore> {
+    fun save(): Map<String, MemoryDataStore> {
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
                 // this is a slow workaround for now
@@ -76,14 +76,14 @@ class Patcher(
             }
         }
 
-        val list = mutableListOf<MemoryDataStore>()
+        val output = mutableMapOf<String, MemoryDataStore>()
         MultiDexIO.writeDexFile(
             true, -1, // core count
-            list, NAMER, newDexFile,
+            output, NAMER, newDexFile,
             DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
             null
         )
-        return list
+        return output
     }
 
     /**
