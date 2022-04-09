@@ -43,16 +43,14 @@ class Patcher(
     fun addFiles(vararg files: File, throwOnDuplicates: Boolean = false) {
         for (file in files) {
             val dexFile = MultiDexIO.readDexFile(true, files[0], NAMER, null, null)
-            val classes = mutableSetOf<String>()
             for (classDef in dexFile.classes) {
-                if (classes.add(classDef.type)) { // has duplicate
+                if (cache.classes.any { it.type == classDef.type }) {
+                    // TODO: Use logger and warn about duplicate classes
                     if (throwOnDuplicates)
                         throw Exception("Class ${classDef.type} has already been added to the patcher.")
-                    continue
                 }
                 cache.classes.add(classDef)
             }
-            classes.clear()
         }
     }
     /**
