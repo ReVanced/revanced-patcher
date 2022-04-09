@@ -80,7 +80,7 @@ internal class SignatureResolver(
             return if (signature.opcodes == null) {
                 PatternScanResult(0, 0)
             } else {
-                method.implementation?.instructions?.scanFor(signature.opcodes)!!
+                method.implementation?.instructions?.scanFor(signature.opcodes)
             }
         }
 
