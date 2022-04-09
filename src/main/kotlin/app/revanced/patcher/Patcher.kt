@@ -1,11 +1,11 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.cache.Cache
-import app.revanced.patcher.extensions.replace
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.signature.MethodSignature
+import app.revanced.patcher.util.ListBackedSet
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
@@ -33,7 +33,7 @@ class Patcher(
     init {
         val dexFile = MultiDexIO.readDexFile(true, input, NAMER, null, null)
         opcodes = dexFile.opcodes
-        cache = Cache(dexFile.classes.toMutableSet(), SignatureResolver(dexFile.classes, signatures).resolve())
+        cache = Cache(dexFile.classes.toMutableList(), SignatureResolver(dexFile.classes, signatures).resolve())
     }
     /**
      * Add additional dex file container to the patcher.
@@ -62,13 +62,13 @@ class Patcher(
                 // this is a slow workaround for now
                 cache.methodMap.values.forEach {
                     if (it.definingClassProxy.proxyUsed) {
-                        cache.classes.replace(it.definingClassProxy.originalIndex, it.definingClassProxy.mutatedClass)
+                        cache.classes[it.definingClassProxy.originalIndex] = it.definingClassProxy.mutatedClass
                     }
                 }
                 cache.classProxy.filter { it.proxyUsed }.forEach { proxy ->
-                    cache.classes.replace(proxy.originalIndex, proxy.mutatedClass)
+                    cache.classes[proxy.originalIndex] = proxy.mutatedClass
                 }
-                return cache.classes
+                return ListBackedSet(cache.classes)
             }
 
             override fun getOpcodes(): Opcodes {
