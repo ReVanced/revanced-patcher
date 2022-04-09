@@ -36,7 +36,24 @@ class Patcher(
         opcodes = dexFile.opcodes
         cache = Cache(dexFile.classes.toMutableSet(), SignatureResolver(dexFile.classes, signatures).resolve())
     }
-
+    /**
+     * Add additional dex file container to the patcher.
+     * @param files The dex file containers to add to the patcher.
+     * @param throwOnDuplicates If this is set to true, the patcher will throw an exception if a duplicate class has been found.
+     */
+    fun addFiles(vararg files: File, throwOnDuplicates: Boolean = false) {
+        for (file in files) {
+            val dexFile = MultiDexIO.readDexFile(true, files[0], NAMER, null, null)
+            for (classDef in dexFile.classes) {
+                if (cache.classes.any { it.type == classDef.type }) {
+                    // TODO: Use logger and warn about duplicate classes
+                    if (throwOnDuplicates)
+                        throw Exception("Class ${classDef.type} has already been added to the patcher.")
+                }
+                cache.classes.add(classDef)
+            }
+        }
+    }
     /**
      * Save the patched dex file.
      */
