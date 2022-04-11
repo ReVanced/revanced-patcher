@@ -2,7 +2,7 @@ package app.revanced.patcher
 
 import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.util.ListBackedSet
@@ -99,15 +99,18 @@ class Patcher(
     /**
      * Apply patches loaded into the patcher.
      * @param stopOnError If true, the patches will stop on the first error.
+     * @return A map of results. If the patch was successfully applied,
+     * PatchResultSuccess will always be returned in the wrapping Result object.
+     * If the patch failed to apply, an Exception will always be returned in the wrapping Result object.
      */
-    fun applyPatches(stopOnError: Boolean = false, callback: (String) -> Unit = {}): Map<String, Result<PatchResult>> {
+    fun applyPatches(stopOnError: Boolean = false, callback: (String) -> Unit = {}): Map<String, Result<PatchResultSuccess>> {
         return buildMap {
             for (patch in patches) {
                 callback(patch.patchName)
-                val result: Result<PatchResult> = try {
+                val result: Result<PatchResultSuccess> = try {
                     val pr = patch.execute(cache)
                     if (pr.isSuccess()) {
-                        Result.success(pr)
+                        Result.success(pr.success()!!)
                     } else {
                         Result.failure(Exception(pr.error()?.errorMessage() ?: "Unknown error"))
                     }
