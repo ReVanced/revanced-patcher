@@ -48,6 +48,8 @@ class Patcher(
                     // TODO: Use logger and warn about duplicate classes
                     if (throwOnDuplicates)
                         throw Exception("Class ${classDef.type} has already been added to the patcher.")
+
+                    continue
                 }
                 cache.classes.add(classDef)
             }
