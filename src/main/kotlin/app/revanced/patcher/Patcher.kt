@@ -100,9 +100,10 @@ class Patcher(
      * Apply patches loaded into the patcher.
      * @param stopOnError If true, the patches will stop on the first error.
      */
-    fun applyPatches(stopOnError: Boolean = false): Map<String, Result<PatchResult>> {
+    fun applyPatches(stopOnError: Boolean = false, callback: (String) -> Unit = {}): Map<String, Result<PatchResult>> {
         return buildMap {
             for (patch in patches) {
+                callback(patch.patchName)
                 val result: Result<PatchResult> = try {
                     val pr = patch.execute(cache)
                     if (pr.isSuccess()) {
