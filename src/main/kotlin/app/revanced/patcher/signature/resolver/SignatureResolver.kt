@@ -13,7 +13,7 @@ import org.jf.dexlib2.iface.instruction.Instruction
 // TODO: add logger back
 internal class SignatureResolver(
     private val classes: Set<ClassDef>,
-    private val methodSignatures: Array<MethodSignature>
+    private val methodSignatures: Iterable<MethodSignature>
 ) {
     fun resolve(): MethodMap {
         val methodMap = MethodMap()
@@ -84,8 +84,8 @@ internal class SignatureResolver(
             }
         }
 
-        private fun compareParameterTypes(signature: Array<String>, original: MutableList<out CharSequence>): Boolean {
-            return signature.size != original.size || !(signature.all { a -> original.any { it.startsWith(a) } })
+        private fun compareParameterTypes(signature: Iterable<String>, original: MutableList<out CharSequence>): Boolean {
+            return signature.count() != original.size || !(signature.all { a -> original.any { it.startsWith(a) } })
         }
     }
 }
@@ -93,13 +93,14 @@ internal class SignatureResolver(
 private operator fun ClassDef.component1() = this
 private operator fun ClassDef.component2() = this.methods
 
-private fun MutableIterable<Instruction>.scanFor(pattern: Array<Opcode>): PatternScanResult? {
+private fun MutableIterable<Instruction>.scanFor(pattern: Iterable<Opcode>): PatternScanResult? {
     val count = this.count()
+    val size = pattern.count()
     for (instructionIndex in 0 until count) {
         var patternIndex = 0
         while (instructionIndex + patternIndex < count) {
-            if (this.elementAt(instructionIndex + patternIndex).opcode != pattern[patternIndex]) break
-            if (++patternIndex < pattern.size) continue
+            if (this.elementAt(instructionIndex + patternIndex).opcode != pattern.elementAt(patternIndex)) break
+            if (++patternIndex < size) continue
 
             return PatternScanResult(instructionIndex, instructionIndex + patternIndex)
         }
