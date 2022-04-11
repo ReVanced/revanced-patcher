@@ -23,13 +23,13 @@ import kotlin.test.assertTrue
 
 internal class PatcherTest {
     companion object {
-        val testSignatures: Array<MethodSignature> = arrayOf(
+        val testSignatures = listOf(
             MethodSignature(
                 "main-method",
                 "V",
                 AccessFlags.PUBLIC or AccessFlags.STATIC,
-                arrayOf("[L"),
-                arrayOf(
+                listOf("[L"),
+                listOf(
                     Opcode.CONST_STRING,
                     Opcode.INVOKE_VIRTUAL,
                     Opcode.RETURN_VOID
@@ -45,7 +45,7 @@ internal class PatcherTest {
             testSignatures
         )
 
-        patcher.addPatches(
+        patcher.addPatches(listOf(
             object : Patch("TestPatch") {
                 override fun execute(cache: Cache): PatchResult {
                     // Get the result from the resolver cache
@@ -146,7 +146,7 @@ internal class PatcherTest {
                     return PatchResultSuccess()
                 }
             }
-        )
+        ))
 
         // Apply all patches loaded in the patcher
         val patchResult = patcher.applyPatches()

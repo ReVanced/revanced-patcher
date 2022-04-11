@@ -20,11 +20,11 @@ val NAMER = BasicDexFileNamer()
 /**
  * ReVanced Patcher.
  * @param input The input file (an apk or any other multi dex container).
- * @param signatures An array of method signatures for the patches
+ * @param signatures A list of method signatures for the patches.
  */
 class Patcher(
     input: File,
-    signatures: Array<MethodSignature>,
+    signatures: Iterable<MethodSignature>,
 ) {
     private val cache: Cache
     private val patches = mutableSetOf<Patch>()
@@ -92,7 +92,7 @@ class Patcher(
      * Add a patch to the patcher.
      * @param patches The patches to add.
      */
-    fun addPatches(vararg patches: Patch) {
+    fun addPatches(patches: Iterable<Patch>) {
         this.patches.addAll(patches)
     }
 
