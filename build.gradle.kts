@@ -25,7 +25,6 @@ dependencies {
     implementation(kotlin("stdlib"))
 
     api("app.revanced:multidexlib2:2.5.2.r2")
-    @Suppress("GradlePackageUpdate")
     api("org.smali:smali:2.5.2")
 
     testImplementation(kotlin("test"))

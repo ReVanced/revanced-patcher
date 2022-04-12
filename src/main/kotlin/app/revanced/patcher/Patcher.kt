@@ -1,6 +1,7 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.cache.Cache
+import app.revanced.patcher.cache.findIndexed
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.signature.resolver.SignatureResolver
@@ -24,31 +25,41 @@ val NAMER = BasicDexFileNamer()
  */
 class Patcher(
     input: File,
-    signatures: Iterable<MethodSignature>,
+    private val signatures: Iterable<MethodSignature>,
 ) {
     private val cache: Cache
     private val patches = mutableSetOf<Patch>()
     private val opcodes: Opcodes
+    private var sigsResolved = false
 
     init {
         val dexFile = MultiDexIO.readDexFile(true, input, NAMER, null, null)
         opcodes = dexFile.opcodes
-        cache = Cache(dexFile.classes.toMutableList(), SignatureResolver(dexFile.classes, signatures).resolve())
+        cache = Cache(dexFile.classes.toMutableList())
     }
     /**
      * Add additional dex file container to the patcher.
      * @param files The dex file containers to add to the patcher.
+     * @param allowedOverwrites A list of class types that are allowed to be overwritten.
      * @param throwOnDuplicates If this is set to true, the patcher will throw an exception if a duplicate class has been found.
      */
-    fun addFiles(vararg files: File, throwOnDuplicates: Boolean = false) {
+    fun addFiles(
+        files: Iterable<File>,
+        allowedOverwrites: Iterable<String> = emptyList(),
+        throwOnDuplicates: Boolean = false
+    ) {
         for (file in files) {
-            val dexFile = MultiDexIO.readDexFile(true, files[0], NAMER, null, null)
+            val dexFile = MultiDexIO.readDexFile(true, file, NAMER, null, null)
             for (classDef in dexFile.classes) {
-                if (cache.classes.any { it.type == classDef.type }) {
-                    // TODO: Use logger and warn about duplicate classes
-                    if (throwOnDuplicates)
+                val e = cache.classes.findIndexed { it.type == classDef.type }
+                if (e != null) {
+                    if (throwOnDuplicates) {
                         throw Exception("Class ${classDef.type} has already been added to the patcher.")
-
+                    }
+                    val (_, idx) = e
+                    if (allowedOverwrites.contains(classDef.type)) {
+                        cache.classes[idx] = classDef
+                    }
                     continue
                 }
                 cache.classes.add(classDef)
@@ -61,7 +72,6 @@ class Patcher(
     fun save(): Map<String, MemoryDataStore> {
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
-                // this is a slow workaround for now
                 cache.methodMap.values.forEach {
                     if (it.definingClassProxy.proxyUsed) {
                         cache.classes[it.definingClassProxy.originalIndex] = it.definingClassProxy.mutatedClass
@@ -104,6 +114,10 @@ class Patcher(
      * If the patch failed to apply, an Exception will always be returned in the wrapping Result object.
      */
     fun applyPatches(stopOnError: Boolean = false, callback: (String) -> Unit = {}): Map<String, Result<PatchResultSuccess>> {
+        if (!sigsResolved) {
+            SignatureResolver(cache.classes, signatures).resolve(cache.methodMap)
+            sigsResolved = true
+        }
         return buildMap {
             for (patch in patches) {
                 callback(patch.patchName)
