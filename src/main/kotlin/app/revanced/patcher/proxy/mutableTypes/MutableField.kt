@@ -1,7 +1,8 @@
 package app.revanced.patcher.proxy.mutableTypes
 
 import app.revanced.patcher.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
-import app.revanced.patcher.proxy.mutableTypes.MutableEncodedValue.Companion.toMutable
+import app.revanced.patcher.proxy.mutableTypes.encodedValue.MutableEncodedValue
+import app.revanced.patcher.proxy.mutableTypes.encodedValue.MutableEncodedValue.Companion.toMutable
 import org.jf.dexlib2.HiddenApiRestriction
 import org.jf.dexlib2.base.reference.BaseFieldReference
 import org.jf.dexlib2.iface.Field
@@ -11,6 +12,7 @@ class MutableField(field: Field) : Field, BaseFieldReference() {
     private var name = field.name
     private var type = field.type
     private var accessFlags = field.accessFlags
+
     private var initialValue = field.initialValue?.toMutable()
     private val _annotations by lazy { field.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
     private val _hiddenApiRestrictions by lazy { field.hiddenApiRestrictions }

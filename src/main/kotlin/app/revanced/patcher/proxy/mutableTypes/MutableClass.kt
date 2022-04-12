@@ -94,4 +94,10 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
     override fun getMethods(): MutableSet<MutableMethod> {
         return _methods
     }
+
+    companion object {
+        fun ClassDef.toMutable(): MutableClass {
+            return MutableClass(this)
+        }
+    }
 }

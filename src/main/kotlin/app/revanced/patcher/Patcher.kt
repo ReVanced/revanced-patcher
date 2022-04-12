@@ -4,8 +4,8 @@ import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.cache.findIndexed
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResultSuccess
-import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.signature.MethodSignature
+import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.util.ListBackedSet
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
@@ -37,6 +37,7 @@ class Patcher(
         opcodes = dexFile.opcodes
         cache = Cache(dexFile.classes.toMutableList())
     }
+
     /**
      * Add additional dex file container to the patcher.
      * @param files The dex file containers to add to the patcher.
@@ -66,6 +67,7 @@ class Patcher(
             }
         }
     }
+
     /**
      * Save the patched dex file.
      */
@@ -113,7 +115,10 @@ class Patcher(
      * PatchResultSuccess will always be returned in the wrapping Result object.
      * If the patch failed to apply, an Exception will always be returned in the wrapping Result object.
      */
-    fun applyPatches(stopOnError: Boolean = false, callback: (String) -> Unit = {}): Map<String, Result<PatchResultSuccess>> {
+    fun applyPatches(
+        stopOnError: Boolean = false,
+        callback: (String) -> Unit = {}
+    ): Map<String, Result<PatchResultSuccess>> {
         if (!sigsResolved) {
             SignatureResolver(cache.classes, signatures).resolve(cache.methodMap)
             sigsResolved = true
