@@ -10,14 +10,11 @@ import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
 
-// TODO: add logger back
 internal class SignatureResolver(
-    private val classes: Set<ClassDef>,
+    private val classes: List<ClassDef>,
     private val methodSignatures: Iterable<MethodSignature>
 ) {
-    fun resolve(): MethodMap {
-        val methodMap = MethodMap()
-
+    fun resolve(methodMap: MethodMap) {
         for ((index, classDef) in classes.withIndex()) {
             for (signature in methodSignatures) {
                 if (methodMap.containsKey(signature.name)) {
@@ -37,8 +34,6 @@ internal class SignatureResolver(
                 }
             }
         }
-
-        return methodMap
     }
 
     // These functions do not require the constructor values, so they can be static.
