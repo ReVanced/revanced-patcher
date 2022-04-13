@@ -11,7 +11,6 @@ import org.jf.dexlib2.Opcode
  * @param methodParameters The parameters of the method.
  * @param opcodes A list of opcodes of the method.
  */
-@Suppress("ArrayInDataClass")
 data class MethodSignature(
     val name: String,
     val metadata: SignatureMetadata,
@@ -46,10 +45,10 @@ data class MethodMetadata(
 
 /**
  * Metadata for the Patcher, this contains things like how the Patcher should interpret this signature.
- * @param method The method the resolver should use to resolve the signature.
+ * @param resolverMethod The method the resolver should use to resolve the signature.
  */
 data class PatcherMetadata(
-    val method: ResolverMethod
+    val resolverMethod: ResolverMethod
 )
 
 /**
