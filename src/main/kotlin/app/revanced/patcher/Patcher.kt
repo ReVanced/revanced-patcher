@@ -3,6 +3,7 @@ package app.revanced.patcher
 import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.cache.findIndexed
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchMetadata
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.resolver.SignatureResolver
@@ -118,14 +119,14 @@ class Patcher(
     fun applyPatches(
         stopOnError: Boolean = false,
         callback: (String) -> Unit = {}
-    ): Map<String, Result<PatchResultSuccess>> {
+    ): Map<PatchMetadata, Result<PatchResultSuccess>> {
         if (!sigsResolved) {
             SignatureResolver(cache.classes, signatures).resolve(cache.methodMap)
             sigsResolved = true
         }
         return buildMap {
             for (patch in patches) {
-                callback(patch.patchName)
+                callback(patch.metadata.shortName)
                 val result: Result<PatchResultSuccess> = try {
                     val pr = patch.execute(cache)
                     if (pr.isSuccess()) {
@@ -136,7 +137,7 @@ class Patcher(
                 } catch (e: Exception) {
                     Result.failure(e)
                 }
-                this[patch.patchName] = result
+                this[patch.metadata] = result
                 if (result.isFailure && stopOnError) break
             }
         }
