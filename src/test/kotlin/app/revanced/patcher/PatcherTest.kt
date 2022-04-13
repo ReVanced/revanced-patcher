@@ -6,17 +6,22 @@ import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.revanced.patcher.signature.MethodSignature
+import app.revanced.patcher.smali.asInstruction
 import app.revanced.patcher.smali.asInstructions
 import com.google.common.collect.ImmutableList
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.builder.instruction.BuilderInstruction11x
 import org.jf.dexlib2.builder.instruction.BuilderInstruction21c
+import org.jf.dexlib2.immutable.ImmutableField
 import org.jf.dexlib2.immutable.ImmutableMethod
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation
+import org.jf.dexlib2.immutable.reference.ImmutableFieldReference
 import org.jf.dexlib2.immutable.reference.ImmutableStringReference
+import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
@@ -107,11 +112,36 @@ internal class PatcherTest {
                         ).toMutable()
                     )
 
-                    // Now lets create a new call to our method and print the return value!
+                    // Add a field in the main class
+                    // We will use this field in our method below to call println on
+                    // The field holds the Ljava/io/PrintStream->out; field
+                    mainClass.fields.add(
+                        ImmutableField(
+                            mainClass.type,
+                            "dummyField",
+                            "Ljava/io/PrintStream;",
+                            AccessFlags.PRIVATE or AccessFlags.STATIC,
+                            ImmutableFieldEncodedValue(
+                                ImmutableFieldReference(
+                                    "Ljava/lang/System;",
+                                    "out",
+                                    "Ljava/io/PrintStream;"
+                                )
+                            ),
+                            null,
+                            null
+                        ).toMutable()
+                    )
+
+                    // store the fields initial value into the first virtual register
+                    implementation.replaceInstruction(
+                        0,
+                        "sget-object v0, LTestClass;->dummyField:Ljava/io/PrintStream;".asInstruction()
+                    )
+
+                    // Now let's create a new call to our method and print the return value!
                     // You can also use the smali compiler to create instructions.
-                    // For this sake of example I reuse the class field System.out inside the virtual register 0.
-                    // Instead an additional instruction could be added at first to re-set this register.
-                    // "sget-object v0, Ljava/lang/System;->out:Ljava/io/PrintStream;"
+                    // For this sake of example I reuse the TestClass field dummyField inside the virtual register 0.
                     //
                     // Control flow instructions are not supported as of now.
                     val instructions = """
@@ -120,24 +150,6 @@ internal class PatcherTest {
                         invoke-virtual { v0, v1 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
                     """.trimIndent().asInstructions()
                     implementation.addInstructions(startIndex + 2, instructions)
-
-                    // TODO: check TODO of the MutableEncodedValue class
-                    //mainClass.fields.add(
-                    //    ImmutableField(
-                    //        mainClass.type,
-                    //        "dummyField",
-                    //        "Ljava/io/PrintStream",
-                    //        AccessFlags.PRIVATE or AccessFlags.STATIC,
-                    //        ImmutableFieldEncodedValue(
-                    //            ImmutableFieldReference(
-                    //                "Ljava/lang/System;",
-                    //                "out",
-                    //                "Ljava/io/PrintStream;"
-                    //            )
-                    //        ),
-                    //        null
-                    //    ).toMutable()
-                    //)
 
                     // Finally, tell the patcher that this patch was a success.
                     // You can also return PatchResultError with a message.
