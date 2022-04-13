@@ -21,9 +21,10 @@ data class SignatureResolverResult(
      * Please note, this method creates a [ClassProxy].
      * Use [immutableMethod] where possible.
      */
-    val method get() = definingClassProxy.resolve().methods.first {
-        it.name == resolvedMethodName
-    }
+    val method
+        get() = definingClassProxy.resolve().methods.first {
+            it.name == resolvedMethodName
+        }
 
     /**
      * Returns the **immutable** method by the [resolvedMethodName] from the [definingClassProxy].
@@ -32,8 +33,8 @@ data class SignatureResolverResult(
      */
     val immutableMethod: Method
         get() = definingClassProxy.immutableClass.methods.first {
-        it.name == resolvedMethodName
-    }
+            it.name == resolvedMethodName
+        }
 
     @Suppress("Unused") // TODO(Sculas): remove this when we have coverage for this method.
     fun findParentMethod(signature: MethodSignature): SignatureResolverResult? {
