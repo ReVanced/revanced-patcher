@@ -38,7 +38,7 @@ internal class PatcherTest {
                         comment = "Main method of TestClass. Version 1.0.0"
                     ),
                     patcher = PatcherMetadata(
-                        method = PatcherMethod.Fuzzy(2)
+                        method = ResolverMethod.Fuzzy(2)
                     )
                 ),
                 "V",
@@ -46,7 +46,7 @@ internal class PatcherTest {
                 listOf("[L"),
                 listOf(
                     Opcode.CONST_STRING,
-                    Opcode.INVOKE_VIRTUAL,
+                    Opcode.INVOKE_STATIC, // This is intentionally wrong to test the Fuzzy resolver.
                     Opcode.RETURN_VOID
                 )
             )

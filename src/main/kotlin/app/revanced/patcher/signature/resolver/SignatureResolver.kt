@@ -3,9 +3,9 @@ package app.revanced.patcher.signature.resolver
 import app.revanced.patcher.cache.MethodMap
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignature
+import app.revanced.patcher.signature.ResolverMethod
 import app.revanced.patcher.signature.PatternScanResult
 import app.revanced.patcher.signature.SignatureResolverResult
-import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
@@ -75,8 +75,42 @@ internal class SignatureResolver(
             return if (signature.opcodes == null) {
                 PatternScanResult(0, 0)
             } else {
-                method.implementation?.instructions?.scanFor(signature.opcodes)
+                method.implementation?.instructions?.let {
+                    compareOpcodes(signature, it)
+                }
             }
+        }
+
+        private fun compareOpcodes(
+            signature: MethodSignature,
+            instructions: Iterable<Instruction>
+        ): PatternScanResult? {
+            val count = instructions.count()
+            val pattern = signature.opcodes!!
+            val size = pattern.count()
+            var threshold = 0
+            if (signature.metadata.patcher.method is ResolverMethod.Fuzzy) {
+                threshold = signature.metadata.patcher.method.threshold
+            }
+
+            for (instructionIndex in 0 until count) {
+                var patternIndex = 0
+                var currentThreshold = threshold
+                while (instructionIndex + patternIndex < count) {
+                    println("currentThreshold = $currentThreshold")
+                    if (
+                        instructions.elementAt(
+                            instructionIndex + patternIndex
+                        ).opcode != pattern.elementAt(patternIndex)
+                        && currentThreshold-- == 0
+                    ) break
+                    if (++patternIndex < size) continue
+
+                    return PatternScanResult(instructionIndex, instructionIndex + patternIndex)
+                }
+            }
+
+            return null
         }
 
         private fun compareParameterTypes(
@@ -90,19 +124,3 @@ internal class SignatureResolver(
 
 private operator fun ClassDef.component1() = this
 private operator fun ClassDef.component2() = this.methods
-
-private fun MutableIterable<Instruction>.scanFor(pattern: Iterable<Opcode>): PatternScanResult? {
-    val count = this.count()
-    val size = pattern.count()
-    for (instructionIndex in 0 until count) {
-        var patternIndex = 0
-        while (instructionIndex + patternIndex < count) {
-            if (this.elementAt(instructionIndex + patternIndex).opcode != pattern.elementAt(patternIndex)) break
-            if (++patternIndex < size) continue
-
-            return PatternScanResult(instructionIndex, instructionIndex + patternIndex)
-        }
-    }
-
-    return null
-}
