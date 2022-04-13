@@ -46,20 +46,23 @@ data class MethodMetadata(
 
 /**
  * Metadata for the Patcher, this contains things like how the Patcher should interpret this signature.
- * @param method The method the Patcher should use to resolve the signature.
+ * @param method The method the resolver should use to resolve the signature.
  */
 data class PatcherMetadata(
-    val method: PatcherMethod
+    val method: ResolverMethod
 )
 
-interface PatcherMethod {
+/**
+ * The method the resolver should use to resolve the signature.
+ */
+interface ResolverMethod {
     /**
      * When comparing the signature, if one or more of the opcodes do not match, skip.
      */
-    class Direct : PatcherMethod
+    class Direct : ResolverMethod
 
     /**
      * When comparing the signature, if [threshold] or more of the opcodes do not match, skip.
      */
-    class Fuzzy(val threshold: Int) : PatcherMethod
+    class Fuzzy(val threshold: Int) : ResolverMethod
 }
