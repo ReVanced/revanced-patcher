@@ -79,7 +79,10 @@ internal class SignatureResolver(
             }
         }
 
-        private fun compareParameterTypes(signature: Iterable<String>, original: MutableList<out CharSequence>): Boolean {
+        private fun compareParameterTypes(
+            signature: Iterable<String>,
+            original: MutableList<out CharSequence>
+        ): Boolean {
             return signature.count() != original.size || !(signature.all { a -> original.any { it.startsWith(a) } })
         }
     }
