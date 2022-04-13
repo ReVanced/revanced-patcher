@@ -4,6 +4,7 @@ import app.revanced.patcher.cache.Cache
 import app.revanced.patcher.extensions.AccessFlagExtensions.Companion.or
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchMetadata
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.proxy.mutableTypes.MutableField.Companion.toMutable
@@ -61,7 +62,11 @@ internal class PatcherTest {
         )
 
         patcher.addPatches(listOf(
-            object : Patch("TestPatch") {
+            object : Patch(PatchMetadata(
+                "test-patch",
+                "My Test Patch",
+                "A very good description."
+            )) {
                 override fun execute(cache: Cache): PatchResult {
                     // Get the result from the resolver cache
                     val result = cache.methodMap["main-method"]
