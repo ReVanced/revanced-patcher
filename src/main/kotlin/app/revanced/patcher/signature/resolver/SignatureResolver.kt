@@ -89,8 +89,8 @@ internal class SignatureResolver(
             val pattern = signature.opcodes!!
             val size = pattern.count()
             var threshold = 0
-            if (signature.metadata.patcher.method is ResolverMethod.Fuzzy) {
-                threshold = signature.metadata.patcher.method.threshold
+            if (signature.metadata.patcher.resolverMethod is ResolverMethod.Fuzzy) {
+                threshold = signature.metadata.patcher.resolverMethod.threshold
             }
 
             for (instructionIndex in 0 until count) {

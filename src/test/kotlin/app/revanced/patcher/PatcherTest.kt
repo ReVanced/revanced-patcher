@@ -39,7 +39,7 @@ internal class PatcherTest {
                         comment = "Main method of TestClass. Version 1.0.0"
                     ),
                     patcher = PatcherMetadata(
-                        method = ResolverMethod.Fuzzy(2)
+                        resolverMethod = ResolverMethod.Fuzzy(2)
                     )
                 ),
                 "V",
