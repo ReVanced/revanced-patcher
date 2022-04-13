@@ -97,7 +97,6 @@ internal class SignatureResolver(
                 var patternIndex = 0
                 var currentThreshold = threshold
                 while (instructionIndex + patternIndex < count) {
-                    println("currentThreshold = $currentThreshold")
                     if (
                         instructions.elementAt(
                             instructionIndex + patternIndex
