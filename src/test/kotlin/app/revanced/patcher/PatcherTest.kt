@@ -1,14 +1,14 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.cache.Cache
+import app.revanced.patcher.extensions.AccessFlagExtensions.Companion.or
 import app.revanced.patcher.extensions.addInstructions
-import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod.Companion.toMutable
-import app.revanced.patcher.signature.MethodSignature
+import app.revanced.patcher.signature.*
 import app.revanced.patcher.smali.asInstruction
 import app.revanced.patcher.smali.asInstructions
 import com.google.common.collect.ImmutableList
@@ -31,8 +31,18 @@ internal class PatcherTest {
         val testSignatures = listOf(
             MethodSignature(
                 "main-method",
+                SignatureMetadata(
+                    method = MethodMetadata(
+                        definingClass = "TestClass",
+                        methodName = "main",
+                        comment = "Main method of TestClass. Version 1.0.0"
+                    ),
+                    patcher = PatcherMetadata(
+                        method = PatcherMethod.Fuzzy(2)
+                    )
+                ),
                 "V",
-                AccessFlags.PUBLIC or AccessFlags.STATIC,
+                AccessFlags.PUBLIC or AccessFlags.STATIC or AccessFlags.STATIC,
                 listOf("[L"),
                 listOf(
                     Opcode.CONST_STRING,
