@@ -126,10 +126,12 @@ internal class SignatureResolver(
                 val originalOpcode = instructions.elementAt(originalIndex).opcode
                 val patternOpcode = pattern.elementAt(patternIndex)
                 if (originalOpcode != patternOpcode) {
-                    this.add(PatternScanMethod.Fuzzy.Warning(
-                        originalOpcode, patternOpcode,
-                        originalIndex, patternIndex
-                    ))
+                    this.add(
+                        PatternScanMethod.Fuzzy.Warning(
+                            originalOpcode, patternOpcode,
+                            originalIndex, patternIndex
+                        )
+                    )
                 }
             }
         }
