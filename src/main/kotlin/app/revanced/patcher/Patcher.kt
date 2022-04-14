@@ -4,6 +4,7 @@ import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchMetadata
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.proxy.ClassProxy
+import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.util.ListBackedSet
 import lanchon.multidexlib2.BasicDexFileNamer
@@ -117,21 +118,36 @@ class Patcher(
     }
 
     /**
+     * Resolves all signatures.
+     * @throws IllegalStateException if no patches were added or signatures have already been resolved.
+     */
+    fun resolveSignatures(): List<MethodSignature> {
+        if (signaturesResolved) {
+            throw IllegalStateException("Signatures have already been resolved.")
+        }
+        val signatures = patcherData.patches.flatMap { it.signatures }
+        if (signatures.isEmpty()) {
+            throw IllegalStateException("No signatures found to resolve.")
+        }
+        SignatureResolver(patcherData.classes, signatures).resolve()
+        signaturesResolved = true
+        return signatures
+    }
+
+    /**
      * Apply patches loaded into the patcher.
      * @param stopOnError If true, the patches will stop on the first error.
      * @return A map of [PatchResultSuccess]. If the [Patch] was successfully applied,
      * [PatchResultSuccess] will always be returned to the wrapping Result object.
      * If the [Patch] failed to apply, an Exception will always be returned to the wrapping Result object.
+     * @throws IllegalStateException if signatures have not been resolved.
      */
     fun applyPatches(
         stopOnError: Boolean = false,
         callback: (String) -> Unit = {}
     ): Map<PatchMetadata, Result<PatchResultSuccess>> {
-
         if (!signaturesResolved) {
-            val signatures = patcherData.patches.flatMap { it.signatures }
-            SignatureResolver(patcherData.classes, signatures).resolve()
-            signaturesResolved = true
+            throw IllegalStateException("Signatures not yet resolved, please invoke Patcher#resolveSignatures() first.")
         }
         return buildMap {
             for (patch in patcherData.patches) {

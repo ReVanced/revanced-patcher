@@ -31,7 +31,6 @@ import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
 
-@Suppress("unused") // TODO: Add tests
 class ExamplePatch : Patch(
     metadata = PatchMetadata(
         shortName = "example-patch",
@@ -48,7 +47,7 @@ class ExamplePatch : Patch(
                     definingClass = "TestClass",
                     name = "main",
                 ),
-                patternScanMethod = PatternScanMethod.Fuzzy(2),
+                patternScanMethod = PatternScanMethod.Fuzzy(1),
                 compatiblePackages = listOf("com.example.examplePackage"),
                 description = "The main method of TestClass",
                 version = "1.0.0"
@@ -67,7 +66,6 @@ class ExamplePatch : Patch(
     // This function will be executed by the patcher.
     // You can treat it as a constructor
     override fun execute(patcherData: PatcherData): PatchResult {
-
         // Get the resolved method for the signature from the resolver cache
         val result = signatures.first().result!!
 
