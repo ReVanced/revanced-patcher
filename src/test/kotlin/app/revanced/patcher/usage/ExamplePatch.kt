@@ -56,7 +56,8 @@ class ExamplePatch : Patch(
             accessFlags = AccessFlags.PUBLIC or AccessFlags.STATIC,
             methodParameters = listOf("[L"),
             opcodes = listOf(
-                Opcode.CONST_STRING,
+                Opcode.SGET_OBJECT,
+                null,                 // Testing unknown opcodes.
                 Opcode.INVOKE_STATIC, // This is intentionally wrong to test the Fuzzy resolver.
                 Opcode.RETURN_VOID
             )
