@@ -18,7 +18,7 @@ data class SignatureResolverResult(
     /**
      * Returns the **mutable** method by the [resolvedMethodName] from the [definingClassProxy].
      *
-     * Please note, this method creates a [ClassProxy].
+     * Please note, this method allocates a [ClassProxy].
      * Use [immutableMethod] where possible.
      */
     val method

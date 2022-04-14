@@ -7,7 +7,7 @@ import org.jf.dexlib2.iface.ClassDef
  * A proxy class for a [ClassDef].
  *
  * A class proxy simply holds a reference to the original class
- * and creates a mutable clone for the original class if needed.
+ * and allocates a mutable clone for the original class if needed.
  * @param immutableClass The class to proxy
  * @param originalIndex The original index of the class in the list of classes
  */
@@ -19,9 +19,10 @@ class ClassProxy(
     internal lateinit var mutatedClass: MutableClass
 
     /**
-     * Creates and returns a mutable clone of the original class.
+     * Allocates and returns a mutable clone of the original class.
      * A patch should always use the original immutable class reference
      * to avoid unnecessary allocations for the mutable class.
+     * @return A mutable clone of the original class.
      */
     fun resolve(): MutableClass {
         if (!proxyUsed) {
