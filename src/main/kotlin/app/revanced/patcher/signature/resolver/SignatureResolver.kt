@@ -1,9 +1,8 @@
 package app.revanced.patcher.signature.resolver
 
-import app.revanced.patcher.cache.MethodMap
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignature
-import app.revanced.patcher.signature.ResolverMethod
+import app.revanced.patcher.signature.PatternScanMethod
 import app.revanced.patcher.signature.PatternScanResult
 import app.revanced.patcher.signature.SignatureResolverResult
 import org.jf.dexlib2.iface.ClassDef
@@ -14,19 +13,17 @@ internal class SignatureResolver(
     private val classes: List<ClassDef>,
     private val methodSignatures: Iterable<MethodSignature>
 ) {
-    fun resolve(methodMap: MethodMap) {
+    fun resolve() {
         for ((index, classDef) in classes.withIndex()) {
             for (signature in methodSignatures) {
-                if (methodMap.containsKey(signature.name)) {
-                    continue
-                }
+                if (signature.result != null) continue
 
                 for (method in classDef.methods) {
                     val patternScanData = compareSignatureToMethod(signature, method) ?: continue
 
                     // create class proxy, in case a patch needs mutability
                     val classProxy = ClassProxy(classDef, index)
-                    methodMap[signature.name] = SignatureResolverResult(
+                    signature.result = SignatureResolverResult(
                         classProxy,
                         patternScanData,
                         method.name,
@@ -89,8 +86,8 @@ internal class SignatureResolver(
             val pattern = signature.opcodes!!
             val size = pattern.count()
             var threshold = 0
-            if (signature.metadata.patcher.resolverMethod is ResolverMethod.Fuzzy) {
-                threshold = signature.metadata.patcher.resolverMethod.threshold
+            if (signature.methodSignatureMetadata.patternScanMethod is PatternScanMethod.Fuzzy) {
+                threshold = signature.methodSignatureMetadata.patternScanMethod.threshold
             }
 
             for (instructionIndex in 0 until count) {

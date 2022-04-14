@@ -3,65 +3,66 @@ package app.revanced.patcher.signature
 import org.jf.dexlib2.Opcode
 
 /**
- * Represents a method signature.
- * @param name A suggestive name for the method which the signature was created for.
- * @param metadata Metadata about this signature.
+ * Represents the [MethodSignature] for a method.
+ * @param methodSignatureMetadata Metadata for this [MethodSignature].
  * @param returnType The return type of the method.
  * @param accessFlags The access flags of the method.
  * @param methodParameters The parameters of the method.
- * @param opcodes A list of opcodes of the method.
+ * @param opcodes The list of opcodes of the method.
  */
-data class MethodSignature(
+class MethodSignature(
+    val methodSignatureMetadata: MethodSignatureMetadata,
+    internal val returnType: String?,
+    internal val accessFlags: Int?,
+    internal val methodParameters: Iterable<String>?,
+    internal val opcodes: Iterable<Opcode>?
+) {
+    /**
+     * The result of the signature
+     */
+    var result: SignatureResolverResult? = null // TODO: figure out how to get rid of nullable
+}
+
+/**
+ * Metadata about a [MethodSignature].
+ * @param name A suggestive name for the [MethodSignature].
+ * @param methodMetadata Metadata about the method for the [MethodSignature].
+ * @param patternScanMethod The pattern scanning method the pattern scanner should rely on.
+ * Can either be [PatternScanMethod.Fuzzy] or [PatternScanMethod.Direct].
+ * @param description An optional description of the [MethodSignature].
+ * @param compatiblePackages The list of packages the [MethodSignature] is compatible with.
+ * @param version The version of this signature.
+ */
+data class MethodSignatureMetadata(
     val name: String,
-    val metadata: SignatureMetadata,
-    val returnType: String?,
-    val accessFlags: Int?,
-    val methodParameters: Iterable<String>?,
-    val opcodes: Iterable<Opcode>?
+    val methodMetadata: MethodMetadata,
+    val patternScanMethod: PatternScanMethod,
+    @Suppress("ArrayInDataClass") val compatiblePackages: Array<String>,
+    val description: String?,
+    val version: String
 )
 
 /**
- * Metadata about the signature.
- * @param method Metadata about the method for this signature.
- * @param patcher Metadata for the Patcher, this contains things like how the Patcher should interpret this signature.
- */
-data class SignatureMetadata(
-    val method: MethodMetadata,
-    val patcher: PatcherMetadata
-)
-
-/**
- * Metadata about the method for this signature.
- * @param definingClass The defining class name of the original method.
- * @param methodName The name of the original method.
- * @param comment A comment about this method and the data above.
- * For example, the version this signature was originally made for.
+ * Metadata about the method for a [MethodSignature].
+ * @param definingClass The defining class name of the method.
+ * @param name A suggestive name for the method which the [MethodSignature] was created for.
  */
 data class MethodMetadata(
     val definingClass: String?,
-    val methodName: String?,
-    val comment: String
+    val name: String?
 )
 
 /**
- * Metadata for the Patcher, this contains things like how the Patcher should interpret this signature.
- * @param resolverMethod The method the resolver should use to resolve the signature.
+ * The method, the patcher should rely on when scanning the opcode pattern of a [MethodSignature]
  */
-data class PatcherMetadata(
-    val resolverMethod: ResolverMethod
-)
-
-/**
- * The method the resolver should use to resolve the signature.
- */
-interface ResolverMethod {
+interface PatternScanMethod {
     /**
      * When comparing the signature, if one or more of the opcodes do not match, skip.
      */
-    class Direct : ResolverMethod
+    class Direct : PatternScanMethod
 
     /**
      * When comparing the signature, if [threshold] or more of the opcodes do not match, skip.
      */
-    class Fuzzy(val threshold: Int) : ResolverMethod
+    class Fuzzy(internal val threshold: Int) : PatternScanMethod
 }
