@@ -70,12 +70,13 @@ class Patcher(
     fun save(): Map<String, MemoryDataStore> {
         val newDexFile = object : DexFile {
             private fun MutableList<ClassDef>.replaceWith(proxy: ClassProxy) {
-                if (proxy.proxyUsed) return
                 this[proxy.originalIndex] = proxy.mutatedClass
             }
 
             override fun getClasses(): Set<ClassDef> {
                 for (proxy in patcherData.classProxies) {
+                    if (!proxy.proxyUsed) continue
+
                     patcherData.classes.replaceWith(proxy)
                 }
                 for (patch in patcherData.patches) {
