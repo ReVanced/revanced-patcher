@@ -1,6 +1,5 @@
 package app.revanced.patcher.extensions
 
-import app.revanced.patcher.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.builder.BuilderInstruction
