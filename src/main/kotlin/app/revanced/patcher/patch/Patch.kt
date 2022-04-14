@@ -31,6 +31,6 @@ data class PatchMetadata(
     val shortName: String,
     val name: String,
     val description: String,
-    @Suppress("ArrayInDataClass") val compatiblePackages: Array<String>,
+    val compatiblePackages: Iterable<String>,
     val version: String,
 )

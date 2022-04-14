@@ -43,7 +43,7 @@ data class MethodSignatureMetadata(
     val name: String,
     val methodMetadata: MethodMetadata,
     val patternScanMethod: PatternScanMethod,
-    @Suppress("ArrayInDataClass") val compatiblePackages: Array<String>,
+    val compatiblePackages: Iterable<String>,
     val description: String?,
     val version: String
 )
