@@ -30,7 +30,11 @@ class MethodSignature(
         }
     val resolved: Boolean
         get() {
-            return result != null
+            var resolved = false
+            try {
+                resolved = result != null
+            } catch (_: Exception) {}
+            return resolved
         }
 }
 
