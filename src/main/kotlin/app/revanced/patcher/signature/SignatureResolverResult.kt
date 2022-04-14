@@ -36,7 +36,6 @@ data class SignatureResolverResult(
             it.name == resolvedMethodName
         }
 
-    @Suppress("Unused") // TODO(Sculas): remove this when we have coverage for this method.
     fun findParentMethod(signature: MethodSignature): SignatureResolverResult? {
         return SignatureResolver.resolveFromProxy(definingClassProxy, signature)
     }
