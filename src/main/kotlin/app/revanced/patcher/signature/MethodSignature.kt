@@ -88,7 +88,7 @@ interface PatternScanMethod {
          * or the signature was not yet resolved,
          * the list will be null.
          */
-        lateinit var warnings: List<Warning>
+        var warnings: List<Warning>? = null
 
         /**
          * Represents a resolver warning.

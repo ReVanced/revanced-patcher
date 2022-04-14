@@ -18,9 +18,13 @@ internal class PatcherTest {
             val patternScanMethod = signature.metadata.patternScanMethod
             if (patternScanMethod is PatternScanMethod.Fuzzy) {
                 val warnings = patternScanMethod.warnings
-                println("Signature ${signature.metadata.name} had ${warnings.size} warnings!")
-                for (warning in warnings) {
-                    println(warning.toString())
+                if (warnings != null) {
+                    println("Signature ${signature.metadata.name} had ${warnings.size} warnings!")
+                    for (warning in warnings) {
+                        println(warning.toString())
+                    }
+                } else {
+                    println("Signature ${signature.metadata.name} used the fuzzy resolver, but the warnings list is null!")
                 }
             }
         }
