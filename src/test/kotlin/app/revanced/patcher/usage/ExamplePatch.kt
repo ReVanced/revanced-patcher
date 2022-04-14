@@ -32,30 +32,30 @@ import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
 
 class ExamplePatch : Patch(
-    metadata = PatchMetadata(
-        shortName = "example-patch",
-        name = "ReVanced example patch",
-        description = "A demonstrative patch to feature the core features of the ReVanced patcher",
-        compatiblePackages = listOf("com.example.examplePackage"),
-        version = "0.0.1"
+    PatchMetadata(
+        "example-patch",
+        "ReVanced example patch",
+        "A demonstrative patch to feature the core features of the ReVanced patcher",
+        listOf("com.example.examplePackage"),
+        "0.0.1"
     ),
-    signatures = setOf(
+    setOf(
         MethodSignature(
             MethodSignatureMetadata(
-                name = "Example signature",
-                methodMetadata = MethodMetadata(
-                    definingClass = "TestClass",
-                    name = "main",
+                "Example signature",
+                MethodMetadata(
+                    "TestClass",
+                    "main",
                 ),
-                patternScanMethod = PatternScanMethod.Fuzzy(1),
-                compatiblePackages = listOf("com.example.examplePackage"),
-                description = "The main method of TestClass",
-                version = "1.0.0"
+                PatternScanMethod.Fuzzy(1),
+                listOf("com.example.examplePackage"),
+                "The main method of TestClass",
+                "1.0.0"
             ),
-            returnType = "V",
-            accessFlags = AccessFlags.PUBLIC or AccessFlags.STATIC,
-            methodParameters = listOf("[L"),
-            opcodes = listOf(
+            "V",
+            AccessFlags.PUBLIC or AccessFlags.STATIC,
+            listOf("[L"),
+            listOf(
                 Opcode.SGET_OBJECT,
                 null,                 // Testing unknown opcodes.
                 Opcode.INVOKE_STATIC, // This is intentionally wrong to test the Fuzzy resolver.
