@@ -1,8 +1,8 @@
 package app.revanced.patcher.usage
 
 import app.revanced.patcher.PatcherData
-import app.revanced.patcher.extensions.AccessFlagExtensions.Companion.or
 import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchMetadata
 import app.revanced.patcher.patch.PatchResult
@@ -31,12 +31,13 @@ import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
 
+@Suppress("unused") // TODO: Add tests
 class ExamplePatch : Patch(
     metadata = PatchMetadata(
         shortName = "example-patch",
         name = "ReVanced example patch",
         description = "A demonstrative patch to feature the core features of the ReVanced patcher",
-        compatiblePackages = arrayOf("com.example.examplePackage"),
+        compatiblePackages = listOf("com.example.examplePackage"),
         version = "0.0.1"
     ),
     signatures = setOf(
@@ -48,12 +49,12 @@ class ExamplePatch : Patch(
                     name = "main",
                 ),
                 patternScanMethod = PatternScanMethod.Fuzzy(2),
-                compatiblePackages = arrayOf("com.example.examplePackage"),
+                compatiblePackages = listOf("com.example.examplePackage"),
                 description = "The main method of TestClass",
                 version = "1.0.0"
             ),
             returnType = "V",
-            accessFlags = AccessFlags.PUBLIC or AccessFlags.STATIC or AccessFlags.STATIC,
+            accessFlags = AccessFlags.PUBLIC or AccessFlags.STATIC,
             methodParameters = listOf("[L"),
             opcodes = listOf(
                 Opcode.CONST_STRING,
