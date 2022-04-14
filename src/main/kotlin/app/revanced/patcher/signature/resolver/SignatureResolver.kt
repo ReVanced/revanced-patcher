@@ -83,24 +83,26 @@ internal class SignatureResolver(
             val count = instructions.count()
             val pattern = signature.opcodes!!
             val size = pattern.count()
-            var threshold = 0
-            if (signature.methodSignatureMetadata.patternScanMethod is PatternScanMethod.Fuzzy) {
-                threshold = signature.methodSignatureMetadata.patternScanMethod.threshold
-            }
+            val method = signature.metadata.patternScanMethod
+            val threshold = if (method is PatternScanMethod.Fuzzy)
+                method.threshold else 0
 
             for (instructionIndex in 0 until count) {
                 var patternIndex = 0
                 var currentThreshold = threshold
                 while (instructionIndex + patternIndex < count) {
-                    if (
-                        instructions.elementAt(
-                            instructionIndex + patternIndex
-                        ).opcode != pattern.elementAt(patternIndex)
-                        && currentThreshold-- == 0
-                    ) break
+                    val originalOpcode = instructions.elementAt(instructionIndex + patternIndex).opcode
+                    val patternOpcode = pattern.elementAt(patternIndex)
+                    if (originalOpcode != patternOpcode && currentThreshold-- == 0) break
                     if (++patternIndex < size) continue
 
-                    return PatternScanResult(instructionIndex, instructionIndex + patternIndex)
+                    val result = PatternScanResult(instructionIndex, instructionIndex + patternIndex)
+                    if (method is PatternScanMethod.Fuzzy) {
+                        method.warnings = generateWarnings(
+                            signature, instructions, result
+                        )
+                    }
+                    return result
                 }
             }
 
@@ -112,6 +114,24 @@ internal class SignatureResolver(
             original: MutableList<out CharSequence>
         ): Boolean {
             return signature.count() != original.size || !(signature.all { a -> original.any { it.startsWith(a) } })
+        }
+
+        private fun generateWarnings(
+            signature: MethodSignature,
+            instructions: Iterable<Instruction>,
+            scanResult: PatternScanResult,
+        ) = buildList {
+            val pattern = signature.opcodes!!
+            for ((patternIndex, originalIndex) in (scanResult.startIndex until scanResult.endIndex).withIndex()) {
+                val originalOpcode = instructions.elementAt(originalIndex).opcode
+                val patternOpcode = pattern.elementAt(patternIndex)
+                if (originalOpcode != patternOpcode) {
+                    this.add(PatternScanMethod.Fuzzy.Warning(
+                        originalOpcode, patternOpcode,
+                        originalIndex, patternIndex
+                    ))
+                }
+            }
         }
     }
 }

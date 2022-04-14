@@ -5,14 +5,14 @@ import org.jf.dexlib2.Opcode
 
 /**
  * Represents the [MethodSignature] for a method.
- * @param methodSignatureMetadata Metadata for this [MethodSignature].
+ * @param metadata Metadata for this [MethodSignature].
  * @param returnType The return type of the method.
  * @param accessFlags The access flags of the method.
  * @param methodParameters The parameters of the method.
  * @param opcodes The list of opcodes of the method.
  */
 class MethodSignature(
-    val methodSignatureMetadata: MethodSignatureMetadata,
+    val metadata: MethodSignatureMetadata,
     internal val returnType: String?,
     internal val accessFlags: Int?,
     internal val methodParameters: Iterable<String>?,
@@ -24,8 +24,12 @@ class MethodSignature(
     var result: SignatureResolverResult? = null // TODO: figure out how to get rid of nullable
         get() {
             return field ?: throw MethodNotFoundException(
-                "Could not resolve required signature ${methodSignatureMetadata.name}"
+                "Could not resolve required signature ${metadata.name}"
             )
+        }
+    val resolved: Boolean
+        get() {
+            return result != null
         }
 }
 
@@ -70,5 +74,29 @@ interface PatternScanMethod {
     /**
      * When comparing the signature, if [threshold] or more of the opcodes do not match, skip.
      */
-    class Fuzzy(internal val threshold: Int) : PatternScanMethod
+    class Fuzzy(internal val threshold: Int) : PatternScanMethod {
+        /**
+         * A list of warnings the resolver found.
+         *
+         * This list will be allocated when the signature has been found.
+         * Meaning, if the signature was not found,
+         * or the signature was not yet resolved,
+         * the list will be null.
+         */
+        lateinit var warnings: List<Warning>
+
+        /**
+         * Represents a resolver warning.
+         * @param expected The opcode the signature expected it to be.
+         * @param actual The actual opcode it was. Always different from [expected].
+         * @param expectedIndex The index for [expected]. Relative to the instruction list.
+         * @param actualIndex The index for [actual]. Relative to the pattern list from the signature.
+         */
+        data class Warning(
+            val expected: Opcode,
+            val actual: Opcode,
+            val expectedIndex: Int,
+            val actualIndex: Int,
+        )
+    }
 }
