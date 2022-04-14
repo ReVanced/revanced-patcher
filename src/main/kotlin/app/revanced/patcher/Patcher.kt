@@ -41,6 +41,7 @@ class Patcher(
      * @param allowedOverwrites A list of class types that are allowed to be overwritten.
      * @param throwOnDuplicates If this is set to true, the patcher will throw an exception if a duplicate class has been found.
      */
+    @Suppress("unused")
     fun addFiles(
         files: Iterable<File>,
         allowedOverwrites: Iterable<String> = emptyList(),
