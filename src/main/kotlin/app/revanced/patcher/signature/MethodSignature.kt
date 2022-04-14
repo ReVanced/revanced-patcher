@@ -21,7 +21,7 @@ class MethodSignature(
     /**
      * The result of the signature
      */
-    var result: SignatureResolverResult? = null // TODO: figure out how to get rid of nullable
+    var result: SignatureResolverResult? = null
         get() {
             return field ?: throw MethodNotFoundException(
                 "Could not resolve required signature ${metadata.name}"
