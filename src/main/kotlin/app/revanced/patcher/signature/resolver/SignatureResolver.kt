@@ -16,8 +16,6 @@ internal class SignatureResolver(
     fun resolve() {
         for ((index, classDef) in classes.withIndex()) {
             for (signature in methodSignatures) {
-                if (signature.result != null) continue
-
                 for (method in classDef.methods) {
                     val patternScanData = compareSignatureToMethod(signature, method) ?: continue
 
