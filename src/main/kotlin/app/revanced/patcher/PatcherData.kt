@@ -1,18 +1,15 @@
-package app.revanced.patcher.cache
+package app.revanced.patcher
 
+import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.SignatureResolverResult
 import org.jf.dexlib2.iface.ClassDef
 
-class Cache(
+class PatcherData(
     internal val classes: MutableList<ClassDef>,
-    val methodMap: MethodMap = MethodMap()
 ) {
-    // TODO: currently we create ClassProxies at multiple places, which is why we could have merge conflicts
-    //  this can be solved by creating a dedicated method for creating class proxies,
-    //  if the class proxy already exists in the cached proxy list below.
-    //  The to-do in the method findClass is related
-    internal val classProxy = mutableSetOf<ClassProxy>()
+    internal val classProxies = mutableSetOf<ClassProxy>()
+    internal val patches = mutableSetOf<Patch>()
 
     /**
      * Find a class by a given class name
@@ -25,23 +22,23 @@ class Cache(
      * @return A proxy for the first class that matches the predicate
      */
     fun findClass(predicate: (ClassDef) -> Boolean): ClassProxy? {
-        // TODO: find a cleaner way to store all proxied classes.
-        //  Currently we have to search the method map as well as the class proxy list which is not elegant
+        // if we already proxied the class matching the predicate...
+        for (patch in patches) {
+            for (signature in patch.signatures) {
+                val result = signature.result
+                result ?: continue
 
-        // if we already proxied the class matching the predicate,
-        val proxiedClass = classProxy.find { predicate(it.immutableClass) }
-        // return that proxy
-        if (proxiedClass != null) return proxiedClass
-        // if we already have the class matching the predicate in the method map,
-        val result = methodMap.entries.find { predicate(it.value.definingClassProxy.immutableClass) }?.value
-        if (result != null) return result.definingClassProxy
+                if (predicate(result.definingClassProxy.immutableClass))
+                    return result.definingClassProxy  // ...then return that proxy
+            }
+        }
 
         // else search the original class list
         val (foundClass, index) = classes.findIndexed(predicate) ?: return null
         // create a class proxy with the index of the class in the classes list
         val classProxy = ClassProxy(foundClass, index)
         // add it to the cache and
-        this.classProxy.add(classProxy)
+        this.classProxies.add(classProxy)
         // return the proxy class
         return classProxy
     }
@@ -55,7 +52,7 @@ class MethodMap : LinkedHashMap<String, SignatureResolverResult>() {
 
 internal class MethodNotFoundException(s: String) : Exception(s)
 
-internal inline fun <T> Iterable<T>.find(predicate: (T) -> Boolean): T? {
+internal inline fun <reified T> Iterable<T>.find(predicate: (T) -> Boolean): T? {
     for (element in this) {
         if (predicate(element)) {
             return element
