@@ -1,5 +1,6 @@
 package app.revanced.patcher.signature
 
+import app.revanced.patcher.MethodNotFoundException
 import org.jf.dexlib2.Opcode
 
 /**
@@ -21,6 +22,11 @@ class MethodSignature(
      * The result of the signature
      */
     var result: SignatureResolverResult? = null // TODO: figure out how to get rid of nullable
+        get() {
+            return field ?: throw MethodNotFoundException(
+                "Could not resolve required signature ${methodSignatureMetadata.name}"
+            )
+        }
 }
 
 /**
