@@ -13,8 +13,8 @@ import app.revanced.patcher.signature.MethodMetadata
 import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.MethodSignatureMetadata
 import app.revanced.patcher.signature.PatternScanMethod
-import app.revanced.patcher.smali.asInstruction
-import app.revanced.patcher.smali.asInstructions
+import app.revanced.patcher.smali.toInstruction
+import app.revanced.patcher.smali.toInstructions
 import com.google.common.collect.ImmutableList
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Format
@@ -135,7 +135,7 @@ class ExamplePatch : Patch(
         // store the fields initial value into the first virtual register
         implementation.replaceInstruction(
             0,
-            "sget-object v0, LTestClass;->dummyField:Ljava/io/PrintStream;".asInstruction()
+            "sget-object v0, LTestClass;->dummyField:Ljava/io/PrintStream;".toInstruction()
         )
 
         // Now let's create a new call to our method and print the return value!
@@ -147,7 +147,7 @@ class ExamplePatch : Patch(
                         invoke-static { }, LTestClass;->returnHello()Ljava/lang/String;
                         move-result-object v1
                         invoke-virtual { v0, v1 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
-                    """.trimIndent().asInstructions()
+                    """.trimIndent().toInstructions()
         implementation.addInstructions(startIndex + 2, instructions)
 
         // Finally, tell the patcher that this patch was a success.

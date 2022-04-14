@@ -53,5 +53,5 @@ class InlineSmaliCompiler {
     }
 }
 
-fun String.asInstructions() = InlineSmaliCompiler.compileMethodInstructions(this)
-fun String.asInstruction() = this.asInstructions().first()
+fun String.toInstructions() = InlineSmaliCompiler.compileMethodInstructions(this)
+fun String.toInstruction() = this.toInstructions().first()
