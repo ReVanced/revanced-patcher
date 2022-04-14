@@ -93,7 +93,11 @@ internal class SignatureResolver(
                 while (instructionIndex + patternIndex < count) {
                     val originalOpcode = instructions.elementAt(instructionIndex + patternIndex).opcode
                     val patternOpcode = pattern.elementAt(patternIndex)
-                    if (originalOpcode != patternOpcode && currentThreshold-- == 0) break
+                    if (
+                        patternOpcode != null && // unknown opcode
+                        originalOpcode != patternOpcode &&
+                        currentThreshold-- == 0
+                    ) break
                     if (++patternIndex < size) continue
 
                     val result = PatternScanResult(instructionIndex, instructionIndex + patternIndex)
@@ -125,7 +129,10 @@ internal class SignatureResolver(
             for ((patternIndex, originalIndex) in (scanResult.startIndex until scanResult.endIndex).withIndex()) {
                 val originalOpcode = instructions.elementAt(originalIndex).opcode
                 val patternOpcode = pattern.elementAt(patternIndex)
-                if (originalOpcode != patternOpcode) {
+                if (
+                    patternOpcode != null && // unknown opcode
+                    originalOpcode != patternOpcode
+                ) {
                     this.add(
                         PatternScanMethod.Fuzzy.Warning(
                             originalOpcode, patternOpcode,
