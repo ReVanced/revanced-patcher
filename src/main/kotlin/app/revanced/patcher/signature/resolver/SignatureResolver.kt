@@ -135,8 +135,8 @@ internal class SignatureResolver(
                 ) {
                     this.add(
                         PatternScanMethod.Fuzzy.Warning(
-                            patternOpcode, originalOpcode,
-                            patternIndex, originalIndex,
+                            originalOpcode, patternOpcode,
+                            originalIndex, patternIndex,
                         )
                     )
                 }
