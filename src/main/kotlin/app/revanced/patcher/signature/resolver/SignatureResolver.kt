@@ -126,8 +126,8 @@ internal class SignatureResolver(
             scanResult: PatternScanResult,
         ) = buildList {
             val pattern = signature.opcodes!!
-            for ((patternIndex, originalIndex) in (scanResult.startIndex until scanResult.endIndex).withIndex()) {
-                val correctOpcode = instructions.elementAt(originalIndex).opcode
+            for ((patternIndex, instructionIndex) in (scanResult.startIndex until scanResult.endIndex).withIndex()) {
+                val correctOpcode = instructions.elementAt(instructionIndex).opcode
                 val patternOpcode = pattern.elementAt(patternIndex)
                 if (
                     patternOpcode != null && // unknown opcode
@@ -136,7 +136,7 @@ internal class SignatureResolver(
                     this.add(
                         PatternScanMethod.Fuzzy.Warning(
                             correctOpcode, patternOpcode,
-                            originalIndex, patternIndex,
+                            instructionIndex, patternIndex,
                         )
                     )
                 }
