@@ -146,7 +146,7 @@ class Patcher(
         stopOnError: Boolean = false,
         callback: (String) -> Unit = {}
     ): Map<PatchMetadata, Result<PatchResultSuccess>> {
-        if (!signaturesResolved) {
+        if (!signaturesResolved && patcherData.patches.isNotEmpty()) {
             throw IllegalStateException("Signatures not yet resolved, please invoke Patcher#resolveSignatures() first.")
         }
         return buildMap {
