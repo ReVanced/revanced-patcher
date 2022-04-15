@@ -93,15 +93,15 @@ interface PatternScanMethod {
         /**
          * Represents a resolver warning.
          * @param expected The opcode the signature expected it to be.
-         * @param actual The actual opcode it was. Always different from [expected].
-         * @param expectedIndex The index for [expected]. Relative to the instruction list.
-         * @param actualIndex The index for [actual]. Relative to the pattern list from the signature.
+         * @param current The current opcode in the pattern. Always different from [expected].
+         * @param instructionIndex The index of the opcode relative to the instruction list.
+         * @param patternIndex The index of the opcode relative to the pattern list from the signature.
          */
         data class Warning(
             val expected: Opcode,
-            val actual: Opcode,
-            val expectedIndex: Int,
-            val actualIndex: Int,
+            val current: Opcode,
+            val instructionIndex: Int,
+            val patternIndex: Int,
         )
     }
 }
