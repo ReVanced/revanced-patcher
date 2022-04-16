@@ -99,6 +99,7 @@ internal class SignatureResolver(
                         currentThreshold-- == 0
                     ) break
                     if (++patternIndex < size) continue
+                    patternIndex-- // fix pattern offset
 
                     val result = PatternScanResult(instructionIndex, instructionIndex + patternIndex)
                     if (method is PatternScanMethod.Fuzzy) {
