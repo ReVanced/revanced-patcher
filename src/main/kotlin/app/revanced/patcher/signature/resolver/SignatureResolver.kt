@@ -5,9 +5,12 @@ import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.PatternScanMethod
 import app.revanced.patcher.signature.PatternScanResult
 import app.revanced.patcher.signature.SignatureResolverResult
+import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
+import org.jf.dexlib2.iface.instruction.formats.Instruction21c
+import org.jf.dexlib2.iface.reference.StringReference
 
 internal class SignatureResolver(
     private val classes: List<ClassDef>,
@@ -65,6 +68,25 @@ internal class SignatureResolver(
                 if (compareParameterTypes(signature.methodParameters, method.parameterTypes)) {
                     return null
                 }
+            }
+
+            method.implementation?.instructions?.let { instructions ->
+                signature.strings?.let {
+                    val stringsList = it as MutableSet
+
+                    for (instruction in instructions) {
+                        if (instruction.opcode != Opcode.CONST_STRING) continue
+
+                        val string = ((instruction as Instruction21c).reference as StringReference).string
+                        if (stringsList.contains(string)) {
+                            stringsList.remove(string)
+                        }
+                    }
+
+                    if (stringsList.isNotEmpty()) return null
+                }
+
+                compareOpcodes(signature, instructions)
             }
 
             return if (signature.opcodes == null) {

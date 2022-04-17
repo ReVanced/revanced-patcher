@@ -10,6 +10,7 @@ import org.jf.dexlib2.Opcode
  * @param accessFlags The access flags of the method.
  * @param methodParameters The parameters of the method.
  * @param opcodes The list of opcodes of the method.
+ * @param strings A list of strings which a method contains.
  * A `null` opcode is equals to an unknown opcode.
  */
 class MethodSignature(
@@ -17,7 +18,8 @@ class MethodSignature(
     internal val returnType: String?,
     internal val accessFlags: Int?,
     internal val methodParameters: Iterable<String>?,
-    internal val opcodes: Iterable<Opcode?>?
+    internal val opcodes: Iterable<Opcode?>?,
+    internal val strings: Iterable<String>?
 ) {
     /**
      * The result of the signature
