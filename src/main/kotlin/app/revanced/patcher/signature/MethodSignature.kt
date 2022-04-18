@@ -1,6 +1,7 @@
 package app.revanced.patcher.signature
 
 import app.revanced.patcher.MethodNotFoundException
+import app.revanced.patcher.patch.PackageMetadata
 import org.jf.dexlib2.Opcode
 
 /**
@@ -54,16 +55,6 @@ data class MethodSignatureMetadata(
     val patternScanMethod: PatternScanMethod,
     val compatiblePackages: Iterable<PackageMetadata>,
     val description: String?,
-    val version: String
-)
-
-/**
- * Metadata about a package.
- * @param name The package name.
- * @param version The version of the package.
- */
-data class PackageMetadata(
-    val name: String,
     val version: String
 )
 

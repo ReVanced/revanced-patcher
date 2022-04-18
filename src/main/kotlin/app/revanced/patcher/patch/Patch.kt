@@ -31,6 +31,16 @@ data class PatchMetadata(
     val shortName: String,
     val name: String,
     val description: String,
-    val compatiblePackages: Iterable<String>,
+    val compatiblePackages: Iterable<PackageMetadata>,
     val version: String,
+)
+
+/**
+ * Metadata about a package.
+ * @param name The package name.
+ * @param versions Compatible versions of the package.
+ */
+data class PackageMetadata(
+    val name: String,
+    val versions: Iterable<String>
 )
