@@ -4,14 +4,15 @@ import app.revanced.patcher.methodWalker.MethodWalker
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.SignatureResolverResult
+import app.revanced.patcher.util.ProxyBackedClassList
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 
 class PatcherData(
-    internal val classes: MutableList<ClassDef>,
+    internalClasses: MutableList<ClassDef>,
 ) {
-    internal val classProxies = mutableSetOf<ClassProxy>()
-    internal val patches = mutableSetOf<Patch>()
+    val classes = ProxyBackedClassList(internalClasses)
+    internal val patches = mutableListOf<Patch>()
 
     /**
      * Find a class by a given class name
@@ -30,19 +31,14 @@ class PatcherData(
                 val result = signature.result
                 result ?: continue
 
-                if (predicate(result.definingClassProxy.immutableClass))
-                    return result.definingClassProxy  // ...then return that proxy
+                if (predicate(result.definingClassProxy.immutableClass)) return result.definingClassProxy  // ...then return that proxy
             }
         }
 
-        // else search the original class list
-        val (foundClass, index) = classes.findIndexed(predicate) ?: return null
-        // create a class proxy with the index of the class in the classes list
-        val classProxy = ClassProxy(foundClass, index)
-        // add it to the cache and
-        this.classProxies.add(classProxy)
-        // return the proxy class
-        return classProxy
+        // else resolve the class to a proxy and return it, if the predicate is matching a class
+        return classes.find(predicate)?.let {
+            proxy(it)
+        }
     }
 }
 
@@ -74,4 +70,13 @@ internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair
         }
     }
     return null
+}
+
+fun PatcherData.proxy(classProxy: ClassDef): ClassProxy {
+    var proxy = this.classes.proxies.find { it.immutableClass.type == classProxy.type }
+    if (proxy == null) {
+        proxy = ClassProxy(classProxy)
+        this.classes.proxies.add(proxy)
+    }
+    return proxy
 }

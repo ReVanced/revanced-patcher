@@ -9,11 +9,9 @@ import org.jf.dexlib2.iface.ClassDef
  * A class proxy simply holds a reference to the original class
  * and allocates a mutable clone for the original class if needed.
  * @param immutableClass The class to proxy
- * @param originalIndex The original index of the class in the list of classes
  */
 class ClassProxy(
     val immutableClass: ClassDef,
-    val originalIndex: Int,
 ) {
     internal var proxyUsed = false
     internal lateinit var mutatedClass: MutableClass
