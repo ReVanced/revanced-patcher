@@ -3,7 +3,6 @@ package app.revanced.patcher
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchMetadata
 import app.revanced.patcher.patch.PatchResultSuccess
-import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.util.ListBackedSet
@@ -49,18 +48,18 @@ class Patcher(
         for (file in files) {
             val dexFile = MultiDexIO.readDexFile(true, file, NAMER, null, null)
             for (classDef in dexFile.classes) {
-                val e = patcherData.classes.findIndexed { it.type == classDef.type }
+                val e = patcherData.classes.internalClasses.findIndexed { it.type == classDef.type }
                 if (e != null) {
                     if (throwOnDuplicates) {
                         throw Exception("Class ${classDef.type} has already been added to the patcher.")
                     }
                     val (_, idx) = e
                     if (allowedOverwrites.contains(classDef.type)) {
-                        patcherData.classes[idx] = classDef
+                        patcherData.classes.internalClasses[idx] = classDef
                     }
                     continue
                 }
-                patcherData.classes.add(classDef)
+                patcherData.classes.internalClasses.add(classDef)
             }
         }
     }
@@ -70,28 +69,17 @@ class Patcher(
      */
     fun save(): Map<String, MemoryDataStore> {
         val newDexFile = object : DexFile {
-            private fun MutableList<ClassDef>.replaceWith(proxy: ClassProxy) {
-                this[proxy.originalIndex] = proxy.mutatedClass
-            }
-
             override fun getClasses(): Set<ClassDef> {
-                for (proxy in patcherData.classProxies) {
+                val classes = patcherData.classes
+                val internalClasses = classes.internalClasses
+                for (proxy in classes.proxies) {
                     if (!proxy.proxyUsed) continue
 
-                    patcherData.classes.replaceWith(proxy)
+                    val index = internalClasses.indexOfFirst { it.type == proxy.immutableClass.type }
+                    internalClasses[index] = proxy.mutatedClass
                 }
-                for (patch in patcherData.patches) {
-                    for (signature in patch.signatures) {
-                        val result = signature.result
-                        result ?: continue
 
-                        val proxy = result.definingClassProxy
-                        if (!proxy.proxyUsed) continue
-
-                        patcherData.classes.replaceWith(proxy)
-                    }
-                }
-                return ListBackedSet(patcherData.classes)
+                return ListBackedSet(internalClasses)
             }
 
             override fun getOpcodes(): Opcodes {
@@ -129,7 +117,7 @@ class Patcher(
         if (signatures.isEmpty()) {
             throw IllegalStateException("No signatures found to resolve.")
         }
-        SignatureResolver(patcherData.classes, signatures).resolve()
+        SignatureResolver(patcherData.classes.internalClasses, signatures).resolve(patcherData)
         signaturesResolved = true
         return signatures
     }

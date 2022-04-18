@@ -1,5 +1,7 @@
 package app.revanced.patcher.signature.resolver
 
+import app.revanced.patcher.PatcherData
+import app.revanced.patcher.proxy
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.PatternScanMethod
@@ -16,14 +18,14 @@ internal class SignatureResolver(
     private val classes: List<ClassDef>,
     private val methodSignatures: Iterable<MethodSignature>
 ) {
-    fun resolve() {
-        for ((index, classDef) in classes.withIndex()) {
+    fun resolve(patcherData: PatcherData) {
+        for (classDef in classes) {
             for (signature in methodSignatures) {
                 for (method in classDef.methods) {
                     val patternScanData = compareSignatureToMethod(signature, method) ?: continue
 
                     // create class proxy, in case a patch needs mutability
-                    val classProxy = ClassProxy(classDef, index)
+                    val classProxy = patcherData.proxy(classDef)
                     signature.result = SignatureResolverResult(
                         classProxy,
                         patternScanData,

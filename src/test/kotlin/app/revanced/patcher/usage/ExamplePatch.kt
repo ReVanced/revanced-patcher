@@ -3,10 +3,7 @@ package app.revanced.patcher.usage
 import app.revanced.patcher.PatcherData
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
-import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.PatchMetadata
-import app.revanced.patcher.patch.PatchResult
-import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.revanced.patcher.signature.MethodMetadata
@@ -31,12 +28,19 @@ import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
 
+val packageMetadata = listOf(
+    PackageMetadata(
+        "com.example.examplePackage",
+        listOf("0.0.1", "0.0.2")
+    )
+)
+
 class ExamplePatch : Patch(
     PatchMetadata(
         "example-patch",
         "ReVanced example patch",
         "A demonstrative patch to feature the core features of the ReVanced patcher",
-        listOf("com.example.examplePackage"),
+        packageMetadata,
         "0.0.1"
     ),
     setOf(
@@ -48,7 +52,7 @@ class ExamplePatch : Patch(
                     "main",
                 ),
                 PatternScanMethod.Fuzzy(1),
-                listOf("com.example.examplePackage"),
+                packageMetadata,
                 "The main method of TestClass",
                 "1.0.0"
             ),
