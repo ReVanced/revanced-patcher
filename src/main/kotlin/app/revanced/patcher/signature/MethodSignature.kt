@@ -46,7 +46,7 @@ class MethodSignature(
  * @param methodMetadata Metadata about the method for the [MethodSignature].
  * @param patternScanMethod The pattern scanning method the pattern scanner should rely on.
  * Can either be [PatternScanMethod.Fuzzy] or [PatternScanMethod.Direct].
- * @param description An optional description of the [MethodSignature].
+ * @param description An optional description for the [MethodSignature].
  * @param compatiblePackages The list of packages the [MethodSignature] is compatible with.
  * @param version The version of this signature.
  */
@@ -54,8 +54,18 @@ data class MethodSignatureMetadata(
     val name: String,
     val methodMetadata: MethodMetadata?,
     val patternScanMethod: PatternScanMethod,
-    val compatiblePackages: Iterable<String>,
+    val compatiblePackages: Iterable<PackageMetadata>,
     val description: String?,
+    val version: String
+)
+
+/**
+ * Metadata about a package.
+ * @param name The package name.
+ * @param version The version of the package.
+ */
+data class PackageMetadata(
+    val name: String,
     val version: String
 )
 
