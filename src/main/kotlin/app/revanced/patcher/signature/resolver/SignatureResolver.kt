@@ -85,8 +85,6 @@ internal class SignatureResolver(
 
                     if (stringsList.isNotEmpty()) return null
                 }
-
-                compareOpcodes(signature, instructions)
             }
 
             return if (signature.opcodes == null) {
