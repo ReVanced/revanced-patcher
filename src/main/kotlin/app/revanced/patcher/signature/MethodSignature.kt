@@ -94,8 +94,8 @@ interface PatternScanMethod {
 
         /**
          * Represents a resolver warning.
-         * @param correctOpcode The opcode the signature expected it to be.
-         * @param wrongOpcode The opcode the signature currently has.
+         * @param correctOpcode The opcode the instruction list has.
+         * @param wrongOpcode The opcode the pattern list of the signature currently has.
          * @param instructionIndex The index of the opcode relative to the instruction list.
          * @param patternIndex The index of the opcode relative to the pattern list from the signature.
          */

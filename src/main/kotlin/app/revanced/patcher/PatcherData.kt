@@ -1,9 +1,11 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.methodWalker.MethodWalker
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.SignatureResolverResult
 import org.jf.dexlib2.iface.ClassDef
+import org.jf.dexlib2.iface.Method
 
 class PatcherData(
     internal val classes: MutableList<ClassDef>,
@@ -59,6 +61,10 @@ internal inline fun <reified T> Iterable<T>.find(predicate: (T) -> Boolean): T? 
         }
     }
     return null
+}
+
+fun PatcherData.toMethodWalker(startMethod: Method): MethodWalker {
+    return MethodWalker(this, startMethod)
 }
 
 internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair<T, Int>? {
