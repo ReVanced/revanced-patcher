@@ -19,7 +19,7 @@ class MethodSignature(
     internal val accessFlags: Int?,
     internal val methodParameters: Iterable<String>?,
     internal val opcodes: Iterable<Opcode?>?,
-    internal val strings: Iterable<String>?
+    internal val strings: Iterable<String>? = null
 ) {
     /**
      * The result of the signature
