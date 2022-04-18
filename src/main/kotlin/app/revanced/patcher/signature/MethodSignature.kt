@@ -50,7 +50,7 @@ class MethodSignature(
  */
 data class MethodSignatureMetadata(
     val name: String,
-    val methodMetadata: MethodMetadata,
+    val methodMetadata: MethodMetadata?,
     val patternScanMethod: PatternScanMethod,
     val compatiblePackages: Iterable<String>,
     val description: String?,
