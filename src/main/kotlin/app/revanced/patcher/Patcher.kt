@@ -107,6 +107,9 @@ class Patcher(
         }
 
         val signatures = patcherData.patches.flatMap { it.signatures }
+
+        if (signatures.isEmpty()) return emptyList()
+
         SignatureResolver(patcherData.classes.internalClasses, signatures).resolve(patcherData)
         signaturesResolved = true
         return signatures
