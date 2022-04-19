@@ -15,18 +15,21 @@ class ProxyBackedClassList(internal val internalClasses: MutableList<ClassDef>) 
     }
 
     /**
-     * Apply all resolved classes into [internalClasses] and clear the [proxies] list.
+     * Apply all resolved classes into [internalClasses] and clean the [proxies] list.
      */
     fun applyProxies() {
-        proxies.forEachIndexed { i, proxy ->
-            if (!proxy.proxyUsed) return@forEachIndexed
+        // FIXME: check if this could cause issues when multiple patches use the same proxy
+        proxies.removeIf { proxy ->
+            // if the proxy is unused, keep it in the list
+            if (!proxy.proxyUsed) return@removeIf false
 
+            // if it has been used, replace the internal class which it proxied
             val index = internalClasses.indexOfFirst { it.type == proxy.immutableClass.type }
             internalClasses[index] = proxy.mutatedClass
 
-            proxies.removeAt(i) // FIXME: check if this could cause issues when multiple patches use the same proxy
+            // return true to remove it from the proxies list
+            return@removeIf true
         }
-
     }
 
     override val size get() = internalClasses.size
