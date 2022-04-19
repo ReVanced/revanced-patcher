@@ -16,6 +16,15 @@ class ClassProxy(
     internal var proxyUsed = false
     internal lateinit var mutatedClass: MutableClass
 
+    init {
+        // in the instance, that a [MutableClass] is being proxied,
+        // do not create an additional clone and reuse the [MutableClass] instance
+        if (immutableClass is MutableClass) {
+            mutatedClass = immutableClass
+            proxyUsed = true
+        }
+    }
+
     /**
      * Allocates and returns a mutable clone of the original class.
      * A patch should always use the original immutable class reference
