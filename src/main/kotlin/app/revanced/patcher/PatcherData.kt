@@ -72,10 +72,10 @@ internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair
     return null
 }
 
-fun PatcherData.proxy(classProxy: ClassDef): ClassProxy {
-    var proxy = this.classes.proxies.find { it.immutableClass.type == classProxy.type }
+fun PatcherData.proxy(classDef: ClassDef): ClassProxy {
+    var proxy = this.classes.proxies.find { it.immutableClass.type == classDef.type }
     if (proxy == null) {
-        proxy = ClassProxy(classProxy)
+        proxy = ClassProxy(classDef)
         this.classes.proxies.add(proxy)
     }
     return proxy

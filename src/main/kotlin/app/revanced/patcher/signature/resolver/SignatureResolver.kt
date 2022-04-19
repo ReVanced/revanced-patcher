@@ -19,8 +19,8 @@ internal class SignatureResolver(
     private val methodSignatures: Iterable<MethodSignature>
 ) {
     fun resolve(patcherData: PatcherData) {
-        for (classDef in classes) {
-            for (signature in methodSignatures) {
+        for (signature in methodSignatures) {
+            for (classDef in classes) {
                 for (method in classDef.methods) {
                     val patternScanData = compareSignatureToMethod(signature, method) ?: continue
 
