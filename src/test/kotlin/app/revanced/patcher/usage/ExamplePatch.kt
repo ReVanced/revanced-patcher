@@ -64,7 +64,8 @@ class ExamplePatch : Patch(
                 null,                 // Testing unknown opcodes.
                 Opcode.INVOKE_STATIC, // This is intentionally wrong to test the Fuzzy resolver.
                 Opcode.RETURN_VOID
-            )
+            ),
+            null
         )
     )
 ) {
