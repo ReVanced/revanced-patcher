@@ -99,16 +99,14 @@ class Patcher(
 
     /**
      * Resolves all signatures.
-     * @throws IllegalStateException if no patches were added or signatures have already been resolved.
+     * @throws IllegalStateException if signatures have already been resolved.
      */
     fun resolveSignatures(): List<MethodSignature> {
         if (signaturesResolved) {
             throw IllegalStateException("Signatures have already been resolved.")
         }
+
         val signatures = patcherData.patches.flatMap { it.signatures }
-        if (signatures.isEmpty()) {
-            throw IllegalStateException("No signatures found to resolve.")
-        }
         SignatureResolver(patcherData.classes.internalClasses, signatures).resolve(patcherData)
         signaturesResolved = true
         return signatures
@@ -120,14 +118,13 @@ class Patcher(
      * @return A map of [PatchResultSuccess]. If the [Patch] was successfully applied,
      * [PatchResultSuccess] will always be returned to the wrapping Result object.
      * If the [Patch] failed to apply, an Exception will always be returned to the wrapping Result object.
-     * @throws IllegalStateException if signatures have not been resolved.
      */
     fun applyPatches(
         stopOnError: Boolean = false,
         callback: (String) -> Unit = {}
     ): Map<PatchMetadata, Result<PatchResultSuccess>> {
         if (!signaturesResolved && patcherData.patches.isNotEmpty()) {
-            throw IllegalStateException("Signatures not yet resolved, please invoke Patcher#resolveSignatures() first.")
+            resolveSignatures()
         }
         return buildMap {
             for (patch in patcherData.patches) {
