@@ -70,16 +70,8 @@ class Patcher(
     fun save(): Map<String, MemoryDataStore> {
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
-                val classes = patcherData.classes
-                val internalClasses = classes.internalClasses
-                for (proxy in classes.proxies) {
-                    if (!proxy.proxyUsed) continue
-
-                    val index = internalClasses.indexOfFirst { it.type == proxy.immutableClass.type }
-                    internalClasses[index] = proxy.mutatedClass
-                }
-
-                return ListBackedSet(internalClasses)
+                patcherData.classes.applyProxies()
+                return ListBackedSet(patcherData.classes.internalClasses)
             }
 
             override fun getOpcodes(): Opcodes {
