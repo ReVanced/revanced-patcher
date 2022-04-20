@@ -72,17 +72,18 @@ internal class SignatureResolver(
                 }
             }
 
-            method.implementation?.instructions?.let { instructions ->
-                signature.strings?.let {
-                    val stringsList = it as MutableSet
+            signature.strings?.let { strings ->
+                method.implementation ?: return null
+
+                method.implementation!!.instructions.let { instructions ->
+                    val stringsList = strings.toMutableList()
 
                     for (instruction in instructions) {
                         if (instruction.opcode != Opcode.CONST_STRING) continue
 
                         val string = ((instruction as Instruction21c).reference as StringReference).string
-                        if (stringsList.contains(string)) {
-                            stringsList.remove(string)
-                        }
+                        val i = stringsList.indexOfFirst { it == string }
+                        if (i != -1) stringsList.removeAt(i)
                     }
 
                     if (stringsList.isNotEmpty()) return null
