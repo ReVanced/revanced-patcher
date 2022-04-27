@@ -1,6 +1,7 @@
 package app.revanced.patcher.signature.resolver
 
 import app.revanced.patcher.PatcherData
+import app.revanced.patcher.extensions.parametersEqual
 import app.revanced.patcher.proxy
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignature
@@ -29,7 +30,7 @@ internal class SignatureResolver(
                     signature.result = SignatureResolverResult(
                         classProxy,
                         patternScanData,
-                        method.name,
+                        method,
                     )
                 }
             }
@@ -44,7 +45,7 @@ internal class SignatureResolver(
                 return SignatureResolverResult(
                     classProxy,
                     result,
-                    method.name,
+                    method,
                 )
             }
             return null
@@ -67,7 +68,7 @@ internal class SignatureResolver(
             }
 
             signature.methodParameters?.let {
-                if (compareParameterTypes(signature.methodParameters, method.parameterTypes)) {
+                if (!parametersEqual(signature.methodParameters, method.parameterTypes)) {
                     return null
                 }
             }
@@ -135,13 +136,6 @@ internal class SignatureResolver(
             }
 
             return null
-        }
-
-        private fun compareParameterTypes(
-            signature: Iterable<String>,
-            original: MutableList<out CharSequence>
-        ): Boolean {
-            return signature.count() != original.size || !(signature.all { a -> original.any { it.startsWith(a) } })
         }
 
         private fun generateWarnings(

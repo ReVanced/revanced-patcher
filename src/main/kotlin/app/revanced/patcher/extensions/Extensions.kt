@@ -5,8 +5,10 @@ import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.builder.BuilderInstruction
 import org.jf.dexlib2.builder.MutableMethodImplementation
 import org.jf.dexlib2.iface.Method
+import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.immutable.ImmutableMethod
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation
+import org.jf.dexlib2.util.MethodUtil
 
 infix fun AccessFlags.or(other: AccessFlags) = this.value or other.value
 infix fun Int.or(other: AccessFlags) = this or other.value
@@ -23,7 +25,7 @@ fun MutableMethodImplementation.addInstructions(index: Int, instructions: List<B
  * This may be a positive or negative number.
  * @return The **immutable** cloned method. Call [toMutable] or [cloneMutable] to get a **mutable** copy.
  */
-fun Method.clone(
+internal fun Method.clone(
     registerCount: Int = 0,
 ): ImmutableMethod {
     val clonedImplementation = implementation?.let {
@@ -52,6 +54,28 @@ fun Method.clone(
  * This may be a positive or negative number.
  * @return The **mutable** cloned method. Call [clone] to get an **immutable** copy.
  */
-fun Method.cloneMutable(
+internal fun Method.cloneMutable(
     registerCount: Int = 0,
 ) = clone(registerCount).toMutable()
+
+internal fun Method.softCompareTo(
+    otherMethod: MethodReference
+): Boolean {
+    if (MethodUtil.isConstructor(this) && !parametersEqual(this.parameterTypes, otherMethod.parameterTypes))
+        return false
+    return this.name == otherMethod.name
+}
+
+// FIXME: also check the order of parameters as different order equals different method overload
+internal fun parametersEqual(
+    parameters1: Iterable<CharSequence>,
+    parameters2: Iterable<CharSequence>
+): Boolean {
+    return parameters1.count() == parameters2.count() && parameters1.all { parameter ->
+        parameters2.any {
+            it.startsWith(
+                parameter
+            )
+        }
+    }
+}
