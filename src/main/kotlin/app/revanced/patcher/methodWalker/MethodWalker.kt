@@ -2,6 +2,7 @@ package app.revanced.patcher.methodWalker
 
 import app.revanced.patcher.MethodNotFoundException
 import app.revanced.patcher.PatcherData
+import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod
 import org.jf.dexlib2.Format
 import org.jf.dexlib2.iface.Method
@@ -38,13 +39,17 @@ class MethodWalker internal constructor(
 
             Preconditions.checkFormat(instruction.opcode, Format.Format35c)
 
-            val newMethodRef = (instruction as Instruction35c).reference as MethodReference
-            val proxy = patcherData.findClass(newMethodRef.definingClass)!!
+            val newMethod = (instruction as Instruction35c).reference as MethodReference
+            val proxy = patcherData.findClass(newMethod.definingClass)!!
 
             val methods = if (walkMutable) proxy.resolve().methods else proxy.immutableClass.methods
-            currentMethod = methods.first { it.name == newMethodRef.name }
+            currentMethod = methods.first { it ->
+                return@first it.softCompareTo(newMethod)
+            }
             return this
         }
         throw MethodNotFoundException("This method can not be walked at offset $offset inside the method ${currentMethod.name}")
     }
+
+
 }
