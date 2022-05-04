@@ -1,23 +1,6 @@
-package app.revanced.patcher.patch
+package app.revanced.patcher.patch.implementation.metadata
 
-import app.revanced.patcher.PatcherData
-import app.revanced.patcher.signature.MethodSignature
-
-/**
- * Patch for the Patcher.
- * @param metadata [PatchMetadata] for the patch.
- * @param signatures A list of [MethodSignature] this patch relies on.
- */
-abstract class Patch(
-    val metadata: PatchMetadata,
-    val signatures: Iterable<MethodSignature>
-) {
-
-    /**
-     * The main function of the [Patch] which the patcher will call.
-     */
-    abstract fun execute(patcherData: PatcherData): PatchResult
-}
+import app.revanced.patcher.patch.base.Patch
 
 /**
  * Metadata about a [Patch].
