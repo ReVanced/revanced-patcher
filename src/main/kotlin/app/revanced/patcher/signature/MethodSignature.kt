@@ -1,7 +1,7 @@
 package app.revanced.patcher.signature
 
-import app.revanced.patcher.MethodNotFoundException
-import app.revanced.patcher.patch.PackageMetadata
+import app.revanced.patcher.data.implementation.MethodNotFoundException
+import app.revanced.patcher.patch.implementation.metadata.PackageMetadata
 import org.jf.dexlib2.Opcode
 
 /**
@@ -36,7 +36,8 @@ class MethodSignature(
             var resolved = false
             try {
                 resolved = result != null
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
             return resolved
         }
 }

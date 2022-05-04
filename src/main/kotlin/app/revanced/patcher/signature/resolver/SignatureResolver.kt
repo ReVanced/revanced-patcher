@@ -1,8 +1,8 @@
 package app.revanced.patcher.signature.resolver
 
-import app.revanced.patcher.PatcherData
+import app.revanced.patcher.data.PatcherData
+import app.revanced.patcher.data.implementation.proxy
 import app.revanced.patcher.extensions.parametersEqual
-import app.revanced.patcher.proxy
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.PatternScanMethod
@@ -26,7 +26,7 @@ internal class SignatureResolver(
                     val patternScanData = compareSignatureToMethod(signature, method) ?: continue
 
                     // create class proxy, in case a patch needs mutability
-                    val classProxy = patcherData.proxy(classDef)
+                    val classProxy = patcherData.bytecodeData.proxy(classDef)
                     signature.result = SignatureResolverResult(
                         classProxy,
                         patternScanData,

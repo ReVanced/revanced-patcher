@@ -24,6 +24,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
 
+    api("org.apktool:apktool-lib:2.6.1")
     api("app.revanced:multidexlib2:2.5.2.r2")
     api("org.smali:smali:2.5.2")
 

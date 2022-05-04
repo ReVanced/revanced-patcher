@@ -1,9 +1,13 @@
 package app.revanced.patcher.usage
 
-import app.revanced.patcher.PatcherData
+import app.revanced.patcher.data.implementation.BytecodeData
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.implementation.BytecodePatch
+import app.revanced.patcher.patch.implementation.metadata.PackageMetadata
+import app.revanced.patcher.patch.implementation.metadata.PatchMetadata
+import app.revanced.patcher.patch.implementation.misc.PatchResult
+import app.revanced.patcher.patch.implementation.misc.PatchResultSuccess
 import app.revanced.patcher.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.revanced.patcher.signature.MethodMetadata
@@ -35,7 +39,7 @@ val packageMetadata = listOf(
     )
 )
 
-class ExamplePatch : Patch(
+class ExampleBytecodePatch : BytecodePatch(
     PatchMetadata(
         "example-patch",
         "ReVanced example patch",
@@ -71,7 +75,7 @@ class ExamplePatch : Patch(
 ) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor
-    override fun execute(patcherData: PatcherData): PatchResult {
+    override fun execute(data: BytecodeData): PatchResult {
         // Get the resolved method for the signature from the resolver cache
         val result = signatures.first().result!!
 
@@ -86,7 +90,7 @@ class ExamplePatch : Patch(
         implementation.replaceStringAt(startIndex, "Hello, ReVanced! Editing bytecode.")
 
         // Get the class in which the method matching our signature is defined in.
-        val mainClass = patcherData.findClass {
+        val mainClass = data.findClass {
             it.type == result.definingClassProxy.immutableClass.type
         }!!.resolve()
 
