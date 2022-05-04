@@ -1,18 +1,22 @@
-package app.revanced.patcher
+package app.revanced.patcher.data.implementation
 
+import app.revanced.patcher.data.base.Data
 import app.revanced.patcher.methodWalker.MethodWalker
-import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.base.Patch
+import app.revanced.patcher.patch.implementation.BytecodePatch
 import app.revanced.patcher.proxy.ClassProxy
 import app.revanced.patcher.signature.SignatureResolverResult
 import app.revanced.patcher.util.ProxyBackedClassList
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 
-class PatcherData(
-    internalClasses: MutableList<ClassDef>,
-) {
+class BytecodeData(
+    // FIXME: ugly solution due to design.
+    //  It does not make sense for a BytecodeData instance to have access to the patches
+    private val patches: List<Patch<Data>>,
+    internalClasses: MutableList<ClassDef>
+) : Data {
     val classes = ProxyBackedClassList(internalClasses)
-    internal val patches = mutableListOf<Patch>()
 
     /**
      * Find a class by a given class name
@@ -27,6 +31,7 @@ class PatcherData(
     fun findClass(predicate: (ClassDef) -> Boolean): ClassProxy? {
         // if we already proxied the class matching the predicate...
         for (patch in patches) {
+            if (patch !is BytecodePatch) continue
             for (signature in patch.signatures) {
                 val result = signature.result
                 result ?: continue
@@ -34,13 +39,13 @@ class PatcherData(
                 if (predicate(result.definingClassProxy.immutableClass)) return result.definingClassProxy  // ...then return that proxy
             }
         }
-
         // else resolve the class to a proxy and return it, if the predicate is matching a class
         return classes.find(predicate)?.let {
             proxy(it)
         }
     }
 }
+
 
 class MethodMap : LinkedHashMap<String, SignatureResolverResult>() {
     override fun get(key: String): SignatureResolverResult {
@@ -59,7 +64,7 @@ internal inline fun <reified T> Iterable<T>.find(predicate: (T) -> Boolean): T? 
     return null
 }
 
-fun PatcherData.toMethodWalker(startMethod: Method): MethodWalker {
+fun BytecodeData.toMethodWalker(startMethod: Method): MethodWalker {
     return MethodWalker(this, startMethod)
 }
 
@@ -72,7 +77,7 @@ internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair
     return null
 }
 
-fun PatcherData.proxy(classDef: ClassDef): ClassProxy {
+fun BytecodeData.proxy(classDef: ClassDef): ClassProxy {
     var proxy = this.classes.proxies.find { it.immutableClass.type == classDef.type }
     if (proxy == null) {
         proxy = ClassProxy(classDef)

@@ -1,7 +1,8 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.signature.PatternScanMethod
-import app.revanced.patcher.usage.ExamplePatch
+import app.revanced.patcher.usage.ExampleBytecodePatch
+import app.revanced.patcher.usage.ExampleResourcePatch
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
@@ -9,8 +10,14 @@ import kotlin.test.assertTrue
 internal class PatcherTest {
     @Test
     fun testPatcher() {
-        val patcher = Patcher(File(PatcherTest::class.java.getResource("/test1.dex")!!.toURI()))
-        patcher.addPatches(listOf(ExamplePatch()))
+        val patcher = Patcher(
+            File(PatcherTest::class.java.getResource("/test1.dex")!!.toURI()),
+            "exampleCacheDirectory",
+            patchResources = true
+        )
+
+        patcher.addPatches(listOf(ExampleBytecodePatch(), ExampleResourcePatch()))
+
         for (signature in patcher.resolveSignatures()) {
             if (!signature.resolved) {
                 throw Exception("Signature ${signature.metadata.name} was not resolved!")

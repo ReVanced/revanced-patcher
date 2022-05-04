@@ -1,11 +1,19 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.PatchMetadata
-import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.data.PatcherData
+import app.revanced.patcher.data.base.Data
+import app.revanced.patcher.data.implementation.findIndexed
+import app.revanced.patcher.patch.base.Patch
+import app.revanced.patcher.patch.implementation.BytecodePatch
+import app.revanced.patcher.patch.implementation.ResourcePatch
+import app.revanced.patcher.patch.implementation.metadata.PatchMetadata
+import app.revanced.patcher.patch.implementation.misc.PatchResultSuccess
 import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.util.ListBackedSet
+import brut.androlib.Androlib
+import brut.androlib.ApkDecoder
+import brut.directory.ExtFile
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
@@ -18,20 +26,46 @@ import java.io.File
 val NAMER = BasicDexFileNamer()
 
 /**
- * ReVanced Patcher.
- * @param input The input file (an apk or any other multi dex container).
+ * The ReVanced Patcher.
+ * @param inputFile The input file (usually an apk file).
+ * @param resourceCacheDirectory Directory to cache resources.
+ * @param patchResources Weather to use the resource patcher. Resources will still need to be decoded.
  */
 class Patcher(
-    input: File,
+    inputFile: File,
+    // TODO: maybe a file system in memory is better. Could cause high memory usage.
+    private val resourceCacheDirectory: String,
+    private val patchResources: Boolean = false
 ) {
+    val packageVersion: String
+    val packageName: String
+
     private val patcherData: PatcherData
     private val opcodes: Opcodes
     private var signaturesResolved = false
+    private val androlib = Androlib()
 
     init {
-        val dexFile = MultiDexIO.readDexFile(true, input, NAMER, null, null)
+        // FIXME: only use androlib instead of ApkDecoder which is currently a temporal solution
+        val decoder = ApkDecoder(androlib)
+
+        decoder.setApkFile(inputFile)
+        decoder.setDecodeSources(ApkDecoder.DECODE_SOURCES_NONE)
+        decoder.setForceDelete(true)
+        // decode resources to cache directory
+        decoder.setOutDir(File(resourceCacheDirectory))
+        decoder.decode()
+
+        // get package info
+        packageName = decoder.resTable.packageOriginal
+        packageVersion = decoder.resTable.versionInfo.versionName
+
+        // read dex files
+        val dexFile = MultiDexIO.readDexFile(true, inputFile, NAMER, null, null)
         opcodes = dexFile.opcodes
-        patcherData = PatcherData(dexFile.classes.toMutableList())
+
+        // save to patcher data
+        patcherData = PatcherData(dexFile.classes.toMutableList(), resourceCacheDirectory)
     }
 
     /**
@@ -48,18 +82,18 @@ class Patcher(
         for (file in files) {
             val dexFile = MultiDexIO.readDexFile(true, file, NAMER, null, null)
             for (classDef in dexFile.classes) {
-                val e = patcherData.classes.internalClasses.findIndexed { it.type == classDef.type }
+                val e = patcherData.bytecodeData.classes.internalClasses.findIndexed { it.type == classDef.type }
                 if (e != null) {
                     if (throwOnDuplicates) {
                         throw Exception("Class ${classDef.type} has already been added to the patcher.")
                     }
                     val (_, idx) = e
                     if (allowedOverwrites.contains(classDef.type)) {
-                        patcherData.classes.internalClasses[idx] = classDef
+                        patcherData.bytecodeData.classes.internalClasses[idx] = classDef
                     }
                     continue
                 }
-                patcherData.classes.internalClasses.add(classDef)
+                patcherData.bytecodeData.classes.internalClasses.add(classDef)
             }
         }
     }
@@ -70,8 +104,8 @@ class Patcher(
     fun save(): Map<String, MemoryDataStore> {
         val newDexFile = object : DexFile {
             override fun getClasses(): Set<ClassDef> {
-                patcherData.classes.applyProxies()
-                return ListBackedSet(patcherData.classes.internalClasses)
+                patcherData.bytecodeData.classes.applyProxies()
+                return ListBackedSet(patcherData.bytecodeData.classes.internalClasses)
             }
 
             override fun getOpcodes(): Opcodes {
@@ -79,6 +113,13 @@ class Patcher(
             }
         }
 
+        // build modified resources
+        if (patchResources) {
+            val extDir = ExtFile(resourceCacheDirectory)
+            androlib.buildResources(extDir, androlib.readMetaFile(extDir).usesFramework)
+        }
+
+        // write dex modified files
         val output = mutableMapOf<String, MemoryDataStore>()
         MultiDexIO.writeDexFile(
             true, -1, // core count
@@ -93,24 +134,25 @@ class Patcher(
      * Add a patch to the patcher.
      * @param patches The patches to add.
      */
-    fun addPatches(patches: Iterable<Patch>) {
+    fun addPatches(patches: Iterable<Patch<Data>>) {
         patcherData.patches.addAll(patches)
     }
 
     /**
      * Resolves all signatures.
-     * @throws IllegalStateException if signatures have already been resolved.
      */
     fun resolveSignatures(): List<MethodSignature> {
-        if (signaturesResolved) {
-            throw IllegalStateException("Signatures have already been resolved.")
+        val signatures = buildList {
+            for (patch in patcherData.patches) {
+                if (patch !is BytecodePatch) continue
+                this.addAll(patch.signatures)
+            }
+        }
+        if (signatures.isEmpty()) {
+            return emptyList()
         }
 
-        val signatures = patcherData.patches.flatMap { it.signatures }
-
-        if (signatures.isEmpty()) return emptyList()
-
-        SignatureResolver(patcherData.classes.internalClasses, signatures).resolve(patcherData)
+        SignatureResolver(patcherData.bytecodeData.classes.internalClasses, signatures).resolve(patcherData)
         signaturesResolved = true
         return signatures
     }
@@ -126,14 +168,24 @@ class Patcher(
         stopOnError: Boolean = false,
         callback: (String) -> Unit = {}
     ): Map<PatchMetadata, Result<PatchResultSuccess>> {
-        if (!signaturesResolved && patcherData.patches.isNotEmpty()) {
+        if (!signaturesResolved) {
             resolveSignatures()
         }
         return buildMap {
             for (patch in patcherData.patches) {
+                val resourcePatch = patch is ResourcePatch
+                if (!patchResources && resourcePatch) continue
+
                 callback(patch.metadata.shortName)
                 val result: Result<PatchResultSuccess> = try {
-                    val pr = patch.execute(patcherData)
+                    val data = if (resourcePatch) {
+                        patcherData.resourceData
+                    } else {
+                        patcherData.bytecodeData
+                    }
+
+                    val pr = patch.execute(data)
+
                     if (pr.isSuccess()) {
                         Result.success(pr.success()!!)
                     } else {

@@ -1,7 +1,7 @@
 package app.revanced.patcher.methodWalker
 
-import app.revanced.patcher.MethodNotFoundException
-import app.revanced.patcher.PatcherData
+import app.revanced.patcher.data.implementation.BytecodeData
+import app.revanced.patcher.data.implementation.MethodNotFoundException
 import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.proxy.mutableTypes.MutableMethod
 import org.jf.dexlib2.Format
@@ -12,11 +12,11 @@ import org.jf.dexlib2.util.Preconditions
 
 /**
  * Find a method from another method via instruction offsets.
- * @param patcherData The patcherData to use when resolving the next method reference.
+ * @param bytecodeData The bytecodeData to use when resolving the next method reference.
  * @param currentMethod The method to start from.
  */
 class MethodWalker internal constructor(
-    private val patcherData: PatcherData,
+    private val bytecodeData: BytecodeData,
     private var currentMethod: Method
 ) {
     /**
@@ -40,7 +40,7 @@ class MethodWalker internal constructor(
             Preconditions.checkFormat(instruction.opcode, Format.Format35c)
 
             val newMethod = (instruction as Instruction35c).reference as MethodReference
-            val proxy = patcherData.findClass(newMethod.definingClass)!!
+            val proxy = bytecodeData.findClass(newMethod.definingClass)!!
 
             val methods = if (walkMutable) proxy.resolve().methods else proxy.immutableClass.methods
             currentMethod = methods.first { it ->
