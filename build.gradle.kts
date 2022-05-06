@@ -9,7 +9,7 @@ group = "app.revanced"
 repositories {
     mavenCentral()
     maven {
-        url = uri("https://maven.pkg.github.com/ReVancedTeam/multidexlib2")
+        url = uri("https://maven.pkg.github.com/revanced/multidexlib2")
         credentials {
             // DO NOT set these variables in the project's gradle.properties.
             // Instead, you should set them in:
@@ -52,7 +52,7 @@ publishing {
         if (isGitHubCI) {
             maven {
                 name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/ReVancedTeam/revanced-patcher")
+                url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
                 credentials {
                     username = System.getenv("GITHUB_ACTOR")
                     password = System.getenv("GITHUB_TOKEN")
