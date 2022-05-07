@@ -12,7 +12,7 @@ import app.revanced.patcher.signature.MethodSignature
 import app.revanced.patcher.signature.resolver.SignatureResolver
 import app.revanced.patcher.util.ListBackedSet
 import brut.androlib.Androlib
-import brut.androlib.ApkDecoder
+import brut.androlib.meta.UsesFramework
 import brut.directory.ExtFile
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
@@ -40,25 +40,32 @@ class Patcher(
     val packageVersion: String
     val packageName: String
 
+    private val usesFramework: UsesFramework
     private val patcherData: PatcherData
     private val opcodes: Opcodes
     private var signaturesResolved = false
     private val androlib = Androlib()
 
+
     init {
-        // FIXME: only use androlib instead of ApkDecoder which is currently a temporal solution
-        val decoder = ApkDecoder(androlib)
+        val extFileInput = ExtFile(inputFile)
+        val resourceTable = androlib.getResTable(extFileInput, true)
+        val outDir = File(resourceCacheDirectory)
 
-        decoder.setApkFile(inputFile)
-        decoder.setDecodeSources(ApkDecoder.DECODE_SOURCES_NONE)
-        decoder.setForceDelete(true)
-        // decode resources to cache directory
-        decoder.setOutDir(File(resourceCacheDirectory))
-        decoder.decode()
+        if (outDir.exists()) outDir.deleteRecursively()
+        outDir.mkdir()
 
-        // get package info
-        packageName = decoder.resTable.packageOriginal
-        packageVersion = decoder.resTable.versionInfo.versionName
+        // 1. decode resources to cache directory
+        androlib.decodeManifestWithResources(extFileInput, outDir, resourceTable)
+        androlib.decodeResourcesFull(extFileInput, outDir, resourceTable)
+
+        // 2. read framework ids from the resource table
+        usesFramework = UsesFramework()
+        usesFramework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
+
+        // 3. read package info
+        packageName = resourceTable.packageOriginal
+        packageVersion = resourceTable.versionInfo.versionName
 
         // read dex files
         val dexFile = MultiDexIO.readDexFile(true, inputFile, NAMER, null, null)
@@ -116,7 +123,7 @@ class Patcher(
         // build modified resources
         if (patchResources) {
             val extDir = ExtFile(resourceCacheDirectory)
-            androlib.buildResources(extDir, androlib.readMetaFile(extDir).usesFramework)
+            androlib.buildResources(extDir, usesFramework)
         }
 
         // write dex modified files
