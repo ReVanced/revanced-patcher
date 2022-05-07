@@ -1,3 +1,10 @@
+# [1.0.0-dev.10](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.9...v1.0.0-dev.10) (2022-05-07)
+
+
+### Bug Fixes
+
+* qualifying `Element` with wrong package ([4d74de4](https://github.com/revanced/revanced-patcher/commit/4d74de4061f26c0d7c17fabd849051b429d86033))
+
 # [1.0.0-dev.9](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.8...v1.0.0-dev.9) (2022-05-07)
 
 
