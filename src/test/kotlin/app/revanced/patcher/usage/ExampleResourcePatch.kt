@@ -5,7 +5,7 @@ import app.revanced.patcher.patch.implementation.ResourcePatch
 import app.revanced.patcher.patch.implementation.metadata.PatchMetadata
 import app.revanced.patcher.patch.implementation.misc.PatchResult
 import app.revanced.patcher.patch.implementation.misc.PatchResultSuccess
-import com.sun.org.apache.xerces.internal.dom.ElementImpl
+import org.w3c.dom.Element
 
 class ExampleResourcePatch : ResourcePatch(
     PatchMetadata(
@@ -23,7 +23,7 @@ class ExampleResourcePatch : ResourcePatch(
         val element = editor
             .file
             .getElementsByTagName("application")
-            .item(0) as ElementImpl
+            .item(0) as Element
         element
             .setAttribute(
                 "exampleAttribute",
