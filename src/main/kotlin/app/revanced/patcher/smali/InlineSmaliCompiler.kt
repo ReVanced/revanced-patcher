@@ -15,8 +15,8 @@ import java.io.InputStreamReader
 private const val METHOD_TEMPLATE = """
 .class public Linlinecompiler;
 .super Ljava/lang/Object;
-.method public static compiler()V
-    .registers 1
+.method public static compiler(%s)V
+    .registers %d
     %s
 .end method
 """
@@ -25,14 +25,15 @@ class InlineSmaliCompiler {
     companion object {
         /**
          * Compiles a string of Smali code to a list of instructions.
+         * p0, p1 etc. will only work correctly if the parameters and registers are passed.
          * Do not cross the boundaries of the control flow (if-nez insn, etc),
          * as that will result in exceptions since the labels cannot be calculated.
          * Do not create dummy labels to fix the issue, since the code addresses will
          * be messed up and results in broken Dalvik bytecode.
          * FIXME: Fix the above issue. When this is fixed, add the proper conversions in [InstructionConverter].
          */
-        fun compileMethodInstructions(instructions: String): List<BuilderInstruction> {
-            val input = METHOD_TEMPLATE.format(instructions)
+        fun compileMethodInstructions(instructions: String, parameters: String, registers: Int): List<BuilderInstruction> {
+            val input = METHOD_TEMPLATE.format(parameters, registers, instructions)
             val reader = InputStreamReader(input.byteInputStream())
             val lexer: LexerErrorInterface = smaliFlexLexer(reader, 15)
             val tokens = CommonTokenStream(lexer as TokenSource)
@@ -53,5 +54,5 @@ class InlineSmaliCompiler {
     }
 }
 
-fun String.toInstructions() = InlineSmaliCompiler.compileMethodInstructions(this)
-fun String.toInstruction() = this.toInstructions().first()
+fun String.toInstructions(parameters: String = "", registers: Int = 1) = InlineSmaliCompiler.compileMethodInstructions(this, parameters, registers)
+fun String.toInstruction(parameters: String = "", registers: Int = 1) = this.toInstructions(parameters, registers).first()
