@@ -1,6 +1,6 @@
 package app.revanced.patcher.util
 
-class ListBackedSet<E>(private val list: MutableList<E>) : MutableSet<E> {
+internal class ListBackedSet<E>(private val list: MutableList<E>) : MutableSet<E> {
     override val size get() = list.size
     override fun add(element: E) = list.add(element)
     override fun addAll(elements: Collection<E>) = list.addAll(elements)

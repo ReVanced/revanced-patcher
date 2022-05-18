@@ -1,12 +1,11 @@
 package app.revanced.patcher.data.implementation
 
 import app.revanced.patcher.data.base.Data
-import app.revanced.patcher.methodWalker.MethodWalker
 import app.revanced.patcher.patch.base.Patch
 import app.revanced.patcher.patch.implementation.BytecodePatch
-import app.revanced.patcher.proxy.ClassProxy
-import app.revanced.patcher.signature.SignatureResolverResult
+import app.revanced.patcher.signature.implementation.method.resolver.SignatureResolverResult
 import app.revanced.patcher.util.ProxyBackedClassList
+import app.revanced.patcher.util.method.MethodWalker
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 
@@ -28,7 +27,7 @@ class BytecodeData(
      * Find a class by a given predicate
      * @return A proxy for the first class that matches the predicate
      */
-    fun findClass(predicate: (ClassDef) -> Boolean): ClassProxy? {
+    fun findClass(predicate: (ClassDef) -> Boolean): app.revanced.patcher.util.proxy.ClassProxy? {
         // if we already proxied the class matching the predicate...
         for (patch in patches) {
             if (patch !is BytecodePatch) continue
@@ -77,10 +76,10 @@ internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair
     return null
 }
 
-fun BytecodeData.proxy(classDef: ClassDef): ClassProxy {
+fun BytecodeData.proxy(classDef: ClassDef): app.revanced.patcher.util.proxy.ClassProxy {
     var proxy = this.classes.proxies.find { it.immutableClass.type == classDef.type }
     if (proxy == null) {
-        proxy = ClassProxy(classDef)
+        proxy = app.revanced.patcher.util.proxy.ClassProxy(classDef)
         this.classes.proxies.add(proxy)
     }
     return proxy
