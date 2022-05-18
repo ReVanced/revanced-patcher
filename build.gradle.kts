@@ -29,6 +29,7 @@ dependencies {
     api("org.smali:smali:2.5.2")
 
     testImplementation(kotlin("test"))
+    implementation(kotlin("reflect"))
 }
 
 tasks {
