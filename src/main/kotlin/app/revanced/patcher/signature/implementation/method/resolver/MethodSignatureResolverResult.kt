@@ -10,11 +10,11 @@ import org.jf.dexlib2.iface.Method
  * Represents the result of a [MethodSignatureResolver].
  * @param definingClassProxy The [ClassProxy] that the matching method was found in.
  * @param resolvedMethod The actual matching method.
- * @param scanData Opcodes pattern scan result.
+ * @param scanResult Opcodes pattern scan result.
  */
 data class SignatureResolverResult(
     val definingClassProxy: ClassProxy,
-    val scanData: PatternScanResult,
+    val scanResult: PatternScanResult,
     private val resolvedMethod: Method,
 ) {
     /**
