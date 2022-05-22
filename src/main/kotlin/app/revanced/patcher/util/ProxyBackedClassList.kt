@@ -1,16 +1,15 @@
 package app.revanced.patcher.util
 
-import app.revanced.patcher.proxy.ClassProxy
 import org.jf.dexlib2.iface.ClassDef
 
 class ProxyBackedClassList(internal val internalClasses: MutableList<ClassDef>) : List<ClassDef> {
-    internal val proxies = mutableListOf<ClassProxy>()
+    internal val proxies = mutableListOf<app.revanced.patcher.util.proxy.ClassProxy>()
 
     fun add(classDef: ClassDef) {
         internalClasses.add(classDef)
     }
 
-    fun add(classProxy: ClassProxy) {
+    fun add(classProxy: app.revanced.patcher.util.proxy.ClassProxy) {
         proxies.add(classProxy)
     }
 
