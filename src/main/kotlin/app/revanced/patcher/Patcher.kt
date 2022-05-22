@@ -45,17 +45,18 @@ class Patcher(
     private val patcherData: PatcherData
     private val opcodes: Opcodes
     private var signaturesResolved = false
-    private val androlib = Androlib()
 
 
     init {
         val extFileInput = ExtFile(inputFile)
-        val resourceTable = androlib.getResTable(extFileInput, true)
         val outDir = File(resourceCacheDirectory)
 
         if (outDir.exists()) outDir.deleteRecursively()
         outDir.mkdir()
 
+        val androlib = Androlib()
+
+        val resourceTable = androlib.getResTable(extFileInput, true)
         // 1. decode resources to cache directory
         androlib.decodeManifestWithResources(extFileInput, outDir, resourceTable)
         androlib.decodeResourcesFull(extFileInput, outDir, resourceTable)
@@ -64,7 +65,7 @@ class Patcher(
         usesFramework = UsesFramework()
         usesFramework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
 
-        // 3. read package info
+        // 2. read package info
         packageName = resourceTable.packageOriginal
         packageVersion = resourceTable.versionInfo.versionName
 
@@ -124,7 +125,9 @@ class Patcher(
         // build modified resources
         if (patchResources) {
             val extDir = ExtFile(resourceCacheDirectory)
-            androlib.buildResources(extDir, usesFramework)
+
+            // TODO: figure out why a new instance of Androlib is necessary here
+            Androlib().buildResources(extDir, usesFramework)
         }
 
         // write dex modified files
