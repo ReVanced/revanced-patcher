@@ -1,3 +1,10 @@
+# [1.0.0-dev.12](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.11...v1.0.0-dev.12) (2022-05-22)
+
+
+### Bug Fixes
+
+* using old instance of `Androlib` when saving ([5630e49](https://github.com/revanced/revanced-patcher/commit/5630e4966310311cdfd53e2ba128255047626adc))
+
 # [1.0.0-dev.11](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.10...v1.0.0-dev.11) (2022-05-22)
 
 
