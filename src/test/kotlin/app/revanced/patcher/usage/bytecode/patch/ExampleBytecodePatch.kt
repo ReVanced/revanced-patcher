@@ -55,7 +55,7 @@ class ExampleBytecodePatch : BytecodePatch(
         // Let's modify it, so it prints "Hello, ReVanced! Editing bytecode."
         // Get the start index of our opcode pattern.
         // This will be the index of the instruction with the opcode CONST_STRING.
-        val startIndex = result.scanData.startIndex
+        val startIndex = result.scanResult.startIndex
 
         implementation.replaceStringAt(startIndex, "Hello, ReVanced! Editing bytecode.")
 
