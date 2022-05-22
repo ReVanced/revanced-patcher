@@ -22,14 +22,14 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.21")
 
     api("org.apktool:apktool-lib:2.6.1")
     api("app.revanced:multidexlib2:2.5.2.r2")
     api("org.smali:smali:2.5.2")
 
-    testImplementation(kotlin("test"))
-    implementation(kotlin("reflect"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.6.21")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
 }
 
 tasks {
