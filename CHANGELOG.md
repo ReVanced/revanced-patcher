@@ -1,3 +1,11 @@
+# [1.0.0-dev.11](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.10...v1.0.0-dev.11) (2022-05-22)
+
+
+### Features
+
+* `PatchLoader` ([1a99eca](https://github.com/revanced/revanced-patcher/commit/1a99ecaffe5e55977655316e68b014fdeba374a1))
+* use annotations instead of metadata objects ([6726884](https://github.com/revanced/revanced-patcher/commit/6726884be5af56b6856749e73fb9f4f97559854a))
+
 # [1.0.0-dev.10](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.9...v1.0.0-dev.10) (2022-05-07)
 
 
