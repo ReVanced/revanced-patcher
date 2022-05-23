@@ -1,4 +1,4 @@
-package app.revanced.patcher
+package app.revanced.patcher.usage
 
 import org.junit.jupiter.api.Test
 

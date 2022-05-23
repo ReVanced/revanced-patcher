@@ -18,21 +18,17 @@ import org.w3c.dom.Element
 @Version("0.0.1")
 class ExampleResourcePatch : ResourcePatch() {
     override fun execute(data: ResourceData): PatchResult {
-        val editor = data.getXmlEditor("AndroidManifest.xml")
-
-        // regular DomFileEditor
-        val element = editor
-            .file
-            .getElementsByTagName("application")
-            .item(0) as Element
-        element
-            .setAttribute(
-                "exampleAttribute",
-                "exampleValue"
-            )
-
-        // close the editor to write changes
-        editor.close()
+        data.getXmlEditor("AndroidManifest.xml").use { domFileEditor ->
+            val element = domFileEditor // regular DomFileEditor
+                .file
+                .getElementsByTagName("application")
+                .item(0) as Element
+            element
+                .setAttribute(
+                    "exampleAttribute",
+                    "exampleValue"
+                )
+        }
 
         // iterate through all available resources
         data.forEach {
