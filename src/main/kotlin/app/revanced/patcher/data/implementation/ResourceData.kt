@@ -14,8 +14,7 @@ class ResourceData(private val resourceCacheDirectory: File) : Data {
     private fun resolve(path: String) = resourceCacheDirectory.resolve(path)
 
     fun forEach(action: (File) -> Unit) = resourceCacheDirectory.walkTopDown().forEach(action)
-    fun reader(path: String) = resolve(path).reader()
-    fun writer(path: String) = resolve(path).writer()
+    fun get(path: String) = resolve(path)
 
     fun replace(path: String, oldValue: String, newValue: String, oldValueIsRegex: Boolean = false) {
         // TODO: buffer this somehow
