@@ -8,29 +8,31 @@ group = "app.revanced"
 
 repositories {
     mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/revanced/multidexlib2")
-        credentials {
-            // DO NOT set these variables in the project's gradle.properties.
-            // Instead, you should set them in:
-            // Windows: %homepath%\.gradle\gradle.properties
-            // Linux: ~/.gradle/gradle.properties
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR") // DO NOT CHANGE!
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN") // DO NOT CHANGE!
+    listOf("multidexlib2", "Apktool").forEach { repo ->
+        maven {
+            url = uri("https://maven.pkg.github.com/revanced/$repo")
+            credentials {
+                // DO NOT set these variables in the project's gradle.properties.
+                // Instead, you should set them in:
+                // Windows: %homepath%\.gradle\gradle.properties
+                // Linux: ~/.gradle/gradle.properties
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR") // DO NOT CHANGE!
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN") // DO NOT CHANGE!
+            }
         }
     }
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.21")
+    implementation(kotlin("stdlib"))
 
     api("xpp3:xpp3:1.1.4c")
-    api("org.apktool:apktool-lib:2.6.1")
+    api("org.apktool:apktool-lib:2.6.2-SNAPSHOT")
     api("app.revanced:multidexlib2:2.5.2.r2")
     api("org.smali:smali:2.5.2")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.6.21")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
+    testImplementation(kotlin("test"))
+    implementation(kotlin("reflect"))
 }
 
 tasks {

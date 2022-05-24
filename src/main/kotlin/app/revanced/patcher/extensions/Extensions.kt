@@ -9,6 +9,7 @@ import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.immutable.ImmutableMethod
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation
 import org.jf.dexlib2.util.MethodUtil
+import java.io.OutputStream
 
 /**
  * Recursively find a given annotation on a class
@@ -106,3 +107,8 @@ internal fun parametersEqual(
         }
     }
 }
+
+internal val nullOutputStream: OutputStream =
+    object : OutputStream() {
+        override fun write(b: Int) {}
+    }
