@@ -1,3 +1,10 @@
+# [1.0.0-dev.13](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.12...v1.0.0-dev.13) (2022-05-24)
+
+
+### Performance Improvements
+
+* decode manifest only when not using resource patcher ([40b1fa4](https://github.com/revanced/revanced-patcher/commit/40b1fa43e1704ace29d3e349df2f4a8ea828c5c2))
+
 # [1.0.0-dev.12](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.11...v1.0.0-dev.12) (2022-05-22)
 
 
