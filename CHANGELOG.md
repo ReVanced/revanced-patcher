@@ -1,3 +1,10 @@
+# [1.0.0-dev.14](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.13...v1.0.0-dev.14) (2022-05-24)
+
+
+### Bug Fixes
+
+* reformat (trigger release) ([45a167e](https://github.com/revanced/revanced-patcher/commit/45a167e7856da0306f796953775c7b7543d9bec0))
+
 # [1.0.0-dev.13](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.12...v1.0.0-dev.13) (2022-05-24)
 
 
