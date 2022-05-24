@@ -5,6 +5,7 @@ import app.revanced.patcher.data.PatcherData
 import app.revanced.patcher.data.base.Data
 import app.revanced.patcher.data.implementation.findIndexed
 import app.revanced.patcher.extensions.findAnnotationRecursively
+import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.patch.base.Patch
 import app.revanced.patcher.patch.implementation.BytecodePatch
 import app.revanced.patcher.patch.implementation.ResourcePatch
@@ -28,7 +29,6 @@ import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
-import java.io.OutputStream
 
 val NAMER = BasicDexFileNamer()
 
@@ -41,7 +41,8 @@ val NAMER = BasicDexFileNamer()
 class Patcher(
     inputFile: File,
     // TODO: maybe a file system in memory is better. Could cause high memory usage.
-    private val resourceCacheDirectory: String, private val patchResources: Boolean = false
+    private val resourceCacheDirectory: String,
+    private val patchResources: Boolean = false
 ) {
     val packageVersion: String
     val packageName: String
@@ -50,7 +51,6 @@ class Patcher(
     private val patcherData: PatcherData
     private val opcodes: Opcodes
     private var signaturesResolved = false
-
 
     init {
         val extFileInput = ExtFile(inputFile)
@@ -85,7 +85,7 @@ class Patcher(
             XmlPullStreamDecoder(
                 axmlParser, AndrolibResources().resXmlSerializer
             ).decodeManifest(
-                extFileInput.directory.getFileInput("AndroidManifest.xml"), OutputStream.nullOutputStream()
+                extFileInput.directory.getFileInput("AndroidManifest.xml"), nullOutputStream
             )
         }
 
