@@ -16,7 +16,7 @@ class ProxyBackedClassList(internal val internalClasses: MutableList<ClassDef>) 
     /**
      * Apply all resolved classes into [internalClasses] and clean the [proxies] list.
      */
-    fun applyProxies() {
+    internal fun applyProxies() {
         // FIXME: check if this could cause issues when multiple patches use the same proxy
         proxies.removeIf { proxy ->
             // if the proxy is unused, keep it in the list
