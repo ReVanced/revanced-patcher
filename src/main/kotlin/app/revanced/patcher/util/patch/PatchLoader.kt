@@ -19,11 +19,7 @@ object PatchLoader {
             val entry = entries.nextElement()
             if (!entry.name.endsWith(".class") || entry.name.contains("$")) continue
 
-            val clazz = classLoader.loadClass(
-                entry.name
-                    .replace('/', '.')
-                    .replace(".class", "")
-            )
+            val clazz = classLoader.loadClass(entry.realName.replace('/', '.').replace(".class", ""))
 
             if (!clazz.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) continue
 
