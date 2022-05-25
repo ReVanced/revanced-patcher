@@ -10,7 +10,7 @@ import app.revanced.patcher.signature.implementation.method.MethodSignature
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class MatchingMethod(
-    val definingClass: String = "L<unspecified-class>",
+    val definingClass: String = "L<unspecified-class>;",
     val name: String = "<unspecified-method>"
 )
 
