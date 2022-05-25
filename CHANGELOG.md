@@ -1,3 +1,10 @@
+# [1.0.0-dev.15](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.14...v1.0.0-dev.15) (2022-05-25)
+
+
+### Features
+
+* utility functions to get metadata of patch & sigs ([72f16b7](https://github.com/revanced/revanced-patcher/commit/72f16b778587c28d8f8e91da502f197e7dc35d6d))
+
 # [1.0.0-dev.14](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.13...v1.0.0-dev.14) (2022-05-24)
 
 
