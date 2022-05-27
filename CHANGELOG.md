@@ -1,3 +1,16 @@
+# [1.0.0-dev.16](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.15...v1.0.0-dev.16) (2022-05-27)
+
+
+### Bug Fixes
+
+* `JarPatchBundle` loading non-class files to class loader ([3f0c740](https://github.com/revanced/revanced-patcher/commit/3f0c740200dd91a060426638c2f8f516938b4c53))
+* remove dependency to fork of Apktool ([0fa529f](https://github.com/revanced/revanced-patcher/commit/0fa529fcdf9a7b5ea9a361b9f9f32f3f3fce009f))
+
+
+### Features
+
+* migrate to `DexPatchBundle` and `JarPatchBundle` ([7573db2](https://github.com/revanced/revanced-patcher/commit/7573db25757de89824af4f3aea167e500120eabb))
+
 # [1.0.0-dev.15](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.14...v1.0.0-dev.15) (2022-05-25)
 
 
