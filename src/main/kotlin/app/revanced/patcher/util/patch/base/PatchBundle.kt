@@ -9,6 +9,7 @@ import java.io.File
 abstract class PatchBundle(patchBundlePath: String) : File(patchBundlePath) {
     internal fun loadPatches(classLoader: ClassLoader, classNames: Iterator<String>) = buildList {
         classNames.forEach { className ->
+            if (!className.endsWith(".class") || className.contains("$")) return@forEach
             val clazz = classLoader.loadClass(className)
             if (!clazz.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) return@forEach
             @Suppress("UNCHECKED_CAST") this.add(clazz as Class<Patch<*>>)
