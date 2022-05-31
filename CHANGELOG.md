@@ -1,3 +1,10 @@
+# [1.0.0-dev.17](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.16...v1.0.0-dev.17) (2022-05-31)
+
+
+### Features
+
+* patch dependencies annotation and `PatcherOptions` ([8442991](https://github.com/revanced/revanced-patcher/commit/84429912900872405b44804943357dda8430a550))
+
 # [1.0.0-dev.16](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.15...v1.0.0-dev.16) (2022-05-27)
 
 
