@@ -11,33 +11,6 @@ import org.jf.dexlib2.immutable.ImmutableMethodImplementation
 import org.jf.dexlib2.util.MethodUtil
 import java.io.OutputStream
 
-/**
- * Recursively find a given annotation on a class
- * @param targetAnnotation The annotation to find
- * @return The annotation
- */
-fun <T : Annotation> Class<*>.findAnnotationRecursively(targetAnnotation: Class<T>) =
-    this.findAnnotationRecursively(targetAnnotation, mutableSetOf())
-
-private fun <T : Annotation> Class<*>.findAnnotationRecursively(
-    targetAnnotation: Class<T>,
-    traversed: MutableSet<Annotation>
-): T? {
-    val found = this.annotations.firstOrNull { it.annotationClass.java.name == targetAnnotation.name }
-
-    @Suppress("UNCHECKED_CAST")
-    if (found != null) return found as T
-
-    for (annotation in this.annotations) {
-        if (traversed.contains(annotation)) continue
-        traversed.add(annotation)
-
-        return (annotation.annotationClass.java.findAnnotationRecursively(targetAnnotation, traversed)) ?: continue
-    }
-
-    return null
-}
-
 infix fun AccessFlags.or(other: AccessFlags) = this.value or other.value
 infix fun Int.or(other: AccessFlags) = this or other.value
 
@@ -45,6 +18,19 @@ fun MutableMethodImplementation.addInstructions(index: Int, instructions: List<B
     for (i in instructions.lastIndex downTo 0) {
         this.addInstruction(index, instructions[i])
     }
+}
+
+/**
+ * Compare a method to another, considering constructors and parameters.
+ * @param otherMethod The method to compare against.
+ * @return True if the methods match given the conditions.
+ */
+fun Method.softCompareTo(
+    otherMethod: MethodReference
+): Boolean {
+    if (MethodUtil.isConstructor(this) && !parametersEqual(this.parameterTypes, otherMethod.parameterTypes))
+        return false
+    return this.name == otherMethod.name
 }
 
 /**
@@ -85,14 +71,6 @@ internal fun Method.clone(
 internal fun Method.cloneMutable(
     registerCount: Int = 0,
 ) = clone(registerCount).toMutable()
-
-internal fun Method.softCompareTo(
-    otherMethod: MethodReference
-): Boolean {
-    if (MethodUtil.isConstructor(this) && !parametersEqual(this.parameterTypes, otherMethod.parameterTypes))
-        return false
-    return this.name == otherMethod.name
-}
 
 // FIXME: also check the order of parameters as different order equals different method overload
 internal fun parametersEqual(

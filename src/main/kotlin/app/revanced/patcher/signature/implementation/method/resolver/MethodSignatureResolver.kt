@@ -2,10 +2,9 @@ package app.revanced.patcher.signature.implementation.method.resolver
 
 import app.revanced.patcher.data.PatcherData
 import app.revanced.patcher.data.implementation.proxy
-import app.revanced.patcher.extensions.findAnnotationRecursively
+import app.revanced.patcher.extensions.MethodSignatureExtensions.fuzzyThreshold
 import app.revanced.patcher.extensions.parametersEqual
 import app.revanced.patcher.signature.implementation.method.MethodSignature
-import app.revanced.patcher.signature.implementation.method.annotation.FuzzyPatternScanMethod
 import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
@@ -109,9 +108,7 @@ internal class MethodSignatureResolver(
             val pattern = signature.opcodes!!
             val size = pattern.count()
 
-            val threshold =
-                signature::class.java.findAnnotationRecursively(FuzzyPatternScanMethod::class.java)?.threshold
-                    ?: 0
+            val threshold = signature.fuzzyThreshold
 
             for (instructionIndex in 0 until count) {
                 var patternIndex = 0

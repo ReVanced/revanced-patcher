@@ -1,24 +1,21 @@
 package app.revanced.patcher.util
 
+import app.revanced.patcher.util.proxy.ClassProxy
 import org.jf.dexlib2.iface.ClassDef
 
 class ProxyBackedClassList(internal val internalClasses: MutableList<ClassDef>) : List<ClassDef> {
-    internal val proxies = mutableListOf<app.revanced.patcher.util.proxy.ClassProxy>()
+    private val internalProxies = mutableListOf<ClassProxy>()
+    internal val proxies: List<ClassProxy> = internalProxies
 
-    fun add(classDef: ClassDef) {
-        internalClasses.add(classDef)
-    }
-
-    fun add(classProxy: app.revanced.patcher.util.proxy.ClassProxy) {
-        proxies.add(classProxy)
-    }
+    fun add(classDef: ClassDef) = internalClasses.add(classDef)
+    fun add(classProxy: ClassProxy) = internalProxies.add(classProxy)
 
     /**
      * Apply all resolved classes into [internalClasses] and clean the [proxies] list.
      */
     internal fun applyProxies() {
         // FIXME: check if this could cause issues when multiple patches use the same proxy
-        proxies.removeIf { proxy ->
+        internalProxies.removeIf { proxy ->
             // if the proxy is unused, keep it in the list
             if (!proxy.proxyUsed) return@removeIf false
 

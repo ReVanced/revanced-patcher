@@ -1,5 +1,6 @@
 package app.revanced.patcher.util.patch.base
 
+import app.revanced.patcher.data.base.Data
 import app.revanced.patcher.patch.base.Patch
 import java.io.File
 
@@ -11,7 +12,7 @@ abstract class PatchBundle(patchBundlePath: String) : File(patchBundlePath) {
         classNames.forEach { className ->
             val clazz = classLoader.loadClass(className)
             if (!clazz.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) return@forEach
-            @Suppress("UNCHECKED_CAST") this.add(clazz as Class<Patch<*>>)
+            @Suppress("UNCHECKED_CAST") this.add(clazz as Class<out Patch<Data>>)
         }
     }
 }
