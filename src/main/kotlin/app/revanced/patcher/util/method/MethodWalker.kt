@@ -33,7 +33,7 @@ class MethodWalker internal constructor(
      * @param walkMutable If this is true, the class of the method will be resolved mutably.
      * The current method will be mutable.
      */
-    fun walk(offset: Int, walkMutable: Boolean = false): MethodWalker {
+    fun nextMethod(offset: Int, walkMutable: Boolean = false): MethodWalker {
         currentMethod.implementation?.instructions?.let { instructions ->
             val instruction = instructions.elementAt(offset)
 

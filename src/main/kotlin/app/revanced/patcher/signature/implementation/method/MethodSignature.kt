@@ -1,7 +1,7 @@
 package app.revanced.patcher.signature.implementation.method
 
-import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.data.implementation.MethodNotFoundException
+import app.revanced.patcher.extensions.MethodSignatureExtensions.name
 import app.revanced.patcher.signature.base.Signature
 import app.revanced.patcher.signature.implementation.method.resolver.SignatureResolverResult
 import org.jf.dexlib2.Opcode
@@ -26,22 +26,8 @@ abstract class MethodSignature(
      * The result of the signature
      */
     var result: SignatureResolverResult? = null
+        @Throws(MethodNotFoundException::class)
         get() {
-            return field ?: throw MethodNotFoundException(
-                "Could not resolve required signature ${
-                    (this::class.annotations.find { it is Name }?.let {
-                        (it as Name).name
-                    })
-                }"
-            )
-        }
-    val resolved: Boolean
-        get() {
-            var resolved = false
-            try {
-                resolved = result != null
-            } catch (_: Exception) {
-            }
-            return resolved
+            return field ?: throw MethodNotFoundException("Could not resolve required signature ${this.name}")
         }
 }

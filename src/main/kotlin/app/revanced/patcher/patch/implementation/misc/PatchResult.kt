@@ -24,10 +24,12 @@ interface PatchResult {
     }
 }
 
-class PatchResultError(private val errorMessage: String) : PatchResult {
-    fun errorMessage(): String {
-        return errorMessage
-    }
+class PatchResultError(
+    errorMessage: String?, cause: Exception?
+) : Exception(errorMessage, cause), PatchResult {
+    constructor(errorMessage: String) : this(errorMessage, null)
+    constructor(cause: Exception) : this(cause.message, cause)
+
 }
 
 class PatchResultSuccess : PatchResult

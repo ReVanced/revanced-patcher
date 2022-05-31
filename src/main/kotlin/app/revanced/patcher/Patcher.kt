@@ -1,16 +1,17 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.data.PatcherData
 import app.revanced.patcher.data.base.Data
 import app.revanced.patcher.data.implementation.findIndexed
-import app.revanced.patcher.extensions.findAnnotationRecursively
+import app.revanced.patcher.extensions.PatchExtensions.dependencies
+import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.patch.base.Patch
 import app.revanced.patcher.patch.implementation.BytecodePatch
 import app.revanced.patcher.patch.implementation.ResourcePatch
+import app.revanced.patcher.patch.implementation.misc.PatchResult
+import app.revanced.patcher.patch.implementation.misc.PatchResultError
 import app.revanced.patcher.patch.implementation.misc.PatchResultSuccess
-import app.revanced.patcher.signature.implementation.method.MethodSignature
 import app.revanced.patcher.signature.implementation.method.resolver.MethodSignatureResolver
 import app.revanced.patcher.util.ListBackedSet
 import brut.androlib.Androlib
@@ -34,15 +35,10 @@ val NAMER = BasicDexFileNamer()
 
 /**
  * The ReVanced Patcher.
- * @param inputFile The input file (usually an apk file).
- * @param resourceCacheDirectory Directory to cache resources.
- * @param patchResources Weather to use the resource patcher. Resources will still need to be decoded.
+ * @param options The options for the patcher.
  */
 class Patcher(
-    inputFile: File,
-    // TODO: maybe a file system in memory is better. Could cause high memory usage.
-    private val resourceCacheDirectory: String,
-    private val patchResources: Boolean = false
+    private val options: PatcherOptions
 ) {
     val packageVersion: String
     val packageName: String
@@ -50,11 +46,10 @@ class Patcher(
     private lateinit var usesFramework: UsesFramework
     private val patcherData: PatcherData
     private val opcodes: Opcodes
-    private var signaturesResolved = false
 
     init {
-        val extFileInput = ExtFile(inputFile)
-        val outDir = File(resourceCacheDirectory)
+        val extFileInput = ExtFile(options.inputFile)
+        val outDir = File(options.resourceCacheDirectory)
 
         if (outDir.exists()) outDir.deleteRecursively()
         outDir.mkdir()
@@ -63,7 +58,7 @@ class Patcher(
         val androlib = Androlib()
         val resourceTable = androlib.getResTable(extFileInput, true)
 
-        if (patchResources) {
+        if (options.patchResources) {
             // 1. decode resources to cache directory
             androlib.decodeManifestWithResources(extFileInput, outDir, resourceTable)
             androlib.decodeResourcesFull(extFileInput, outDir, resourceTable)
@@ -93,11 +88,11 @@ class Patcher(
         packageVersion = resourceTable.versionInfo.versionName
         packageName = resourceTable.currentResPackage.name
         // read dex files
-        val dexFile = MultiDexIO.readDexFile(true, inputFile, NAMER, null, null)
+        val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
         opcodes = dexFile.opcodes
 
         // save to patcher data
-        patcherData = PatcherData(dexFile.classes.toMutableList(), resourceCacheDirectory)
+        patcherData = PatcherData(dexFile.classes.toMutableList(), options.resourceCacheDirectory)
     }
 
     /**
@@ -144,8 +139,8 @@ class Patcher(
         }
 
         // build modified resources
-        if (patchResources) {
-            val extDir = ExtFile(resourceCacheDirectory)
+        if (options.patchResources) {
+            val extDir = ExtFile(options.resourceCacheDirectory)
 
             // TODO: figure out why a new instance of Androlib is necessary here
             Androlib().buildResources(extDir, usesFramework)
@@ -161,32 +156,61 @@ class Patcher(
     }
 
     /**
-     * Add a patch to the patcher.
-     * @param patches The patches to add.
+     * Add [Patch]es to the patcher.
+     * @param patches [Patch]es The patches to add.
      */
-    fun addPatches(patches: Iterable<Patch<Data>>) {
+    fun addPatches(patches: Iterable<Class<out Patch<Data>>>) {
         patcherData.patches.addAll(patches)
     }
 
     /**
-     * Resolves all signatures.
+     * Apply a [patch] and its dependencies recursively.
+     * @param patch The [patch] to apply.
+     * @param appliedPatches A list of [patch] names, to prevent applying [patch]es twice.
+     * @return The result of executing the [patch].
      */
-    fun resolveSignatures(): List<MethodSignature> {
-        val signatures = buildList {
-            for (patch in patcherData.patches) {
-                if (patch !is BytecodePatch) continue
-                this.addAll(patch.signatures)
-            }
-        }
-        if (signatures.isEmpty()) {
-            return emptyList()
+    private fun applyPatch(
+        patch: Class<out Patch<Data>>, appliedPatches: MutableList<String>
+    ): PatchResult {
+        val patchName = patch.patchName
+
+        // if the patch has already applied silently skip it
+        if (appliedPatches.contains(patchName)) return PatchResultSuccess()
+        appliedPatches.add(patchName)
+
+        // recursively apply all dependency patches
+        patch.dependencies?.forEach {
+            val patchDependency = it.java
+
+            val result = applyPatch(patchDependency, appliedPatches)
+            if (result.isSuccess()) return@forEach
+
+            val errorMessage = result.error()!!.message
+            return PatchResultError("$patchName depends on ${patchDependency.patchName} but the following error was raised: $errorMessage")
         }
 
-        MethodSignatureResolver(patcherData.bytecodeData.classes.internalClasses, signatures).resolve(patcherData)
-        signaturesResolved = true
-        return signatures
+        val patchInstance = patch.getDeclaredConstructor().newInstance()
+
+        // if the current patch is a resource patch but resource patching is disabled, return an error
+        val isResourcePatch = patchInstance is ResourcePatch
+        if (!options.patchResources && isResourcePatch) return PatchResultError("$patchName is a resource patch, but resource patching is disabled.")
+
+        // TODO: find a solution for this
+        val data = if (isResourcePatch) {
+            patcherData.resourceData
+        } else {
+            MethodSignatureResolver(
+                patcherData.bytecodeData.classes.internalClasses, (patchInstance as BytecodePatch).signatures
+            ).resolve(patcherData)
+            patcherData.bytecodeData
+        }
+
+        return try {
+            patchInstance.execute(data)
+        } catch (e: Exception) {
+            PatchResultError(e)
+        }
     }
-
 
     /**
      * Apply patches loaded into the patcher.
@@ -198,43 +222,22 @@ class Patcher(
     fun applyPatches(
         stopOnError: Boolean = false, callback: (String) -> Unit = {}
     ): Map<String, Result<PatchResultSuccess>> {
-        if (!signaturesResolved) {
-            resolveSignatures()
-        }
+        val appliedPatches = mutableListOf<String>()
+
         return buildMap {
             for (patch in patcherData.patches) {
-                val resourcePatch = patch is ResourcePatch
-                if (!patchResources && resourcePatch) continue
+                val result = applyPatch(patch, appliedPatches)
 
-                val patchNameAnnotation = patch::class.java.findAnnotationRecursively(Name::class.java)
+                val name = patch.patchName
+                callback(name)
 
-                patchNameAnnotation?.let {
-                    callback(it.name)
+                this[name] = if (result.isSuccess()) {
+                    Result.success(result.success()!!)
+                } else {
+                    Result.failure(result.error()!!)
                 }
 
-                val result: Result<PatchResultSuccess> = try {
-                    val data = if (resourcePatch) {
-                        patcherData.resourceData
-                    } else {
-                        patcherData.bytecodeData
-                    }
-
-                    val pr = patch.execute(data)
-
-                    if (pr.isSuccess()) {
-                        Result.success(pr.success()!!)
-                    } else {
-                        Result.failure(Exception(pr.error()?.errorMessage() ?: "Unknown error"))
-                    }
-                } catch (e: Exception) {
-                    Result.failure(e)
-                }
-
-                patchNameAnnotation?.let {
-                    this[patchNameAnnotation.name] = result
-                }
-
-                if (result.isFailure && stopOnError) break
+                if (stopOnError && result.isError()) break
             }
         }
     }
