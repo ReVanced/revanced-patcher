@@ -1,6 +1,7 @@
 package app.revanced.patcher.patch.annotations
 
 import app.revanced.patcher.data.base.Data
+import app.revanced.patcher.patch.base.Patch
 import kotlin.reflect.KClass
 
 /**
@@ -9,6 +10,14 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
-annotation class Patch(
-    val dependencies: Array<KClass<out app.revanced.patcher.patch.base.Patch<Data>>> = []
+annotation class Patch
+
+/**
+ * Annotation for dependencies of [Patch]es .
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class Dependencies(
+    val dependencies: Array<KClass<out Patch<Data>>> = []
 )
