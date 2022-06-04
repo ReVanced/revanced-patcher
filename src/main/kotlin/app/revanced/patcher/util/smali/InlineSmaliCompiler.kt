@@ -13,9 +13,9 @@ import org.jf.smali.smaliTreeWalker
 import java.io.InputStreamReader
 
 private const val METHOD_TEMPLATE = """
-.class public Linlinecompiler;
+.class LInlineCompiler;
 .super Ljava/lang/Object;
-.method public static compiler(%s)V
+.method %s dummyMethod(%s)V
     .registers %d
     %s
 .end method
@@ -35,9 +35,10 @@ class InlineSmaliCompiler {
         fun compileMethodInstructions(
             instructions: String,
             parameters: String,
-            registers: Int
+            registers: Int,
+            forStaticMethod: Boolean
         ): List<BuilderInstruction> {
-            val input = METHOD_TEMPLATE.format(parameters, registers, instructions)
+            val input = METHOD_TEMPLATE.format(if (forStaticMethod) "static" else "", parameters, registers, instructions)
             val reader = InputStreamReader(input.byteInputStream())
             val lexer: LexerErrorInterface = smaliFlexLexer(reader, 15)
             val tokens = CommonTokenStream(lexer as TokenSource)
@@ -58,8 +59,8 @@ class InlineSmaliCompiler {
     }
 }
 
-fun String.toInstructions(parameters: String = "", registers: Int = 1) =
-    InlineSmaliCompiler.compileMethodInstructions(this, parameters, registers)
+fun String.toInstructions(parameters: String = "", registers: Int = 1, forStaticMethod: Boolean = true) =
+    InlineSmaliCompiler.compileMethodInstructions(this, parameters, registers, forStaticMethod)
 
-fun String.toInstruction(parameters: String = "", registers: Int = 1) =
-    this.toInstructions(parameters, registers).first()
+fun String.toInstruction(parameters: String = "", registers: Int = 1, forStaticMethod: Boolean = true) =
+    this.toInstructions(parameters, registers, forStaticMethod).first()
