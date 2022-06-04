@@ -1,3 +1,11 @@
+# [1.0.0-dev.18](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.17...v1.0.0-dev.18) (2022-06-04)
+
+
+### Features
+
+* `Dependencies` annotation ([83d608a](https://github.com/revanced/revanced-patcher/commit/83d608ac06a7d5ceb31b6e0022b501d99edb63a3))
+* optional `forStaticMethod` parameter for `InlineSmaliCompiler.compileMethodInstructions` ([28b9847](https://github.com/revanced/revanced-patcher/commit/28b98478e4e8e8f238e82f7fa2307aeb1547955d))
+
 # [1.0.0-dev.17](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.16...v1.0.0-dev.17) (2022-05-31)
 
 
