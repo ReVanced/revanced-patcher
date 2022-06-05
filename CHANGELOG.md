@@ -1,3 +1,133 @@
+# 1.0.0 (2022-06-05)
+
+
+### Bug Fixes
+
+* `compareSignatureToMethod` not matching correctly in case opcodes are null ([cca12aa](https://github.com/revanced/revanced-patcher/commit/cca12aa34a60d766c02e55241df847f7d230d4d7))
+* `ConcurrentModificationException` while iterating through `proxies` and modifying it ([6cb7cdb](https://github.com/revanced/revanced-patcher/commit/6cb7cdb0b2a2b954adb04033e0f2d3ccb4604545))
+* `JarPatchBundle` loading non-class files to class loader ([849616d](https://github.com/revanced/revanced-patcher/commit/849616dc2b6e30ec1fa1d8a8f9c1f881fc11676a))
+* `PackageMetadata` ([7399450](https://github.com/revanced/revanced-patcher/commit/739945013962fd80d2635fff126d84046870f956))
+* `replaceWith` not replacing classes with used class proxies ([4178a1e](https://github.com/revanced/revanced-patcher/commit/4178a1eedce1436ffeb3ddd6952ce0b6ec87d5a0))
+* adding existing classes to the patchers cache ([9659a61](https://github.com/revanced/revanced-patcher/commit/9659a61c5c3a84714160b78b32cc337a97c8caa9))
+* always return PatchResultSuccess on patch success ([996c4ac](https://github.com/revanced/revanced-patcher/commit/996c4acb2061db776430ad8b07bfdb3fe32861f6))
+* applying no patches throwing error ([5ca5a1c](https://github.com/revanced/revanced-patcher/commit/5ca5a1c29e087ce7e4b6d5e593b775365803151d))
+* applyPatches not returning successful patches ([f806cb3](https://github.com/revanced/revanced-patcher/commit/f806cb38c571cdd22016396ee1874ee18c91b79f))
+* avoid ignoring test resources (fixes [#1](https://github.com/revanced/revanced-patcher/issues/1)) ([d5a3c76](https://github.com/revanced/revanced-patcher/commit/d5a3c76389ba902c22ddc8b7ba1a110b7ff852df))
+* Classes not being written properly because of array shifting ([6e4db11](https://github.com/revanced/revanced-patcher/commit/6e4db110c8fdd16fb0c0ce81f427d84f2a3b6ee0))
+* current must be calculated after increment ([5f12bab](https://github.com/revanced/revanced-patcher/commit/5f12bab5df97fbe6e2e62c1bf2814a2e682ab4f3))
+* failing tests temporarily ([fc05fe7](https://github.com/revanced/revanced-patcher/commit/fc05fe79deec2486bb746d33e803ad052e68f8de))
+* fix classes having multiple instances of fields ([7cc8a7d](https://github.com/revanced/revanced-patcher/commit/7cc8a7dec321774c1d3f2f1a87ac91f952c4fb7e))
+* fix classes having multiple method instances ([398239d](https://github.com/revanced/revanced-patcher/commit/398239dc10a3ea04e46adb3be176c897876e5587))
+* Fixed writer & signature resolver, improved tests & speed, minor refactoring ([e6c2501](https://github.com/revanced/revanced-patcher/commit/e6c2501539540301d5b70014de460e5452a09b04))
+* fuzzy resolver warning params were turned around ([e5bea06](https://github.com/revanced/revanced-patcher/commit/e5bea06353805f004d607124a8ebed138f84d583))
+* give ClassWriter a ClassReader for symtable ([41749ba](https://github.com/revanced/revanced-patcher/commit/41749ba8290b2dec5dd2ab6e0bc9d714887a1a05))
+* **gradle:** publish source and javadocs ([c236ebe](https://github.com/revanced/revanced-patcher/commit/c236ebe0789f9c78d610769f0feda2b64fa4a128))
+* incorrect pattern offset ([f3b5f67](https://github.com/revanced/revanced-patcher/commit/f3b5f67b395167c1b9411b2374f3ef584b57b6cf))
+* **Io:** fix finding classes by name ([b957501](https://github.com/revanced/revanced-patcher/commit/b957501e709028005c4d6c7857022980205b6861))
+* **Io:** JAR loading and saving ([#8](https://github.com/revanced/revanced-patcher/issues/8)) ([310a7c4](https://github.com/revanced/revanced-patcher/commit/310a7c446b547d84b02c5da2161958e77ce69f0d))
+* make `methodMetadata` nullable in `MethodSignatureMetadata` ([4e56652](https://github.com/revanced/revanced-patcher/commit/4e566524299674426fb0344d09db3b0c1cb3d300))
+* make warnings nullable instead of lateinit ([8f1a629](https://github.com/revanced/revanced-patcher/commit/8f1a629191668e05917dc797e486647e55276d59))
+* match to correct signature method parameters ([1ee2e4b](https://github.com/revanced/revanced-patcher/commit/1ee2e4ba56097c5e06c93c9ce04cb5543f0e4a67))
+* **MethodResolver:** fix cd57a8c9a0db7e3ae5ad0bca202e5955930319ab ([cbd8df2](https://github.com/revanced/revanced-patcher/commit/cbd8df2df008ef37c6b43e2a8442c41f24be9358))
+* **MethodResolver:** strip labels and line numbers so opcode patterns match ([699c730](https://github.com/revanced/revanced-patcher/commit/699c730a7cecf31878827d645e845490a37de4cb))
+* **MethodResolver:** strip labels nodes so opcode patterns match ([82c5306](https://github.com/revanced/revanced-patcher/commit/82c530650f926dd026d263cfe23a7d67cb27bbf2))
+* MethodSignature#resolved throwing an exception ([c612676](https://github.com/revanced/revanced-patcher/commit/c612676543282155143471b71a095e26023806ea))
+* Move proxy package out of cache package ([ce21bd6](https://github.com/revanced/revanced-patcher/commit/ce21bd60f34d78b94d6d85f2c5375bc934ed4091))
+* null check causing an exception ([338bd9f](https://github.com/revanced/revanced-patcher/commit/338bd9f7394afd84e5e195a7f8155c813812cfb5))
+* nullable signature members ([#10](https://github.com/revanced/revanced-patcher/issues/10)) ([674461f](https://github.com/revanced/revanced-patcher/commit/674461f08daabbf92cb54e4eadb408226fac47af))
+* Patch should have access to the Cache ([4dd820f](https://github.com/revanced/revanced-patcher/commit/4dd820ffdf1b98fe41b50f7cb2670b89acfbb99d))
+* Patcher not writing resolved methods ([fac44a5](https://github.com/revanced/revanced-patcher/commit/fac44a50c39d8c102bd3e7ca4dd1bb86d29f7b57))
+* qualifying `Element` with wrong package ([024fa86](https://github.com/revanced/revanced-patcher/commit/024fa867e115f984cfa3e395b78f4f43aa81709b))
+* reaching all constructors not possible ([c459beb](https://github.com/revanced/revanced-patcher/commit/c459beb5f898d797f2f03ed36326bd9cfad03d31))
+* reformat (trigger release) ([bf48945](https://github.com/revanced/revanced-patcher/commit/bf4894592bf9ee9c6233abc91f538b7b8ef986a0))
+* remove broken code ([0e72a6e](https://github.com/revanced/revanced-patcher/commit/0e72a6e85ff9a6035510680fc5e33ab0cd14144f))
+* remove dependency to fork of Apktool ([11abc67](https://github.com/revanced/revanced-patcher/commit/11abc67d9ab7d7b273fd4cd4c53af54008a80585))
+* remove leftover debug code ([0f30eac](https://github.com/revanced/revanced-patcher/commit/0f30eac32ce66d8b90906c02ef7e7854feeecc33))
+* return mutable set of classes ([66a9b76](https://github.com/revanced/revanced-patcher/commit/66a9b768457e98fdde0b61f9a8d6aed4c1872027))
+* returning failure on success ([48c4ea2](https://github.com/revanced/revanced-patcher/commit/48c4ea2f6d9de319383a49ea2d4c6ffb4f687a2b))
+* Search method map for existing class proxy ([a1e909b](https://github.com/revanced/revanced-patcher/commit/a1e909b16337c538f8f8b475801d8b1804163bfe))
+* set index for insertAt to 0 by default ([d5b4c99](https://github.com/revanced/revanced-patcher/commit/d5b4c99c00272e3e5afec2fa0a489ba618f2a81a))
+* set marklimit to Integer.MAX_VALUE ([e6e468f](https://github.com/revanced/revanced-patcher/commit/e6e468fbb5c20b08c8bd59bafc794acea907e4b4))
+* string signature in `SignatureResolver` ([e5ae970](https://github.com/revanced/revanced-patcher/commit/e5ae9700096924e63b15a08079dce40ae07202d8))
+* Suppress unused for addFiles ([3d6a1d3](https://github.com/revanced/revanced-patcher/commit/3d6a1d38f339ce2c5d82b7ac46c208c6702d6d44))
+* throwing in case the opcode patterns do not match ([3144ec8](https://github.com/revanced/revanced-patcher/commit/3144ec872ac8651b8c0a9311ae508d5c3cc734ce))
+* use Array instead of Iterable for methodParameters ([dfac8f0](https://github.com/revanced/revanced-patcher/commit/dfac8f03a362fd273527f552d9eae121505fd4e0))
+* using old instance of `Androlib` when saving ([a4d8be2](https://github.com/revanced/revanced-patcher/commit/a4d8be20fcd444b08ec9c43f9f7029f8bacbbc41))
+* workflow on dev branch ([428f7f4](https://github.com/revanced/revanced-patcher/commit/428f7f4decb00d28c9bf137ef4cd1d5fd4a0821e))
+* write all classes ([f068fc8](https://github.com/revanced/revanced-patcher/commit/f068fc87ff8e204826639318af39e48e683254da))
+
+
+### Code Refactoring
+
+* bump multidexlib2 to 2.5.2.r2 ([a6c6b49](https://github.com/revanced/revanced-patcher/commit/a6c6b4979af42936cb26608541a4f7a66393b3f0))
+* Change all references from Array to Iterable ([72f3cad](https://github.com/revanced/revanced-patcher/commit/72f3cad3f98001b0109b07373ed9cc57a9001cfa))
+* convert Patch to abstract class ([cb9b1b9](https://github.com/revanced/revanced-patcher/commit/cb9b1b9416c699c68d0fca228d4f8ca6fb634cb5))
+* Optimize Signature class ([#11](https://github.com/revanced/revanced-patcher/issues/11)) ([7faa001](https://github.com/revanced/revanced-patcher/commit/7faa001406c1f28dc2182cf6d1ab19504f4e3eb9))
+* Rename `net.revanced` to `app.revanced` ([7087230](https://github.com/revanced/revanced-patcher/commit/70872307e33282b37dd5fb315b56022ab73bf582))
+
+
+### Features
+
+* `Dependencies` annotation ([893d4c6](https://github.com/revanced/revanced-patcher/commit/893d4c699bad4c70002fc691c261447d01948b5c))
+* `PatchLoader` ([ec9fd15](https://github.com/revanced/revanced-patcher/commit/ec9fd15f9b9b9968be7fb5cb384eb8ee2a0c9ba3))
+* Add `findParentMethod` utility method ([#4](https://github.com/revanced/revanced-patcher/issues/4)) ([bbb2c54](https://github.com/revanced/revanced-patcher/commit/bbb2c547aae8dd774a1a883de24fe45da463fa35))
+* add `MethodWalker` ([7755bbc](https://github.com/revanced/revanced-patcher/commit/7755bbc645773e49053fb9ad2b6fd18a7f488659))
+* add `p` naming scheme to smali compiler ([79909cf](https://github.com/revanced/revanced-patcher/commit/79909cf260c0578e88ad22d63397957dbaa91702))
+* add extensions for cloning methods ([01bfbd6](https://github.com/revanced/revanced-patcher/commit/01bfbd656ee06cb2cab951c43d7f76a465a40830))
+* add findClass method with className ([4087f49](https://github.com/revanced/revanced-patcher/commit/4087f498638ee88ba3eaca792039fe481f404732))
+* Add first tests ([544bcf7](https://github.com/revanced/revanced-patcher/commit/544bcf76bd8a8c790c2f799606ad8c9ac7d2aa82))
+* add fuzzy resolver ([7a56dca](https://github.com/revanced/revanced-patcher/commit/7a56dca004cd793121a59ea854c77f4c1a01bd6f))
+* add immutableMethod ([c63b20f](https://github.com/revanced/revanced-patcher/commit/c63b20fa65aba8bb060a4a7a652747cba7198c2b))
+* add inline smali compiler ([bfe4e3e](https://github.com/revanced/revanced-patcher/commit/bfe4e3e298ac963936ca9621e12aefbe56260826))
+* add missing test for fields ([6b8b057](https://github.com/revanced/revanced-patcher/commit/6b8b0573d479e227b45dc36a6abac622c3ccebdd))
+* add or extension for AccessFlags ([00c85b5](https://github.com/revanced/revanced-patcher/commit/00c85b5d750ccc8de69ad4101220b19eeaf99bcb))
+* Add patch metadata ([642e903](https://github.com/revanced/revanced-patcher/commit/642e9031eb3727ebdca22c75b7c5c602a8775da0)), closes [ReVancedTeam/revanced-patches#1](https://github.com/ReVancedTeam/revanced-patches/issues/1)
+* add SafeClassWriter ([6626014](https://github.com/revanced/revanced-patcher/commit/6626014ef3dde2f98a53f75d71eeb0de85189bf3))
+* Add warnings for Fuzzy resolver ([715a2ad](https://github.com/revanced/revanced-patcher/commit/715a2ad025d127b5a8225ce50202a859f53c7f50))
+* allow classes to be overwritten in addFiles and resolve signatures when applyPatches is called ([1db735b](https://github.com/revanced/revanced-patcher/commit/1db735b1e2b570bdb1ddce0b9cd724c580113a84))
+* Allow unknown opcodes using `null` ([0e5f4ba](https://github.com/revanced/revanced-patcher/commit/0e5f4ba2d55288415c4d1be70ab6a8ab8c1c0d10))
+* Finish first patcher test ([0d8d19e](https://github.com/revanced/revanced-patcher/commit/0d8d19e708a47315e28e7493618568ea40f1e062))
+* Improve `SignatureResolver` ([139a23b](https://github.com/revanced/revanced-patcher/commit/139a23b7500a2d2577df47caf3fd0c5ec891a8d8))
+* migrate to `DexPatchBundle` and `JarPatchBundle` ([8615798](https://github.com/revanced/revanced-patcher/commit/8615798711185b30ce622d9d09faba21f3a92f97))
+* migrate to dexlib ([3651981](https://github.com/revanced/revanced-patcher/commit/36519811610192e299834e9d00627a94faad56a9))
+* Minor refactor and return proxy, if class has been proxied already ([4b26305](https://github.com/revanced/revanced-patcher/commit/4b26305bd57ba9e3eb3e34218ffe10d6c5a2f598))
+* optional `forStaticMethod` parameter for `InlineSmaliCompiler.compileMethodInstructions` ([41e8860](https://github.com/revanced/revanced-patcher/commit/41e88605c33d1f0d9e7f5466cac03a3b339afb82))
+* patch dependencies annotation and `PatcherOptions` ([6c65952](https://github.com/revanced/revanced-patcher/commit/6c65952d80a795a3ef4a37877123e9375025d3ae))
+* properly manage `ClassProxy` & add `ProxyBackedClassList` ([6cb1fdf](https://github.com/revanced/revanced-patcher/commit/6cb1fdf6171e1ab75b7ee28163965eacc00cc5a0))
+* remaining mutable `EncodedValue` classes ([3f97cc8](https://github.com/revanced/revanced-patcher/commit/3f97cc8e1fa10546d7069e01e5e66a537b0d6f7e))
+* string signature ([#22](https://github.com/revanced/revanced-patcher/issues/22)) ([612515a](https://github.com/revanced/revanced-patcher/commit/612515acf8539febf952f258d30aa3d4b631e3b7))
+* use annotations instead of metadata objects ([d20f7fd](https://github.com/revanced/revanced-patcher/commit/d20f7fd6e1ede6ec7baccb1500ab3fc66d78df73))
+* utility functions to get metadata of patch & sigs ([54511a4](https://github.com/revanced/revanced-patcher/commit/54511a4fc6417d7fe0c868d441e7d6b0ec9e218d))
+
+
+### Performance Improvements
+
+* check type instead of class ([c7ef264](https://github.com/revanced/revanced-patcher/commit/c7ef2644d83e1d8e84decb0631a6549d394180fc))
+* decode manifest only when not using resource patcher ([4f60bea](https://github.com/revanced/revanced-patcher/commit/4f60bea81e0bbe85dc6c3150238980292a1e52ab))
+* depend on `androlib` instead of `ApkDecoder` ([cc9416d](https://github.com/revanced/revanced-patcher/commit/cc9416dd11b66140c2882021cbe5088659d85371))
+* do not resolve empty signatures list ([b1eebc9](https://github.com/revanced/revanced-patcher/commit/b1eebc99a71269df33c37f35c1f56ea20a9d6bc0))
+* lazy-ify all mutable clones ([d18a3b6](https://github.com/revanced/revanced-patcher/commit/d18a3b6a28cae4fcb1c4986903208298ee50b083))
+* optimize indexOf call away ([9991f39](https://github.com/revanced/revanced-patcher/commit/9991f39c9a4fa22a221aab0bbf9e08ca7f967fa9))
+* use Set instead of List since there are no dupes ([e65ebd2](https://github.com/revanced/revanced-patcher/commit/e65ebd27c250b1735acf73af0f6b03274b0137f6))
+* use String List and compare instead of any lambda ([5bd416b](https://github.com/revanced/revanced-patcher/commit/5bd416b409290906a6378344f70391e8692ae27f))
+
+
+### Reverts
+
+* AccessFlag extensions not working with IDE ([0bfb92a](https://github.com/revanced/revanced-patcher/commit/0bfb92a0cbd72df5ba513264efb583e201cfcf82))
+* previous commits check for dupes in dexFile, not cache ([e810197](https://github.com/revanced/revanced-patcher/commit/e810197e2aa64534f2e8637165d884cbefbce8ae))
+
+
+### BREAKING CHANGES
+
+* arrayOf has to be changed to listOf.
+* Method signature of Patcher#save() was changed to comply with the changes of multidexlib2.
+* Removed usage of ASM library
+* Array<Int> was changed to IntArray. This breaks existing patches.
+* Package name was changed from "net.revanced" to "app.revanced"
+* Method signature of execute() was changed to include the cache, this will break existing implementations of the Patch class.
+* Patch class is now an abstract class. You must implement it. You can use anonymous implements, like done in the tests.
+
 # [1.0.0-dev.18](https://github.com/revanced/revanced-patcher/compare/v1.0.0-dev.17...v1.0.0-dev.18) (2022-06-04)
 
 
