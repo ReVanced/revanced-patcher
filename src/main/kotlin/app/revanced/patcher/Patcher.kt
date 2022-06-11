@@ -41,11 +41,8 @@ val NAMER = BasicDexFileNamer()
  * The ReVanced Patcher.
  * @param options The options for the patcher.
  */
-class Patcher(
-    private val options: PatcherOptions
-) {
+class Patcher(private val options: PatcherOptions) {
     val data: PatcherData
-
     private val opcodes: Opcodes
 
     init {
@@ -145,12 +142,11 @@ class Patcher(
             val cacheDirectory = ExtFile(options.resourceCacheDirectory)
 
             val androlibResources = AndrolibResources().also { resources ->
-                resources.buildOptions = BuildOptions().also { options ->
-                    // TODO: options.useAapt2 = true
-                    // TODO: options.aaptPath = ""
-                    options.isFramework = metaInfo.isFrameworkApk
-                    options.resourcesAreCompressed = metaInfo.compressionType
-                    options.doNotCompress = metaInfo.doNotCompress
+                resources.buildOptions = BuildOptions().also { buildOptions ->
+                    buildOptions.aaptPath = options.aaptPath
+                    buildOptions.isFramework = metaInfo.isFrameworkApk
+                    buildOptions.resourcesAreCompressed = metaInfo.compressionType
+                    buildOptions.doNotCompress = metaInfo.doNotCompress
                 }
 
                 resources.setSdkInfo(metaInfo.sdkInfo)
