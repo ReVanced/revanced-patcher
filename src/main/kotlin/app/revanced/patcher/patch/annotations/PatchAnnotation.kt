@@ -6,11 +6,12 @@ import kotlin.reflect.KClass
 
 /**
  * Annotation to mark a Class as a patch.
+ * @param include If false, the patch should be treated as optional by default.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
-annotation class Patch
+annotation class Patch(val include: Boolean = true)
 
 /**
  * Annotation for dependencies of [Patch]es .

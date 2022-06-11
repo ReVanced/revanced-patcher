@@ -76,19 +76,17 @@ internal class MethodSignatureResolver(
             signature.strings?.let { strings ->
                 method.implementation ?: return null
 
-                method.implementation!!.instructions.let { instructions ->
-                    val stringsList = strings.toMutableList()
+                val stringsList = strings.toMutableList()
 
-                    for (instruction in instructions) {
-                        if (instruction.opcode != Opcode.CONST_STRING) continue
+                for (instruction in method.implementation!!.instructions) {
+                    if (instruction.opcode != Opcode.CONST_STRING) continue
 
-                        val string = ((instruction as Instruction21c).reference as StringReference).string
-                        val i = stringsList.indexOfFirst { it == string }
-                        if (i != -1) stringsList.removeAt(i)
-                    }
-
-                    if (stringsList.isNotEmpty()) return null
+                    val string = ((instruction as Instruction21c).reference as StringReference).string
+                    val i = stringsList.indexOfFirst { it == string }
+                    if (i != -1) stringsList.removeAt(i)
                 }
+
+                if (stringsList.isNotEmpty()) return null
             }
 
             return if (signature.opcodes == null) {

@@ -27,7 +27,7 @@ dependencies {
     implementation(kotlin("stdlib"))
 
     api("xpp3:xpp3:1.1.4c")
-    api("org.apktool:apktool-lib:2.6.1")
+    api("org.apktool:apktool-lib:2.6.2-SNAPSHOT")
     api("app.revanced:multidexlib2:2.5.2.r2")
     api("org.smali:smali:2.5.2")
 

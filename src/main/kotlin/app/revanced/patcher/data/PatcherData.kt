@@ -7,10 +7,12 @@ import app.revanced.patcher.patch.base.Patch
 import org.jf.dexlib2.iface.ClassDef
 import java.io.File
 
-internal data class PatcherData(
-    val internalClasses: MutableList<ClassDef>,
-    val resourceCacheDirectory: String
+data class PatcherData(
+    internal val internalClasses: MutableList<ClassDef>,
+    internal val resourceCacheDirectory: String,
+    val packageMetadata: PackageMetadata
 ) {
+
     internal val patches = mutableListOf<Class<out Patch<Data>>>()
 
     internal val bytecodeData = BytecodeData(internalClasses)
