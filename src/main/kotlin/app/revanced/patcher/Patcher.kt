@@ -33,6 +33,7 @@ import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
+import java.nio.file.Files
 
 val NAMER = BasicDexFileNamer()
 
@@ -162,23 +163,27 @@ class Patcher(
 
             ResXmlPatcher.fixingPublicAttrsInProviderAttributes(manifestFile)
 
-            with(cacheDirectory.resolve("aapt_temp_file")) {
-                val resDirectory = cacheDirectory.resolve("res")
-                val includedFiles = metaInfo.usesFramework.ids.map { id ->
-                    androlibResources.getFrameworkApk(
-                        id,
-                        metaInfo.usesFramework.tag
-                    )
-                }.toTypedArray()
+            val aaptFile = cacheDirectory.resolve("aapt_temp_file")
 
-                androlibResources.aaptPackage(
-                    this, manifestFile, resDirectory, null,
-                    null, includedFiles
+            // delete if it exists
+            Files.deleteIfExists(aaptFile.toPath())
+
+            val resDirectory = cacheDirectory.resolve("res")
+            val includedFiles = metaInfo.usesFramework.ids.map { id ->
+                androlibResources.getFrameworkApk(
+                    id,
+                    metaInfo.usesFramework.tag
                 )
+            }.toTypedArray()
 
-                // write packaged resources to cache directory
-                ExtFile(this).directory.copyToDir(cacheDirectory.resolve("build/"))
-            }
+            androlibResources.aaptPackage(
+                aaptFile, manifestFile, resDirectory, null,
+                null, includedFiles
+            )
+
+            // write packaged resources to cache directory
+            ExtFile(aaptFile).directory.copyToDir(cacheDirectory.resolve("build/"))
+
         }
 
         val newDexFile = object : DexFile {
