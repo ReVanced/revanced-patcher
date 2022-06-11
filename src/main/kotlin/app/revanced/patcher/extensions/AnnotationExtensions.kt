@@ -41,7 +41,7 @@ object PatchExtensions {
     val Class<out Patch<Data>>.patchName: String
         get() = recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
     val Class<out Patch<Data>>.version get() = recursiveAnnotation(Version::class)?.version
-    val Class<out Patch<Data>>.excludeByDefault get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Patch::class)!!.excludeByDefault
+    val Class<out Patch<Data>>.include get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Patch::class)!!.include
     val Class<out Patch<Data>>.description get() = recursiveAnnotation(Description::class)?.description
     val Class<out Patch<Data>>.dependencies get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Dependencies::class)?.dependencies
     val Class<out Patch<Data>>.compatiblePackages get() = recursiveAnnotation(Compatibility::class)?.compatiblePackages
