@@ -41,13 +41,15 @@ object PatchExtensions {
     val Class<out Patch<Data>>.patchName: String
         get() = recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
     val Class<out Patch<Data>>.version get() = recursiveAnnotation(Version::class)?.version
+    val Class<out Patch<Data>>.excludeByDefault get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Patch::class)!!.excludeByDefault
     val Class<out Patch<Data>>.description get() = recursiveAnnotation(Description::class)?.description
     val Class<out Patch<Data>>.dependencies get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Dependencies::class)?.dependencies
     val Class<out Patch<Data>>.compatiblePackages get() = recursiveAnnotation(Compatibility::class)?.compatiblePackages
 }
 
 object MethodSignatureExtensions {
-    val MethodSignature.name: String get() = javaClass.recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
+    val MethodSignature.name: String
+        get() = javaClass.recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
     val MethodSignature.version get() = javaClass.recursiveAnnotation(Version::class)?.version ?: "0.0.1"
     val MethodSignature.description get() = javaClass.recursiveAnnotation(Description::class)?.description
     val MethodSignature.compatiblePackages get() = javaClass.recursiveAnnotation(Compatibility::class)?.compatiblePackages

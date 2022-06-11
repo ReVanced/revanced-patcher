@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
-annotation class Patch
+annotation class Patch(val excludeByDefault: Boolean = false)
 
 /**
  * Annotation for dependencies of [Patch]es .
