@@ -64,10 +64,8 @@ class Patcher(
             androlib.decodeResourcesFull(extInputFile, outDir, resourceTable)
 
             // read additional metadata from the resource table
-            packageMetadata.metaInfo.usesFramework = UsesFramework().let { usesFramework ->
+            packageMetadata.metaInfo.usesFramework = UsesFramework().also { usesFramework ->
                 usesFramework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
-
-                usesFramework
             }
             packageMetadata.metaInfo.doNotCompress = buildList {
                 androlib.recordUncompressedFiles(extInputFile, this)
@@ -97,11 +95,9 @@ class Patcher(
         packageMetadata.metaInfo.sdkInfo = resourceTable.sdkInfo
 
         // read dex files
-        val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null).let { dexFile ->
+        val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null).also { dexFile ->
             // get the opcodes
             opcodes = dexFile.opcodes
-
-            dexFile
         }
 
         // finally create patcher data
@@ -150,23 +146,19 @@ class Patcher(
         if (options.patchResources) {
             val cacheDirectory = ExtFile(options.resourceCacheDirectory)
 
-            val androlibResources = AndrolibResources().let { resources ->
-                resources.buildOptions = BuildOptions().let { options ->
+            val androlibResources = AndrolibResources().also { resources ->
+                resources.buildOptions = BuildOptions().also { options ->
                     // TODO: options.useAapt2 = true
                     // TODO: options.aaptPath = ""
                     options.isFramework = metaInfo.isFrameworkApk
                     options.resourcesAreCompressed = metaInfo.compressionType
                     options.doNotCompress = metaInfo.doNotCompress
-
-                    options
                 }
 
                 resources.setSdkInfo(metaInfo.sdkInfo)
                 resources.setVersionInfo(metaInfo.versionInfo)
                 resources.setSharedLibrary(metaInfo.sharedLibrary)
                 resources.setSparseResources(metaInfo.sparseResources)
-
-                resources
             }
 
             val manifestFile = cacheDirectory.resolve("AndroidManifest.xml")
