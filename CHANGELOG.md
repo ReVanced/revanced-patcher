@@ -1,3 +1,16 @@
+# [1.1.0](https://github.com/revanced/revanced-patcher/compare/v1.0.0...v1.1.0) (2022-06-11)
+
+
+### Bug Fixes
+
+* resource patcher ([31815ca](https://github.com/revanced/revanced-patcher/commit/31815ca9ea990f16b3600d61fd570c1805be1c82))
+* update apktool to fork ([566ecef](https://github.com/revanced/revanced-patcher/commit/566ecefa2bd4cde5ebfb2b22dc56cd8bf9f396bd))
+
+
+### Features
+
+* allow custom aapt path to be specified ([8eb4a8f](https://github.com/revanced/revanced-patcher/commit/8eb4a8f87ae7679a272f3224273a37a31d4bb121))
+
 # 1.0.0 (2022-06-05)
 
 
