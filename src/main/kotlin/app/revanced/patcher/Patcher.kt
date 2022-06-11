@@ -64,9 +64,10 @@ class Patcher(
             androlib.decodeResourcesFull(extInputFile, outDir, resourceTable)
 
             // read additional metadata from the resource table
-            packageMetadata.metaInfo.usesFramework = UsesFramework().also { usesFramework ->
-                usesFramework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
+            packageMetadata.metaInfo.usesFramework = UsesFramework().also { framework ->
+                framework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
             }
+
             packageMetadata.metaInfo.doNotCompress = buildList {
                 androlib.recordUncompressedFiles(extInputFile, this)
             }
@@ -95,10 +96,9 @@ class Patcher(
         packageMetadata.metaInfo.sdkInfo = resourceTable.sdkInfo
 
         // read dex files
-        val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null).also { dexFile ->
-            // get the opcodes
-            opcodes = dexFile.opcodes
-        }
+        val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
+        // get the opcodes
+        opcodes = dexFile.opcodes
 
         // finally create patcher data
         data = PatcherData(
@@ -116,22 +116,19 @@ class Patcher(
         files: List<File>, allowedOverwrites: Iterable<String> = emptyList(), throwOnDuplicates: Boolean = false
     ) {
         for (file in files) {
-            MultiDexIO.readDexFile(true, file, NAMER, null, null).let { dexFile ->
-                for (classDef in dexFile.classes) {
-                    val e =
-                        data.bytecodeData.classes.internalClasses.findIndexed { internalClass -> internalClass.type == classDef.type }
-                    if (e != null) {
-                        if (throwOnDuplicates) {
-                            throw Exception("Class ${classDef.type} has already been added to the patcher.")
-                        }
-                        val (_, idx) = e
-                        if (allowedOverwrites.contains(classDef.type)) {
-                            data.bytecodeData.classes.internalClasses[idx] = classDef
-                        }
-                        continue
+            for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
+                val e = data.bytecodeData.classes.internalClasses.findIndexed { it.type == classDef.type }
+                if (e != null) {
+                    if (throwOnDuplicates) {
+                        throw Exception("Class ${classDef.type} has already been added to the patcher.")
                     }
-                    data.bytecodeData.classes.internalClasses.add(classDef)
+                    val (_, idx) = e
+                    if (allowedOverwrites.contains(classDef.type)) {
+                        data.bytecodeData.classes.internalClasses[idx] = classDef
+                    }
+                    continue
                 }
+                data.bytecodeData.classes.internalClasses.add(classDef)
             }
         }
     }
@@ -165,21 +162,22 @@ class Patcher(
 
             ResXmlPatcher.fixingPublicAttrsInProviderAttributes(manifestFile)
 
-            cacheDirectory.resolve("aapt_temp_file").let { temporalFile ->
+            with(cacheDirectory.resolve("aapt_temp_file")) {
                 val resDirectory = cacheDirectory.resolve("res")
-                val includedFiles =
-                    metaInfo.usesFramework.ids.map { id -> androlibResources.getFrameworkApk(id, metaInfo.usesFramework.tag) }
-                        .toTypedArray()
+                val includedFiles = metaInfo.usesFramework.ids.map { id ->
+                    androlibResources.getFrameworkApk(
+                        id,
+                        metaInfo.usesFramework.tag
+                    )
+                }.toTypedArray()
 
                 androlibResources.aaptPackage(
-                    temporalFile, manifestFile, resDirectory, null,
+                    this, manifestFile, resDirectory, null,
                     null, includedFiles
                 )
 
                 // write packaged resources to cache directory
-                // TODO: consider returning a list of the files instead of extracting them to the cache directory,
-                //  less disk but more ram usage
-                ExtFile(temporalFile).directory.copyToDir(cacheDirectory.resolve("build/"))
+                ExtFile(this).directory.copyToDir(cacheDirectory.resolve("build/"))
             }
         }
 
