@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/revanced/revanced-patcher/compare/v1.2.2...v1.2.3) (2022-06-14)
+
+
+### Bug Fixes
+
+* enforce aapt v1 ([cff87ff](https://github.com/revanced/revanced-patcher/commit/cff87ff0770d774d7ef79eec5a22462eadbcb9c5))
+
 ## [1.2.2](https://github.com/revanced/revanced-patcher/compare/v1.2.1...v1.2.2) (2022-06-14)
 
 
