@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/revanced/revanced-patcher/compare/v1.2.0...v1.2.1) (2022-06-14)
+
+
+### Bug Fixes
+
+* Patcher setting BuildOptions too late ([6a5c873](https://github.com/revanced/revanced-patcher/commit/6a5c8735fb8a5d6f7e9c606734b6684c7fa99e7f))
+
 # [1.2.0](https://github.com/revanced/revanced-patcher/compare/v1.1.0...v1.2.0) (2022-06-14)
 
 
