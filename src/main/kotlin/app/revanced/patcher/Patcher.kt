@@ -51,10 +51,7 @@ class Patcher(private val options: PatcherOptions) {
         if (outDir.exists()) outDir.deleteRecursively()
         outDir.mkdirs()
 
-        val androlib = Androlib(BuildOptions().also { buildOptions ->
-            buildOptions.aaptPath = options.aaptPath
-            buildOptions.frameworkFolderLocation = options.frameworkFolderLocation
-        })
+        val androlib = Androlib(BuildOptions().also { it.setBuildOptions(options) })
         val resourceTable = androlib.getResTable(extInputFile, true)
 
         val packageMetadata = PackageMetadata()
@@ -146,8 +143,7 @@ class Patcher(private val options: PatcherOptions) {
 
             val androlibResources = AndrolibResources().also { resources ->
                 resources.buildOptions = BuildOptions().also { buildOptions ->
-                    buildOptions.aaptPath = options.aaptPath
-                    buildOptions.frameworkFolderLocation = options.frameworkFolderLocation
+                    buildOptions.setBuildOptions(options)
                     buildOptions.isFramework = metaInfo.isFrameworkApk
                     buildOptions.resourcesAreCompressed = metaInfo.compressionType
                     buildOptions.doNotCompress = metaInfo.doNotCompress
@@ -298,4 +294,10 @@ class Patcher(private val options: PatcherOptions) {
             }
         }
     }
+}
+
+private fun BuildOptions.setBuildOptions(options: PatcherOptions) {
+    this.aaptPath = options.aaptPath
+    this.useAapt2 = true
+    this.frameworkFolderLocation = options.frameworkFolderLocation
 }
