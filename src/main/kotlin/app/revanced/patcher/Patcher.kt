@@ -144,6 +144,7 @@ class Patcher(private val options: PatcherOptions) {
             val androlibResources = AndrolibResources().also { resources ->
                 resources.buildOptions = BuildOptions().also { buildOptions ->
                     buildOptions.aaptPath = options.aaptPath
+                    buildOptions.frameworkFolderLocation = options.frameworkFolderLocation
                     buildOptions.isFramework = metaInfo.isFrameworkApk
                     buildOptions.resourcesAreCompressed = metaInfo.compressionType
                     buildOptions.doNotCompress = metaInfo.doNotCompress
