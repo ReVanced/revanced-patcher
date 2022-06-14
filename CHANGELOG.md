@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/revanced/revanced-patcher/compare/v1.1.0...v1.2.0) (2022-06-14)
+
+
+### Features
+
+* allow custom framework path to be specified ([d3a580e](https://github.com/revanced/revanced-patcher/commit/d3a580ea19d7c2d5d8c97650b1e6396ea0a7fc25))
+
 # [1.1.0](https://github.com/revanced/revanced-patcher/compare/v1.0.0...v1.1.0) (2022-06-11)
 
 
