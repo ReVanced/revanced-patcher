@@ -51,7 +51,10 @@ class Patcher(private val options: PatcherOptions) {
         if (outDir.exists()) outDir.deleteRecursively()
         outDir.mkdirs()
 
-        val androlib = Androlib()
+        val androlib = Androlib(BuildOptions().also { buildOptions ->
+            buildOptions.aaptPath = options.aaptPath
+            buildOptions.frameworkFolderLocation = options.frameworkFolderLocation
+        })
         val resourceTable = androlib.getResTable(extInputFile, true)
 
         val packageMetadata = PackageMetadata()
