@@ -298,6 +298,6 @@ class Patcher(private val options: PatcherOptions) {
 
 private fun BuildOptions.setBuildOptions(options: PatcherOptions) {
     this.aaptPath = options.aaptPath
-    this.useAapt2 = false
+    this.useAapt2 = true
     this.frameworkFolderLocation = options.frameworkFolderLocation
 }
