@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/revanced/revanced-patcher/compare/v1.2.3...v1.2.4) (2022-06-15)
+
+
+### Reverts
+
+* "fix: enforce aapt v1" ([dfd8a24](https://github.com/revanced/revanced-patcher/commit/dfd8a245124f85b1b028bbba197c70c8dca689b6))
+
 ## [1.2.3](https://github.com/revanced/revanced-patcher/compare/v1.2.2...v1.2.3) (2022-06-14)
 
 
