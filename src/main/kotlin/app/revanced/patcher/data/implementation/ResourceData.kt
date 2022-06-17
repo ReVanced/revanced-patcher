@@ -34,7 +34,6 @@ class DomFileEditor internal constructor(private val domFile: File) : Closeable 
 
     init {
         val factory = DocumentBuilderFactory.newInstance()
-        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
 
         val builder = factory.newDocumentBuilder()
 
