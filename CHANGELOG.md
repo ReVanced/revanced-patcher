@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/revanced/revanced-patcher/compare/v1.2.4...v1.2.5) (2022-06-17)
+
+
+### Bug Fixes
+
+* goodbye security ([8f3ac77](https://github.com/revanced/revanced-patcher/commit/8f3ac7702a2b3ee98c55aeac6a1b9972f99664cc))
+
 ## [1.2.4](https://github.com/revanced/revanced-patcher/compare/v1.2.3...v1.2.4) (2022-06-15)
 
 
