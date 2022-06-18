@@ -1,3 +1,10 @@
+## [1.2.7](https://github.com/revanced/revanced-patcher/compare/v1.2.6...v1.2.7) (2022-06-18)
+
+
+### Bug Fixes
+
+* version not working with apktool due to cache ([03f5ee0](https://github.com/revanced/revanced-patcher/commit/03f5ee088b1b96b88cb7aeb323443b6209a13950))
+
 ## [1.2.6](https://github.com/revanced/revanced-patcher/compare/v1.2.5...v1.2.6) (2022-06-18)
 
 
