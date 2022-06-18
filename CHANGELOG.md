@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/revanced/revanced-patcher/compare/v1.2.5...v1.2.6) (2022-06-18)
+
+
+### Bug Fixes
+
+* remove javadoc jar (also trigger release) ([56f6ca3](https://github.com/revanced/revanced-patcher/commit/56f6ca38919b522c0d5558eabffa4aee41cc0b0b))
+
 ## [1.2.5](https://github.com/revanced/revanced-patcher/compare/v1.2.4...v1.2.5) (2022-06-17)
 
 
