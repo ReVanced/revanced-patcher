@@ -42,7 +42,6 @@ tasks {
 
 java {
     withSourcesJar()
-    withJavadocJar()
 }
 
 publishing {
