@@ -1,6 +1,9 @@
 package app.revanced.patcher.extensions
 
+import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.revanced.patcher.util.smali.toInstruction
+import app.revanced.patcher.util.smali.toInstructions
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.builder.BuilderInstruction
 import org.jf.dexlib2.builder.MutableMethodImplementation
@@ -61,6 +64,22 @@ internal fun Method.clone(
         clonedImplementation
     )
 }
+
+/**
+ * Add smali instructions to the method.
+ * @param index The index to insert the instructions at.
+ * @param instruction The smali instruction to add.
+ */
+fun MutableMethod.addInstruction(index: Int, instruction: String) =
+    this.implementation!!.addInstruction(index, instruction.toInstruction(this))
+
+/**
+ * Add smali instructions to the method.
+ * @param index The index to insert the instructions at.
+ * @param instructions The smali instructions to add.
+ */
+fun MutableMethod.addInstructions(index: Int, instructions: String) =
+    this.implementation!!.addInstructions(index, instructions.toInstructions(this))
 
 /**
  * Clones the method.

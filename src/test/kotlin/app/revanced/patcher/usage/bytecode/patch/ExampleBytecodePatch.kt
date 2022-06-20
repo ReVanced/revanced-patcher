@@ -15,7 +15,6 @@ import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibili
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.revanced.patcher.util.smali.toInstruction
-import app.revanced.patcher.util.smali.toInstructions
 import com.google.common.collect.ImmutableList
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Format
@@ -47,7 +46,7 @@ class ExampleBytecodePatch : BytecodePatch(
     // You can treat it as a constructor
     override fun execute(data: BytecodeData): PatchResult {
         // Get the resolved method for the signature from the resolver cache
-        val result = signatures.first().result!!
+        val result = ExampleSignature.result!!
 
         // Get the implementation for the resolved method
         val implementation = result.method.implementation!!
@@ -126,8 +125,8 @@ class ExampleBytecodePatch : BytecodePatch(
                         invoke-static { }, LTestClass;->returnHello()Ljava/lang/String;
                         move-result-object v1
                         invoke-virtual { v0, v1 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
-                    """.trimIndent().toInstructions()
-        implementation.addInstructions(startIndex + 2, instructions)
+                    """
+        result.method.addInstructions(startIndex + 2, instructions)
 
         // Finally, tell the patcher that this patch was a success.
         // You can also return PatchResultError with a message.
