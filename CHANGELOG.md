@@ -1,3 +1,11 @@
+# [1.3.0](https://github.com/revanced/revanced-patcher/compare/v1.2.9...v1.3.0) (2022-06-20)
+
+
+### Features
+
+* `parametersCount` for `InlineSmaliCompiler` instead of `parameters` ([ad6c5c8](https://github.com/revanced/revanced-patcher/commit/ad6c5c827389d10eae473dc66557a699df8c3280))
+* simplify adding instructions ([e47b67d](https://github.com/revanced/revanced-patcher/commit/e47b67d7ec521f288644afb89baf4146dc9bc87d))
+
 ## [1.2.9](https://github.com/revanced/revanced-patcher/compare/v1.2.8...v1.2.9) (2022-06-20)
 
 
