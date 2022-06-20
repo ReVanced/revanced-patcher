@@ -9,5 +9,5 @@ import app.revanced.patcher.signature.implementation.method.MethodSignature
  * @param signatures A list of [MethodSignature] this patch relies on.
  */
 abstract class BytecodePatch(
-    val signatures: Iterable<MethodSignature>
+    internal val signatures: Iterable<MethodSignature>
 ) : Patch<BytecodeData>()
