@@ -1,3 +1,10 @@
+## [1.2.9](https://github.com/revanced/revanced-patcher/compare/v1.2.8...v1.2.9) (2022-06-20)
+
+
+### Bug Fixes
+
+* update apktool ([ab866bb](https://github.com/revanced/revanced-patcher/commit/ab866bb8ef4792d8f2a51edc79e687b5b636c621))
+
 ## [1.2.8](https://github.com/revanced/revanced-patcher/compare/v1.2.7...v1.2.8) (2022-06-18)
 
 
