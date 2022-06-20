@@ -59,8 +59,8 @@ class InlineSmaliCompiler {
     }
 }
 
-fun String.toInstructions(parameters: String = "", registers: Int = 1, forStaticMethod: Boolean = true) =
-    InlineSmaliCompiler.compileMethodInstructions(this, parameters, registers, forStaticMethod)
+fun String.toInstructions(parametersCount: Int = 0, registers: Int = 1, forStaticMethod: Boolean = true) =
+    InlineSmaliCompiler.compileMethodInstructions(this, "I".repeat(parametersCount), registers, forStaticMethod)
 
-fun String.toInstruction(parameters: String = "", registers: Int = 1, forStaticMethod: Boolean = true) =
-    this.toInstructions(parameters, registers, forStaticMethod).first()
+fun String.toInstruction(parametersCount: Int = 0, registers: Int = 1, forStaticMethod: Boolean = true) =
+    this.toInstructions(parametersCount, registers, forStaticMethod).first()
