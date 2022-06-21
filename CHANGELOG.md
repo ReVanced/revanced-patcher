@@ -1,3 +1,15 @@
+## [1.3.3](https://github.com/revanced/revanced-patcher/compare/v1.3.2...v1.3.3) (2022-06-21)
+
+
+### Bug Fixes
+
+* add docs (trigger release) ([6628b78](https://github.com/revanced/revanced-patcher/commit/6628b7870fc052da40be0d50a7e2b0b6c57743cc))
+
+
+### Reverts
+
+* propagate dependencies ([365e1d7](https://github.com/revanced/revanced-patcher/commit/365e1d7a4507b918a4c8170ce2c88f6c8ff1d474))
+
 ## [1.3.2](https://github.com/revanced/revanced-patcher/compare/v1.3.1...v1.3.2) (2022-06-21)
 
 
