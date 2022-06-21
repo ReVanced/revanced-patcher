@@ -14,17 +14,17 @@ import org.jf.smali.smaliParser
 import org.jf.smali.smaliTreeWalker
 import java.io.InputStreamReader
 
+private const val METHOD_TEMPLATE = """
+    .class LInlineCompiler;
+    .super Ljava/lang/Object;
+    .method %s dummyMethod(%s)V
+        .registers %d
+        %s
+    .end method
+"""
+
 class InlineSmaliCompiler {
     companion object {
-        private const val METHOD_TEMPLATE = """
-                .class LInlineCompiler;
-                .super Ljava/lang/Object;
-                .method %s dummyMethod(%s)V
-                    .registers %d
-                    %s
-                .end method
-            """
-
         /**
          * Compiles a string of Smali code to a list of instructions.
          * p0, p1 etc. will only work correctly if the parameters and registers are passed.
@@ -34,7 +34,7 @@ class InlineSmaliCompiler {
          * be messed up and results in broken Dalvik bytecode.
          * FIXME: Fix the above issue. When this is fixed, add the proper conversions in [InstructionConverter].
          */
-        fun compileMethodInstructions(
+        fun compile(
             instructions: String, parameters: String, registers: Int, forStaticMethod: Boolean
         ): List<BuilderInstruction> {
             val input =
@@ -64,9 +64,9 @@ class InlineSmaliCompiler {
  * @param templateMethod The method to compile the instructions against.
  * @returns A list of instructions.
  */
-fun String.toInstructions(templateMethod: Method? = null) = InlineSmaliCompiler.compileMethodInstructions(this,
+fun String.toInstructions(templateMethod: Method? = null) = InlineSmaliCompiler.compile(this,
     templateMethod?.parameters?.joinToString("") { it } ?: "",
-    templateMethod?.implementation?.registerCount ?: 0,
+    templateMethod?.implementation?.registerCount ?: 1,
     (templateMethod?.accessFlags ?: 0) and AccessFlags.STATIC.value != 0)
 
 /**
