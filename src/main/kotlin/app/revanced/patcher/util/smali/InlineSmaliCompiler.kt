@@ -67,7 +67,8 @@ class InlineSmaliCompiler {
 fun String.toInstructions(templateMethod: Method? = null) = InlineSmaliCompiler.compile(this,
     templateMethod?.parameters?.joinToString("") { it } ?: "",
     templateMethod?.implementation?.registerCount ?: 1,
-    (templateMethod?.accessFlags ?: 0) and AccessFlags.STATIC.value != 0)
+    templateMethod?.let { AccessFlags.STATIC.isSet(it.accessFlags) } ?: true
+)
 
 /**
  * Compile a line of Smali code to an instruction.
