@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/revanced/revanced-patcher/compare/v1.3.0...v1.3.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* `InlineSmaliCompiler.compile` using 0 registers instead of 1 by default ([835a421](https://github.com/revanced/revanced-patcher/commit/835a421cc0588b92c2995e9d74727069d14b1750))
+
 # [1.3.0](https://github.com/revanced/revanced-patcher/compare/v1.2.9...v1.3.0) (2022-06-20)
 
 
