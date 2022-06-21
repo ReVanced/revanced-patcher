@@ -1,6 +1,7 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.util.dex.DexFile
+import brut.directory.ExtFile
 
 /**
  * The result of a patcher.
@@ -9,5 +10,6 @@ import app.revanced.patcher.util.dex.DexFile
  */
 data class PatcherResult(
     val dexFiles: List<DexFile>,
-    val doNotCompress: List<String>? = null
+    val doNotCompress: List<String>? = null,
+    val resourceFile: ExtFile?
 )
