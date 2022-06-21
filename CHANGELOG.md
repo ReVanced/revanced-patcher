@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/revanced/revanced-patcher/compare/v1.3.1...v1.3.2) (2022-06-21)
+
+
+### Bug Fixes
+
+* return resourceFile to caller ([1f75777](https://github.com/revanced/revanced-patcher/commit/1f75777cf985bf08483033ec541937d3e733347b))
+
 ## [1.3.1](https://github.com/revanced/revanced-patcher/compare/v1.3.0...v1.3.1) (2022-06-21)
 
 
