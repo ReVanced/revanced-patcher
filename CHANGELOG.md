@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/revanced/revanced-patcher/compare/v1.3.3...v1.3.4) (2022-06-21)
+
+
+### Bug Fixes
+
+* `String.toInstructions` defaulting `forStaticMethod` to `false` ([5a2f02b](https://github.com/revanced/revanced-patcher/commit/5a2f02b97dcde95dbe901fa68cca6c6c0219cb82)), closes [revanced/revanced-patches#46](https://github.com/revanced/revanced-patches/issues/46)
+
 ## [1.3.3](https://github.com/revanced/revanced-patcher/compare/v1.3.2...v1.3.3) (2022-06-21)
 
 
