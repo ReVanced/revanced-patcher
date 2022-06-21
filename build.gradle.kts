@@ -24,12 +24,10 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation("xpp3:xpp3:1.1.4c")
-    implementation("app.revanced:multidexlib2:2.5.2.r2")
-    implementation("org.smali:smali:2.5.2")
-
-    implementation("org.apktool:apktool-lib:2.6.5-SNAPSHOT")
-    api("org.apktool:brut.j.dir:2.6.5-SNAPSHOT")
+    api("xpp3:xpp3:1.1.4c")
+    api("app.revanced:multidexlib2:2.5.2.r2")
+    api("org.smali:smali:2.5.2")
+    api("org.apktool:apktool-lib:2.6.5-SNAPSHOT")
 
     testImplementation(kotlin("test"))
 }
