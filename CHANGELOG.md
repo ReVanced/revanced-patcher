@@ -1,3 +1,15 @@
+# [1.9.0](https://github.com/revanced/revanced-patcher/compare/v1.8.0...v1.9.0) (2022-06-22)
+
+
+### Bug Fixes
+
+* callback for each file instead of class ([930768d](https://github.com/revanced/revanced-patcher/commit/930768dfb31dc5fa6c248050b08ac117c40ee0a3))
+
+
+### Features
+
+* yield the patch result ([dde5385](https://github.com/revanced/revanced-patcher/commit/dde5385232abddc8a85d6e9a939549b71dd9130e))
+
 # [1.8.0](https://github.com/revanced/revanced-patcher/compare/v1.7.2...v1.8.0) (2022-06-22)
 
 
