@@ -3,6 +3,7 @@ package app.revanced.patcher.signature.implementation.method.resolver
 import app.revanced.patcher.data.PatcherData
 import app.revanced.patcher.data.implementation.proxy
 import app.revanced.patcher.extensions.MethodSignatureExtensions.fuzzyThreshold
+import app.revanced.patcher.extensions.MethodSignatureExtensions.name
 import app.revanced.patcher.extensions.parametersEqual
 import app.revanced.patcher.signature.implementation.method.MethodSignature
 import org.jf.dexlib2.Opcode
@@ -11,37 +12,25 @@ import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
 import org.jf.dexlib2.iface.instruction.formats.Instruction21c
 import org.jf.dexlib2.iface.reference.StringReference
+import java.util.logging.Logger
 
 internal class MethodSignatureResolver(
     private val classes: List<ClassDef>,
     private val methodSignatures: Iterable<MethodSignature>
 ) {
-    fun resolve(patcherData: PatcherData) {
-        for (signature in methodSignatures) {
-            for (classDef in classes) {
-                for (method in classDef.methods) {
-                    val patternScanData = compareSignatureToMethod(signature, method) ?: continue
-
-                    // create class proxy, in case a patch needs mutability
-                    val classProxy = patcherData.bytecodeData.proxy(classDef)
-                    signature.result = SignatureResolverResult(
-                        classProxy,
-                        patternScanData,
-                        method,
-                    )
-                }
-            }
-        }
-    }
-
     // These functions do not require the constructor values, so they can be static.
     companion object {
+        private val LOGGER: Logger = Logger.getLogger(::MethodSignatureResolver.name)
+
         fun resolveFromProxy(
             classProxy: app.revanced.patcher.util.proxy.ClassProxy,
             signature: MethodSignature
         ): SignatureResolverResult? {
             for (method in classProxy.immutableClass.methods) {
                 val result = compareSignatureToMethod(signature, method) ?: continue
+
+                LOGGER.fine("${signature.name} match to ${method.definingClass}->${method.name}")
+
                 return SignatureResolverResult(
                     classProxy,
                     result,
@@ -151,6 +140,28 @@ internal class MethodSignatureResolver(
                             correctOpcode, patternOpcode,
                             instructionIndex, patternIndex,
                         )
+                    )
+                }
+            }
+        }
+    }
+
+    fun resolve(patcherData: PatcherData) {
+        for (signature in methodSignatures) {
+            val signatureName = signature.name
+            LOGGER.fine("Resolve $signatureName")
+            for (classDef in classes) {
+                for (method in classDef.methods) {
+                    val patternScanData = compareSignatureToMethod(signature, method) ?: continue
+
+                    LOGGER.fine("$signatureName match to ${method.definingClass}->${method.name}")
+
+                    // create class proxy, in case a patch needs mutability
+                    val classProxy = patcherData.bytecodeData.proxy(classDef)
+                    signature.result = SignatureResolverResult(
+                        classProxy,
+                        patternScanData,
+                        method,
                     )
                 }
             }
