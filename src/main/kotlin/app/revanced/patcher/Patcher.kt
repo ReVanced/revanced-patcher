@@ -32,9 +32,9 @@ import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
-import java.util.logging.Logger
 
 val NAMER = BasicDexFileNamer()
 
@@ -43,7 +43,7 @@ val NAMER = BasicDexFileNamer()
  * @param options The options for the patcher.
  */
 class Patcher(private val options: PatcherOptions) {
-    private val logger: Logger = Logger.getLogger(::Patcher.name)
+    private val logger = LoggerFactory.getLogger(Patcher::class.java)
 
     val data: PatcherData
     private val opcodes: Opcodes
@@ -51,7 +51,7 @@ class Patcher(private val options: PatcherOptions) {
     init {
         val extInputFile = ExtFile(options.inputFile)
         val outDir = File(options.resourceCacheDirectory)
-        if (outDir.exists()){
+        if (outDir.exists()) {
             logger.info("Delete previous resource cache directory")
 
             outDir.deleteRecursively()
@@ -80,7 +80,7 @@ class Patcher(private val options: PatcherOptions) {
             }
 
         } else {
-            logger.warning("Resource patching is disabled. Falling back to manually decode AndroidManifest.xml")
+            logger.warn("Resource patching is disabled. Falling back to manually decode AndroidManifest.xml")
 
             // create decoder for the resource table
             val decoder = ResAttrDecoder()
@@ -136,14 +136,14 @@ class Patcher(private val options: PatcherOptions) {
                     }
                     val (_, idx) = e
                     if (allowedOverwrites.contains(type)) {
-                        logger.fine("Override $type")
+                        logger.trace("Override $type")
                         data.bytecodeData.classes.internalClasses[idx] = classDef
                         continue
                     }
-                    logger.fine("Skip $type")
+                    logger.trace("Skip $type")
                     continue
                 }
-                logger.finest("Add $type")
+                logger.trace("Add $type")
                 data.bytecodeData.classes.internalClasses.add(classDef)
             }
         }
@@ -250,8 +250,8 @@ class Patcher(private val options: PatcherOptions) {
         val patchName = patch.patchName
 
         // if the patch has already applied silently skip it
-        if (appliedPatches.contains(patchName)){
-            logger.fine("Skip $patchName because it already has been applied")
+        if (appliedPatches.contains(patchName)) {
+            logger.warn("Skip $patchName because it already has been applied")
 
             return PatchResultSuccess()
         }
@@ -284,7 +284,7 @@ class Patcher(private val options: PatcherOptions) {
             data.bytecodeData
         }
 
-        logger.fine("Execute $patchName")
+        logger.warn("Execute $patchName")
 
         return try {
             patchInstance.execute(data)

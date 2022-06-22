@@ -12,7 +12,8 @@ import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
 import org.jf.dexlib2.iface.instruction.formats.Instruction21c
 import org.jf.dexlib2.iface.reference.StringReference
-import java.util.logging.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 internal class MethodSignatureResolver(
     private val classes: List<ClassDef>,
@@ -20,7 +21,7 @@ internal class MethodSignatureResolver(
 ) {
     // These functions do not require the constructor values, so they can be static.
     companion object {
-        private val LOGGER: Logger = Logger.getLogger(::MethodSignatureResolver.name)
+        private val logger: Logger = LoggerFactory.getLogger(MethodSignatureResolver::class.java)
 
         fun resolveFromProxy(
             classProxy: app.revanced.patcher.util.proxy.ClassProxy,
@@ -29,7 +30,7 @@ internal class MethodSignatureResolver(
             for (method in classProxy.immutableClass.methods) {
                 val result = compareSignatureToMethod(signature, method) ?: continue
 
-                LOGGER.fine("${signature.name} match to ${method.definingClass}->${method.name}")
+                logger.trace("${signature.name} match to ${method.definingClass}->${method.name}")
 
                 return SignatureResolverResult(
                     classProxy,
@@ -149,12 +150,12 @@ internal class MethodSignatureResolver(
     fun resolve(patcherData: PatcherData) {
         for (signature in methodSignatures) {
             val signatureName = signature.name
-            LOGGER.fine("Resolve $signatureName")
+            logger.trace("Resolve $signatureName")
             for (classDef in classes) {
                 for (method in classDef.methods) {
                     val patternScanData = compareSignatureToMethod(signature, method) ?: continue
 
-                    LOGGER.fine("$signatureName match to ${method.definingClass}->${method.name}")
+                    logger.trace("$signatureName match to ${method.definingClass}->${method.name}")
 
                     // create class proxy, in case a patch needs mutability
                     val classProxy = patcherData.bytecodeData.proxy(classDef)
