@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/revanced/revanced-patcher/compare/v1.7.2...v1.8.0) (2022-06-22)
+
+
+### Features
+
+* logging class ([caf2745](https://github.com/revanced/revanced-patcher/commit/caf2745805ffd4b59fa81e79cc489b1a1a5c5d89))
+
 ## [1.7.2](https://github.com/revanced/revanced-patcher/compare/v1.7.1...v1.7.2) (2022-06-22)
 
 
