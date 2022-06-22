@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/revanced/revanced-patcher/compare/v1.3.4...v1.4.0) (2022-06-22)
+
+
+### Features
+
+* return a `File` instance instead of `ExtFile` ([68174bb](https://github.com/revanced/revanced-patcher/commit/68174bbd6b4df47a91b610c2b97dbae55b594163))
+
 ## [1.3.4](https://github.com/revanced/revanced-patcher/compare/v1.3.3...v1.3.4) (2022-06-21)
 
 
