@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/revanced/revanced-patcher/compare/v1.5.0...v1.6.0) (2022-06-22)
+
+
+### Features
+
+* use of `java.util.logging.Logger` ([9c39c9e](https://github.com/revanced/revanced-patcher/commit/9c39c9efdb5d48ddaffce7f711c275e732b0b2d9))
+
 # [1.5.0](https://github.com/revanced/revanced-patcher/compare/v1.4.0...v1.5.0) (2022-06-22)
 
 
