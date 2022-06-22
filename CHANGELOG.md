@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/revanced/revanced-patcher/compare/v1.4.0...v1.5.0) (2022-06-22)
+
+
+### Features
+
+* use streams to write the dex files ([64bae88](https://github.com/revanced/revanced-patcher/commit/64bae884dcb72550a3218e149f3ca0fd0ca03aaf))
+
 # [1.4.0](https://github.com/revanced/revanced-patcher/compare/v1.3.4...v1.4.0) (2022-06-22)
 
 
