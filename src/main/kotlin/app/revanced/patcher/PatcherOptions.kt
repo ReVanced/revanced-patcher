@@ -1,5 +1,7 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.logging.impl.NopLogger
+import app.revanced.patcher.logging.Logger
 import java.io.File
 
 /**
@@ -17,5 +19,5 @@ data class PatcherOptions(
     internal val patchResources: Boolean = false,
     internal val aaptPath: String = "",
     internal val frameworkFolderLocation: String? = null,
-    internal val logger: PatchLogger = NoopPatchLogger
+    internal val logger: Logger = NopLogger
 )
