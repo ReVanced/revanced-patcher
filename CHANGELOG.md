@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/revanced/revanced-patcher/compare/v1.6.0...v1.7.0) (2022-06-22)
+
+
+### Features
+
+* migrate logger to `slf4j` ([8f66f9f](https://github.com/revanced/revanced-patcher/commit/8f66f9f606a785ac947b0e553822877f211d82df))
+
 # [1.6.0](https://github.com/revanced/revanced-patcher/compare/v1.5.0...v1.6.0) (2022-06-22)
 
 
