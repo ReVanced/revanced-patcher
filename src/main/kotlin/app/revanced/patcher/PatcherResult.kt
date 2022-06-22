@@ -1,7 +1,6 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.util.dex.DexFile
-import brut.directory.ExtFile
 import java.io.File
 
 /**
