@@ -32,7 +32,6 @@ import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Files
 
@@ -43,20 +42,14 @@ val NAMER = BasicDexFileNamer()
  * @param options The options for the patcher.
  */
 class Patcher(private val options: PatcherOptions) {
-    private val logger = LoggerFactory.getLogger(Patcher::class.java)
-
     val data: PatcherData
     private val opcodes: Opcodes
 
     init {
         val extInputFile = ExtFile(options.inputFile)
         val outDir = File(options.resourceCacheDirectory)
-        if (outDir.exists()) {
-            logger.info("Delete previous resource cache directory")
-
-            outDir.deleteRecursively()
-            outDir.mkdirs()
-        }
+        if (outDir.exists()) outDir.deleteRecursively()
+        outDir.mkdirs()
 
         val androlib = Androlib(BuildOptions().also { it.setBuildOptions(options) })
         val resourceTable = androlib.getResTable(extInputFile, true)
@@ -64,8 +57,6 @@ class Patcher(private val options: PatcherOptions) {
         val packageMetadata = PackageMetadata()
 
         if (options.patchResources) {
-            logger.info("Decode resources")
-
             // decode resources to cache directory
             androlib.decodeManifestWithResources(extInputFile, outDir, resourceTable)
             androlib.decodeResourcesFull(extInputFile, outDir, resourceTable)
@@ -80,8 +71,6 @@ class Patcher(private val options: PatcherOptions) {
             }
 
         } else {
-            logger.warn("Resource patching is disabled. Falling back to manually decode AndroidManifest.xml")
-
             // create decoder for the resource table
             val decoder = ResAttrDecoder()
             decoder.currentPackage = ResPackage(resourceTable, 0, null)
@@ -103,8 +92,6 @@ class Patcher(private val options: PatcherOptions) {
         packageMetadata.packageVersion = resourceTable.versionInfo.versionName
         packageMetadata.metaInfo.versionInfo = resourceTable.versionInfo
         packageMetadata.metaInfo.sdkInfo = resourceTable.sdkInfo
-
-        logger.info("Read dex files")
 
         // read dex files
         val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
@@ -128,22 +115,17 @@ class Patcher(private val options: PatcherOptions) {
     ) {
         for (file in files) {
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
-                val type = classDef.type
-                val e = data.bytecodeData.classes.internalClasses.findIndexed { it.type == type }
+                val e = data.bytecodeData.classes.internalClasses.findIndexed { it.type == classDef.type }
                 if (e != null) {
                     if (throwOnDuplicates) {
-                        throw Exception("Class $type has already been added to the patcher.")
+                        throw Exception("Class ${classDef.type} has already been added to the patcher.")
                     }
                     val (_, idx) = e
-                    if (allowedOverwrites.contains(type)) {
-                        logger.trace("Override $type")
+                    if (allowedOverwrites.contains(classDef.type)) {
                         data.bytecodeData.classes.internalClasses[idx] = classDef
-                        continue
                     }
-                    logger.trace("Skip $type")
                     continue
                 }
-                logger.trace("Add $type")
                 data.bytecodeData.classes.internalClasses.add(classDef)
             }
         }
@@ -191,8 +173,6 @@ class Patcher(private val options: PatcherOptions) {
                 )
             }.toTypedArray()
 
-            logger.info("Building resources. This takes some time")
-
             androlibResources.aaptPackage(
                 aaptFile, manifestFile, resDirectory, null,
                 null, includedFiles
@@ -211,8 +191,6 @@ class Patcher(private val options: PatcherOptions) {
                 return this@Patcher.opcodes
             }
         }
-
-        logger.info("Write dex files")
 
         // write dex modified files
         val dexFiles = mutableMapOf<String, MemoryDataStore>()
@@ -250,11 +228,7 @@ class Patcher(private val options: PatcherOptions) {
         val patchName = patch.patchName
 
         // if the patch has already applied silently skip it
-        if (appliedPatches.contains(patchName)) {
-            logger.warn("Skip $patchName because it already has been applied")
-
-            return PatchResultSuccess()
-        }
+        if (appliedPatches.contains(patchName)) return PatchResultSuccess()
         appliedPatches.add(patchName)
 
         // recursively apply all dependency patches
@@ -283,8 +257,6 @@ class Patcher(private val options: PatcherOptions) {
             ).resolve(data)
             data.bytecodeData
         }
-
-        logger.warn("Execute $patchName")
 
         return try {
             patchInstance.execute(data)

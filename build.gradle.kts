@@ -25,7 +25,6 @@ dependencies {
     implementation("app.revanced:multidexlib2:2.5.2.r2")
     implementation("org.smali:smali:2.5.2")
     implementation("org.apktool:apktool-lib:2.6.5-SNAPSHOT")
-    implementation("org.slf4j:slf4j-api:1.7.36")
 
     testImplementation(kotlin("test"))
 }
