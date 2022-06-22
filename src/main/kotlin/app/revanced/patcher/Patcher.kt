@@ -302,29 +302,23 @@ class Patcher(private val options: PatcherOptions) {
     /**
      * Apply patches loaded into the patcher.
      * @param stopOnError If true, the patches will stop on the first error.
-     * @return A map of [PatchResultSuccess]. If the [Patch] was successfully applied,
-     * [PatchResultSuccess] will always be returned to the wrapping Result object.
-     * If the [Patch] failed to apply, an Exception will always be returned to the wrapping Result object.
+     * @return A pair of the name of the [Patch] and its [PatchResult].
      */
-    fun applyPatches(
-        stopOnError: Boolean = false, callback: (Class<out Patch<Data>>, Boolean) -> Unit = { _, _ -> }
-    ): Map<String, Result<PatchResultSuccess>> {
+    fun applyPatches(stopOnError: Boolean = false) = sequence {
         logger.trace("Applying all patches")
         val appliedPatches = mutableListOf<String>()
 
-        return buildMap {
-            for (patch in data.patches) {
-                val result = applyPatch(patch, appliedPatches)
+        for (patch in data.patches) {
+            val patchResult = applyPatch(patch, appliedPatches)
 
-                this[patch.patchName] = if (result.isSuccess()) {
-                    Result.success(result.success()!!)
-                } else {
-                    Result.failure(result.error()!!)
-                }
-
-                callback(patch, result.isSuccess())
-                if (stopOnError && result.isError()) break
+            val result = if (patchResult.isSuccess()) {
+                Result.success(patchResult.success()!!)
+            } else {
+                Result.failure(patchResult.error()!!)
             }
+
+            yield(patch.name to result)
+            if (stopOnError && patchResult.isError()) break
         }
     }
 }
