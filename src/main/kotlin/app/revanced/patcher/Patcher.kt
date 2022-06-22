@@ -111,9 +111,13 @@ class Patcher(private val options: PatcherOptions) {
      * @param throwOnDuplicates If this is set to true, the patcher will throw an exception if a duplicate class has been found.
      */
     fun addFiles(
-        files: List<File>, allowedOverwrites: Iterable<String> = emptyList(), throwOnDuplicates: Boolean = false
+        files: List<File>,
+        allowedOverwrites: Iterable<String> = emptyList(),
+        throwOnDuplicates: Boolean = false,
+        callback: (File) -> Unit
     ) {
         for (file in files) {
+            var modified = false
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
                 val e = data.bytecodeData.classes.internalClasses.findIndexed { it.type == classDef.type }
                 if (e != null) {
@@ -123,11 +127,14 @@ class Patcher(private val options: PatcherOptions) {
                     val (_, idx) = e
                     if (allowedOverwrites.contains(classDef.type)) {
                         data.bytecodeData.classes.internalClasses[idx] = classDef
+                        modified = true
                     }
                     continue
                 }
                 data.bytecodeData.classes.internalClasses.add(classDef)
+                modified = true
             }
+            if (modified) callback(file)
         }
     }
 
@@ -223,7 +230,8 @@ class Patcher(private val options: PatcherOptions) {
      * @return The result of executing the [patch].
      */
     private fun applyPatch(
-        patch: Class<out Patch<Data>>, appliedPatches: MutableList<String>
+        patch: Class<out Patch<Data>>,
+        appliedPatches: MutableList<String>
     ): PatchResult {
         val patchName = patch.patchName
 
@@ -273,7 +281,8 @@ class Patcher(private val options: PatcherOptions) {
      * If the [Patch] failed to apply, an Exception will always be returned to the wrapping Result object.
      */
     fun applyPatches(
-        stopOnError: Boolean = false, callback: (String) -> Unit = {}
+        stopOnError: Boolean = false,
+        callback: (Class<out Patch<Data>>, Boolean) -> Unit = { _, _ -> }
     ): Map<String, Result<PatchResultSuccess>> {
         val appliedPatches = mutableListOf<String>()
 
@@ -281,15 +290,13 @@ class Patcher(private val options: PatcherOptions) {
             for (patch in data.patches) {
                 val result = applyPatch(patch, appliedPatches)
 
-                val name = patch.patchName
-                callback(name)
-
-                this[name] = if (result.isSuccess()) {
+                this[patch.patchName] = if (result.isSuccess()) {
                     Result.success(result.success()!!)
                 } else {
                     Result.failure(result.error()!!)
                 }
 
+                callback(patch, result.isSuccess())
                 if (stopOnError && result.isError()) break
             }
         }
