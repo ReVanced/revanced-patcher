@@ -201,7 +201,7 @@ class Patcher(private val options: PatcherOptions) {
 
         return PatcherResult(
             dexFiles.map {
-                app.revanced.patcher.util.dex.DexFile(it.key, it.value)
+                app.revanced.patcher.util.dex.DexFile(it.key, it.value.readAt(0))
             },
             metaInfo.doNotCompress.toList(),
             resourceFile
