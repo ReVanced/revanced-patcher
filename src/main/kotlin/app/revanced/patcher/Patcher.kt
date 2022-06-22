@@ -128,6 +128,8 @@ class Patcher(private val options: PatcherOptions) {
         callback: (File) -> Unit
     ) {
         for (file in files) {
+            callback(file)
+
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
                 val type = classDef.type
 
@@ -138,7 +140,6 @@ class Patcher(private val options: PatcherOptions) {
                     logger.trace("Merging $type")
                     data.bytecodeData.classes.internalClasses.add(classDef)
 
-                    callback(file)
 
                     continue
                 }
@@ -150,7 +151,6 @@ class Patcher(private val options: PatcherOptions) {
                 val index = existingClass.second
                 data.bytecodeData.classes.internalClasses[index] = classDef
 
-                callback(file)
             }
         }
     }
