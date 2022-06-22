@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/revanced/revanced-patcher/compare/v1.7.0...v1.7.1) (2022-06-22)
+
+
+### Reverts
+
+* revert "feat: use of `java.util.logging.Logger`" ([e8488b3](https://github.com/revanced/revanced-patcher/commit/e8488b3e86e0132011824f8ecba29e64f8db0573))
+
 # [1.7.0](https://github.com/revanced/revanced-patcher/compare/v1.6.0...v1.7.0) (2022-06-22)
 
 
