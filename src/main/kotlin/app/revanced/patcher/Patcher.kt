@@ -137,7 +137,7 @@ class Patcher(private val options: PatcherOptions) {
     fun save(): PatcherResult {
         val packageMetadata = data.packageMetadata
         val metaInfo = packageMetadata.metaInfo
-        var resourceFile: ExtFile? = null
+        var resourceFile: File? = null
 
         if (options.patchResources) {
             val cacheDirectory = ExtFile(options.resourceCacheDirectory)
@@ -178,7 +178,7 @@ class Patcher(private val options: PatcherOptions) {
                 null, includedFiles
             )
 
-            resourceFile = ExtFile(aaptFile)
+            resourceFile = aaptFile
         }
 
         val newDexFile = object : DexFile {
