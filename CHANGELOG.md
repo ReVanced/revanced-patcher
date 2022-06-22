@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/revanced/revanced-patcher/compare/v1.7.1...v1.7.2) (2022-06-22)
+
+
+### Bug Fixes
+
+* add execute permission to `./gradlew` file ([#46](https://github.com/revanced/revanced-patcher/issues/46)) ([34f607a](https://github.com/revanced/revanced-patcher/commit/34f607aa24d89a777d906cc887203f343ce3fd07))
+
 ## [1.7.1](https://github.com/revanced/revanced-patcher/compare/v1.7.0...v1.7.1) (2022-06-22)
 
 
