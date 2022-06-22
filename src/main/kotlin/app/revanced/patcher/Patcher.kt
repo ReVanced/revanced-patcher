@@ -78,7 +78,7 @@ class Patcher(private val options: PatcherOptions) {
             }
 
         } else {
-            logger.info("Decoding resources manually because resource decoding is disabled!")
+            logger.info("Decoding AndroidManifest.xml manually because resource patching is disabled")
 
             // create decoder for the resource table
             val decoder = ResAttrDecoder()
@@ -102,8 +102,9 @@ class Patcher(private val options: PatcherOptions) {
         packageMetadata.metaInfo.versionInfo = resourceTable.versionInfo
         packageMetadata.metaInfo.sdkInfo = resourceTable.sdkInfo
 
-        // read dex files
         logger.info("Reading input as dex file")
+
+        // read dex files
         val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
         // get the opcodes
         opcodes = dexFile.opcodes
@@ -127,25 +128,28 @@ class Patcher(private val options: PatcherOptions) {
         callback: (File) -> Unit
     ) {
         for (file in files) {
-            var modified = false
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
-                val e = data.bytecodeData.classes.internalClasses.findIndexed { it.type == classDef.type }
-                if (e != null) {
-                    if (throwOnDuplicates) {
-                        throw Exception("Class ${classDef.type} has already been added to the patcher.")
-                    }
-                    val (_, idx) = e
-                    if (allowedOverwrites.contains(classDef.type)) {
-                        data.bytecodeData.classes.internalClasses[idx] = classDef
-                        modified = true
-                    }
+                val type = classDef.type
+
+                val existingClass = data.bytecodeData.classes.internalClasses.findIndexed { it.type == type }
+                if (existingClass == null) {
+                    if (throwOnDuplicates) throw Exception("Class $type has already been added to the patcher")
+
+                    logger.trace("Merging $type")
+                    data.bytecodeData.classes.internalClasses.add(classDef)
+
+                    callback(file)
+
                     continue
                 }
-                data.bytecodeData.classes.internalClasses.add(classDef)
-                modified = true
-            }
-            if (modified) {
-                logger.trace("Added file ${file.name}")
+
+                if (!allowedOverwrites.contains(type)) continue
+
+                logger.trace("Overwriting $type")
+
+                val index = existingClass.second
+                data.bytecodeData.classes.internalClasses[index] = classDef
+
                 callback(file)
             }
         }
@@ -189,15 +193,13 @@ class Patcher(private val options: PatcherOptions) {
             val resDirectory = cacheDirectory.resolve("res")
             val includedFiles = metaInfo.usesFramework.ids.map { id ->
                 androlibResources.getFrameworkApk(
-                    id,
-                    metaInfo.usesFramework.tag
+                    id, metaInfo.usesFramework.tag
                 )
             }.toTypedArray()
 
             logger.trace("Packaging using aapt")
             androlibResources.aaptPackage(
-                aaptFile, manifestFile, resDirectory, null,
-                null, includedFiles
+                aaptFile, manifestFile, resDirectory, null, null, includedFiles
             )
 
             resourceFile = aaptFile
@@ -226,9 +228,7 @@ class Patcher(private val options: PatcherOptions) {
         return PatcherResult(
             dexFiles.map {
                 app.revanced.patcher.util.dex.DexFile(it.key, it.value.readAt(0))
-            },
-            metaInfo.doNotCompress.toList(),
-            resourceFile
+            }, metaInfo.doNotCompress.toList(), resourceFile
         )
     }
 
@@ -247,15 +247,16 @@ class Patcher(private val options: PatcherOptions) {
      * @return The result of executing the [patch].
      */
     private fun applyPatch(
-        patch: Class<out Patch<Data>>,
-        appliedPatches: MutableList<String>
+        patch: Class<out Patch<Data>>, appliedPatches: MutableList<String>
     ): PatchResult {
         val patchName = patch.patchName
+
         logger.trace("Applying patch $patchName")
 
         // if the patch has already applied silently skip it
         if (appliedPatches.contains(patchName)) {
             logger.trace("Skipping patch $patchName because it has already been applied")
+
             return PatchResultSuccess()
         }
         appliedPatches.add(patchName)
@@ -290,6 +291,7 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         logger.trace("Executing patch $patchName of type: ${if (isResourcePatch) "resource" else "bytecode"}")
+
         return try {
             patchInstance.execute(data)
         } catch (e: Exception) {
@@ -305,8 +307,7 @@ class Patcher(private val options: PatcherOptions) {
      * If the [Patch] failed to apply, an Exception will always be returned to the wrapping Result object.
      */
     fun applyPatches(
-        stopOnError: Boolean = false,
-        callback: (Class<out Patch<Data>>, Boolean) -> Unit = { _, _ -> }
+        stopOnError: Boolean = false, callback: (Class<out Patch<Data>>, Boolean) -> Unit = { _, _ -> }
     ): Map<String, Result<PatchResultSuccess>> {
         logger.trace("Applying all patches")
         val appliedPatches = mutableListOf<String>()
