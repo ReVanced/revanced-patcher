@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/revanced/revanced-patcher/compare/v1.10.1...v1.10.2) (2022-06-23)
+
+
+### Bug Fixes
+
+* dexlib must be propagated ([b738dcd](https://github.com/revanced/revanced-patcher/commit/b738dcd7ea04f5fe56e66af46fb11541fe54f6af))
+
 ## [1.10.1](https://github.com/revanced/revanced-patcher/compare/v1.10.0...v1.10.1) (2022-06-23)
 
 
