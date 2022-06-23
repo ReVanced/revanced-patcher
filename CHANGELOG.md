@@ -1,3 +1,11 @@
+## [1.10.1](https://github.com/revanced/revanced-patcher/compare/v1.10.0...v1.10.1) (2022-06-23)
+
+
+### Bug Fixes
+
+* callback only when inteded ([e3bf367](https://github.com/revanced/revanced-patcher/commit/e3bf367ad6615b30b06027d65f906b2588567a7f))
+* mutability of local variable `modified` ([0e87ef5](https://github.com/revanced/revanced-patcher/commit/0e87ef56c418d5c37d58abb9b27f85e25fd44f81))
+
 # [1.10.0](https://github.com/revanced/revanced-patcher/compare/v1.9.0...v1.10.0) (2022-06-23)
 
 
