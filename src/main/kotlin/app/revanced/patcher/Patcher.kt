@@ -62,7 +62,7 @@ class Patcher(private val options: PatcherOptions) {
         val packageMetadata = PackageMetadata()
 
         if (options.patchResources) {
-            logger.info("Decoding resources using Androlib, this may take a long time...")
+            logger.info("Decoding resources")
 
             // decode resources to cache directory
             androlib.decodeManifestWithResources(extInputFile, outDir, resourceTable)
@@ -78,7 +78,7 @@ class Patcher(private val options: PatcherOptions) {
             }
 
         } else {
-            logger.info("Decoding AndroidManifest.xml manually because resource patching is disabled")
+            logger.info("Only decoding AndroidManifest.xml because resource patching is disabled")
 
             // create decoder for the resource table
             val decoder = ResAttrDecoder()
@@ -102,7 +102,7 @@ class Patcher(private val options: PatcherOptions) {
         packageMetadata.metaInfo.versionInfo = resourceTable.versionInfo
         packageMetadata.metaInfo.sdkInfo = resourceTable.sdkInfo
 
-        logger.info("Reading input as dex file")
+        logger.info("Reading dex files")
 
         // read dex files
         val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
@@ -164,7 +164,6 @@ class Patcher(private val options: PatcherOptions) {
         var resourceFile: File? = null
 
         if (options.patchResources) {
-            logger.info("Patching resources")
             val cacheDirectory = ExtFile(options.resourceCacheDirectory)
 
             val androlibResources = AndrolibResources().also { resources ->
@@ -197,7 +196,7 @@ class Patcher(private val options: PatcherOptions) {
                 )
             }.toTypedArray()
 
-            logger.trace("Packaging using aapt")
+            logger.info("Compiling resources")
             androlibResources.aaptPackage(
                 aaptFile, manifestFile, resDirectory, null, null, includedFiles
             )
@@ -250,8 +249,6 @@ class Patcher(private val options: PatcherOptions) {
         patch: Class<out Patch<Data>>, appliedPatches: MutableList<String>
     ): PatchResult {
         val patchName = patch.patchName
-
-        logger.trace("Applying patch $patchName")
 
         // if the patch has already applied silently skip it
         if (appliedPatches.contains(patchName)) {
@@ -317,7 +314,7 @@ class Patcher(private val options: PatcherOptions) {
                 Result.failure(patchResult.error()!!)
             }
 
-            yield(patch.name to result)
+            yield(patch.patchName to result)
             if (stopOnError && patchResult.isError()) break
         }
     }
