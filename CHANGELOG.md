@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/revanced/revanced-patcher/compare/v1.9.0...v1.10.0) (2022-06-23)
+
+
+### Features
+
+* improve logging ([c20dfe1](https://github.com/revanced/revanced-patcher/commit/c20dfe12d5c737264b844e6634de11bf1e1629f0))
+
 # [1.9.0](https://github.com/revanced/revanced-patcher/compare/v1.8.0...v1.9.0) (2022-06-22)
 
 
