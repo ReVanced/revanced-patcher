@@ -128,7 +128,7 @@ class Patcher(private val options: PatcherOptions) {
         callback: (File) -> Unit
     ) {
         for (file in files) {
-            val modified = false
+            var modified = false
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
                 val type = classDef.type
 
