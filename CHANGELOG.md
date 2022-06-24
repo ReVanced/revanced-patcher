@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/revanced/revanced-patcher/compare/v1.10.2...v1.11.0) (2022-06-24)
+
+
+### Features
+
+* add replace and remove extensions ([#50](https://github.com/revanced/revanced-patcher/issues/50)) ([92ac5e4](https://github.com/revanced/revanced-patcher/commit/92ac5e4dc25f612856e2b5e528cf5fd48a5f20af))
+
 ## [1.10.2](https://github.com/revanced/revanced-patcher/compare/v1.10.1...v1.10.2) (2022-06-23)
 
 
