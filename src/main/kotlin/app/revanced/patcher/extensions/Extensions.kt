@@ -23,6 +23,18 @@ fun MutableMethodImplementation.addInstructions(index: Int, instructions: List<B
     }
 }
 
+fun MutableMethodImplementation.replaceInstructions(index: Int, instructions: List<BuilderInstruction>) {
+    for (i in instructions.lastIndex downTo 0) {
+        this.replaceInstruction(index + i, instructions[i])
+    }
+}
+
+fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) {
+    for (i in count downTo 0) {
+        this.removeInstruction(index + i)
+    }
+}
+
 /**
  * Compare a method to another, considering constructors and parameters.
  * @param otherMethod The method to compare against.
@@ -66,12 +78,27 @@ internal fun Method.clone(
 }
 
 /**
- * Add smali instructions to the method.
- * @param index The index to insert the instructions at.
+ * Add a smali instruction to the method.
+ * @param index The index to insert the instruction at.
  * @param instruction The smali instruction to add.
  */
 fun MutableMethod.addInstruction(index: Int, instruction: String) =
     this.implementation!!.addInstruction(index, instruction.toInstruction(this))
+
+/**
+ * Replace a smali instruction within the method.
+ * @param index The index to replace the instruction at.
+ * @param instruction The smali instruction to place.
+ */
+fun MutableMethod.replaceInstruction(index: Int, instruction: String) =
+    this.implementation!!.replaceInstruction(index, instruction.toInstruction(this))
+
+/**
+ * Remove a smali instruction within the method.
+ * @param index The index to delete the instruction at.
+ */
+fun MutableMethod.removeInstruction(index: Int) =
+    this.implementation!!.removeInstruction(index)
 
 /**
  * Add smali instructions to the method.
@@ -80,6 +107,22 @@ fun MutableMethod.addInstruction(index: Int, instruction: String) =
  */
 fun MutableMethod.addInstructions(index: Int, instructions: String) =
     this.implementation!!.addInstructions(index, instructions.toInstructions(this))
+
+/**
+ * Replace smali instructions within the method.
+ * @param index The index to replace the instructions at.
+ * @param instructions The smali instructions to place.
+ */
+fun MutableMethod.replaceInstructions(index: Int, instructions: String) =
+    this.implementation!!.replaceInstructions(index, instructions.toInstructions(this))
+
+/**
+ * Remove smali instructions from the method.
+ * @param index The index to remove the instructions at.
+ * @param count The amount of instructions to remove.
+ */
+fun MutableMethod.removeInstructions(index: Int, count: Int) =
+    this.implementation!!.removeInstructions(index, count)
 
 /**
  * Clones the method.
