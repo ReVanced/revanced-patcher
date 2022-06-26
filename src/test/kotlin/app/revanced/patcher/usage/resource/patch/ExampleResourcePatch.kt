@@ -30,18 +30,6 @@ class ExampleResourcePatch : ResourcePatch() {
                 )
         }
 
-        // iterate through all available resources
-        data.forEach {
-            if (it.extension.lowercase() != "xml") return@forEach
-
-            data.replace(
-                it.path,
-                "\\ddip", // regex supported
-                "0dip",
-                true
-            )
-        }
-
         return PatchResultSuccess()
     }
 }

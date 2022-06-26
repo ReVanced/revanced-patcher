@@ -15,16 +15,6 @@ class ResourceData(private val resourceCacheDirectory: File) : Data {
     fun forEach(action: (File) -> Unit) = resourceCacheDirectory.walkTopDown().forEach(action)
     fun get(path: String) = resolve(path)
 
-    fun replace(path: String, oldValue: String, newValue: String, oldValueIsRegex: Boolean = false) {
-        // TODO: buffer this somehow
-        val content = resolve(path).readText()
-
-        if (oldValueIsRegex) {
-            content.replace(Regex(oldValue), newValue)
-            return
-        }
-    }
-
     fun getXmlEditor(path: String) = DomFileEditor(resolve(path))
 }
 
