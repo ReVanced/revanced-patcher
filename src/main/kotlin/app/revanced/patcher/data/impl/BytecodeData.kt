@@ -1,6 +1,6 @@
-package app.revanced.patcher.data.implementation
+package app.revanced.patcher.data.impl
 
-import app.revanced.patcher.data.base.Data
+import app.revanced.patcher.data.Data
 import app.revanced.patcher.util.ProxyBackedClassList
 import app.revanced.patcher.util.method.MethodWalker
 import org.jf.dexlib2.iface.ClassDef

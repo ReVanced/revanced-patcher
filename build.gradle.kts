@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    api("app.revanced:multidexlib2:2.5.2.r2")
+    implementation("app.revanced:multidexlib2:2.5.2.r2")
 
     implementation("xpp3:xpp3:1.1.4c")
     implementation("org.smali:smali:2.5.2")
@@ -45,6 +45,7 @@ java {
 
 publishing {
     repositories {
+        if (System.getenv("GITHUB_ACTOR") != null)
             maven {
                 name = "GitHubPackages"
                 url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
@@ -53,6 +54,8 @@ publishing {
                     password = System.getenv("GITHUB_TOKEN")
                 }
             }
+        else
+            mavenLocal()
     }
     publications {
         register<MavenPublication>("gpr") {

@@ -1,9 +1,10 @@
-package app.revanced.patcher.data
+package app.revanced.patcher
 
-import app.revanced.patcher.data.base.Data
-import app.revanced.patcher.data.implementation.BytecodeData
-import app.revanced.patcher.data.implementation.ResourceData
-import app.revanced.patcher.patch.base.Patch
+import app.revanced.patcher.data.Data
+import app.revanced.patcher.data.PackageMetadata
+import app.revanced.patcher.data.impl.BytecodeData
+import app.revanced.patcher.data.impl.ResourceData
+import app.revanced.patcher.patch.Patch
 import org.jf.dexlib2.iface.ClassDef
 import java.io.File
 

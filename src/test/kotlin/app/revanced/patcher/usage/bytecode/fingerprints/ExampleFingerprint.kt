@@ -1,16 +1,16 @@
-package app.revanced.patcher.usage.bytecode.signatures
+package app.revanced.patcher.usage.bytecode.fingerprints
 
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.extensions.or
-import app.revanced.patcher.signature.implementation.method.MethodSignature
-import app.revanced.patcher.signature.implementation.method.annotation.FuzzyPatternScanMethod
-import app.revanced.patcher.signature.implementation.method.annotation.MatchingMethod
+import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
+import app.revanced.patcher.fingerprint.method.annotation.MatchingMethod
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.usage.bytecode.annotation.ExampleBytecodeCompatibility
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcode
 
-@Name("example-signature")
+@Name("example-fingerprint")
 @MatchingMethod(
     "LexampleClass;",
     "exampleMehod"
@@ -18,7 +18,7 @@ import org.jf.dexlib2.Opcode
 @FuzzyPatternScanMethod(2)
 @ExampleBytecodeCompatibility
 @Version("0.0.1")
-object ExampleSignature : MethodSignature(
+object ExampleFingerprint : MethodFingerprint(
     "V",
     AccessFlags.PUBLIC or AccessFlags.STATIC,
     listOf("[L"),

@@ -1,10 +1,9 @@
-package app.revanced.patcher.data.implementation
+package app.revanced.patcher.data.impl
 
-import app.revanced.patcher.data.base.Data
+import app.revanced.patcher.data.Data
 import org.w3c.dom.Document
 import java.io.Closeable
 import java.io.File
-import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource

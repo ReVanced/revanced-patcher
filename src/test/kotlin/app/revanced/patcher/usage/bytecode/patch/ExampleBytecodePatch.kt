@@ -3,14 +3,14 @@ package app.revanced.patcher.usage.bytecode.patch
 import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
-import app.revanced.patcher.data.implementation.BytecodeData
+import app.revanced.patcher.data.impl.BytecodeData
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.Patch
-import app.revanced.patcher.patch.implementation.BytecodePatch
-import app.revanced.patcher.patch.implementation.misc.PatchResult
-import app.revanced.patcher.patch.implementation.misc.PatchResultSuccess
-import app.revanced.patcher.usage.bytecode.signatures.ExampleSignature
+import app.revanced.patcher.patch.impl.BytecodePatch
+import app.revanced.patcher.usage.bytecode.fingerprints.ExampleFingerprint
 import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -39,34 +39,35 @@ import org.jf.dexlib2.util.Preconditions
 class ExampleBytecodePatch : BytecodePatch(
 
     listOf(
-        ExampleSignature
+        ExampleFingerprint
     )
 ) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor
     override fun execute(data: BytecodeData): PatchResult {
-        // Get the resolved method for the signature from the resolver cache
-        val result = ExampleSignature.result!!
+        // Get the resolved method by its fingerprint from the resolver cache
+        val result = ExampleFingerprint.result!!
 
         // Get the implementation for the resolved method
-        val implementation = result.method.implementation!!
+        val method = result.mutableMethod
+        val implementation = method.implementation!!
 
         // Let's modify it, so it prints "Hello, ReVanced! Editing bytecode."
         // Get the start index of our opcode pattern.
         // This will be the index of the instruction with the opcode CONST_STRING.
-        val startIndex = result.scanResult.startIndex
+        val startIndex = result.patternScanResult!!.startIndex
 
         implementation.replaceStringAt(startIndex, "Hello, ReVanced! Editing bytecode.")
 
-        // Get the class in which the method matching our signature is defined in.
+        // Get the class in which the method matching our fingerprint is defined in.
         val mainClass = data.findClass {
-            it.type == result.definingClassProxy.immutableClass.type
+            it.type == result.classDef.type
         }!!.resolve()
 
         // Add a new method returning a string
         mainClass.methods.add(
             ImmutableMethod(
-                result.definingClassProxy.immutableClass.type,
+                result.classDef.type,
                 "returnHello",
                 null,
                 "Ljava/lang/String;",
@@ -126,7 +127,7 @@ class ExampleBytecodePatch : BytecodePatch(
                         move-result-object v1
                         invoke-virtual { v0, v1 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
                     """
-        result.method.addInstructions(startIndex + 2, instructions)
+        method.addInstructions(startIndex + 2, instructions)
 
         // Finally, tell the patcher that this patch was a success.
         // You can also return PatchResultError with a message.

@@ -1,9 +1,8 @@
-package app.revanced.patcher.patch.base
+package app.revanced.patcher.patch
 
-import app.revanced.patcher.data.base.Data
-import app.revanced.patcher.patch.implementation.BytecodePatch
-import app.revanced.patcher.patch.implementation.ResourcePatch
-import app.revanced.patcher.patch.implementation.misc.PatchResult
+import app.revanced.patcher.data.Data
+import app.revanced.patcher.patch.impl.BytecodePatch
+import app.revanced.patcher.patch.impl.ResourcePatch
 
 
 /**
