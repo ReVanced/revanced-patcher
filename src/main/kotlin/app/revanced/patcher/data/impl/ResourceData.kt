@@ -9,13 +9,20 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
-class ResourceData(private val resourceCacheDirectory: File) : Data {
-    private fun resolve(path: String) = resourceCacheDirectory.resolve(path)
+class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<File> {
+    operator fun get(path: String) = resourceCacheDirectory.resolve(path)
+    val xmlEditor = XmlFileHolder()
+    override fun iterator() = resourceCacheDirectory.walkTopDown().iterator()
 
-    fun forEach(action: (File) -> Unit) = resourceCacheDirectory.walkTopDown().forEach(action)
-    fun get(path: String) = resolve(path)
+    inner class XmlFileHolder {
+        operator fun get(path: String) = DomFileEditor(this@ResourceData[path])
+    }
 
-    fun getXmlEditor(path: String) = DomFileEditor(resolve(path))
+    @Deprecated("Use operator getter instead of resolve function", ReplaceWith("get(path)"))
+    fun resolve(path: String) = get(path)
+
+    @Deprecated("Use operator getter on xmlEditor instead of getXmlEditor function", ReplaceWith("xmlEditor[path]"))
+    fun getXmlEditor(path: String) = xmlEditor[path]
 }
 
 class DomFileEditor internal constructor(private val domFile: File) : Closeable {
