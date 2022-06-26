@@ -29,17 +29,8 @@ class ResourceData(private val resourceCacheDirectory: File) : Data {
 }
 
 class DomFileEditor internal constructor(private val domFile: File) : Closeable {
-    val file: Document
-
-    init {
-        val factory = DocumentBuilderFactory.newInstance()
-
-        val builder = factory.newDocumentBuilder()
-
-        // this will expectedly throw
-        file = builder.parse(domFile)
-        file.normalize()
-    }
+    val file: Document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        .parse(domFile).also(Document::normalize)
 
     override fun close() = TransformerFactory.newInstance().newTransformer()
         .transform(DOMSource(file), StreamResult(domFile.outputStream()))

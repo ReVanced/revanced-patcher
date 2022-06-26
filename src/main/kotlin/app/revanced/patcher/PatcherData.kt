@@ -13,9 +13,7 @@ data class PatcherData(
     internal val resourceCacheDirectory: String,
     val packageMetadata: PackageMetadata
 ) {
-
     internal val patches = mutableListOf<Class<out Patch<Data>>>()
-
     internal val bytecodeData = BytecodeData(internalClasses)
     internal val resourceData = ResourceData(File(resourceCacheDirectory))
 }
