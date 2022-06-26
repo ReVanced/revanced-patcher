@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/revanced/revanced-patcher/compare/v2.0.0...v2.0.1) (2022-06-26)
+
+
+### Bug Fixes
+
+* use `Exception` instead of `MethodNotFoundException` ([2fc4ec4](https://github.com/revanced/revanced-patcher/commit/2fc4ec40217a917ea6106ddc87be332f725aa13c))
+
 # [2.0.0](https://github.com/revanced/revanced-patcher/compare/v1.11.0...v2.0.0) (2022-06-26)
 
 
