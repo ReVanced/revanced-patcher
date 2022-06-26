@@ -28,6 +28,15 @@ class BytecodeData(
         classes.proxies.firstOrNull { predicate(it.immutableClass) } ?:
         // else resolve the class to a proxy and return it, if the predicate is matching a class
         classes.find(predicate)?.let { proxy(it) }
+
+    fun proxy(classDef: ClassDef): app.revanced.patcher.util.proxy.ClassProxy {
+        var proxy = this.classes.proxies.find { it.immutableClass.type == classDef.type }
+        if (proxy == null) {
+            proxy = app.revanced.patcher.util.proxy.ClassProxy(classDef)
+            this.classes.add(proxy)
+        }
+        return proxy
+    }
 }
 
 internal class MethodNotFoundException(s: String) : Exception(s)
@@ -57,13 +66,4 @@ internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair
         }
     }
     return null
-}
-
-fun BytecodeData.proxy(classDef: ClassDef): app.revanced.patcher.util.proxy.ClassProxy {
-    var proxy = this.classes.proxies.find { it.immutableClass.type == classDef.type }
-    if (proxy == null) {
-        proxy = app.revanced.patcher.util.proxy.ClassProxy(classDef)
-        this.classes.add(proxy)
-    }
-    return proxy
 }
