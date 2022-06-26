@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/revanced/revanced-patcher/compare/v1.11.0...v2.0.0) (2022-06-26)
+
+
+### Code Refactoring
+
+* migrate from `Signature` to `Fingerprint` ([efa8ea1](https://github.com/revanced/revanced-patcher/commit/efa8ea144528fcff588e782468845c315a7d6abd))
+
+
+### BREAKING CHANGES
+
+* Not backwards compatible, since a lot of classes where renamed.
+
 # [1.11.0](https://github.com/revanced/revanced-patcher/compare/v1.10.2...v1.11.0) (2022-06-24)
 
 
