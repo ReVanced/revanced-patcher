@@ -36,12 +36,7 @@ import org.jf.dexlib2.util.Preconditions
 @Description("Example demonstration of a bytecode patch.")
 @ExampleResourceCompatibility
 @Version("0.0.1")
-class ExampleBytecodePatch : BytecodePatch(
-
-    listOf(
-        ExampleFingerprint
-    )
-) {
+class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor
     override fun execute(data: BytecodeData): PatchResult {
