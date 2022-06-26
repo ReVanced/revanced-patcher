@@ -4,11 +4,9 @@ import app.revanced.patcher.annotation.Compatibility
 import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
-import app.revanced.patcher.data.base.Data
-import app.revanced.patcher.patch.base.Patch
-import app.revanced.patcher.signature.implementation.method.MethodSignature
-import app.revanced.patcher.signature.implementation.method.annotation.FuzzyPatternScanMethod
-import app.revanced.patcher.signature.implementation.method.annotation.MatchingMethod
+import app.revanced.patcher.data.Data
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
+import app.revanced.patcher.patch.Patch
 import kotlin.reflect.KClass
 
 /**
@@ -47,13 +45,13 @@ object PatchExtensions {
     val Class<out Patch<Data>>.compatiblePackages get() = recursiveAnnotation(Compatibility::class)?.compatiblePackages
 }
 
-object MethodSignatureExtensions {
-    val MethodSignature.name: String
+object MethodFingerprintExtensions {
+    val MethodFingerprint.name: String
         get() = javaClass.recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
-    val MethodSignature.version get() = javaClass.recursiveAnnotation(Version::class)?.version ?: "0.0.1"
-    val MethodSignature.description get() = javaClass.recursiveAnnotation(Description::class)?.description
-    val MethodSignature.compatiblePackages get() = javaClass.recursiveAnnotation(Compatibility::class)?.compatiblePackages
-    val MethodSignature.matchingMethod get() = javaClass.recursiveAnnotation(MatchingMethod::class)
-    val MethodSignature.fuzzyPatternScanMethod get() = javaClass.recursiveAnnotation(FuzzyPatternScanMethod::class)
-    val MethodSignature.fuzzyThreshold get() = fuzzyPatternScanMethod?.threshold ?: 0
+    val MethodFingerprint.version get() = javaClass.recursiveAnnotation(Version::class)?.version ?: "0.0.1"
+    val MethodFingerprint.description get() = javaClass.recursiveAnnotation(Description::class)?.description
+    val MethodFingerprint.compatiblePackages get() = javaClass.recursiveAnnotation(Compatibility::class)?.compatiblePackages
+    val MethodFingerprint.matchingMethod get() = javaClass.recursiveAnnotation(app.revanced.patcher.fingerprint.method.annotation.MatchingMethod::class)
+    val MethodFingerprint.fuzzyPatternScanMethod get() = javaClass.recursiveAnnotation(app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod::class)
+    val MethodFingerprint.fuzzyScanThreshold get() = fuzzyPatternScanMethod?.threshold ?: 0
 }

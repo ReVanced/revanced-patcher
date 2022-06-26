@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.method
 
-import app.revanced.patcher.data.implementation.BytecodeData
-import app.revanced.patcher.data.implementation.MethodNotFoundException
+import app.revanced.patcher.data.impl.BytecodeData
+import app.revanced.patcher.data.impl.MethodNotFoundException
 import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import org.jf.dexlib2.Format

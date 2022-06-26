@@ -79,6 +79,13 @@ internal fun Method.clone(
 
 /**
  * Add a smali instruction to the method.
+ * @param instruction The smali instruction to add.
+ */
+fun MutableMethod.addInstruction(instruction: String) =
+    this.implementation!!.addInstruction(instruction.toInstruction(this))
+
+/**
+ * Add a smali instruction to the method.
  * @param index The index to insert the instruction at.
  * @param instruction The smali instruction to add.
  */
@@ -152,3 +159,20 @@ internal val nullOutputStream: OutputStream =
     object : OutputStream() {
         override fun write(b: Int) {}
     }
+
+/**
+ * Should be used to parse a list of parameters represented by their first letter,
+ * or in the case of arrays prefixed with an unspecified amount of '[' character.
+ */
+internal fun String.parseParameters(): List<String> {
+    val parameters = mutableListOf<String>()
+    var parameter = ""
+    for (char in this.toCharArray()) {
+        parameter += char
+        if (char == '[') continue
+
+        parameters.add(parameter)
+        parameter = ""
+    }
+    return parameters
+}

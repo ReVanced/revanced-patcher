@@ -1,4 +1,4 @@
-package app.revanced.patcher.patch.implementation.misc
+package app.revanced.patcher.patch
 
 interface PatchResult {
     fun error(): PatchResultError? {

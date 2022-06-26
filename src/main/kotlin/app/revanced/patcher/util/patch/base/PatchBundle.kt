@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.patch.base
 
-import app.revanced.patcher.data.base.Data
-import app.revanced.patcher.patch.base.Patch
+import app.revanced.patcher.data.Data
+import app.revanced.patcher.patch.Patch
 import java.io.File
 
 /**

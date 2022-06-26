@@ -1,7 +1,7 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.logging.impl.NopLogger
 import app.revanced.patcher.logging.Logger
+import app.revanced.patcher.logging.impl.NopLogger
 import java.io.File
 
 /**

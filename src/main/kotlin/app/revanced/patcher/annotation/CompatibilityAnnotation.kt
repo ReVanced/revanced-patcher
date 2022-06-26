@@ -1,11 +1,11 @@
 package app.revanced.patcher.annotation
 
-import app.revanced.patcher.patch.base.Patch
-import app.revanced.patcher.signature.implementation.method.MethodSignature
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
+import app.revanced.patcher.patch.Patch
 
 /**
- * Annotation to constrain a [Patch] or [MethodSignature] to compatible packages.
- * @param compatiblePackages A list of packages a [Patch] or [MethodSignature] is compatible with.
+ * Annotation to constrain a [Patch] or [MethodFingerprint] to compatible packages.
+ * @param compatiblePackages A list of packages a [Patch] or [MethodFingerprint] is compatible with.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
@@ -17,7 +17,7 @@ annotation class Compatibility(
 /**
  * Annotation to represent packages a patch can be compatible with.
  * @param name The package identifier name.
- * @param versions The versions of the package the [Patch] or [MethodSignature]is compatible with.
+ * @param versions The versions of the package the [Patch] or [MethodFingerprint]is compatible with.
  */
 @Target()
 @Retention(AnnotationRetention.RUNTIME)

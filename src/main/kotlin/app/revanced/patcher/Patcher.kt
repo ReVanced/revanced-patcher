@@ -1,19 +1,18 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.data.Data
 import app.revanced.patcher.data.PackageMetadata
-import app.revanced.patcher.data.PatcherData
-import app.revanced.patcher.data.base.Data
-import app.revanced.patcher.data.implementation.findIndexed
+import app.revanced.patcher.data.impl.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
-import app.revanced.patcher.patch.base.Patch
-import app.revanced.patcher.patch.implementation.BytecodePatch
-import app.revanced.patcher.patch.implementation.ResourcePatch
-import app.revanced.patcher.patch.implementation.misc.PatchResult
-import app.revanced.patcher.patch.implementation.misc.PatchResultError
-import app.revanced.patcher.patch.implementation.misc.PatchResultSuccess
-import app.revanced.patcher.signature.implementation.method.resolver.MethodSignatureResolver
+import app.revanced.patcher.fingerprint.method.utils.MethodFingerprintUtils.resolve
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.PatchResultError
+import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.patch.impl.BytecodePatch
+import app.revanced.patcher.patch.impl.ResourcePatch
 import app.revanced.patcher.util.ListBackedSet
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
@@ -281,10 +280,9 @@ class Patcher(private val options: PatcherOptions) {
         val data = if (isResourcePatch) {
             data.resourceData
         } else {
-            MethodSignatureResolver(
-                data.bytecodeData.classes.internalClasses, (patchInstance as BytecodePatch).signatures
-            ).resolve(data)
-            data.bytecodeData
+            val bytecodeData = data.bytecodeData
+            (patchInstance as BytecodePatch).fingerprints.resolve(bytecodeData, bytecodeData.classes.internalClasses)
+            bytecodeData
         }
 
         logger.trace("Executing patch $patchName of type: ${if (isResourcePatch) "resource" else "bytecode"}")
