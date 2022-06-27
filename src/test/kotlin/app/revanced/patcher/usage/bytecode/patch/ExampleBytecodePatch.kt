@@ -6,6 +6,7 @@ import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.data.impl.BytecodeData
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
+import app.revanced.patcher.extensions.replaceInstruction
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.Patch
@@ -14,7 +15,6 @@ import app.revanced.patcher.usage.bytecode.fingerprints.ExampleFingerprint
 import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
-import app.revanced.patcher.util.smali.toInstruction
 import com.google.common.collect.ImmutableList
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Format
@@ -107,22 +107,21 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         )
 
         // store the fields initial value into the first virtual register
-        implementation.replaceInstruction(
-            0,
-            "sget-object v0, LTestClass;->dummyField:Ljava/io/PrintStream;".toInstruction()
-        )
+        method.replaceInstruction(0, "sget-object v0, LTestClass;->dummyField:Ljava/io/PrintStream;")
 
         // Now let's create a new call to our method and print the return value!
         // You can also use the smali compiler to create instructions.
         // For this sake of example I reuse the TestClass field dummyField inside the virtual register 0.
         //
         // Control flow instructions are not supported as of now.
-        val instructions = """
-                        invoke-static { }, LTestClass;->returnHello()Ljava/lang/String;
-                        move-result-object v1
-                        invoke-virtual { v0, v1 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
-                    """
-        method.addInstructions(startIndex + 2, instructions)
+        method.addInstructions(
+            startIndex + 2,
+            """
+                invoke-static { }, LTestClass;->returnHello()Ljava/lang/String;
+                move-result-object v1
+                invoke-virtual { v0, v1 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+                """
+        )
 
         // Finally, tell the patcher that this patch was a success.
         // You can also return PatchResultError with a message.

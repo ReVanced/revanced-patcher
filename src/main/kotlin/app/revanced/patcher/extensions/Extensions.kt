@@ -6,7 +6,10 @@ import app.revanced.patcher.util.smali.toInstruction
 import app.revanced.patcher.util.smali.toInstructions
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.builder.BuilderInstruction
+import org.jf.dexlib2.builder.BuilderOffsetInstruction
+import org.jf.dexlib2.builder.Label
 import org.jf.dexlib2.builder.MutableMethodImplementation
+import org.jf.dexlib2.builder.instruction.*
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.immutable.ImmutableMethod
@@ -20,6 +23,12 @@ infix fun Int.or(other: AccessFlags) = this or other.value
 fun MutableMethodImplementation.addInstructions(index: Int, instructions: List<BuilderInstruction>) {
     for (i in instructions.lastIndex downTo 0) {
         this.addInstruction(index, instructions[i])
+    }
+}
+
+fun MutableMethodImplementation.addInstructions(instructions: List<BuilderInstruction>) {
+    for (instruction in instructions) {
+        this.addInstruction(instruction)
     }
 }
 
@@ -40,9 +49,7 @@ fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) {
  * @param otherMethod The method to compare against.
  * @return True if the methods match given the conditions.
  */
-fun Method.softCompareTo(
-    otherMethod: MethodReference
-): Boolean {
+fun Method.softCompareTo(otherMethod: MethodReference): Boolean {
     if (MethodUtil.isConstructor(this) && !parametersEqual(this.parameterTypes, otherMethod.parameterTypes))
         return false
     return this.name == otherMethod.name
@@ -54,9 +61,7 @@ fun Method.softCompareTo(
  * This may be a positive or negative number.
  * @return The **immutable** cloned method. Call [toMutable] or [cloneMutable] to get a **mutable** copy.
  */
-internal fun Method.clone(
-    registerCount: Int = 0,
-): ImmutableMethod {
+internal fun Method.clone(registerCount: Int = 0): ImmutableMethod {
     val clonedImplementation = implementation?.let {
         ImmutableMethodImplementation(
             it.registerCount + registerCount,
@@ -110,10 +115,41 @@ fun MutableMethod.removeInstruction(index: Int) =
 /**
  * Add smali instructions to the method.
  * @param index The index to insert the instructions at.
+ * @param smali The smali instructions to add.
+ */
+fun MutableMethod.addInstructions(index: Int, smali: String, labels: List<Pair<String, Label>> = emptyList()) {
+    var code = smali
+    for ((name, _) in labels) {
+        code += "\n :$name \n nop"
+    }
+    val instructions = code.toInstructions(this).toMutableList()
+    var fixedInstructions: List<Int>? = null // find a better way to do this.
+
+    if (labels.isNotEmpty()) {
+        val labelRange = instructions.size - labels.size..instructions.size
+        fixedInstructions = mutableListOf()
+        for (instructionIndex in 0 until instructions.size - labels.size) {
+            val instruction = instructions[instructionIndex]
+            if (instruction !is BuilderOffsetInstruction || !instruction.target.isPlaced) continue
+            val fakeIndex = instruction.target.location.index
+            if (!labelRange.contains(fakeIndex)) continue
+            instructions[instructionIndex] = replaceOffset(instruction, labels[labelRange.indexOf(fakeIndex)].second)
+            fixedInstructions.add(instructionIndex + index)
+        }
+        // find a better way to drop the nop instructions.
+        instructions.subList(labelRange.first, labelRange.last).clear()
+    }
+
+    this.implementation!!.addInstructions(index, instructions)
+    this.fixInstructions(index, instructions, fixedInstructions)
+}
+
+/**
+ * Add smali instructions to the end of the method.
  * @param instructions The smali instructions to add.
  */
-fun MutableMethod.addInstructions(index: Int, instructions: String) =
-    this.implementation!!.addInstructions(index, instructions.toInstructions(this))
+fun MutableMethod.addInstructions(instructions: String, labels: List<Pair<String, Label>> = emptyList()) =
+    this.addInstructions(this.implementation!!.instructions.size, instructions, labels)
 
 /**
  * Replace smali instructions within the method.
@@ -131,15 +167,43 @@ fun MutableMethod.replaceInstructions(index: Int, instructions: String) =
 fun MutableMethod.removeInstructions(index: Int, count: Int) =
     this.implementation!!.removeInstructions(index, count)
 
+fun MutableMethod.label(index: Int) = this.implementation!!.newLabelForIndex(index)
+fun MutableMethod.instruction(index: Int): BuilderInstruction = this.implementation!!.instructions[index]
+
+private fun MutableMethod.fixInstructions(index: Int, instructions: List<BuilderInstruction>, skipInstructions: List<Int>?) {
+    for (instructionIndex in index until instructions.size + index) {
+        val instruction = this.implementation!!.instructions[instructionIndex]
+        if (instruction !is BuilderOffsetInstruction || !instruction.target.isPlaced) continue
+        if (skipInstructions?.contains(instructionIndex) == true) continue
+        val fakeIndex = instruction.target.location.index
+        val fixedIndex = fakeIndex + index
+        if (fakeIndex == fixedIndex) continue // no need to replace if the indexes are the same.
+        this.implementation!!.replaceInstruction(instructionIndex, replaceOffset(instruction, this.label(fixedIndex)))
+    }
+}
+
+private fun replaceOffset(
+    i: BuilderOffsetInstruction,
+    label: Label
+): BuilderOffsetInstruction {
+    return when (i) {
+        is BuilderInstruction10t -> BuilderInstruction10t(i.opcode, label)
+        is BuilderInstruction20t -> BuilderInstruction20t(i.opcode, label)
+        is BuilderInstruction21t -> BuilderInstruction21t(i.opcode, i.registerA, label)
+        is BuilderInstruction22t -> BuilderInstruction22t(i.opcode, i.registerA, i.registerB, label)
+        is BuilderInstruction30t -> BuilderInstruction30t(i.opcode, label)
+        is BuilderInstruction31t -> BuilderInstruction31t(i.opcode, i.registerA, label)
+        else -> throw IllegalStateException("A non-offset instruction was given, this should never happen!")
+    }
+}
+
 /**
  * Clones the method.
  * @param registerCount This parameter allows you to change the register count of the method.
  * This may be a positive or negative number.
  * @return The **mutable** cloned method. Call [clone] to get an **immutable** copy.
  */
-internal fun Method.cloneMutable(
-    registerCount: Int = 0,
-) = clone(registerCount).toMutable()
+internal fun Method.cloneMutable(registerCount: Int = 0) = clone(registerCount).toMutable()
 
 // FIXME: also check the order of parameters as different order equals different method overload
 internal fun parametersEqual(
@@ -155,10 +219,9 @@ internal fun parametersEqual(
     }
 }
 
-internal val nullOutputStream: OutputStream =
-    object : OutputStream() {
-        override fun write(b: Int) {}
-    }
+internal val nullOutputStream = object : OutputStream() {
+    override fun write(b: Int) {}
+}
 
 /**
  * Should be used to parse a list of parameters represented by their first letter,
