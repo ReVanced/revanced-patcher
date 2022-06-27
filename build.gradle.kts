@@ -21,11 +21,10 @@ repositories {
 }
 
 dependencies {
-    implementation("app.revanced:multidexlib2:2.5.2.r2")
-
     implementation("xpp3:xpp3:1.1.4c")
     implementation("org.smali:smali:2.5.2")
-    implementation("org.apktool:apktool-lib:2.6.5-SNAPSHOT")
+    implementation("app.revanced:multidexlib2:2.5.2.r2")
+    implementation("org.apktool:apktool-lib:2.6.6-SNAPSHOT")
 
     testImplementation(kotlin("test"))
 }
