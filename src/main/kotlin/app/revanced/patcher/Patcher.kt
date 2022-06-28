@@ -241,31 +241,35 @@ class Patcher(private val options: PatcherOptions) {
     /**
      * Apply a [patch] and its dependencies recursively.
      * @param patch The [patch] to apply.
-     * @param appliedPatches A list of [patch] names, to prevent applying [patch]es twice.
+     * @param appliedPatches A map of [patch]es paired to a boolean indicating their success, to prevent infinite recursion.
      * @return The result of executing the [patch].
      */
     private fun applyPatch(
-        patch: Class<out Patch<Data>>, appliedPatches: MutableList<String>
+        patch: Class<out Patch<Data>>,
+        appliedPatches: MutableMap<String, Boolean>
     ): PatchResult {
         val patchName = patch.patchName
 
         // if the patch has already applied silently skip it
         if (appliedPatches.contains(patchName)) {
-            logger.trace("Skipping patch $patchName because it has already been applied")
+            if (!appliedPatches[patchName]!!)
+                return PatchResultError("'$patchName' did not succeed previously")
+
+            logger.trace("Skipping '$patchName' because it has already been applied")
 
             return PatchResultSuccess()
         }
-        appliedPatches.add(patchName)
 
         // recursively apply all dependency patches
         patch.dependencies?.forEach {
             val patchDependency = it.java
 
             val result = applyPatch(patchDependency, appliedPatches)
+
             if (result.isSuccess()) return@forEach
 
             val errorMessage = result.error()!!.message
-            return PatchResultError("$patchName depends on ${patchDependency.patchName} but the following error was raised: $errorMessage")
+            return PatchResultError("'$patchName' depends on '${patchDependency.patchName}' but the following error was raised: $errorMessage")
         }
 
         val patchInstance = patch.getDeclaredConstructor().newInstance()
@@ -273,7 +277,7 @@ class Patcher(private val options: PatcherOptions) {
         // if the current patch is a resource patch but resource patching is disabled, return an error
         val isResourcePatch = patchInstance is ResourcePatch
         if (!options.patchResources && isResourcePatch) {
-            return PatchResultError("$patchName is a resource patch, but resource patching is disabled.")
+            return PatchResultError("'$patchName' is a resource patch, but resource patching is disabled")
         }
 
         // TODO: find a solution for this
@@ -285,11 +289,14 @@ class Patcher(private val options: PatcherOptions) {
             bytecodeData
         }
 
-        logger.trace("Executing patch $patchName of type: ${if (isResourcePatch) "resource" else "bytecode"}")
+        logger.trace("Executing '$patchName' of type: ${if (isResourcePatch) "resource" else "bytecode"}")
 
         return try {
-            patchInstance.execute(data)
+            val result = patchInstance.execute(data)
+            appliedPatches[patchName] = result.isSuccess()
+            result
         } catch (e: Exception) {
+            appliedPatches[patchName] = false
             PatchResultError(e)
         }
     }
@@ -301,7 +308,7 @@ class Patcher(private val options: PatcherOptions) {
      */
     fun applyPatches(stopOnError: Boolean = false) = sequence {
         logger.trace("Applying all patches")
-        val appliedPatches = mutableListOf<String>()
+        val appliedPatches = mutableMapOf<String, Boolean>() // first is success, second is name
 
         for (patch in data.patches) {
             val patchResult = applyPatch(patch, appliedPatches)
