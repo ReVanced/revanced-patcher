@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/revanced/revanced-patcher/compare/v2.0.4...v2.1.0) (2022-06-28)
+
+
+### Features
+
+* log failed patches due to failed dependencies ([a467fbb](https://github.com/revanced/revanced-patcher/commit/a467fbb704eebe812cdec14025398dab2af43959))
+
 ## [2.0.4](https://github.com/revanced/revanced-patcher/compare/v2.0.3...v2.0.4) (2022-06-27)
 
 ## [2.0.3](https://github.com/revanced/revanced-patcher/compare/v2.0.2...v2.0.3) (2022-06-27)
