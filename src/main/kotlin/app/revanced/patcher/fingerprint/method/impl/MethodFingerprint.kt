@@ -48,7 +48,7 @@ data class MethodFingerprintResult(
     val method: Method,
     val classDef: ClassDef,
     val patternScanResult: PatternScanResult?,
-    val data: BytecodeData
+    internal val data: BytecodeData
 ) {
     /**
      * Returns a mutable clone of [classDef]
