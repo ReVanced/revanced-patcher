@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/revanced/revanced-patcher/compare/v2.1.1...v2.1.2) (2022-06-29)
+
+
+### Bug Fixes
+
+* invert fingerprint resolution condition of `customFingerprint` ([e2faf4c](https://github.com/revanced/revanced-patcher/commit/e2faf4ca9b6de23300b20ab471ee9dc365b04339))
+
 ## [2.1.1](https://github.com/revanced/revanced-patcher/compare/v2.1.0...v2.1.1) (2022-06-28)
 
 # [2.1.0](https://github.com/revanced/revanced-patcher/compare/v2.0.4...v2.1.0) (2022-06-28)
