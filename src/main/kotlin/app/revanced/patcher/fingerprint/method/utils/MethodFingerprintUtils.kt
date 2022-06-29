@@ -68,7 +68,7 @@ object MethodFingerprintUtils {
             )
         ) return false
 
-        if (methodFingerprint.customFingerprint != null && methodFingerprint.customFingerprint!!(context))
+        if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(context))
             return false
 
         if (methodFingerprint.strings != null) {
