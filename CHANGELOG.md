@@ -1,3 +1,10 @@
+# [2.2.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v2.1.2...v2.2.0-dev.1) (2022-07-02)
+
+
+### Features
+
+* remove deprecated functions ([ada5a03](https://github.com/revanced/revanced-patcher/commit/ada5a033de3cf94e7255ec2d522520f86431f001))
+
 ## [2.1.2](https://github.com/revanced/revanced-patcher/compare/v2.1.1...v2.1.2) (2022-06-29)
 
 
