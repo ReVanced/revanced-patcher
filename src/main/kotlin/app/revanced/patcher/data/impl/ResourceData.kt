@@ -20,19 +20,23 @@ class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<Fi
 
     inner class XmlFileHolder {
         operator fun get(inputStream: InputStream, outputStream: OutputStream) =
-            DomFileEditor(inputStream, outputStream)
+            DomFileEditor(inputStream, lazyOf(outputStream))
 
         operator fun get(path: String) = DomFileEditor(this@ResourceData[path])
     }
 }
 
-class DomFileEditor internal constructor(inputStream: InputStream, private val outputStream: OutputStream) : Closeable {
-    constructor(file: File) : this(file.inputStream(), file.outputStream())
+class DomFileEditor internal constructor(inputStream: InputStream, private val outputStream: Lazy<OutputStream>) : Closeable {
+
+    // lazily open an output stream
+    // this is required because when constructing a DomFileEditor the output stream is created along with the input stream, which is not allowed
+    // the workaround is to lazily create the output stream. This way it would be used after the input stream is closed, which happens in the constructor
+    constructor(file: File) : this(file.inputStream(), lazy { file.outputStream() })
 
     val file: Document =
         DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream).also(Document::normalize)
 
     override fun close() =
-        TransformerFactory.newInstance().newTransformer().transform(DOMSource(file), StreamResult(outputStream))
+        TransformerFactory.newInstance().newTransformer().transform(DOMSource(file), StreamResult(outputStream.value))
 
 }
