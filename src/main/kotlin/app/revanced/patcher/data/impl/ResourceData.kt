@@ -10,8 +10,10 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
 class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<File> {
-    operator fun get(path: String) = resourceCacheDirectory.resolve(path)
     val xmlEditor = XmlFileHolder()
+
+    operator fun get(path: String) = resourceCacheDirectory.resolve(path)
+
     override fun iterator() = resourceCacheDirectory.walkTopDown().iterator()
 
     inner class XmlFileHolder {
