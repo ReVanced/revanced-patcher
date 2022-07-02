@@ -1,3 +1,10 @@
+# [2.2.0-dev.2](https://github.com/revanced/revanced-patcher/compare/v2.2.0-dev.1...v2.2.0-dev.2) (2022-07-02)
+
+
+### Features
+
+* streams overload for `XmlFileHolder` ([6f72c4c](https://github.com/revanced/revanced-patcher/commit/6f72c4c4c051e48c8d03d2a7b2cfc1c53028ed86))
+
 # [2.2.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v2.1.2...v2.2.0-dev.1) (2022-07-02)
 
 
