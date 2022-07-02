@@ -4,31 +4,39 @@ import app.revanced.patcher.data.Data
 import org.w3c.dom.Document
 import java.io.Closeable
 import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
 class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<File> {
-    operator fun get(path: String) = resourceCacheDirectory.resolve(path)
     val xmlEditor = XmlFileHolder()
+
+    operator fun get(path: String) = resourceCacheDirectory.resolve(path)
+
     override fun iterator() = resourceCacheDirectory.walkTopDown().iterator()
 
     inner class XmlFileHolder {
+        operator fun get(inputStream: InputStream, outputStream: OutputStream) =
+            DomFileEditor(inputStream, lazyOf(outputStream))
+
         operator fun get(path: String) = DomFileEditor(this@ResourceData[path])
     }
-
-    @Deprecated("Use operator getter instead of resolve function", ReplaceWith("get(path)"))
-    fun resolve(path: String) = get(path)
-
-    @Deprecated("Use operator getter on xmlEditor instead of getXmlEditor function", ReplaceWith("xmlEditor[path]"))
-    fun getXmlEditor(path: String) = xmlEditor[path]
 }
 
-class DomFileEditor internal constructor(private val domFile: File) : Closeable {
-    val file: Document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        .parse(domFile).also(Document::normalize)
+class DomFileEditor internal constructor(inputStream: InputStream, private val outputStream: Lazy<OutputStream>) : Closeable {
 
-    override fun close() = TransformerFactory.newInstance().newTransformer()
-        .transform(DOMSource(file), StreamResult(domFile.outputStream()))
+    // lazily open an output stream
+    // this is required because when constructing a DomFileEditor the output stream is created along with the input stream, which is not allowed
+    // the workaround is to lazily create the output stream. This way it would be used after the input stream is closed, which happens in the constructor
+    constructor(file: File) : this(file.inputStream(), lazy { file.outputStream() })
+
+    val file: Document =
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream).also(Document::normalize)
+
+    override fun close() =
+        TransformerFactory.newInstance().newTransformer().transform(DOMSource(file), StreamResult(outputStream.value))
+
 }
