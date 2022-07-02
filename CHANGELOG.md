@@ -1,3 +1,16 @@
+# [2.2.0](https://github.com/revanced/revanced-patcher/compare/v2.1.2...v2.2.0) (2022-07-02)
+
+
+### Bug Fixes
+
+* DomFileEditor opening in- and output streams on the same file ([83187c9](https://github.com/revanced/revanced-patcher/commit/83187c9edd7b088bc18960c5eb9a2042ca536b5f))
+
+
+### Features
+
+* remove deprecated functions ([ada5a03](https://github.com/revanced/revanced-patcher/commit/ada5a033de3cf94e7255ec2d522520f86431f001))
+* streams overload for `XmlFileHolder` ([6f72c4c](https://github.com/revanced/revanced-patcher/commit/6f72c4c4c051e48c8d03d2a7b2cfc1c53028ed86))
+
 # [2.2.0-dev.3](https://github.com/revanced/revanced-patcher/compare/v2.2.0-dev.2...v2.2.0-dev.3) (2022-07-02)
 
 
