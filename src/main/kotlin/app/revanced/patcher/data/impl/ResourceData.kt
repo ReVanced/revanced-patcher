@@ -17,12 +17,6 @@ class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<Fi
     inner class XmlFileHolder {
         operator fun get(path: String) = DomFileEditor(this@ResourceData[path])
     }
-
-    @Deprecated("Use operator getter instead of resolve function", ReplaceWith("get(path)"))
-    fun resolve(path: String) = get(path)
-
-    @Deprecated("Use operator getter on xmlEditor instead of getXmlEditor function", ReplaceWith("xmlEditor[path]"))
-    fun getXmlEditor(path: String) = xmlEditor[path]
 }
 
 class DomFileEditor internal constructor(private val domFile: File) : Closeable {
