@@ -268,7 +268,7 @@ class Patcher(private val options: PatcherOptions) {
 
             if (result.isSuccess()) return@forEach
 
-            val errorMessage = result.error()!!.message
+            val errorMessage = result.error()!!.cause
             return PatchResultError("'$patchName' depends on '${patchDependency.patchName}' but the following error was raised: $errorMessage")
         }
 
