@@ -4,11 +4,9 @@ import app.revanced.patcher.data.impl.BytecodeData
 import app.revanced.patcher.data.impl.MethodNotFoundException
 import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
-import org.jf.dexlib2.Format
 import org.jf.dexlib2.iface.Method
-import org.jf.dexlib2.iface.instruction.formats.Instruction35c
+import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import org.jf.dexlib2.iface.reference.MethodReference
-import org.jf.dexlib2.util.Preconditions
 
 /**
  * Find a method from another method via instruction offsets.
@@ -37,9 +35,7 @@ class MethodWalker internal constructor(
         currentMethod.implementation?.instructions?.let { instructions ->
             val instruction = instructions.elementAt(offset)
 
-            Preconditions.checkFormat(instruction.opcode, Format.Format35c)
-
-            val newMethod = (instruction as Instruction35c).reference as MethodReference
+            val newMethod = (instruction as ReferenceInstruction).reference as MethodReference
             val proxy = bytecodeData.findClass(newMethod.definingClass)!!
 
             val methods = if (walkMutable) proxy.resolve().methods else proxy.immutableClass.methods
