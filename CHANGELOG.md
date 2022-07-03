@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/revanced/revanced-patcher/compare/v2.2.0...v2.2.1) (2022-07-03)
+
+
+### Bug Fixes
+
+* more useful error message ([4b2e323](https://github.com/revanced/revanced-patcher/commit/4b2e3230ec74fa3a57ae86067e5cb7cecbe45013))
+
 # [2.2.0](https://github.com/revanced/revanced-patcher/compare/v2.1.2...v2.2.0) (2022-07-02)
 
 
