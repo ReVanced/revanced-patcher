@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/revanced/revanced-patcher/compare/v2.2.1...v2.2.2) (2022-07-04)
+
+
+### Bug Fixes
+
+* `MethodWalker` not accounting for all reference instructions ([48068cb](https://github.com/revanced/revanced-patcher/commit/48068cb3d79e283ff1cad9f3f78dc1d0fcd14f83))
+
 ## [2.2.1](https://github.com/revanced/revanced-patcher/compare/v2.2.0...v2.2.1) (2022-07-03)
 
 
