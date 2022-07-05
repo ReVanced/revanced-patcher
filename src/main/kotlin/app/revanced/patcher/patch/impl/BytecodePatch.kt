@@ -9,5 +9,5 @@ import app.revanced.patcher.patch.Patch
  * @param fingerprints A list of [MethodFingerprint] this patch relies on.
  */
 abstract class BytecodePatch(
-    internal val fingerprints: Iterable<MethodFingerprint>
+    internal val fingerprints: Iterable<MethodFingerprint>? = null
 ) : Patch<BytecodeData>()
