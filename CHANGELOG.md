@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/revanced/revanced-patcher/compare/v2.2.2...v2.3.0) (2022-07-05)
+
+
+### Features
+
+* nullability for `BytecodePatch` constructor ([#59](https://github.com/revanced/revanced-patcher/issues/59)) ([4ea030d](https://github.com/revanced/revanced-patcher/commit/4ea030d0a03f736bbecbd491317ba2167b18fe94))
+
 ## [2.2.2](https://github.com/revanced/revanced-patcher/compare/v2.2.1...v2.2.2) (2022-07-04)
 
 
