@@ -285,7 +285,7 @@ class Patcher(private val options: PatcherOptions) {
             data.resourceData
         } else {
             val bytecodeData = data.bytecodeData
-            (patchInstance as BytecodePatch).fingerprints.resolve(bytecodeData, bytecodeData.classes.internalClasses)
+            (patchInstance as BytecodePatch).fingerprints?.resolve(bytecodeData, bytecodeData.classes.internalClasses)
             bytecodeData
         }
 
