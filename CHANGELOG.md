@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/revanced/revanced-patcher/compare/v2.3.0...v2.3.1) (2022-07-07)
+
+
+### Bug Fixes
+
+* handle null properly ([#64](https://github.com/revanced/revanced-patcher/issues/64)) ([482af78](https://github.com/revanced/revanced-patcher/commit/482af78f2ba23b8003fc9961df5fde54d7295d5c))
+
 # [2.3.0](https://github.com/revanced/revanced-patcher/compare/v2.2.2...v2.3.0) (2022-07-05)
 
 
