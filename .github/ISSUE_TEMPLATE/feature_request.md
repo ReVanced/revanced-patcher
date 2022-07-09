@@ -1,9 +1,9 @@
 ---
 name: Feature request
 about: Suggest a change to the patcher. Do not submit suggestions for patches here.
-title: ''
-labels: ''
-assignees: ''
+title: 'feat: some feature'
+labels: feature-request
+assignees: oSumAtrIX, Sculas
 
 ---
 
