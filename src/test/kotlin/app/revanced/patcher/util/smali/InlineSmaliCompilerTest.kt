@@ -57,7 +57,6 @@ internal class InlineSmaliCompilerTest {
         method.addInstructions(
             """
                 const/4 v0, 0x1
-                :test
                 const/4 v0, 0x0
             """
         )
@@ -70,7 +69,7 @@ internal class InlineSmaliCompilerTest {
                 if-eqz v0, :test
                 return-void
             """, listOf(
-                "test" to method.label(labelIndex)
+                ExternalLabel("test",method.instruction(1))
             )
         )
 

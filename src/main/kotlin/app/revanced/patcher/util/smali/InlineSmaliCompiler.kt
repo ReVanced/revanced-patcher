@@ -45,7 +45,6 @@ class InlineSmaliCompiler {
             val tokens = CommonTokenStream(lexer as TokenSource)
             val parser = smaliParser(tokens)
             val result = parser.smali_file()
-            result.tree
             if (parser.numberOfSyntaxErrors > 0 || lexer.numberOfSyntaxErrors > 0) {
                 throw IllegalStateException(
                     "Encountered ${parser.numberOfSyntaxErrors} parser syntax errors and ${lexer.numberOfSyntaxErrors} lexer syntax errors!"

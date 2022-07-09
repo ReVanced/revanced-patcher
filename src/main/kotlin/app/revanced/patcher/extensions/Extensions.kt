@@ -2,6 +2,7 @@ package app.revanced.patcher.extensions
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patcher.util.smali.toInstruction
 import app.revanced.patcher.util.smali.toInstructions
 import org.jf.dexlib2.AccessFlags
@@ -11,6 +12,7 @@ import org.jf.dexlib2.builder.Label
 import org.jf.dexlib2.builder.MutableMethodImplementation
 import org.jf.dexlib2.builder.instruction.*
 import org.jf.dexlib2.iface.Method
+import org.jf.dexlib2.iface.instruction.Instruction
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.immutable.ImmutableMethod
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation
@@ -50,8 +52,10 @@ fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) {
  * @return True if the methods match given the conditions.
  */
 fun Method.softCompareTo(otherMethod: MethodReference): Boolean {
-    if (MethodUtil.isConstructor(this) && !parametersEqual(this.parameterTypes, otherMethod.parameterTypes))
-        return false
+    if (MethodUtil.isConstructor(this) && !parametersEqual(
+            this.parameterTypes, otherMethod.parameterTypes
+        )
+    ) return false
     return this.name == otherMethod.name
 }
 
@@ -71,14 +75,7 @@ internal fun Method.clone(registerCount: Int = 0): ImmutableMethod {
         )
     }
     return ImmutableMethod(
-        returnType,
-        name,
-        parameters,
-        returnType,
-        accessFlags,
-        annotations,
-        hiddenApiRestrictions,
-        clonedImplementation
+        returnType, name, parameters, returnType, accessFlags, annotations, hiddenApiRestrictions, clonedImplementation
     )
 }
 
@@ -109,46 +106,88 @@ fun MutableMethod.replaceInstruction(index: Int, instruction: String) =
  * Remove a smali instruction within the method.
  * @param index The index to delete the instruction at.
  */
-fun MutableMethod.removeInstruction(index: Int) =
-    this.implementation!!.removeInstruction(index)
+fun MutableMethod.removeInstruction(index: Int) = this.implementation!!.removeInstruction(index)
+
+/**
+ * Create a label for the instruction at given index in the method's implementation.
+ * @param index The index to create the label for the instruction at.
+ * @return The label.
+ */
+fun MutableMethod.label(index: Int) = this.implementation!!.newLabelForIndex(index)
+
+/**
+ * Get the instruction at given index in the method's implementation.
+ * @param index The index to get the instruction at.
+ * @return The instruction.
+ */
+fun MutableMethod.instruction(index: Int): BuilderInstruction = this.implementation!!.instructions[index]
 
 /**
  * Add smali instructions to the method.
  * @param index The index to insert the instructions at.
  * @param smali The smali instructions to add.
+ * @param externalLabels A list of [ExternalLabel] representing a list of labels for instructions which are not in the method to compile.
  */
-fun MutableMethod.addInstructions(index: Int, smali: String, labels: List<Pair<String, Label>> = emptyList()) {
-    var code = smali
-    for ((name, _) in labels) {
-        code += "\n :$name \n nop"
-    }
-    val instructions = code.toInstructions(this).toMutableList()
-    var fixedInstructions: List<Int>? = null // find a better way to do this.
 
-    if (labels.isNotEmpty()) {
-        val labelRange = instructions.size - labels.size..instructions.size
-        fixedInstructions = mutableListOf()
-        for (instructionIndex in 0 until instructions.size - labels.size) {
-            val instruction = instructions[instructionIndex]
-            if (instruction !is BuilderOffsetInstruction || !instruction.target.isPlaced) continue
-            val fakeIndex = instruction.target.location.index
-            if (!labelRange.contains(fakeIndex)) continue
-            instructions[instructionIndex] = replaceOffset(instruction, labels[labelRange.indexOf(fakeIndex)].second)
-            fixedInstructions.add(instructionIndex + index)
+fun MutableMethod.addInstructions(index: Int, smali: String, externalLabels: List<ExternalLabel> = emptyList()) {
+    // create reference dummy instructions for the instructions.
+    val nopedSmali = StringBuilder(smali).also { builder ->
+        externalLabels.forEach { (name, _) ->
+            builder.append("\n:$name\nnop")
         }
-        // find a better way to drop the nop instructions.
-        instructions.subList(labelRange.first, labelRange.last).clear()
-    }
+    }.toString()
 
-    this.implementation!!.addInstructions(index, instructions)
-    this.fixInstructions(index, instructions, fixedInstructions)
+    // compile the instructions with the dummy labels
+    val compiledInstructions = nopedSmali.toInstructions(this)
+
+    // add the compiled list of instructions to the method.
+    val methodImplementation = this.implementation!!
+    methodImplementation.addInstructions(index, compiledInstructions)
+
+    val methodInstructions = methodImplementation.instructions
+    methodInstructions.subList(index, index + compiledInstructions.size)
+        .forEachIndexed { compiledInstructionIndex, compiledInstruction ->
+            // If the compiled instruction is not an offset instruction, skip it.
+            if (compiledInstruction !is BuilderOffsetInstruction) return@forEachIndexed
+
+            /**
+             * Creates a new label for the instruction and replaces it with the label of the [compiledInstruction] at [compiledInstructionIndex].
+             */
+            fun Instruction.makeNewLabel() {
+                // create the final label.
+                val label = methodImplementation.newLabelForIndex(methodInstructions.indexOf(this))
+                // create the final instruction with the new label.
+                val newInstruction = replaceOffset(
+                    compiledInstruction, label
+                )
+                // replace the instruction pointing to the dummy label with the new instruction pointing to the real instruction.
+                methodImplementation.replaceInstruction(index + compiledInstructionIndex, newInstruction)
+            }
+
+            // If the compiled instruction targets its own instruction,
+            // which means it points to some of its own, simply an offset has to be applied.
+            val labelIndex = compiledInstruction.target.location.index
+            if (labelIndex < compiledInstructions.size - externalLabels.size) {
+                // get the targets index (insertion index + the index of the dummy instruction).
+                methodInstructions[index + labelIndex].makeNewLabel()
+                return@forEachIndexed
+            }
+
+            // since the compiled instruction points to a dummy instruction,
+            // we can find the real instruction which it was created for by calculation.
+
+            // get the index of the instruction in the externalLabels list which the dummy instruction was created for.
+            // this line works because we created the dummy instructions in the same order as the externalLabels list.
+            val (_, instruction) = externalLabels[(compiledInstructions.size - 1) - labelIndex]
+            instruction.makeNewLabel()
+        }
 }
 
 /**
  * Add smali instructions to the end of the method.
  * @param instructions The smali instructions to add.
  */
-fun MutableMethod.addInstructions(instructions: String, labels: List<Pair<String, Label>> = emptyList()) =
+fun MutableMethod.addInstructions(instructions: String, labels: List<ExternalLabel> = emptyList()) =
     this.addInstructions(this.implementation!!.instructions.size, instructions, labels)
 
 /**
@@ -164,27 +203,10 @@ fun MutableMethod.replaceInstructions(index: Int, instructions: String) =
  * @param index The index to remove the instructions at.
  * @param count The amount of instructions to remove.
  */
-fun MutableMethod.removeInstructions(index: Int, count: Int) =
-    this.implementation!!.removeInstructions(index, count)
-
-fun MutableMethod.label(index: Int) = this.implementation!!.newLabelForIndex(index)
-fun MutableMethod.instruction(index: Int): BuilderInstruction = this.implementation!!.instructions[index]
-
-private fun MutableMethod.fixInstructions(index: Int, instructions: List<BuilderInstruction>, skipInstructions: List<Int>?) {
-    for (instructionIndex in index until instructions.size + index) {
-        val instruction = this.implementation!!.instructions[instructionIndex]
-        if (instruction !is BuilderOffsetInstruction || !instruction.target.isPlaced) continue
-        if (skipInstructions?.contains(instructionIndex) == true) continue
-        val fakeIndex = instruction.target.location.index
-        val fixedIndex = fakeIndex + index
-        if (fakeIndex == fixedIndex) continue // no need to replace if the indexes are the same.
-        this.implementation!!.replaceInstruction(instructionIndex, replaceOffset(instruction, this.label(fixedIndex)))
-    }
-}
+fun MutableMethod.removeInstructions(index: Int, count: Int) = this.implementation!!.removeInstructions(index, count)
 
 private fun replaceOffset(
-    i: BuilderOffsetInstruction,
-    label: Label
+    i: BuilderOffsetInstruction, label: Label
 ): BuilderOffsetInstruction {
     return when (i) {
         is BuilderInstruction10t -> BuilderInstruction10t(i.opcode, label)
@@ -207,8 +229,7 @@ internal fun Method.cloneMutable(registerCount: Int = 0) = clone(registerCount).
 
 // FIXME: also check the order of parameters as different order equals different method overload
 internal fun parametersEqual(
-    parameters1: Iterable<CharSequence>,
-    parameters2: Iterable<CharSequence>
+    parameters1: Iterable<CharSequence>, parameters2: Iterable<CharSequence>
 ): Boolean {
     return parameters1.count() == parameters2.count() && parameters1.all { parameter ->
         parameters2.any {
