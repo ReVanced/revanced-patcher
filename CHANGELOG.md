@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/revanced/revanced-patcher/compare/v2.3.1...v2.4.0) (2022-07-09)
+
+
+### Features
+
+* Improve Smali Compiler ([6bfe571](https://github.com/revanced/revanced-patcher/commit/6bfe5716c38181bbe9476b5c6ad29526edb4e022))
+
 ## [2.3.1](https://github.com/revanced/revanced-patcher/compare/v2.3.0...v2.3.1) (2022-07-07)
 
 
