@@ -130,17 +130,17 @@ fun MutableMethod.instruction(index: Int): BuilderInstruction = this.implementat
  */
 
 fun MutableMethod.addInstructions(index: Int, smali: String, externalLabels: List<ExternalLabel> = emptyList()) {
-    // create reference dummy instructions for the instructions.
+    // Create reference dummy instructions for the instructions.
     val nopedSmali = StringBuilder(smali).also { builder ->
         externalLabels.forEach { (name, _) ->
             builder.append("\n:$name\nnop")
         }
     }.toString()
 
-    // compile the instructions with the dummy labels
+    // Compile the instructions with the dummy labels
     val compiledInstructions = nopedSmali.toInstructions(this)
 
-    // add the compiled list of instructions to the method.
+    // Add the compiled list of instructions to the method.
     val methodImplementation = this.implementation!!
     methodImplementation.addInstructions(index, compiledInstructions)
 
@@ -154,13 +154,13 @@ fun MutableMethod.addInstructions(index: Int, smali: String, externalLabels: Lis
              * Creates a new label for the instruction and replaces it with the label of the [compiledInstruction] at [compiledInstructionIndex].
              */
             fun Instruction.makeNewLabel() {
-                // create the final label.
+                // Create the final label.
                 val label = methodImplementation.newLabelForIndex(methodInstructions.indexOf(this))
-                // create the final instruction with the new label.
+                // Create the final instruction with the new label.
                 val newInstruction = replaceOffset(
                     compiledInstruction, label
                 )
-                // replace the instruction pointing to the dummy label with the new instruction pointing to the real instruction.
+                // Replace the instruction pointing to the dummy label with the new instruction pointing to the real instruction.
                 methodImplementation.replaceInstruction(index + compiledInstructionIndex, newInstruction)
             }
 
@@ -168,15 +168,15 @@ fun MutableMethod.addInstructions(index: Int, smali: String, externalLabels: Lis
             // which means it points to some of its own, simply an offset has to be applied.
             val labelIndex = compiledInstruction.target.location.index
             if (labelIndex < compiledInstructions.size - externalLabels.size) {
-                // get the targets index (insertion index + the index of the dummy instruction).
+                // Get the targets index (insertion index + the index of the dummy instruction).
                 methodInstructions[index + labelIndex].makeNewLabel()
                 return@forEachIndexed
             }
 
-            // since the compiled instruction points to a dummy instruction,
+            // Since the compiled instruction points to a dummy instruction,
             // we can find the real instruction which it was created for by calculation.
 
-            // get the index of the instruction in the externalLabels list which the dummy instruction was created for.
+            // Get the index of the instruction in the externalLabels list which the dummy instruction was created for.
             // this line works because we created the dummy instructions in the same order as the externalLabels list.
             val (_, instruction) = externalLabels[(compiledInstructions.size - 1) - labelIndex]
             instruction.makeNewLabel()
