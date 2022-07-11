@@ -1,3 +1,16 @@
+# [2.5.0](https://github.com/revanced/revanced-patcher/compare/v2.4.0...v2.5.0) (2022-07-11)
+
+
+### Bug Fixes
+
+* missing additional items [skip ci] ([0ebab8b](https://github.com/revanced/revanced-patcher/commit/0ebab8bf598d993df6e340651205cba48f1ef725))
+
+
+### Features
+
+* feature request issue template ([1b39278](https://github.com/revanced/revanced-patcher/commit/1b39278b24ba2f964d93bd8ad2e28472ee036d90))
+* issue templates [skip ci] ([112bc99](https://github.com/revanced/revanced-patcher/commit/112bc998f4761a647cb9eab7454e35264fa96fd9))
+
 # [2.4.0](https://github.com/revanced/revanced-patcher/compare/v2.3.1...v2.4.0) (2022-07-09)
 
 
