@@ -1,3 +1,10 @@
+## [2.5.1](https://github.com/revanced/revanced-patcher/compare/v2.5.0...v2.5.1) (2022-07-17)
+
+
+### Bug Fixes
+
+* close stream when closing `DomFileEditor` ([77604d4](https://github.com/revanced/revanced-patcher/commit/77604d40785847b775155c0e75b663a3c7336aa3))
+
 # [2.5.0](https://github.com/revanced/revanced-patcher/compare/v2.4.0...v2.5.0) (2022-07-11)
 
 
