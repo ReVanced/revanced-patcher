@@ -1,3 +1,5 @@
+## [2.5.2](https://github.com/revanced/revanced-patcher/compare/v2.5.1...v2.5.2) (2022-07-24)
+
 ## [2.5.1](https://github.com/revanced/revanced-patcher/compare/v2.5.0...v2.5.1) (2022-07-17)
 
 
