@@ -1,3 +1,11 @@
+# [2.6.0](https://github.com/revanced/revanced-patcher/compare/v2.5.2...v2.6.0) (2022-07-31)
+
+
+### Features
+
+* add Patch#dependsOn extension ([523f67b](https://github.com/revanced/revanced-patcher/commit/523f67b238646caaa9b7676a0e238ce82adbdda4))
+* Soft Dependencies for Patches ([8c12f8d](https://github.com/revanced/revanced-patcher/commit/8c12f8d488f939cc932e826aad0b20876ae165b7))
+
 ## [2.5.2](https://github.com/revanced/revanced-patcher/compare/v2.5.1...v2.5.2) (2022-07-24)
 
 ## [2.5.1](https://github.com/revanced/revanced-patcher/compare/v2.5.0...v2.5.1) (2022-07-17)
