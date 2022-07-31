@@ -7,6 +7,9 @@ import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.data.Data
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.annotations.Dependencies
+import app.revanced.patcher.patch.annotations.DependencyType
+import app.revanced.patcher.patch.annotations.DependsOn
 import kotlin.reflect.KClass
 
 /**
@@ -35,19 +38,26 @@ private fun <T : Annotation> Class<*>.findAnnotationRecursively(
     return null
 }
 
+private typealias PatchClass = Class<out Patch<Data>>
+
 object PatchExtensions {
-    val Class<out Patch<Data>>.patchName: String get() = recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
-    val Class<out Patch<Data>>.version get() = recursiveAnnotation(Version::class)?.version
-    val Class<out Patch<Data>>.include get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Patch::class)!!.include
-    val Class<out Patch<Data>>.description get() = recursiveAnnotation(Description::class)?.description
-    val Class<out Patch<Data>>.dependencies get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Dependencies::class)?.dependencies
-    val Class<out Patch<Data>>.compatiblePackages get() = recursiveAnnotation(Compatibility::class)?.compatiblePackages
+    val PatchClass.patchName: String get() = recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
+    val PatchClass.version get() = recursiveAnnotation(Version::class)?.version
+    val PatchClass.include get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Patch::class)!!.include
+    val PatchClass.description get() = recursiveAnnotation(Description::class)?.description
+    val PatchClass.dependencies get() = buildList {
+        recursiveAnnotation(DependsOn::class)?.let { add(PatchDependency(it.value, it.type)) }
+        recursiveAnnotation(Dependencies::class)?.dependencies?.forEach { add(PatchDependency(it, DependencyType.HARD)) }
+    }.toTypedArray()
+    val PatchClass.compatiblePackages get() = recursiveAnnotation(Compatibility::class)?.compatiblePackages
 
     @JvmStatic
-    fun Class<out Patch<Data>>.dependsOn(patch: Class<out Patch<Data>>): Boolean {
+    fun PatchClass.dependsOn(patch: PatchClass): Boolean {
         if (this.patchName == patch.patchName) throw IllegalArgumentException("thisval and patch may not be the same")
-        return this.dependencies?.any { it.java.patchName == this@dependsOn.patchName } == true
+        return this.dependencies.any { it.patch.java.patchName == this@dependsOn.patchName }
     }
+
+    class PatchDependency internal constructor(val patch: KClass<out Patch<Data>>, val type: DependencyType = DependencyType.HARD)
 }
 
 object MethodFingerprintExtensions {

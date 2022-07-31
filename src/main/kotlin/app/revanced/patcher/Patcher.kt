@@ -11,6 +11,7 @@ import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultError
 import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.patch.annotations.DependencyType
 import app.revanced.patcher.patch.impl.BytecodePatch
 import app.revanced.patcher.patch.impl.ResourcePatch
 import app.revanced.patcher.util.ListBackedSet
@@ -261,15 +262,19 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         // recursively apply all dependency patches
-        patch.dependencies?.forEach {
-            val patchDependency = it.java
+        patch.dependencies.forEach {
+            val dependency = it.patch.java
+            if ( // soft dependencies must be included manually.
+                it.type == DependencyType.SOFT && !data.patches.any { p ->
+                    p.patchName == dependency.patchName
+                }
+            ) return@forEach
 
-            val result = applyPatch(patchDependency, appliedPatches)
-
+            val result = applyPatch(dependency, appliedPatches)
             if (result.isSuccess()) return@forEach
 
             val errorMessage = result.error()!!.cause
-            return PatchResultError("'$patchName' depends on '${patchDependency.patchName}' but the following error was raised: $errorMessage")
+            return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
         }
 
         val patchInstance = patch.getDeclaredConstructor().newInstance()
