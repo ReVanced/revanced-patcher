@@ -48,6 +48,6 @@ enum class DependencyType {
     /**
      * Applies the dependency only if it was selected.
      */
-    @Deprecated("Will be removed when Patch Options is implemented.", ReplaceWith("HARD"))
+    @Deprecated("Will be removed when Patch Options is implemented.")
     SOFT
 }
