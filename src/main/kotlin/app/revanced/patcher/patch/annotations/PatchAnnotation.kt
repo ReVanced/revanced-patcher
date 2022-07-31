@@ -39,4 +39,15 @@ annotation class DependsOn(
     val type: DependencyType = DependencyType.HARD
 )
 
-enum class DependencyType { HARD, SOFT }
+enum class DependencyType {
+    /**
+     * Enforces that the dependency is applied, even if it was not selected.
+     */
+    HARD,
+
+    /**
+     * Applies the dependency only if it was selected.
+     */
+    @Deprecated("Will be removed when Patch Options is implemented.", ReplaceWith("HARD"))
+    SOFT
+}
