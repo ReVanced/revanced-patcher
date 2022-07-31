@@ -1,4 +1,4 @@
-package app.revanced.patcher.usage.bytecode.annotation
+package app.revanced.patcher.usage.bytecode
 
 import app.revanced.patcher.annotation.Compatibility
 import app.revanced.patcher.annotation.Package
