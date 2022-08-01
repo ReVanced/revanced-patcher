@@ -38,7 +38,7 @@ import org.jf.dexlib2.util.Preconditions
 @Description("Example demonstration of a bytecode patch.")
 @ExampleResourceCompatibility
 @Version("0.0.1")
-@DependsOn(ExampleBytecodePatch::class, DependencyType.SOFT)
+@DependsOn(ExampleBytecodePatch::class, DependencyType.HARD)
 class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor
