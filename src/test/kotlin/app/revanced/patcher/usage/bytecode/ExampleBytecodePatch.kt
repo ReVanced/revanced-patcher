@@ -7,6 +7,7 @@ import app.revanced.patcher.data.impl.BytecodeData
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.patch.PatchOption
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.DependencyType
@@ -162,4 +163,13 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
             )
         )
     }
+
+    override val options = listOf(
+        PatchOption.StringOption(
+            "key", "default", "title", "description", true
+        ),
+        PatchOption.BooleanOption(
+            "key", true, "title", "description" // required defaults to false
+        ),
+    )
 }

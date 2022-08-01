@@ -17,4 +17,9 @@ abstract class Patch<out T : Data> {
      * The main function of the [Patch] which the patcher will call.
      */
     abstract fun execute(data: @UnsafeVariance T): PatchResult
+
+    /**
+     * A list of [PatchOption]s.
+     */
+    open val options: Iterable<PatchOption<*>> = listOf()
 }
