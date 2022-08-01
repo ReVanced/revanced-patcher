@@ -1,3 +1,15 @@
+# [2.8.0](https://github.com/revanced/revanced-patcher/compare/v2.7.0...v2.8.0) (2022-08-01)
+
+
+### Bug Fixes
+
+* remove requirement for solution [skip ci] ([#80](https://github.com/revanced/revanced-patcher/issues/80)) ([9a4d30e](https://github.com/revanced/revanced-patcher/commit/9a4d30e15234ef62844f035c58a1143674d4c12e))
+
+
+### Features
+
+* patch options ([#81](https://github.com/revanced/revanced-patcher/issues/81)) ([fbb09f3](https://github.com/revanced/revanced-patcher/commit/fbb09f38dce49adc7f63b71bdf2df2ef0b84db04))
+
 # [2.7.0](https://github.com/revanced/revanced-patcher/compare/v2.6.0...v2.7.0) (2022-08-01)
 
 
