@@ -1,3 +1,10 @@
+# [2.7.0](https://github.com/revanced/revanced-patcher/compare/v2.6.0...v2.7.0) (2022-08-01)
+
+
+### Features
+
+* `Closeable` patches ([bbd40bf](https://github.com/revanced/revanced-patcher/commit/bbd40bf2f6ff200705f2bcb272dd1680bb244e3f))
+
 # [2.6.0](https://github.com/revanced/revanced-patcher/compare/v2.5.2...v2.6.0) (2022-07-31)
 
 
