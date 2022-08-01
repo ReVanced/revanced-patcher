@@ -32,6 +32,7 @@ import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 
@@ -247,13 +248,13 @@ class Patcher(private val options: PatcherOptions) {
      */
     private fun applyPatch(
         patch: Class<out Patch<Data>>,
-        appliedPatches: MutableMap<String, Boolean>
+        appliedPatches: LinkedHashMap<String, AppliedPatch>
     ): PatchResult {
         val patchName = patch.patchName
 
         // if the patch has already applied silently skip it
         if (appliedPatches.contains(patchName)) {
-            if (!appliedPatches[patchName]!!)
+            if (!appliedPatches[patchName]!!.success)
                 return PatchResultError("'$patchName' did not succeed previously")
 
             logger.trace("Skipping '$patchName' because it has already been applied")
@@ -298,10 +299,10 @@ class Patcher(private val options: PatcherOptions) {
 
         return try {
             val result = patchInstance.execute(data)
-            appliedPatches[patchName] = result.isSuccess()
+            appliedPatches[patchName] = AppliedPatch(patchInstance, result.isSuccess())
             result
         } catch (e: Exception) {
-            appliedPatches[patchName] = false
+            appliedPatches[patchName] = AppliedPatch(patchInstance, false)
             PatchResultError(e)
         }
     }
@@ -313,22 +314,40 @@ class Patcher(private val options: PatcherOptions) {
      */
     fun applyPatches(stopOnError: Boolean = false) = sequence {
         logger.trace("Applying all patches")
-        val appliedPatches = mutableMapOf<String, Boolean>() // first is success, second is name
 
-        for (patch in data.patches) {
-            val patchResult = applyPatch(patch, appliedPatches)
+        val appliedPatches = LinkedHashMap<String, AppliedPatch>() // first is name
 
-            val result = if (patchResult.isSuccess()) {
-                Result.success(patchResult.success()!!)
-            } else {
-                Result.failure(patchResult.error()!!)
+        try {
+            for (patch in data.patches) {
+                val patchResult = applyPatch(patch, appliedPatches)
+
+                val result = if (patchResult.isSuccess()) {
+                    Result.success(patchResult.success()!!)
+                } else {
+                    Result.failure(patchResult.error()!!)
+                }
+
+                yield(patch.patchName to result)
+                if (stopOnError && patchResult.isError()) break
             }
+        } finally {
+            // close all closeable patches in order
+            for ((patch, _) in appliedPatches.values.reversed()) {
+                if (patch !is Closeable) continue
 
-            yield(patch.patchName to result)
-            if (stopOnError && patchResult.isError()) break
+                patch.close()
+            }
         }
     }
 }
+
+/**
+ * A result of applying a [Patch].
+ *
+ * @param patchInstance The instance of the [Patch] that was applied.
+ * @param success The result of the [Patch].
+ */
+internal data class AppliedPatch(val patchInstance: Patch<Data>, val success: Boolean)
 
 private fun BuildOptions.setBuildOptions(options: PatcherOptions) {
     this.aaptPath = options.aaptPath
