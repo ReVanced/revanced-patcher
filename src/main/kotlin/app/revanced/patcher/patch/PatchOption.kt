@@ -19,7 +19,7 @@ sealed class PatchOption<T>(
     var value: T? = default
 
     /**
-     * A [PatchOption] of type [String].
+     * A [PatchOption] representing a [String].
      * @see PatchOption
      */
     class StringOption(
@@ -33,7 +33,7 @@ sealed class PatchOption<T>(
     )
 
     /**
-     * A [PatchOption] of type [Boolean].
+     * A [PatchOption] representing a [Boolean].
      * @see PatchOption
      */
     class BooleanOption(
@@ -48,7 +48,7 @@ sealed class PatchOption<T>(
 
     /**
      * A [PatchOption] with a list of allowed options.
-     * @param options A list of allowed options for the option.
+     * @param options A list of allowed options for the [ListOption].
      * @see PatchOption
      */
     sealed class ListOption<E>(
