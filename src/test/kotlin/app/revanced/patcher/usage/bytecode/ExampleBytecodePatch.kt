@@ -171,5 +171,11 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         PatchOption.BooleanOption(
             "key", true, "title", "description" // required defaults to false
         ),
+        PatchOption.StringListOption(
+            "key", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
+        ),
+        PatchOption.IntListOption(
+            "key", 1, listOf(1, 2, 3), "title", "description"
+        ),
     )
 }

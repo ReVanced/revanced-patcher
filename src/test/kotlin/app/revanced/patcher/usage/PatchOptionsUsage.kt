@@ -13,6 +13,16 @@ fun patchOptionsUsage() {
             is PatchOption.BooleanOption -> {
                 option.value = false
             }
+            is PatchOption.StringListOption -> {
+                for (choice in option.options) {
+                    println(choice)
+                }
+            }
+            is PatchOption.IntListOption -> {
+                for (choice in option.options) {
+                    println(choice)
+                }
+            }
         }
     }
 }
