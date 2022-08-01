@@ -5,19 +5,13 @@ import app.revanced.patcher.usage.bytecode.ExampleBytecodePatch
 
 fun patchOptionsUsage() {
     val options = ExampleBytecodePatch().options
-    for (opt in options) {
-        when (opt) {
+    for (option in options) {
+        when (option) {
             is PatchOption.StringOption -> {
-                var option by opt
-                println(option)
-                option = "Hello World"
-                println(option)
+                option.value = "Hello World"
             }
             is PatchOption.BooleanOption -> {
-                var option by opt
-                println(option)
-                option = false
-                println(option)
+                option.value = false
             }
         }
     }
