@@ -14,11 +14,13 @@ fun patchOptionsUsage() {
                 option.value = false
             }
             is PatchOption.StringListOption -> {
+                option.value = option.options.first()
                 for (choice in option.options) {
                     println(choice)
                 }
             }
             is PatchOption.IntListOption -> {
+                option.value = option.options.first()
                 for (choice in option.options) {
                     println(choice)
                 }
