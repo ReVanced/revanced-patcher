@@ -11,7 +11,6 @@ import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultError
 import app.revanced.patcher.patch.PatchResultSuccess
-import app.revanced.patcher.patch.annotations.DependencyType
 import app.revanced.patcher.patch.impl.BytecodePatch
 import app.revanced.patcher.patch.impl.ResourcePatch
 import app.revanced.patcher.util.ListBackedSet
@@ -265,11 +264,6 @@ class Patcher(private val options: PatcherOptions) {
         // recursively apply all dependency patches
         patch.dependencies.forEach {
             val dependency = it.patch.java
-            if ( // soft dependencies must be included manually.
-                it.type == DependencyType.SOFT && !data.patches.any { p ->
-                    p.patchName == dependency.patchName
-                }
-            ) return@forEach
 
             val result = applyPatch(dependency, appliedPatches)
             if (result.isSuccess()) return@forEach
