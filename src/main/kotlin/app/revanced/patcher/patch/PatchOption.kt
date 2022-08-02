@@ -42,6 +42,14 @@ class PatchOptions(vararg val options: PatchOption<*>) : Iterable<PatchOption<*>
         opt.value = value
     }
 
+    /**
+     * Sets the value of a [PatchOption] to `null`.
+     * @param key The key of the [PatchOption].
+     */
+    fun nullify(key: String) {
+        get(key).value = null
+    }
+
     override fun iterator() = options.iterator()
 }
 

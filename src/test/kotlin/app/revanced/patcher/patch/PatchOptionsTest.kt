@@ -37,6 +37,15 @@ internal class PatchOptionsTest {
     }
 
     @Test
+    fun `should be able to set value to null`() {
+        // Sadly, doing:
+        // > options["key1"] = null
+        // is not possible because Kotlin
+        // cannot reify the type "Nothing?".
+        options.nullify("key1")
+    }
+
+    @Test
     fun `should fail because the option does not exist`() {
         assertThrows<NoSuchOptionException> {
             options["this option does not exist"] = 123
