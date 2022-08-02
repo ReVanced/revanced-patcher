@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/revanced/revanced-patcher/compare/v3.1.0...v3.2.0) (2022-08-02)
+
+
+### Features
+
+* PatchOptions#nullify to nullify an option ([371f0c4](https://github.com/revanced/revanced-patcher/commit/371f0c4d0bf96e7f6db35085efccaed3000a096c))
+
 # [3.1.0](https://github.com/revanced/revanced-patcher/compare/v3.0.0...v3.1.0) (2022-08-02)
 
 
