@@ -1,3 +1,10 @@
+## [3.2.1](https://github.com/revanced/revanced-patcher/compare/v3.2.0...v3.2.1) (2022-08-02)
+
+
+### Bug Fixes
+
+* check if patch option requirement is met ([14a73bf](https://github.com/revanced/revanced-patcher/commit/14a73bfcafac36bce2b8466788d460edde7a14fd))
+
 # [3.2.0](https://github.com/revanced/revanced-patcher/compare/v3.1.0...v3.2.0) (2022-08-02)
 
 
