@@ -7,6 +7,7 @@ import app.revanced.patcher.data.impl.BytecodeData
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.patch.PatchOption
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.DependencyType
@@ -37,7 +38,7 @@ import org.jf.dexlib2.util.Preconditions
 @Description("Example demonstration of a bytecode patch.")
 @ExampleResourceCompatibility
 @Version("0.0.1")
-@DependsOn(ExampleBytecodePatch::class, DependencyType.SOFT)
+@DependsOn(ExampleBytecodePatch::class, DependencyType.HARD)
 class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor
@@ -162,4 +163,19 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
             )
         )
     }
+
+    override val options = listOf(
+        PatchOption.StringOption(
+            "key", "default", "title", "description", true
+        ),
+        PatchOption.BooleanOption(
+            "key", true, "title", "description" // required defaults to false
+        ),
+        PatchOption.StringListOption(
+            "key", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
+        ),
+        PatchOption.IntListOption(
+            "key", 1, listOf(1, 2, 3), "title", "description"
+        ),
+    )
 }

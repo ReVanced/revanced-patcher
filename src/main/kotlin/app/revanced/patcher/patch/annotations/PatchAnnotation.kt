@@ -43,11 +43,5 @@ enum class DependencyType {
     /**
      * Enforces that the dependency is applied, even if it was not selected.
      */
-    HARD,
-
-    /**
-     * Applies the dependency only if it was selected.
-     */
-    @Deprecated("Will be removed when Patch Options is implemented.")
-    SOFT
+    HARD
 }
