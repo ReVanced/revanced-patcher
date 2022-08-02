@@ -6,6 +6,7 @@ class NoSuchOptionException(val option: String) : Exception("No such option: $op
 class IllegalValueException(val value: Any?) : Exception("Illegal value: $value")
 class InvalidTypeException(val got: String, val expected: String) :
     Exception("Invalid option value type: $got, expected $expected")
+class RequirementNotMetException : Exception("null was passed into an option that requires a value")
 
 /**
  * A registry for an array of [PatchOption]s.
@@ -72,6 +73,9 @@ sealed class PatchOption<T>(
 ) {
     var value: T? = default
         set(value) {
+            if (value == null && required) {
+                throw RequirementNotMetException()
+            }
             if (!validator(value)) {
                 throw IllegalValueException(value)
             }

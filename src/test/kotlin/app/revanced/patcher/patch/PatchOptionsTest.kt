@@ -39,10 +39,10 @@ internal class PatchOptionsTest {
     @Test
     fun `should be able to set value to null`() {
         // Sadly, doing:
-        // > options["key1"] = null
+        // > options["key2"] = null
         // is not possible because Kotlin
         // cannot reify the type "Nothing?".
-        options.nullify("key1")
+        options.nullify("key2")
     }
 
     @Test
@@ -63,6 +63,13 @@ internal class PatchOptionsTest {
     fun `should fail because of an illegal value`() {
         assertThrows<IllegalValueException> {
             options["key3"] = "this value is not an allowed option"
+        }
+    }
+
+    @Test
+    fun `should fail because of the requirement is not met`() {
+        assertThrows<RequirementNotMetException> {
+            options.nullify("key1")
         }
     }
 }
