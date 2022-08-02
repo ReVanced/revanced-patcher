@@ -45,14 +45,14 @@ internal class PatchOptionsTest {
 
     @Test
     fun `should fail because of invalid value type`() {
-        assertThrows<IllegalArgumentException> {
+        assertThrows<InvalidTypeException> {
             options["key1"] = 123
         }
     }
 
     @Test
     fun `should fail because of an illegal value`() {
-        assertThrows<IllegalArgumentException> {
+        assertThrows<IllegalValueException> {
             options["key3"] = "this value is not an allowed option"
         }
     }

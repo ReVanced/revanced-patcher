@@ -1,13 +1,16 @@
+@file:Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
+
 package app.revanced.patcher.patch
 
-@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
 class NoSuchOptionException(val option: String) : Exception("No such option: $option")
+class IllegalValueException(val value: Any?) : Exception("Illegal value: $value")
+class InvalidTypeException(val got: String, val expected: String) :
+    Exception("Invalid option value type: $got, expected $expected")
 
 /**
  * A registry for an array of [PatchOption]s.
  * @param options An array of [PatchOption]s.
  */
-@Suppress("MemberVisibilityCanBePrivate")
 class PatchOptions(vararg val options: PatchOption<*>) : Iterable<PatchOption<*>> {
     private val register = buildMap {
         for (option in options) {
@@ -31,9 +34,10 @@ class PatchOptions(vararg val options: PatchOption<*>) : Iterable<PatchOption<*>
      * Please note that using the wrong value type results in a runtime error.
      */
     inline operator fun <reified T> set(key: String, value: T) {
-        @Suppress("UNCHECKED_CAST") val opt = get(key) as? PatchOption<T>
-        if (opt == null || opt.value !is T) throw IllegalArgumentException(
-            "The type of the option value is not the same as the type value provided"
+        @Suppress("UNCHECKED_CAST") val opt = get(key) as PatchOption<T>
+        if (opt.value !is T) throw InvalidTypeException(
+            T::class.java.canonicalName,
+            opt.value?.let { it::class.java.canonicalName } ?: "null"
         )
         opt.value = value
     }
@@ -61,7 +65,7 @@ sealed class PatchOption<T>(
     var value: T? = default
         set(value) {
             if (!validator(value)) {
-                throw IllegalArgumentException("Illegal value: $value")
+                throw IllegalValueException(value)
             }
             field = value
         }
