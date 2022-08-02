@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/revanced/revanced-patcher/compare/v3.0.0...v3.1.0) (2022-08-02)
+
+
+### Features
+
+* validator for patch options ([4e2e772](https://github.com/revanced/revanced-patcher/commit/4e2e77238957d7732326cfe5e05145bf7dab5bfb))
+
 # [3.0.0](https://github.com/revanced/revanced-patcher/compare/v2.9.0...v3.0.0) (2022-08-02)
 
 
