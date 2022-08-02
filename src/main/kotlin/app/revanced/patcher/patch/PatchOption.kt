@@ -1,11 +1,14 @@
-@file:Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
+@file:Suppress("CanBeParameter", "MemberVisibilityCanBePrivate", "UNCHECKED_CAST")
 
 package app.revanced.patcher.patch
+
+import kotlin.reflect.KProperty
 
 class NoSuchOptionException(val option: String) : Exception("No such option: $option")
 class IllegalValueException(val value: Any?) : Exception("Illegal value: $value")
 class InvalidTypeException(val got: String, val expected: String) :
     Exception("Invalid option value type: $got, expected $expected")
+
 class RequirementNotMetException : Exception("null was passed into an option that requires a value")
 
 /**
@@ -81,6 +84,24 @@ sealed class PatchOption<T>(
             }
             field = value
         }
+
+    /**
+     * Gets the value of the option.
+     * Please note that using the wrong value type results in a runtime error.
+     */
+    operator fun <T> getValue(thisRef: Nothing?, property: KProperty<*>) = value as T
+
+    /**
+     * Gets the value of the option.
+     * Please note that using the wrong value type results in a runtime error.
+     */
+    inline operator fun <reified V> setValue(thisRef: Any?, property: KProperty<*>, new: V) {
+        if (value !is V) throw InvalidTypeException(
+            V::class.java.canonicalName,
+            value?.let { it::class.java.canonicalName } ?: "null"
+        )
+        value = new as T
+    }
 
     /**
      * A [PatchOption] representing a [String].

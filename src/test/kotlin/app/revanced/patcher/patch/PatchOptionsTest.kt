@@ -3,6 +3,7 @@ package app.revanced.patcher.patch
 import app.revanced.patcher.usage.bytecode.ExampleBytecodePatch
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import kotlin.test.assertNotEquals
 
 internal class PatchOptionsTest {
     private val options = ExampleBytecodePatch().options
@@ -31,9 +32,18 @@ internal class PatchOptionsTest {
                 }
             }
         }
-        println(options["key1"].value)
+        val option = options["key1"]
+        println(option.value)
         options["key1"] = "Hello, world!"
-        println(options["key1"].value)
+        println(option.value)
+    }
+
+    @Test
+    fun `should return a different value when changed`() {
+        var value: String by options["key1"]
+        val current = value + "" // force a copy
+        value = "Hello, world!"
+        assertNotEquals(current, value)
     }
 
     @Test
