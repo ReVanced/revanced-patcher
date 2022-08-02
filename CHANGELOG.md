@@ -1,3 +1,15 @@
+# [2.9.0](https://github.com/revanced/revanced-patcher/compare/v2.8.0...v2.9.0) (2022-08-02)
+
+
+### Bug Fixes
+
+* show error message instead of `null` ([8d95b14](https://github.com/revanced/revanced-patcher/commit/8d95b14f350b47ec029f35e776f6e627aaf5f607))
+
+
+### Features
+
+* exclusive mutable access to files ([814ce0b](https://github.com/revanced/revanced-patcher/commit/814ce0b9ae29725417c86b7d11b40d025724a426))
+
 # [2.8.0](https://github.com/revanced/revanced-patcher/compare/v2.7.0...v2.8.0) (2022-08-01)
 
 
