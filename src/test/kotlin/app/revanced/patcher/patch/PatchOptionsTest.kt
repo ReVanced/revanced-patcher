@@ -1,13 +1,14 @@
-package app.revanced.patcher.usage
+package app.revanced.patcher.patch
 
-import app.revanced.patcher.patch.PatchOption
 import app.revanced.patcher.usage.bytecode.ExampleBytecodePatch
-import kotlin.test.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
-internal class PatchOptionsUsage {
+internal class PatchOptionsTest {
+    private val options = ExampleBytecodePatch().options
+
     @Test
-    fun patchOptionsUsage() {
-        val options = ExampleBytecodePatch().options
+    fun `should not throw an exception`() {
         for (option in options) {
             when (option) {
                 is PatchOption.StringOption -> {
@@ -33,5 +34,26 @@ internal class PatchOptionsUsage {
         println(options["key1"].value)
         options["key1"] = "Hello, world!"
         println(options["key1"].value)
+    }
+
+    @Test
+    fun `should fail because the option does not exist`() {
+        assertThrows<NoSuchOptionException> {
+            options["this option does not exist"] = 123
+        }
+    }
+
+    @Test
+    fun `should fail because of invalid value type`() {
+        assertThrows<IllegalArgumentException> {
+            options["key1"] = 123
+        }
+    }
+
+    @Test
+    fun `should fail because of an illegal value`() {
+        assertThrows<IllegalArgumentException> {
+            options["key3"] = "this value is not an allowed option"
+        }
     }
 }
