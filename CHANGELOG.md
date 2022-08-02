@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/revanced/revanced-patcher/compare/v2.9.0...v3.0.0) (2022-08-02)
+
+
+### Features
+
+* registry for patch options ([2431785](https://github.com/revanced/revanced-patcher/commit/2431785d0e494d6271c6951eec9adfff9db95c17))
+
+
+### BREAKING CHANGES
+
+* Patch options now use the PatchOptions registry class instead of an Iterable. This change requires modifications to existing patches using this API.
+
 # [2.9.0](https://github.com/revanced/revanced-patcher/compare/v2.8.0...v2.9.0) (2022-08-02)
 
 
