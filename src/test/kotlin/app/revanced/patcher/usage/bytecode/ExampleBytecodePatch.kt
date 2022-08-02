@@ -8,6 +8,7 @@ import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.replaceInstruction
 import app.revanced.patcher.patch.PatchOption
+import app.revanced.patcher.patch.PatchOptions
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.DependencyType
@@ -164,18 +165,18 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         )
     }
 
-    override val options = listOf(
+    override val options = PatchOptions(
         PatchOption.StringOption(
-            "key", "default", "title", "description", true
+            "key1", "default", "title", "description", true
         ),
         PatchOption.BooleanOption(
-            "key", true, "title", "description" // required defaults to false
+            "key2", true, "title", "description" // required defaults to false
         ),
         PatchOption.StringListOption(
-            "key", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
+            "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
         ),
         PatchOption.IntListOption(
-            "key", 1, listOf(1, 2, 3), "title", "description"
+            "key4", 1, listOf(1, 2, 3), "title", "description"
         ),
     )
 }

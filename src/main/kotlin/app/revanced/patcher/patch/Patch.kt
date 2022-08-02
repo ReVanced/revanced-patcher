@@ -21,5 +21,5 @@ abstract class Patch<out T : Data> {
     /**
      * A list of [PatchOption]s.
      */
-    open val options: Iterable<PatchOption<*>> = listOf()
+    open val options = PatchOptions()
 }

@@ -1,5 +1,46 @@
 package app.revanced.patcher.patch
 
+@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
+class NoSuchOptionException(val option: String) : Exception("No such option: $option")
+
+/**
+ * A registry for an array of [PatchOption]s.
+ * @param options An array of [PatchOption]s.
+ */
+@Suppress("MemberVisibilityCanBePrivate")
+class PatchOptions(vararg val options: PatchOption<*>) : Iterable<PatchOption<*>> {
+    private val register = buildMap {
+        for (option in options) {
+            if (containsKey(option.key)) {
+                throw IllegalStateException("Multiple options found with the same key")
+            }
+            put(option.key, option)
+        }
+    }
+
+    /**
+     * Get a [PatchOption] by its key.
+     * @param key The key of the [PatchOption].
+     */
+    operator fun get(key: String) = register[key] ?: throw NoSuchOptionException(key)
+
+    /**
+     * Set the value of a [PatchOption].
+     * @param key The key of the [PatchOption].
+     * @param value The value you want it to be.
+     * Please note that using the wrong value type results in a runtime error.
+     */
+    inline operator fun <reified T> set(key: String, value: T) {
+        @Suppress("UNCHECKED_CAST") val opt = get(key) as? PatchOption<T>
+        if (opt == null || opt.value !is T) throw IllegalArgumentException(
+            "The type of the option value is not the same as the type value provided"
+        )
+        opt.value = value
+    }
+
+    override fun iterator() = options.iterator()
+}
+
 /**
  * A [Patch] option.
  * @param key Unique identifier of the option. Example: _`settings.microg.enabled`_
