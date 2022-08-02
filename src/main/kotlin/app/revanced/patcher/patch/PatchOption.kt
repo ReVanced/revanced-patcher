@@ -55,9 +55,16 @@ sealed class PatchOption<T>(
     default: T?,
     val title: String,
     val description: String,
-    val required: Boolean
+    val required: Boolean,
+    val validator: (T?) -> Boolean
 ) {
     var value: T? = default
+        set(value) {
+            if (!validator(value)) {
+                throw IllegalArgumentException("Illegal value: $value")
+            }
+            field = value
+        }
 
     /**
      * A [PatchOption] representing a [String].
@@ -68,9 +75,10 @@ sealed class PatchOption<T>(
         default: String?,
         title: String,
         description: String,
-        required: Boolean = false
+        required: Boolean = false,
+        validator: (String?) -> Boolean = { true }
     ) : PatchOption<String>(
-        key, default, title, description, required
+        key, default, title, description, required, validator
     )
 
     /**
@@ -82,9 +90,10 @@ sealed class PatchOption<T>(
         default: Boolean?,
         title: String,
         description: String,
-        required: Boolean = false
+        required: Boolean = false,
+        validator: (Boolean?) -> Boolean = { true }
     ) : PatchOption<Boolean>(
-        key, default, title, description, required
+        key, default, title, description, required, validator
     )
 
     /**
@@ -98,9 +107,12 @@ sealed class PatchOption<T>(
         val options: Iterable<E>,
         title: String,
         description: String,
-        required: Boolean = false
+        required: Boolean = false,
+        validator: (E?) -> Boolean = { true }
     ) : PatchOption<E>(
-        key, default, title, description, required
+        key, default, title, description, required, {
+            (it?.let { it in options } ?: true) && validator(it)
+        }
     ) {
         init {
             if (default !in options) {
@@ -119,9 +131,10 @@ sealed class PatchOption<T>(
         options: Iterable<String>,
         title: String,
         description: String,
-        required: Boolean = false
+        required: Boolean = false,
+        validator: (String?) -> Boolean = { true }
     ) : ListOption<String>(
-        key, default, options, title, description, required
+        key, default, options, title, description, required, validator
     )
 
     /**
@@ -134,8 +147,9 @@ sealed class PatchOption<T>(
         options: Iterable<Int>,
         title: String,
         description: String,
-        required: Boolean = false
+        required: Boolean = false,
+        validator: (Int?) -> Boolean = { true }
     ) : ListOption<Int>(
-        key, default, options, title, description, required
+        key, default, options, title, description, required, validator
     )
 }
