@@ -1,7 +1,7 @@
-package app.revanced.patcher.util.patch.implementation
+package app.revanced.patcher.util.patch.impl
 
-import app.revanced.patcher.util.patch.base.PatchBundle
-import app.revanced.patcher.util.patch.util.StringIterator
+import app.revanced.patcher.util.patch.PatchBundle
+import app.revanced.patcher.util.patch.StringIterator
 import org.jf.dexlib2.DexFileFactory
 
 /**

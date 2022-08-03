@@ -1,4 +1,4 @@
-package app.revanced.patcher.util.patch.util
+package app.revanced.patcher.util.patch
 
 internal class StringIterator<T, I : Iterator<T>>(
     private val iterator: I,
