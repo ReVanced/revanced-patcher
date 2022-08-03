@@ -11,7 +11,6 @@ import app.revanced.patcher.patch.PatchOption
 import app.revanced.patcher.patch.PatchOptions
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
-import app.revanced.patcher.patch.annotations.DependencyType
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
 import app.revanced.patcher.patch.impl.BytecodePatch
@@ -39,7 +38,7 @@ import org.jf.dexlib2.util.Preconditions
 @Description("Example demonstration of a bytecode patch.")
 @ExampleResourceCompatibility
 @Version("0.0.1")
-@DependsOn(ExampleBytecodePatch::class, DependencyType.HARD)
+@DependsOn([ExampleBytecodePatch::class])
 class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor

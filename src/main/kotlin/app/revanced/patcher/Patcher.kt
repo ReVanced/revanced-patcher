@@ -262,16 +262,15 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         // recursively apply all dependency patches
-        patch.dependencies.forEach {
-            val dependency = it.patch.java
+        patch.dependencies?.forEach {
+            val patchDependency = it.java
 
-            val result = applyPatch(dependency, appliedPatches)
+            val result = applyPatch(patchDependency, appliedPatches)
+
             if (result.isSuccess()) return@forEach
 
-            val error = result.error()!!
-            val errorMessage = error.cause ?: error.message
-
-            return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
+            val errorMessage = result.error()!!.cause
+            return PatchResultError("'$patchName' depends on '${patchDependency.patchName}' but the following error was raised: $errorMessage")
         }
 
         val patchInstance = patch.getDeclaredConstructor().newInstance()

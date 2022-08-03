@@ -1,3 +1,17 @@
+## [3.3.1](https://github.com/revanced/revanced-patcher/compare/v3.3.0...v3.3.1) (2022-08-03)
+
+
+### Bug Fixes
+
+* revert soft dependencies ([7b2d058](https://github.com/revanced/revanced-patcher/commit/7b2d058144b0718992d329731e2af7cc704e4370))
+
+# [3.3.0](https://github.com/revanced/revanced-patcher/compare/v3.2.1...v3.3.0) (2022-08-02)
+
+
+### Features
+
+* add getValue & setValue for PatchOption ([2572cd0](https://github.com/revanced/revanced-patcher/commit/2572cd04b5da4eeae738c8dde31493177edf0bf8))
+
 ## [3.2.1](https://github.com/revanced/revanced-patcher/compare/v3.2.0...v3.2.1) (2022-08-02)
 
 
