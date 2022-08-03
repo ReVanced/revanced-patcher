@@ -25,10 +25,7 @@ class PatchBundleFormat {
                 deflater.finish()
 
                 val compressedResource = ByteArray(1024)
-                var compressedSize = 0
-                while (!deflater.finished()) {
-                    compressedSize += deflater.deflate(compressedResource)
-                }
+                val compressedSize = deflater.deflate(compressedResource)
 
                 buf.write(compressedSize)
                 buf.write(compressedResource)
@@ -50,11 +47,12 @@ class PatchBundleFormat {
                 for (i in 0 until buf.read()) {
                     val key = buf.readString()
                     val compressedResource = buf.readNBytes(buf.read())
+
                     inflater.setInput(compressedResource)
+
                     val resource = ByteArray(1024)
-                    while (!inflater.finished()) {
-                        inflater.inflate(resource)
-                    }
+                    inflater.inflate(resource)
+
                     put(key, resource)
                 }
             }
