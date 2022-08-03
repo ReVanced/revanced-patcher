@@ -1,21 +1,20 @@
-package app.revanced.patcher.util.patch.impl
+package app.revanced.patcher.util.patch.loader.impl
 
-import app.revanced.patcher.util.patch.PatchBundle
-import app.revanced.patcher.util.patch.StringIterator
+import app.revanced.patcher.util.patch.loader.PatchBundleLoader
 import java.net.URLClassLoader
 import java.util.jar.JarFile
 
 /**
- * A patch bundle of the ReVanced [JarPatchBundle] format.
- * @param patchBundlePath The path to the patch bundle.
+ * A patch bundle of the ReVanced [JarPatchBundleLoader] format.
+ * @param path The path to the patch bundle.
  */
-class JarPatchBundle(patchBundlePath: String) : PatchBundle(patchBundlePath) {
+class JarPatchBundleLoader(path: String) : PatchBundleLoader(path) {
     fun loadPatches() = loadPatches(
         URLClassLoader(
             arrayOf(this.toURI().toURL()),
             Thread.currentThread().contextClassLoader // TODO: find out why this is required
         ),
-        StringIterator(
+        app.revanced.patcher.util.patch.loader.StringIterator(
             JarFile(this)
                 .entries()
                 .toList() // TODO: find a cleaner solution than that to filter non class files
