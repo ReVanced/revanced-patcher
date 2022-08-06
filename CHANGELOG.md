@@ -1,3 +1,10 @@
+## [3.3.2](https://github.com/revanced/revanced-patcher/compare/v3.3.1...v3.3.2) (2022-08-06)
+
+
+### Bug Fixes
+
+* close open files ([#75](https://github.com/revanced/revanced-patcher/issues/75)) ([123ad54](https://github.com/revanced/revanced-patcher/commit/123ad54c150bd04f4b8ef5c65334ea468ceb99cc))
+
 ## [3.3.1](https://github.com/revanced/revanced-patcher/compare/v3.3.0...v3.3.1) (2022-08-03)
 
 
