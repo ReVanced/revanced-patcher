@@ -31,11 +31,12 @@ class PatchBundleFormat {
 
             if (resources.isNotEmpty()) {
                 val deflater = Deflater()
-                for ((key, resource) in resources) {
+                for ((key, type, resource) in resources) {
                     val compressedResource = deflater.compress(resource)
                     val compressedSize = compressedResource.size
 
                     buf.writeString(key)
+                    buf.write(type.id)
                     buf.write(compressedSize)
                     buf.write(compressedResource)
                 }
@@ -56,19 +57,20 @@ class PatchBundleFormat {
 
             val resources = if (buf.available() > 0) {
                 val inflater = Inflater()
-                val map = buildMap {
+                val list = buildList {
                     for (i in 0 until buf.readChecked()) {
                         val key = buf.readString()
+                        val type = PatchResourceType[buf.readChecked(PatchResourceType::isValid)]
                         val compressedSize = buf.readChecked { it > 0 }
                         val compressedResource = buf.readNBytesAssert(compressedSize)
                         val resource = inflater.decompress(compressedResource)
 
-                        put(key, resource)
+                        add(PatchResource(key, type, resource))
                     }
                 }
                 inflater.end()
-                map
-            } else emptyMap()
+                list
+            } else listOf()
 
             return PatchBundle(
                 PatchBundle.Metadata(name, version, authors),

@@ -1,10 +1,10 @@
 package app.revanced.patcher.util.patch.bundle
 
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 internal class PatchBundleFormatTest {
@@ -31,15 +31,19 @@ internal class PatchBundleFormatTest {
 
     @Test
     fun serializeWithResources() {
-        val resourceName = "test.txt"
-        val testResource = resource(resourceName)
+        val (resourceName, resourceType) = "test.txt" to PatchResourceType.RESOURCE
+        val testResource = resource(resourceName, resourceType)
         val serialized = PatchBundleFormat.serialize(metadata, listOf(testResource))
         val deserialized = PatchBundleFormat.deserialize(serialized)
         deserialized.resources.size.let { size ->
             assertTrue(size == 1, "Expected to find 1 resource, but found $size instead")
         }
-        assertDoesNotThrow { deserialized.resources[resourceName].close() }
-        assertContentEquals(testResource.data, deserialized.resources[resourceName].readAllBytes())
+        assertNotNull(deserialized.resources[resourceName])
+        deserialized.resources[resourceName]!!.let { resource ->
+            assertEquals(resourceName, resource.key)
+            assertEquals(resourceType, resource.type)
+        }
+        assertContentEquals(testResource.data, deserialized.resources.streamOf(resourceName)!!.readAllBytes())
     }
 
     @Test
@@ -55,8 +59,9 @@ internal class PatchBundleFormatTest {
     }
 
     private companion object {
-        fun resource(name: String) = PatchResource(
+        fun resource(name: String, type: PatchResourceType) = PatchResource(
             name,
+            type,
             PatchBundleFormatTest::class.java
                 .getResourceAsStream("/$name")?.readAllBytes()
                 ?: throw IllegalStateException("Missing test resource")
