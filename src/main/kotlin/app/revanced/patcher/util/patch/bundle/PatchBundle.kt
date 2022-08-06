@@ -14,10 +14,16 @@ data class PatchBundle(val metadata: Metadata, val resources: PatchResourceConta
 }
 
 class PatchBundleFormat {
+    @Suppress("MemberVisibilityCanBePrivate")
     companion object {
+        val MAGIC = byteArrayOf(0x72, 0x76) // "rv"
+        private val MAGIC_LEN = MAGIC.size
+
         @JvmStatic
         fun serialize(metadata: PatchBundle.Metadata, resources: List<PatchResource>): ByteArray {
             val buf = ByteArrayOutputStream()
+            buf.writeBytes(MAGIC)
+
             buf.writeString(metadata.name)
             buf.writeString(metadata.version)
             buf.writeString(metadata.authors)
@@ -42,6 +48,8 @@ class PatchBundleFormat {
         @JvmStatic
         fun deserialize(bytes: ByteArray): PatchBundle {
             val buf = ByteArrayInputStream(bytes)
+            buf.readNBytesAssert(MAGIC_LEN) { it.contentEquals(MAGIC) }
+
             val name = buf.readString()
             val version = buf.readString()
             val authors = buf.readString()
@@ -49,10 +57,10 @@ class PatchBundleFormat {
             val resources = if (buf.available() > 0) {
                 val inflater = Inflater()
                 val map = buildMap {
-                    for (i in 0 until buf.read()) {
+                    for (i in 0 until buf.readChecked()) {
                         val key = buf.readString()
-                        val compressedSize = buf.readChecked()
-                        val compressedResource = buf.readNBytes(compressedSize)
+                        val compressedSize = buf.readChecked { it > 0 }
+                        val compressedResource = buf.readNBytesAssert(compressedSize)
                         val resource = inflater.decompress(compressedResource)
 
                         put(key, resource)
@@ -63,7 +71,8 @@ class PatchBundleFormat {
             } else emptyMap()
 
             return PatchBundle(
-                PatchBundle.Metadata(name, version, authors), PatchResourceContainer(resources)
+                PatchBundle.Metadata(name, version, authors),
+                PatchResourceContainer(resources)
             )
         }
     }
