@@ -2,34 +2,34 @@ package app.revanced.patcher.util.patch.bundle
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.util.zip.Deflater
 import java.util.zip.Inflater
+
+data class PatchBundle(val metadata: Metadata, val resources: PatchResourceContainer) {
+    data class Metadata(
+        val name: String,
+        val version: String,
+        val authors: String
+    )
+}
 
 class PatchBundleFormat {
     companion object {
         @JvmStatic
-        fun serialize(bundle: PatchBundle.Metadata, resources: Map<String, ByteArray>): ByteArray {
+        fun serialize(metadata: PatchBundle.Metadata, resources: List<PatchResource>): ByteArray {
             val buf = ByteArrayOutputStream()
-            buf.writeString(bundle.name)
-            buf.writeString(bundle.version)
-            buf.writeString(bundle.authors)
+            buf.writeString(metadata.name)
+            buf.writeString(metadata.version)
+            buf.writeString(metadata.authors)
             buf.write(resources.size)
 
             if (resources.isNotEmpty()) {
                 val deflater = Deflater()
                 for ((key, resource) in resources) {
-                    if (resource.isEmpty()) continue
-                    val size = resource.size
+                    val compressedResource = deflater.compress(resource)
+                    val compressedSize = compressedResource.size
+
                     buf.writeString(key)
-
-                    deflater.setInput(resource)
-                    deflater.finish()
-
-                    val compressedResource = ByteArray(size)
-                    val compressedSize = deflater.deflate(compressedResource)
-
-                    buf.write(size)
                     buf.write(compressedSize)
                     buf.write(compressedResource)
                 }
@@ -51,13 +51,9 @@ class PatchBundleFormat {
                 val map = buildMap {
                     for (i in 0 until buf.read()) {
                         val key = buf.readString()
-                        val size = buf.read().also(::checkSize)
-
-                        val compressedResource = buf.readNBytes(buf.read().also(::checkSize))
-                        inflater.setInput(compressedResource)
-
-                        val resource = ByteArray(size)
-                        inflater.inflate(resource)
+                        val compressedSize = buf.readChecked()
+                        val compressedResource = buf.readNBytes(compressedSize)
+                        val resource = inflater.decompress(compressedResource)
 
                         put(key, resource)
                     }
@@ -66,41 +62,9 @@ class PatchBundleFormat {
                 map
             } else emptyMap()
 
-            return PatchBundle(PatchBundle.Metadata(name, version, authors), PatchResourceContainer(resources))
+            return PatchBundle(
+                PatchBundle.Metadata(name, version, authors), PatchResourceContainer(resources)
+            )
         }
     }
 }
-
-fun checkSize(size: Int) {
-    if (size > Int.MAX_VALUE) throw IllegalStateException("Resource size is stupidly high, malicious bundle?")
-    if (size < 1) throw IllegalStateException("Malformed resource size")
-}
-
-data class PatchBundle(
-    val metadata: Metadata,
-    val resources: PatchResourceContainer
-) {
-    data class Metadata(
-        val name: String,
-        val version: String,
-        val authors: String
-    )
-}
-
-@Suppress("ArrayInDataClass")
-data class PatchResource(val key: String, val data: ByteArray)
-
-class PatchResourceContainer(private val resources: Map<String, ByteArray>) : Iterable<PatchResource> {
-    private val cachedResources = resources.map { PatchResource(it.key, it.value) }
-
-    val size = resources.size
-    fun get(path: String): InputStream = resources[path]!!.inputStream()
-    override fun iterator() = cachedResources.iterator()
-}
-
-fun ByteArrayOutputStream.writeString(str: String) {
-    write(str.length)
-    write(str.toByteArray())
-}
-
-fun ByteArrayInputStream.readString() = String(readNBytes(read()))
