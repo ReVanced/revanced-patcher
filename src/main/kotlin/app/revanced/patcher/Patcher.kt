@@ -183,7 +183,6 @@ class Patcher(private val options: PatcherOptions) {
                     resources.setSparseResources(metaInfo.sparseResources)
                 }
 
-
                 val manifestFile = cacheDirectory.resolve("AndroidManifest.xml")
 
                 ResXmlPatcher.fixingPublicAttrsInProviderAttributes(manifestFile)
