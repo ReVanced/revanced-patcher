@@ -4,31 +4,26 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
-internal fun Deflater.compress(bytesIn: ByteArray): ByteArray {
-    reset()
-    setInput(bytesIn)
-    finish()
-    val bytesOut = ByteArrayOutputStream(bytesIn.size).use { stream ->
+private fun deinflate(size: Int, finished: () -> Boolean, call: (ByteArray) -> Int): ByteArray {
+    return ByteArrayOutputStream(size).use { stream ->
         val buffer = ByteArray(1024)
         while (!finished()) {
-            val count = deflate(buffer)
+            val count = call(buffer)
             stream.write(buffer, 0, count)
         }
         stream.toByteArray()
     }
-    return bytesOut
+}
+
+internal fun Deflater.compress(bytesIn: ByteArray): ByteArray {
+    reset()
+    setInput(bytesIn)
+    finish()
+    return deinflate(bytesIn.size, ::finished, ::deflate)
 }
 
 internal fun Inflater.decompress(bytesIn: ByteArray): ByteArray {
     reset()
     setInput(bytesIn)
-    val bytesOut = ByteArrayOutputStream(bytesIn.size).use { stream ->
-        val buffer = ByteArray(1024)
-        while (!finished()) {
-            val count = inflate(buffer)
-            stream.write(buffer, 0, count)
-        }
-        stream.toByteArray()
-    }
-    return bytesOut
+    return deinflate(bytesIn.size, ::finished, ::inflate)
 }
