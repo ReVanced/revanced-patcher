@@ -1,21 +1,22 @@
 plugins {
     kotlin("jvm") version "1.7.0"
-    java
     `maven-publish`
 }
 
 group = "app.revanced"
 
-val githubUsername: String = project.findProperty("gpr.user") as? String ?: System.getenv("GITHUB_ACTOR")
-val githubPassword: String = project.findProperty("gpr.key") as? String ?: System.getenv("GITHUB_TOKEN")
+allprojects {
+    val githubUsername: String = project.findProperty("gpr.user") as? String ?: System.getenv("GITHUB_ACTOR")
+    val githubPassword: String = project.findProperty("gpr.key") as? String ?: System.getenv("GITHUB_TOKEN")
 
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://maven.pkg.github.com/revanced/multidexlib2")
-        credentials {
-            username = githubUsername
-            password = githubPassword
+    repositories {
+        mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/revanced/multidexlib2")
+            credentials {
+                username = githubUsername
+                password = githubPassword
+            }
         }
     }
 }
