@@ -1,5 +1,6 @@
 package app.revanced.patcher.util.patch.bundle
 
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.*
 
@@ -19,55 +20,60 @@ object PatchBundleFormat {
 
     @JvmStatic
     fun serialize(metadata: PatchBundle.Metadata, resources: List<PatchResource>): ByteArray {
-        return ByteArrayOutputStream().use { buf ->
-            ZipOutputStream(buf).use { zip ->
-                zip.setComment(Header.write(metadata))
+        val buf = ByteArrayOutputStream()
+        buf.writeBytes(MAGIC)
 
-                for (resource in resources) {
-                    zip.putNextEntry(ZipEntry(resource.key).apply {
-                        extra = byteArrayOf(resource.type.id)
-                    })
-                    zip.write(resource.data)
-                    zip.closeEntry()
-                }
+        buf.writeString(metadata.name)
+        buf.writeString(metadata.version)
+        buf.writeString(metadata.authors)
+        buf.write(resources.size)
+
+        if (resources.isNotEmpty()) {
+            val deflater = Deflater()
+            for ((key, type, resource) in resources) {
+                val compressedResource = deflater.compress(resource)
+                val compressedSize = compressedResource.size
+
+                buf.writeString(key)
+                buf.write(type.id)
+                buf.write(compressedSize)
+                buf.write(compressedResource)
             }
-            buf.toByteArray()
+            deflater.end()
         }
+
+        return buf.toByteArray()
     }
 
     @JvmStatic
-    // FIXME: to the one who wants to fix this, don't use a File.
-    //  This implementation must be done in memory.
-    //  Won't merge it otherwise.
     fun deserialize(bytes: ByteArray): PatchBundle {
+        val buf = ByteArrayInputStream(bytes)
+        buf.readNBytesAssert(MAGIC_LEN) { it.contentEquals(MAGIC) }
+
+        val name = buf.readString()
+        val version = buf.readString()
+        val authors = buf.readString()
+
+        val resources = if (buf.available() > 0) {
+            val inflater = Inflater()
+            val list = buildList {
+                for (i in 0 until buf.readChecked()) {
+                    val key = buf.readString()
+                    val type = PatchResourceType[buf.readChecked(PatchResourceType::isValid)]
+                    val compressedSize = buf.readChecked { it > 0 }
+                    val compressedResource = buf.readNBytesAssert(compressedSize)
+                    val resource = inflater.decompress(compressedResource)
+
+                    add(PatchResource(key, type, resource))
+                }
+            }
+            inflater.end()
+            list
+        } else listOf()
+
         return PatchBundle(
             PatchBundle.Metadata(name, version, authors),
             PatchResourceContainer(resources)
         )
-    }
-
-    private object Header {
-        @JvmStatic
-        fun write(metadata: PatchBundle.Metadata): String =
-            ByteArrayOutputStream(MAGIC_LEN + metadata.size).use { buf ->
-                buf.writeBytes(MAGIC)
-                buf.writeString(metadata.name)
-                buf.writeString(metadata.version)
-                buf.writeString(metadata.authors)
-
-                buf.toString(Charsets.UTF_8)
-            }
-
-        @JvmStatic
-        fun read(s: String): PatchBundle.Metadata =
-            s.byteInputStream(Charsets.UTF_8).use { buf ->
-                buf.readNBytesAssert(MAGIC_LEN) { it.contentEquals(MAGIC) }
-
-                val name = buf.readString()
-                val version = buf.readString()
-                val authors = buf.readString()
-
-                PatchBundle.Metadata(name, version, authors)
-            }
     }
 }

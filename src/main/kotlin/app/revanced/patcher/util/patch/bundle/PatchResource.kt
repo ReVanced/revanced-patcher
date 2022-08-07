@@ -27,15 +27,15 @@ data class PatchResource(val key: String, val type: PatchResourceType, val data:
     }
 }
 
-enum class PatchResourceType(val id: Byte) {
+enum class PatchResourceType(val id: Int) {
     RESOURCE(0x1),
     JAR(0x2),
     DEX(0x2);
 
     companion object {
-        fun isValid(id: Byte) = values().any { it.id == id }
+        fun isValid(id: Int) = values().any { it.id == id }
 
-        operator fun get(id: Byte) = values().first { it.id == id }
+        operator fun get(id: Int) = values().first { it.id == id }
     }
 }
 
