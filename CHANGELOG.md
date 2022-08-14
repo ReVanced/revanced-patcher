@@ -1,3 +1,10 @@
+## [3.3.3](https://github.com/revanced/revanced-patcher/compare/v3.3.2...v3.3.3) (2022-08-14)
+
+
+### Bug Fixes
+
+* show error message if cause is null ([f9da2ad](https://github.com/revanced/revanced-patcher/commit/f9da2ad531644617ad5a2cc6a1819d530e18ba22))
+
 ## [3.3.2](https://github.com/revanced/revanced-patcher/compare/v3.3.1...v3.3.2) (2022-08-06)
 
 
