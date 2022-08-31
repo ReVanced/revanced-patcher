@@ -22,10 +22,10 @@ import org.jf.dexlib2.iface.Method
  * A `null` opcode is equals to an unknown opcode.
  */
 abstract class MethodFingerprint(
-    internal val returnType: String?,
-    internal val access: Int?,
-    internal val parameters: Iterable<String>?,
-    internal val opcodes: Iterable<Opcode?>?,
+    internal val returnType: String? = null,
+    internal val access: Int? = null,
+    internal val parameters: Iterable<String>? = null,
+    internal val opcodes: Iterable<Opcode?>? = null,
     internal val strings: Iterable<String>? = null,
     internal val customFingerprint: ((methodDef: Method) -> Boolean)? = null
 ) : Fingerprint {
