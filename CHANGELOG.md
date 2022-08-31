@@ -1,3 +1,10 @@
+# [3.4.0](https://github.com/revanced/revanced-patcher/compare/v3.3.3...v3.4.0) (2022-08-31)
+
+
+### Features
+
+* nullable parameters ([7882a8d](https://github.com/revanced/revanced-patcher/commit/7882a8d928cad8de8cfea711947fc02659549d20))
+
 ## [3.3.3](https://github.com/revanced/revanced-patcher/compare/v3.3.2...v3.3.3) (2022-08-14)
 
 
