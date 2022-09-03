@@ -36,3 +36,15 @@ annotation class Description(
 annotation class Version(
     val version: String,
 )
+
+/**
+ * Annotation to categorize a [Patch] or [MethodFingerprint].
+ * @param tags The category of a [Patch] or [MethodFingerprint].
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class Tags(
+    val tags: Array<String>,
+)
+
