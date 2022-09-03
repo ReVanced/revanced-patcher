@@ -1,3 +1,10 @@
+## [3.4.1](https://github.com/revanced/revanced-patcher/compare/v3.4.0...v3.4.1) (2022-09-03)
+
+
+### Bug Fixes
+
+* remove default param from Package.versions ([4b81318](https://github.com/revanced/revanced-patcher/commit/4b813187107e85dc267dbc2d353884b2cc671cc4))
+
 # [3.4.0](https://github.com/revanced/revanced-patcher/compare/v3.3.3...v3.4.0) (2022-08-31)
 
 
