@@ -24,5 +24,5 @@ annotation class Compatibility(
 @MustBeDocumented
 annotation class Package(
     val name: String,
-    val versions: Array<String>,
+    val versions: Array<String> = [],
 )
