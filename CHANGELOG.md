@@ -1,3 +1,10 @@
+# [3.5.0](https://github.com/revanced/revanced-patcher/compare/v3.4.1...v3.5.0) (2022-09-05)
+
+
+### Features
+
+* default value for `Package.versions` annotation parameter ([131dedd](https://github.com/revanced/revanced-patcher/commit/131dedd4b021fe1c3b0be49ccba4764b325770ea))
+
 ## [3.4.1](https://github.com/revanced/revanced-patcher/compare/v3.4.0...v3.4.1) (2022-09-03)
 
 
