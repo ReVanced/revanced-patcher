@@ -196,7 +196,7 @@ sealed class PatchOption<T>(
      * A [PatchOption] representing a [Path].
      * @see PatchOption
      */
-    sealed class PathOption(
+    open class PathOption(
         key: String,
         default: Path?,
         title: String,
