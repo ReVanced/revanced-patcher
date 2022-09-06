@@ -3,6 +3,7 @@ package app.revanced.patcher.patch
 import app.revanced.patcher.usage.bytecode.ExampleBytecodePatch
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.io.File
 import kotlin.test.assertNotEquals
 
 internal class PatchOptionsTest {
@@ -29,6 +30,9 @@ internal class PatchOptionsTest {
                     for (choice in option.options) {
                         println(choice)
                     }
+                }
+                is PatchOption.PathOption -> {
+                    option.value = File("test.txt").toPath()
                 }
             }
         }
