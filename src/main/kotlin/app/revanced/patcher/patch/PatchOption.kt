@@ -2,6 +2,7 @@
 
 package app.revanced.patcher.patch
 
+import java.nio.file.Path
 import kotlin.reflect.KProperty
 
 class NoSuchOptionException(val option: String) : Exception("No such option: $option")
@@ -188,5 +189,20 @@ sealed class PatchOption<T>(
         validator: (Int?) -> Boolean = { true }
     ) : ListOption<Int>(
         key, default, options, title, description, required, validator
+    )
+
+    /**
+     * A [PatchOption] representing a [Path].
+     * @see PatchOption
+     */
+    class PathOption<T: Path>(
+        key: String,
+        default: T?,
+        title: String,
+        description: String,
+        required: Boolean = false,
+        validator: (T?) -> Boolean = { true }
+    ) : PatchOption<T>(
+        key, default, title, description, required, validator
     )
 }
