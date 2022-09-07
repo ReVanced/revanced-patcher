@@ -5,7 +5,10 @@ import app.revanced.patcher.data.Data
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.patch.OptionsContainer
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchOptions
 import kotlin.reflect.KClass
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 
 /**
@@ -42,9 +45,12 @@ object PatchExtensions {
     val Class<out Patch<Data>>.description get() = recursiveAnnotation(Description::class)?.description
     val Class<out Patch<Data>>.dependencies get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.DependsOn::class)?.dependencies
     val Class<out Patch<Data>>.compatiblePackages get() = recursiveAnnotation(Compatibility::class)?.compatiblePackages
-    val Class<out Patch<Data>>.options
-        get() = kotlin.companionObjectInstance?.let {
-            (it as? OptionsContainer)?.options
+    val Class<out Patch<Data>>.options: PatchOptions?
+        get() = kotlin.companionObject?.let { cl ->
+            if (cl.visibility != KVisibility.PUBLIC) return null
+            kotlin.companionObjectInstance?.let {
+                (it as? OptionsContainer)?.options
+            }
         }
     val Class<out Patch<Data>>.deprecated: Pair<String, KClass<out Patch<Data>>?>?
         get() = recursiveAnnotation(PatchDeprecated::class)?.let {
