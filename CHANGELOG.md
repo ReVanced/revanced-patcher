@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/revanced/revanced-patcher/compare/v4.0.0...v4.1.0) (2022-09-07)
+
+
+### Features
+
+* deprecation for patches ([80c2e80](https://github.com/revanced/revanced-patcher/commit/80c2e809251cdb04d2dd3b3bfdbb8844bdfa31fa))
+
 # [4.0.0](https://github.com/revanced/revanced-patcher/compare/v3.5.1...v4.0.0) (2022-09-07)
 
 
