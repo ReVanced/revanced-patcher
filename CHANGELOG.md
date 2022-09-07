@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/revanced/revanced-patcher/compare/v3.5.1...v4.0.0) (2022-09-07)
+
+
+### Code Refactoring
+
+* Improve Patch Options ([6b909c1](https://github.com/revanced/revanced-patcher/commit/6b909c1ee6b8c2ea08bbca059df755e2e5f31656))
+
+
+### BREAKING CHANGES
+
+* Options has been moved from Patch to a new interface called OptionsContainer and are now handled entirely different. Make sure to check the examples to understand how it works.
+
 ## [3.5.1](https://github.com/revanced/revanced-patcher/compare/v3.5.0...v3.5.1) (2022-09-06)
 
 
