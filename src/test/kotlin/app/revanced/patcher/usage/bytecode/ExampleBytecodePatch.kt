@@ -181,12 +181,12 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
                 "key2", true, "title", "description" // required defaults to false
             )
         )
-        private var key3: List<String> by option(
+        private var key3: String by option(
             PatchOption.StringListOption(
                 "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
             )
         )
-        private var key4: List<Int> by option(
+        private var key4: Int by option(
             PatchOption.IntListOption(
                 "key4", 1, listOf(1, 2, 3), "title", "description"
             )
