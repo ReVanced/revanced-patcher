@@ -18,13 +18,17 @@ object RequirementNotMetException : Exception("null was passed into an option th
  * @param options An array of [PatchOption]s.
  */
 class PatchOptions(vararg val options: PatchOption<*>) : Iterable<PatchOption<*>> {
-    private val register = buildMap {
-        for (option in options) {
-            if (containsKey(option.key)) {
-                throw IllegalStateException("Multiple options found with the same key")
-            }
-            put(option.key, option)
+    private val register = mutableMapOf<String, PatchOption<*>>()
+
+    init {
+        options.forEach { register(it) }
+    }
+
+    internal fun register(option: PatchOption<*>) {
+        if (register.containsKey(option.key)) {
+            throw IllegalStateException("Multiple options found with the same key")
         }
+        register[option.key] = option
     }
 
     /**
@@ -91,7 +95,7 @@ sealed class PatchOption<T>(
      * Gets the value of the option.
      * Please note that using the wrong value type results in a runtime error.
      */
-    operator fun <T> getValue(thisRef: Nothing?, property: KProperty<*>) = value as T
+    operator fun <T> getValue(thisRef: Any?, property: KProperty<*>) = value as T
 
     /**
      * Gets the value of the option.

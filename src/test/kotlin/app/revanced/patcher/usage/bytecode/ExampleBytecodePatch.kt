@@ -7,8 +7,8 @@ import app.revanced.patcher.data.impl.BytecodeData
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.patch.OptionsContainer
 import app.revanced.patcher.patch.PatchOption
-import app.revanced.patcher.patch.PatchOptions
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.DependsOn
@@ -33,6 +33,7 @@ import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
 import java.io.File
+import java.nio.file.Path
 
 @Patch
 @Name("example-bytecode-patch")
@@ -46,6 +47,10 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
     override fun execute(data: BytecodeData): PatchResult {
         // Get the resolved method by its fingerprint from the resolver cache
         val result = ExampleFingerprint.result!!
+
+        // Patch options
+        println(key1)
+        key2 = false
 
         // Get the implementation for the resolved method
         val method = result.mutableMethod
@@ -165,21 +170,31 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         )
     }
 
-    override val options = PatchOptions(
-        PatchOption.StringOption(
-            "key1", "default", "title", "description", true
-        ),
-        PatchOption.BooleanOption(
-            "key2", true, "title", "description" // required defaults to false
-        ),
-        PatchOption.StringListOption(
-            "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
-        ),
-        PatchOption.IntListOption(
-            "key4", 1, listOf(1, 2, 3), "title", "description"
-        ),
-        PatchOption.PathOption(
-            "key5", File("test.txt").toPath(), "title", "description"
-        ),
-    )
+    companion object : OptionsContainer() {
+        private var key1: String by option(
+            PatchOption.StringOption(
+                "key1", "default", "title", "description", true
+            )
+        )
+        private var key2: Boolean by option(
+            PatchOption.BooleanOption(
+                "key2", true, "title", "description" // required defaults to false
+            )
+        )
+        private var key3: List<String> by option(
+            PatchOption.StringListOption(
+                "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
+            )
+        )
+        private var key4: List<Int> by option(
+            PatchOption.IntListOption(
+                "key4", 1, listOf(1, 2, 3), "title", "description"
+            )
+        )
+        private var key5: Path by option(
+            PatchOption.PathOption(
+                "key5", File("test.txt").toPath(), "title", "description"
+            )
+        )
+    }
 }

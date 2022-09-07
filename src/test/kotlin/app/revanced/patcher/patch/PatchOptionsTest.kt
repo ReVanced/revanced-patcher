@@ -7,7 +7,7 @@ import java.io.File
 import kotlin.test.assertNotEquals
 
 internal class PatchOptionsTest {
-    private val options = ExampleBytecodePatch().options
+    private val options = ExampleBytecodePatch.options
 
     @Test
     fun `should not throw an exception`() {
@@ -16,21 +16,25 @@ internal class PatchOptionsTest {
                 is PatchOption.StringOption -> {
                     option.value = "Hello World"
                 }
+
                 is PatchOption.BooleanOption -> {
                     option.value = false
                 }
+
                 is PatchOption.StringListOption -> {
                     option.value = option.options.first()
                     for (choice in option.options) {
                         println(choice)
                     }
                 }
+
                 is PatchOption.IntListOption -> {
                     option.value = option.options.first()
                     for (choice in option.options) {
                         println(choice)
                     }
                 }
+
                 is PatchOption.PathOption -> {
                     option.value = File("test.txt").toPath()
                 }

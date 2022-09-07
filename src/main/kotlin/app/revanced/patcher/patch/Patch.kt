@@ -17,9 +17,18 @@ abstract class Patch<out T : Data> {
      * The main function of the [Patch] which the patcher will call.
      */
     abstract fun execute(data: @UnsafeVariance T): PatchResult
+}
 
+abstract class OptionsContainer {
     /**
      * A list of [PatchOption]s.
+     * @see PatchOptions
      */
-    open val options = PatchOptions()
+    @Suppress("MemberVisibilityCanBePrivate")
+    val options = PatchOptions()
+
+    protected fun option(opt: PatchOption<*>): PatchOption<*> {
+        options.register(opt)
+        return opt
+    }
 }
