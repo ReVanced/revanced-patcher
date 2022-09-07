@@ -1,3 +1,17 @@
+## [3.5.1](https://github.com/revanced/revanced-patcher/compare/v3.5.0...v3.5.1) (2022-09-06)
+
+
+### Bug Fixes
+
+* add tests for PathOption ([d6308e1](https://github.com/revanced/revanced-patcher/commit/d6308e126c6217b098192c51b6e98bc85a8656bd))
+* PathOption should be open, not sealed ([a562e47](https://github.com/revanced/revanced-patcher/commit/a562e476c085841efbc7ee98b01d8e6bb18ed757))
+* typo in ListOption ([3921648](https://github.com/revanced/revanced-patcher/commit/392164862c83d6e76b2a2113d6f6d59fef0020d1))
+
+
+### Performance Improvements
+
+* make exception an object ([75d2be8](https://github.com/revanced/revanced-patcher/commit/75d2be88037c9cf5436ab69d92abea575409a865))
+
 # [3.5.0](https://github.com/revanced/revanced-patcher/compare/v3.4.1...v3.5.0) (2022-09-05)
 
 
