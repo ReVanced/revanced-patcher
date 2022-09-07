@@ -158,7 +158,7 @@ sealed class PatchOption<T>(
         }
     ) {
         init {
-            if (default !in options) {
+            if (default != null && default !in options) {
                 throw IllegalStateException("Default option must be an allowed option")
             }
         }
