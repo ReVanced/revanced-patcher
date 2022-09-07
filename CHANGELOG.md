@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/revanced/revanced-patcher/compare/v4.1.0...v4.1.1) (2022-09-07)
+
+
+### Bug Fixes
+
+* handle private companion objects ([ad3d332](https://github.com/revanced/revanced-patcher/commit/ad3d332e27d07e9d074bbaaf51af7eb2f9bfc7d5))
+
 # [4.1.0](https://github.com/revanced/revanced-patcher/compare/v4.0.0...v4.1.0) (2022-09-07)
 
 
