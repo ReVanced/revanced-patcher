@@ -26,6 +26,7 @@ dependencies {
     implementation("app.revanced:multidexlib2:2.5.2.r2")
     implementation("org.apktool:apktool-lib:2.7.0-SNAPSHOT")
 
+    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
 }
 
