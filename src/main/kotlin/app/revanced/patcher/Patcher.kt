@@ -4,6 +4,7 @@ import app.revanced.patcher.data.Data
 import app.revanced.patcher.data.PackageMetadata
 import app.revanced.patcher.data.impl.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
+import app.revanced.patcher.extensions.PatchExtensions.deprecated
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.utils.MethodFingerprintUtils.resolve
@@ -287,6 +288,10 @@ class Patcher(private val options: PatcherOptions) {
         val isResourcePatch = patchInstance is ResourcePatch
         if (!options.patchResources && isResourcePatch) {
             return PatchResultError("'$patchName' is a resource patch, but resource patching is disabled")
+        }
+
+        patch.deprecated?.let { (reason, replacement) ->
+            logger.warn("'$patchName' is deprecated: '$reason'" + if (replacement != null) ". Use '$replacement' instead." else "")
         }
 
         // TODO: find a solution for this

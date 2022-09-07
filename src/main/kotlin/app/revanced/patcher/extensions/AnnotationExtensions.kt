@@ -1,9 +1,6 @@
 package app.revanced.patcher.extensions
 
-import app.revanced.patcher.annotation.Compatibility
-import app.revanced.patcher.annotation.Description
-import app.revanced.patcher.annotation.Name
-import app.revanced.patcher.annotation.Version
+import app.revanced.patcher.annotation.*
 import app.revanced.patcher.data.Data
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.patch.OptionsContainer
@@ -45,9 +42,16 @@ object PatchExtensions {
     val Class<out Patch<Data>>.description get() = recursiveAnnotation(Description::class)?.description
     val Class<out Patch<Data>>.dependencies get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.DependsOn::class)?.dependencies
     val Class<out Patch<Data>>.compatiblePackages get() = recursiveAnnotation(Compatibility::class)?.compatiblePackages
-    val Class<out Patch<Data>>.options get() = kotlin.companionObjectInstance?.let {
-        (it as? OptionsContainer)?.options
-    }
+    val Class<out Patch<Data>>.options
+        get() = kotlin.companionObjectInstance?.let {
+            (it as? OptionsContainer)?.options
+        }
+    val Class<out Patch<Data>>.deprecated: Pair<String, KClass<out Patch<Data>>?>?
+        get() = recursiveAnnotation(PatchDeprecated::class)?.let {
+            it.reason to it.replacement.let { cl ->
+                if (cl == Patch::class) null else cl
+            }
+        }
 
     @JvmStatic
     fun Class<out Patch<Data>>.dependsOn(patch: Class<out Patch<Data>>): Boolean {
