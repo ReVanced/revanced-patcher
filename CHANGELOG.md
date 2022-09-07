@@ -1,3 +1,10 @@
+## [4.1.3](https://github.com/revanced/revanced-patcher/compare/v4.1.2...v4.1.3) (2022-09-07)
+
+
+### Bug Fixes
+
+* only run list option check if not null ([4055939](https://github.com/revanced/revanced-patcher/commit/4055939c089e3c396c308c980215d93a1dea5954))
+
 ## [4.1.2](https://github.com/revanced/revanced-patcher/compare/v4.1.1...v4.1.2) (2022-09-07)
 
 
