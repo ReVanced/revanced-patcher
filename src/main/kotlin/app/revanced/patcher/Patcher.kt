@@ -39,7 +39,6 @@ import java.io.File
 import java.nio.file.Files
 
 private val NAMER = BasicDexFileNamer()
-private val VERSION = VersionReader.read()
 
 /**
  * The ReVanced Patcher.
@@ -50,6 +49,11 @@ class Patcher(private val options: PatcherOptions) {
     private val opcodes: Opcodes
 
     val data: PatcherData
+
+    companion object {
+        @JvmStatic
+        val version = VersionReader.read()
+    }
 
     init {
         val extInputFile = ExtFile(options.inputFile)
@@ -249,9 +253,9 @@ class Patcher(private val options: PatcherOptions) {
     fun addPatches(patches: Iterable<Class<out Patch<Data>>>) {
         for (patch in patches) {
             val needsVersion = patch.sincePatcherVersion
-            if (needsVersion != null && needsVersion > VERSION) {
+            if (needsVersion != null && needsVersion > version) {
                 logger.error("Patch '${patch.patchName}' requires Patcher version $needsVersion or higher")
-                logger.error("Current Patcher version is $VERSION")
+                logger.error("Current Patcher version is $version")
                 logger.warn("Skipping '${patch.patchName}'!")
                 continue // TODO: continue or halt/throw?
             }
