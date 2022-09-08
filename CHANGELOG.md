@@ -1,3 +1,10 @@
+## [4.2.1](https://github.com/revanced/revanced-patcher/compare/v4.2.0...v4.2.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* make patcher version public ([76c45dd](https://github.com/revanced/revanced-patcher/commit/76c45dd7c1ffdca57e30ae7109c9fe0e5768f877))
+
 # [4.2.0](https://github.com/revanced/revanced-patcher/compare/v4.1.5...v4.2.0) (2022-09-08)
 
 
