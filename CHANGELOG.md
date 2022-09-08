@@ -1,3 +1,10 @@
+## [4.2.2](https://github.com/revanced/revanced-patcher/compare/v4.2.1...v4.2.2) (2022-09-08)
+
+
+### Bug Fixes
+
+* invalid type propagation in options ([b873228](https://github.com/revanced/revanced-patcher/commit/b873228ef0a9e6e431a4278c979caa5fcc508e0d)), closes [#98](https://github.com/revanced/revanced-patcher/issues/98)
+
 ## [4.2.1](https://github.com/revanced/revanced-patcher/compare/v4.2.0...v4.2.1) (2022-09-08)
 
 
