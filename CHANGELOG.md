@@ -1,3 +1,10 @@
+## [4.1.5](https://github.com/revanced/revanced-patcher/compare/v4.1.4...v4.1.5) (2022-09-08)
+
+
+### Bug Fixes
+
+* broken deprecation message ([62aa295](https://github.com/revanced/revanced-patcher/commit/62aa295e7372014238415af36d902a4e88e2acbc))
+
 ## [4.1.4](https://github.com/revanced/revanced-patcher/compare/v4.1.3...v4.1.4) (2022-09-08)
 
 
