@@ -1,3 +1,15 @@
+# [4.2.0](https://github.com/revanced/revanced-patcher/compare/v4.1.5...v4.2.0) (2022-09-08)
+
+
+### Bug Fixes
+
+* remove repeatable from PatchDeprecated ([6e73631](https://github.com/revanced/revanced-patcher/commit/6e73631d4d21e5e862f07ed7517244f36394e5ca))
+
+
+### Features
+
+* SincePatcher annotation ([25f74dc](https://github.com/revanced/revanced-patcher/commit/25f74dc5e9ed1a09258345b920d4f5a0dd7da527))
+
 ## [4.1.5](https://github.com/revanced/revanced-patcher/compare/v4.1.4...v4.1.5) (2022-09-08)
 
 
