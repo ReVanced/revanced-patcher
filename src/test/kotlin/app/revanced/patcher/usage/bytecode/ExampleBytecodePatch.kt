@@ -196,5 +196,10 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
                 "key5", File("test.txt").toPath(), "title", "description"
             )
         )
+        private var key6: String by option(
+            PatchOption.StringOption(
+                "key6", null, "title", "description", true
+            )
+        )
     }
 }

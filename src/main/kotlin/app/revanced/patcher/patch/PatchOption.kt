@@ -81,6 +81,12 @@ sealed class PatchOption<T>(
     val validator: (T?) -> Boolean
 ) {
     var value: T? = default
+        get() {
+            if (field == null && required) {
+                throw RequirementNotMetException
+            }
+            return field
+        }
         set(value) {
             if (value == null && required) {
                 throw RequirementNotMetException
@@ -95,7 +101,11 @@ sealed class PatchOption<T>(
      * Gets the value of the option.
      * Please note that using the wrong value type results in a runtime error.
      */
-    operator fun <T> getValue(thisRef: Any?, property: KProperty<*>) = value as T
+    inline operator fun <reified V> getValue(thisRef: Any?, property: KProperty<*>) =
+        value as? V ?: throw InvalidTypeException(
+            V::class.java.canonicalName,
+            value?.let { it::class.java.canonicalName } ?: "null"
+        )
 
     /**
      * Gets the value of the option.

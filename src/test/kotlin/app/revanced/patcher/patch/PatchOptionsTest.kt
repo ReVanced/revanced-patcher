@@ -85,9 +85,16 @@ internal class PatchOptionsTest {
     }
 
     @Test
-    fun `should fail because of the requirement is not met`() {
+    fun `should fail because the requirement is not met`() {
         assertThrows<RequirementNotMetException> {
             options.nullify("key1")
+        }
+    }
+
+    @Test
+    fun `should fail because getting a non-initialized option is illegal`() {
+        assertThrows<RequirementNotMetException> {
+            println(options["key6"].value)
         }
     }
 }
