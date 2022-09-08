@@ -1,3 +1,17 @@
+## [4.1.3](https://github.com/revanced/revanced-patcher/compare/v4.1.2...v4.1.3) (2022-09-07)
+
+
+### Bug Fixes
+
+* only run list option check if not null ([4055939](https://github.com/revanced/revanced-patcher/commit/4055939c089e3c396c308c980215d93a1dea5954))
+
+## [4.1.2](https://github.com/revanced/revanced-patcher/compare/v4.1.1...v4.1.2) (2022-09-07)
+
+
+### Bug Fixes
+
+* invalid types for example options ([79f91e0](https://github.com/revanced/revanced-patcher/commit/79f91e0e5a6d99828f30aae55339ce0d897394c7))
+
 ## [4.1.1](https://github.com/revanced/revanced-patcher/compare/v4.1.0...v4.1.1) (2022-09-07)
 
 
