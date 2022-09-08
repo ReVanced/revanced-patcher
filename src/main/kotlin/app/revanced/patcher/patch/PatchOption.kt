@@ -17,7 +17,7 @@ object RequirementNotMetException : Exception("null was passed into an option th
  * A registry for an array of [PatchOption]s.
  * @param options An array of [PatchOption]s.
  */
-class PatchOptions(vararg val options: PatchOption<*>) : Iterable<PatchOption<*>> {
+class PatchOptions(vararg options: PatchOption<*>) : Iterable<PatchOption<*>> {
     private val register = mutableMapOf<String, PatchOption<*>>()
 
     init {
@@ -60,7 +60,7 @@ class PatchOptions(vararg val options: PatchOption<*>) : Iterable<PatchOption<*>
         get(key).value = null
     }
 
-    override fun iterator() = options.iterator()
+    override fun iterator() = register.values.iterator()
 }
 
 /**
