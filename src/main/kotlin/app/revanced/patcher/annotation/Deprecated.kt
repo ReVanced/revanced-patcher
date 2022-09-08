@@ -12,7 +12,6 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
-@Repeatable
 annotation class PatchDeprecated(
     val reason: String,
     val replacement: KClass<out Patch<Data>> = Patch::class
