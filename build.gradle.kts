@@ -37,6 +37,9 @@ tasks {
             events("PASSED", "SKIPPED", "FAILED")
         }
     }
+    processResources {
+        expand("projectVersion" to project.version)
+    }
 }
 
 java {

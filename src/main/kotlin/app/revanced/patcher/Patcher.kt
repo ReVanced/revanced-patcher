@@ -6,6 +6,7 @@ import app.revanced.patcher.data.impl.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.deprecated
 import app.revanced.patcher.extensions.PatchExtensions.patchName
+import app.revanced.patcher.extensions.PatchExtensions.sincePatcherVersion
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.utils.MethodFingerprintUtils.resolve
 import app.revanced.patcher.patch.Patch
@@ -15,6 +16,7 @@ import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.impl.BytecodePatch
 import app.revanced.patcher.patch.impl.ResourcePatch
 import app.revanced.patcher.util.ListBackedSet
+import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
 import brut.androlib.options.BuildOptions
@@ -36,7 +38,8 @@ import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 
-val NAMER = BasicDexFileNamer()
+private val NAMER = BasicDexFileNamer()
+private val VERSION = VersionReader.read()
 
 /**
  * The ReVanced Patcher.
@@ -244,6 +247,15 @@ class Patcher(private val options: PatcherOptions) {
      * @param patches [Patch]es The patches to add.
      */
     fun addPatches(patches: Iterable<Class<out Patch<Data>>>) {
+        for (patch in patches) {
+            val needsVersion = patch.sincePatcherVersion
+            if (needsVersion != null && needsVersion > VERSION) {
+                logger.error("Patch '${patch.patchName}' requires Patcher version $needsVersion or higher")
+                logger.error("Current Patcher version is $VERSION")
+                logger.warn("Skipping '${patch.patchName}'!")
+                continue // TODO: continue or halt/throw?
+            }
+        }
         data.patches.addAll(patches)
     }
 
