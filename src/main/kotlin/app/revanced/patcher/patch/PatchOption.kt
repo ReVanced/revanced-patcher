@@ -101,11 +101,13 @@ sealed class PatchOption<T>(
      * Gets the value of the option.
      * Please note that using the wrong value type results in a runtime error.
      */
-    inline operator fun <reified V> getValue(thisRef: Any?, property: KProperty<*>) =
-        value as? V ?: throw InvalidTypeException(
+    inline operator fun <reified V> getValue(thisRef: Any?, property: KProperty<*>): V? {
+        if (value !is V?) throw InvalidTypeException(
             V::class.java.canonicalName,
             value?.let { it::class.java.canonicalName } ?: "null"
         )
+        return value as? V?
+    }
 
     /**
      * Gets the value of the option.

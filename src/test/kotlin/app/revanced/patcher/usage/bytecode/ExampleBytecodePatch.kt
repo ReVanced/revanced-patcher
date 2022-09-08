@@ -171,32 +171,32 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
     }
 
     companion object : OptionsContainer() {
-        private var key1: String by option(
+        private var key1: String? by option(
             PatchOption.StringOption(
                 "key1", "default", "title", "description", true
             )
         )
-        private var key2: Boolean by option(
+        private var key2: Boolean? by option(
             PatchOption.BooleanOption(
                 "key2", true, "title", "description" // required defaults to false
             )
         )
-        private var key3: String by option(
+        private var key3: String? by option(
             PatchOption.StringListOption(
                 "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
             )
         )
-        private var key4: Int by option(
+        private var key4: Int? by option(
             PatchOption.IntListOption(
                 "key4", 1, listOf(1, 2, 3), "title", "description"
             )
         )
-        private var key5: Path by option(
+        private var key5: Path? by option(
             PatchOption.PathOption(
                 "key5", File("test.txt").toPath(), "title", "description"
             )
         )
-        private var key6: String by option(
+        private var key6: String? by option(
             PatchOption.StringOption(
                 "key6", null, "title", "description", true
             )

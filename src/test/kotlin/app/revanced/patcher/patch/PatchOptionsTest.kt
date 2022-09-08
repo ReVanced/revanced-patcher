@@ -48,7 +48,7 @@ internal class PatchOptionsTest {
 
     @Test
     fun `should return a different value when changed`() {
-        var value: String by options["key1"]
+        var value: String? by options["key1"]
         val current = value + "" // force a copy
         value = "Hello, world!"
         assertNotEquals(current, value)
