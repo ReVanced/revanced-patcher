@@ -1,3 +1,10 @@
+## [4.1.4](https://github.com/revanced/revanced-patcher/compare/v4.1.3...v4.1.4) (2022-09-08)
+
+
+### Bug Fixes
+
+* handle option types and nulls properly ([aff4968](https://github.com/revanced/revanced-patcher/commit/aff4968e6f67239afa3b5c02cc133a17d9c3cbeb))
+
 ## [4.1.3](https://github.com/revanced/revanced-patcher/compare/v4.1.2...v4.1.3) (2022-09-07)
 
 
