@@ -38,7 +38,7 @@ private fun <T : Annotation> Class<*>.findAnnotationRecursively(
 }
 
 object PatchExtensions {
-    val Class<out Patch<Data>>.patchName: String
+    val Class<*>.patchName: String
         get() = recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
     val Class<out Patch<Data>>.version get() = recursiveAnnotation(Version::class)?.version
     val Class<out Patch<Data>>.include get() = recursiveAnnotation(app.revanced.patcher.patch.annotations.Patch::class)!!.include
