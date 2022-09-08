@@ -1,3 +1,10 @@
+## [4.2.3](https://github.com/revanced/revanced-patcher/compare/v4.2.2...v4.2.3) (2022-09-08)
+
+
+### Bug Fixes
+
+* wrong value for iterator in PatchOptions ([e31ac1f](https://github.com/revanced/revanced-patcher/commit/e31ac1f132df56ba7d2f8446d289ae03ef28f67d))
+
 ## [4.2.2](https://github.com/revanced/revanced-patcher/compare/v4.2.1...v4.2.2) (2022-09-08)
 
 
