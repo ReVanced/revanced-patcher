@@ -291,7 +291,8 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         patch.deprecated?.let { (reason, replacement) ->
-            logger.warn("'$patchName' is deprecated: '$reason'" + if (replacement != null) ". Use '$replacement' instead." else "")
+            logger.warn("'$patchName' is deprecated: $reason")
+            if (replacement != null) logger.warn("Use '${replacement.java.patchName}' instead")
         }
 
         // TODO: find a solution for this
