@@ -1,3 +1,10 @@
+# [4.4.0](https://github.com/revanced/revanced-patcher/compare/v4.3.0...v4.4.0) (2022-09-09)
+
+
+### Features
+
+* add PathOption back ([172655b](https://github.com/revanced/revanced-patcher/commit/172655bde06efdb0955431b44d269e6a64fe317a))
+
 # [4.3.0](https://github.com/revanced/revanced-patcher/compare/v4.2.3...v4.3.0) (2022-09-09)
 
 
