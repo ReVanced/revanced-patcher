@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/revanced/revanced-patcher/compare/v4.2.3...v4.3.0) (2022-09-09)
+
+
+### Features
+
+* improved Patch Options ([e722e3f](https://github.com/revanced/revanced-patcher/commit/e722e3f4f9dc64acf53595802a0a83cf46ee96b8))
+
 ## [4.2.3](https://github.com/revanced/revanced-patcher/compare/v4.2.2...v4.2.3) (2022-09-08)
 
 
