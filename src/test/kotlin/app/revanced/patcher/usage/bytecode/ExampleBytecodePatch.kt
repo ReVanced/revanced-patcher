@@ -32,8 +32,6 @@ import org.jf.dexlib2.immutable.reference.ImmutableFieldReference
 import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
-import java.io.File
-import java.nio.file.Path
 
 @Patch
 @Name("example-bytecode-patch")
@@ -191,14 +189,9 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
                 "key4", 1, listOf(1, 2, 3), "title", "description"
             )
         )
-        private var key5: Path? by option(
-            PatchOption.PathOption(
-                "key5", File("test.txt").toPath(), "title", "description"
-            )
-        )
-        private var key6: String? by option(
+        private var key5: String? by option(
             PatchOption.StringOption(
-                "key6", null, "title", "description", true
+                "key5", null, "title", "description", true
             )
         )
     }
