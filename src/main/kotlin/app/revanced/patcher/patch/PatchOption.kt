@@ -33,7 +33,21 @@ class PatchOptions(vararg options: PatchOption<*>) : Iterable<PatchOption<*>> {
      * Get a [PatchOption] by its key.
      * @param key The key of the [PatchOption].
      */
+    @JvmName("getUntyped")
     operator fun get(key: String) = register[key] ?: throw NoSuchOptionException(key)
+
+    /**
+     * Get a [PatchOption] by its key.
+     * @param key The key of the [PatchOption].
+     */
+    inline operator fun <reified T> get(key: String): PatchOption<T> {
+        val opt = get(key)
+        if (opt.value !is T) throw InvalidTypeException(
+            opt.value?.let { it::class.java.canonicalName } ?: "null",
+            T::class.java.canonicalName
+        )
+        return opt as PatchOption<T>
+    }
 
     /**
      * Set the value of a [PatchOption].
@@ -42,7 +56,7 @@ class PatchOptions(vararg options: PatchOption<*>) : Iterable<PatchOption<*>> {
      * Please note that using the wrong value type results in a runtime error.
      */
     inline operator fun <reified T> set(key: String, value: T) {
-        @Suppress("UNCHECKED_CAST") val opt = get(key) as PatchOption<T>
+        val opt = get<T>(key)
         if (opt.value !is T) throw InvalidTypeException(
             T::class.java.canonicalName,
             opt.value?.let { it::class.java.canonicalName } ?: "null"
@@ -99,7 +113,8 @@ sealed class PatchOption<T>(
      * Gets the value of the option.
      * Please note that using the wrong value type results in a runtime error.
      */
-    inline operator fun <reified V> getValue(thisRef: Any?, property: KProperty<*>): V? {
+    @JvmName("getValueTyped")
+    inline operator fun <reified V> getValue(thisRef: Nothing?, property: KProperty<*>): V? {
         if (value !is V?) throw InvalidTypeException(
             V::class.java.canonicalName,
             value?.let { it::class.java.canonicalName } ?: "null"
@@ -107,16 +122,23 @@ sealed class PatchOption<T>(
         return value as? V?
     }
 
+    operator fun getValue(thisRef: Any?, property: KProperty<*>) = value
+
     /**
      * Gets the value of the option.
      * Please note that using the wrong value type results in a runtime error.
      */
-    inline operator fun <reified V> setValue(thisRef: Any?, property: KProperty<*>, new: V) {
+    @JvmName("setValueTyped")
+    inline operator fun <reified V> setValue(thisRef: Nothing?, property: KProperty<*>, new: V) {
         if (value !is V) throw InvalidTypeException(
             V::class.java.canonicalName,
             value?.let { it::class.java.canonicalName } ?: "null"
         )
         value = new as T
+    }
+
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, new: T?) {
+        value = new
     }
 
     /**

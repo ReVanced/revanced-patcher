@@ -35,7 +35,9 @@ internal class PatchOptionsTest {
                 }
             }
         }
-        val option = options["key1"]
+        val option = options.get<String>("key1")
+        // or: val option: String? by options["key1"]
+        // then you won't need `.value` every time
         println(option.value)
         options["key1"] = "Hello, world!"
         println(option.value)
@@ -55,6 +57,9 @@ internal class PatchOptionsTest {
         // > options["key2"] = null
         // is not possible because Kotlin
         // cannot reify the type "Nothing?".
+        // So we have to do this instead:
+        options["key2"] = null as Any?
+        // This is a cleaner replacement for the above:
         options.nullify("key2")
     }
 
@@ -66,9 +71,16 @@ internal class PatchOptionsTest {
     }
 
     @Test
-    fun `should fail because of invalid value type`() {
+    fun `should fail because of invalid value type when setting an option`() {
         assertThrows<InvalidTypeException> {
             options["key1"] = 123
+        }
+    }
+
+    @Test
+    fun `should fail because of invalid value type when getting an option`() {
+        assertThrows<InvalidTypeException> {
+            options.get<Int>("key1")
         }
     }
 
