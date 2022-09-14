@@ -1,3 +1,10 @@
+## [4.4.1](https://github.com/revanced/revanced-patcher/compare/v4.4.0...v4.4.1) (2022-09-14)
+
+
+### Bug Fixes
+
+* compare any methods parameters ([#101](https://github.com/revanced/revanced-patcher/issues/101)) ([085a3a4](https://github.com/revanced/revanced-patcher/commit/085a3a479d7bd411dcb0492b283daca538c824a1))
+
 # [4.4.0](https://github.com/revanced/revanced-patcher/compare/v4.3.0...v4.4.0) (2022-09-09)
 
 
