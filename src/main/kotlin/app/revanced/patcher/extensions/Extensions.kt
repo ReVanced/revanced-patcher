@@ -46,7 +46,7 @@ fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) {
 }
 
 /**
- * Compare a method to another, considering constructors and parameters.
+ * Compare a method to another, considering name and parameters.
  * @param otherMethod The method to compare against.
  * @return True if the methods match given the conditions.
  */
