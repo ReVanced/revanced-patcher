@@ -16,7 +16,6 @@ import org.jf.dexlib2.iface.instruction.Instruction
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.immutable.ImmutableMethod
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation
-import org.jf.dexlib2.util.MethodUtil
 import java.io.OutputStream
 
 infix fun AccessFlags.or(other: AccessFlags) = this.value or other.value
@@ -47,16 +46,14 @@ fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) {
 }
 
 /**
- * Compare a method to another, considering constructors and parameters.
+ * Compare a method to another, considering name and parameters.
  * @param otherMethod The method to compare against.
  * @return True if the methods match given the conditions.
  */
 fun Method.softCompareTo(otherMethod: MethodReference): Boolean {
-    if (MethodUtil.isConstructor(this) && !parametersEqual(
-            this.parameterTypes, otherMethod.parameterTypes
-        )
-    ) return false
-    return this.name == otherMethod.name
+    return this.name == otherMethod.name && parametersEqual(
+        this.parameterTypes, otherMethod.parameterTypes
+    )
 }
 
 /**
