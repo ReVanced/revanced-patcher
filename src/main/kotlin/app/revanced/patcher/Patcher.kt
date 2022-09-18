@@ -33,6 +33,8 @@ import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
+import org.jf.dexlib2.iface.value.ArrayEncodedValue
+import org.jf.dexlib2.iface.value.StringEncodedValue
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.Closeable
 import java.io.File
@@ -139,10 +141,24 @@ class Patcher(private val options: PatcherOptions) {
         throwOnDuplicates: Boolean = false,
         callback: (File) -> Unit
     ) {
+        //Merger filter
+        val notMergeClass = mutableListOf<String>()
+        for (file in files) {
+            for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
+                //Check a class if it should merge for current package
+                if (!isTargetPackage(classDef, data.packageMetadata.packageName)) {
+                    notMergeClass.add(classDef.type)
+                    notMergeClass.add("${classDef.type.dropLast(1)}$")
+                }
+            }
+        }
         for (file in files) {
             var modified = false
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
                 val type = classDef.type
+
+                //Remove notMerge class and relate class to it.
+                if (notMergeClass.any { classDef.type.startsWith(it) }) continue
 
                 val existingClass = data.bytecodeData.classes.internalClasses.findIndexed { it.type == type }
                 if (existingClass == null) {
@@ -378,4 +394,13 @@ private fun BuildOptions.setBuildOptions(options: PatcherOptions) {
     this.aaptPath = options.aaptPath
     this.useAapt2 = true
     this.frameworkFolderLocation = options.frameworkFolderLocation
+}
+
+private fun isTargetPackage(classDef: ClassDef, currentPackageName: String): Boolean {
+    val mergeIf = classDef.annotations.find { it.type == "Lmerger/MergeIf;" } ?: return true
+    val packageName = mergeIf.elements.find { it.name == "packageName" } ?: return true
+    val packageNameList = (packageName.value as ArrayEncodedValue).value
+    val anyMatch = packageNameList.any { (it as StringEncodedValue).value == currentPackageName }
+    if (anyMatch) return true
+    return false
 }
