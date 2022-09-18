@@ -1,3 +1,15 @@
+## [4.4.2](https://github.com/revanced/revanced-patcher/compare/v4.4.1...v4.4.2) (2022-09-18)
+
+
+### Bug Fixes
+
+* **fingerprint:** do not throw on `MethodFingerprint.result` getter ([2f7e62e](https://github.com/revanced/revanced-patcher/commit/2f7e62ef65422f2c75ef8b09b9cd27076e172b30))
+
+
+### Performance Improvements
+
+* **fingerprint:** do not resolve already resolved fingerprints ([4bfd7eb](https://github.com/revanced/revanced-patcher/commit/4bfd7ebff8b6623b0da4a46d6048bed08c5070d4))
+
 ## [4.4.1](https://github.com/revanced/revanced-patcher/compare/v4.4.0...v4.4.1) (2022-09-14)
 
 
