@@ -145,6 +145,11 @@ class Patcher(private val options: PatcherOptions) {
         val notMergeClass = mutableListOf<String>()
         for (file in files) {
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
+                //Check a package if it should be merged for current app packageName.
+                if (classDef.type.endsWith("/MergeIfPackage;")) {
+                    if (!isTargetPackage(classDef, data.packageMetadata.packageName))
+                        notMergeClass.add(classDef.type.replace("MergeIfPackage;", ""))
+                }
                 //Check a class if it should merge for current package
                 if (!isTargetPackage(classDef, data.packageMetadata.packageName)) {
                     notMergeClass.add(classDef.type)
@@ -157,7 +162,7 @@ class Patcher(private val options: PatcherOptions) {
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
                 val type = classDef.type
 
-                //Remove notMerge class and relate class to it.
+                //Remove notMerge class.
                 if (notMergeClass.any { classDef.type.startsWith(it) }) continue
 
                 val existingClass = data.bytecodeData.classes.internalClasses.findIndexed { it.type == type }
