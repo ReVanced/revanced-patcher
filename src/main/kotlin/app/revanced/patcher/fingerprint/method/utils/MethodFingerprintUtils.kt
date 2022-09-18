@@ -50,10 +50,12 @@ object MethodFingerprintUtils {
      * @param context The context on which to resolve the [MethodFingerprint].
      * @param classDef The class of the matching [Method].
      * @param forData The [BytecodeData] to host proxies.
-     * @return True if the resolution was successful, false otherwise.
+     * @return True if the resolution was successful or if the fingerprint is already resolved, false otherwise.
      */
     fun MethodFingerprint.resolve(forData: BytecodeData, context: Method, classDef: ClassDef): Boolean {
         val methodFingerprint = this
+
+        if (methodFingerprint.result != null) return true
 
         if (methodFingerprint.returnType != null && !context.returnType.startsWith(methodFingerprint.returnType))
             return false
