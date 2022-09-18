@@ -149,8 +149,9 @@ class Patcher(private val options: PatcherOptions) {
                 if (classDef.type.endsWith("/MergeIfPackage;")) {
                     if (!isTargetPackage(classDef, data.packageMetadata.packageName))
                         notMergeClass.add(classDef.type.replace("MergeIfPackage;", ""))
+                    continue
                 }
-                //Check a class if it should merge for current package
+                //Check a class if it should be merged for current app packageName
                 if (!isTargetPackage(classDef, data.packageMetadata.packageName)) {
                     notMergeClass.add(classDef.type)
                     notMergeClass.add("${classDef.type.dropLast(1)}$")
