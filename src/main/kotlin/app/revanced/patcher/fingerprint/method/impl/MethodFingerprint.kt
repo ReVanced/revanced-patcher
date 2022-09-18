@@ -1,8 +1,6 @@
 package app.revanced.patcher.fingerprint.method.impl
 
 import app.revanced.patcher.data.impl.BytecodeData
-import app.revanced.patcher.data.impl.MethodNotFoundException
-import app.revanced.patcher.extensions.MethodFingerprintExtensions.name
 import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.fingerprint.Fingerprint
 import app.revanced.patcher.fingerprint.method.utils.MethodFingerprintUtils
@@ -31,10 +29,8 @@ abstract class MethodFingerprint(
 ) : Fingerprint {
     /**
      * The result of the [MethodFingerprint] the [Method].
-     * @throws MethodNotFoundException If the resolution of the [Method] has not happened.
      */
     var result: MethodFingerprintResult? = null
-        get() = field ?: throw Exception("${this.name} has not been resolved yet.")
 }
 
 /**
