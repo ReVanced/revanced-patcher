@@ -7,14 +7,12 @@ import app.revanced.patcher.extensions.parametersEqual
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprintResult
-import app.revanced.patcher.fingerprint.method.impl.PatternScanResult
 import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import org.jf.dexlib2.iface.reference.StringReference
-
 /**
  * Utility class for [MethodFingerprint]
  */
@@ -73,21 +71,32 @@ object MethodFingerprintUtils {
         if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(context))
             return false
 
-        if (methodFingerprint.strings != null) {
-            val implementation = context.implementation ?: return false
+        val stringsScanResult: StringsScanResult? =
+            if (methodFingerprint.strings != null) {
+                StringsScanResult(buildList {
+                    val implementation = context.implementation ?: return false
 
-            val stringsList = methodFingerprint.strings.toMutableList()
+                    val stringsList = methodFingerprint.strings.toMutableList()
 
-            implementation.instructions.forEach { instruction ->
-                if (instruction.opcode.ordinal != Opcode.CONST_STRING.ordinal) return@forEach
+                    implementation.instructions.forEach { instruction ->
+                        if (instruction.opcode.ordinal != Opcode.CONST_STRING.ordinal) return@forEach
 
-                val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                val index = stringsList.indexOfFirst { it == string }
-                if (index != -1) stringsList.removeAt(index)
-            }
+                        val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+                        val index = stringsList.indexOfFirst { it == string }
+                        if (index == -1) return@forEach
 
-            if (stringsList.isNotEmpty()) return false
-        }
+                        add(
+                            StringMatch(
+                                string,
+                                index
+                            )
+                        )
+                        stringsList.removeAt(index)
+                    }
+
+                    if (stringsList.isNotEmpty()) return false
+                })
+            } else null
 
         val patternScanResult = if (methodFingerprint.opcodes != null) {
             context.implementation?.instructions ?: return false
@@ -95,14 +104,22 @@ object MethodFingerprintUtils {
             context.patternScan(methodFingerprint) ?: return false
         } else null
 
-        methodFingerprint.result = MethodFingerprintResult(context, classDef, patternScanResult, forData)
+        methodFingerprint.result = MethodFingerprintResult(
+            context,
+            classDef,
+            MethodFingerprintResult.MethodFingerprintScanResult(
+                patternScanResult,
+                stringsScanResult
+            ),
+            forData
+        )
 
         return true
     }
 
     private fun Method.patternScan(
         fingerprint: MethodFingerprint
-    ): PatternScanResult? {
+    ): MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult? {
         val instructions = this.implementation!!.instructions
         val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyScanThreshold
 
@@ -131,7 +148,8 @@ object MethodFingerprintUtils {
                     continue
                 }
                 // the pattern is valid, generate warnings if fuzzyPatternScanMethod is FuzzyPatternScanMethod
-                val result = PatternScanResult(index, index + patternIndex)
+                val result =
+                    MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult(index, index + patternIndex)
                 if (fingerprint.fuzzyPatternScanMethod !is FuzzyPatternScanMethod) return result
                 result.warnings = result.createWarnings(pattern, instructions)
 
@@ -143,7 +161,10 @@ object MethodFingerprintUtils {
     }
 }
 
-private fun PatternScanResult.createWarnings(
+private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
+private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult.StringMatch
+
+private fun MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult.createWarnings(
     pattern: Iterable<Opcode?>, instructions: Iterable<Instruction>
 ) = buildList {
     for ((patternIndex, instructionIndex) in (this@createWarnings.startIndex until this@createWarnings.endIndex).withIndex()) {
@@ -152,7 +173,14 @@ private fun PatternScanResult.createWarnings(
 
         if (patternOpcode == null || patternOpcode.ordinal == originalOpcode.ordinal) continue
 
-        this.add(PatternScanResult.Warning(originalOpcode, patternOpcode, instructionIndex, patternIndex))
+        this.add(
+            MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult.Warning(
+                originalOpcode,
+                patternOpcode,
+                instructionIndex,
+                patternIndex
+            )
+        )
     }
 }
 

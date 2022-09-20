@@ -37,15 +37,65 @@ abstract class MethodFingerprint(
  * Represents the result of a [MethodFingerprintUtils].
  * @param method The matching method.
  * @param classDef The [ClassDef] that contains the matching [method].
- * @param patternScanResult Opcodes pattern scan result.
+ * @param scanResult The result of scanning for the [MethodFingerprint].
  * @param data The [BytecodeData] this [MethodFingerprintResult] is attached to, to create proxies.
  */
 data class MethodFingerprintResult(
     val method: Method,
     val classDef: ClassDef,
-    val patternScanResult: PatternScanResult?,
+    val scanResult: MethodFingerprintScanResult,
     internal val data: BytecodeData
 ) {
+
+    /**
+     * The result of scanning on the [MethodFingerprint].
+     * @param patternScanResult The result of the pattern scan.
+     * @param stringsScanResult The result of the string scan.
+     */
+    data class MethodFingerprintScanResult(
+        val patternScanResult: PatternScanResult?,
+        val stringsScanResult: StringsScanResult?
+    ) {
+        /**
+         * The result of scanning strings on the [MethodFingerprint].
+         * @param matches The list of strings that were matched.
+         */
+        data class StringsScanResult(val matches: List<StringMatch>){
+            /**
+             * Represents a match for a string at an index.
+             * @param string The string that was matched.
+             * @param index The index of the string.
+             */
+            data class StringMatch(val string: String, val index: Int)
+        }
+
+        /**
+         * The result of a pattern scan.
+         * @param startIndex The start index of the instructions where to which this pattern matches.
+         * @param endIndex The end index of the instructions where to which this pattern matches.
+         * @param warnings A list of warnings considering this [PatternScanResult].
+         */
+        data class PatternScanResult(
+            val startIndex: Int,
+            val endIndex: Int,
+            var warnings: List<Warning>? = null
+        ) {
+            /**
+             * Represents warnings of the pattern scan.
+             * @param correctOpcode The opcode the instruction list has.
+             * @param wrongOpcode The opcode the pattern list of the signature currently has.
+             * @param instructionIndex The index of the opcode relative to the instruction list.
+             * @param patternIndex The index of the opcode relative to the pattern list from the signature.
+             */
+            data class Warning(
+                val correctOpcode: Opcode,
+                val wrongOpcode: Opcode,
+                val instructionIndex: Int,
+                val patternIndex: Int,
+            )
+        }
+    }
+
     /**
      * Returns a mutable clone of [classDef]
      *
@@ -65,30 +115,4 @@ data class MethodFingerprintResult(
             it.softCompareTo(this.method)
         }
     }
-}
-
-/**
- * The result of a pattern scan.
- * @param startIndex The start index of the instructions where to which this pattern matches.
- * @param endIndex The end index of the instructions where to which this pattern matches.
- * @param warnings A list of warnings considering this [PatternScanResult].
- */
-data class PatternScanResult(
-    val startIndex: Int,
-    val endIndex: Int,
-    var warnings: List<Warning>? = null
-) {
-    /**
-     * Represents warnings of the pattern scan.
-     * @param correctOpcode The opcode the instruction list has.
-     * @param wrongOpcode The opcode the pattern list of the signature currently has.
-     * @param instructionIndex The index of the opcode relative to the instruction list.
-     * @param patternIndex The index of the opcode relative to the pattern list from the signature.
-     */
-    data class Warning(
-        val correctOpcode: Opcode,
-        val wrongOpcode: Opcode,
-        val instructionIndex: Int,
-        val patternIndex: Int,
-    )
 }
