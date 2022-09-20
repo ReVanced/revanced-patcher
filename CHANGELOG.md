@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/revanced/revanced-patcher/compare/v4.4.2...v4.5.0) (2022-09-20)
+
+
+### Features
+
+* section `acknowledgements` for issue templates ([a0cb449](https://github.com/revanced/revanced-patcher/commit/a0cb449c60310917141e2809abaa16b4174dc002))
+
 ## [4.4.2](https://github.com/revanced/revanced-patcher/compare/v4.4.1...v4.4.2) (2022-09-18)
 
 
