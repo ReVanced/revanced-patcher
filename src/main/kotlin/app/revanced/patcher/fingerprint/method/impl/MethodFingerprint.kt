@@ -102,6 +102,7 @@ data class MethodFingerprintResult(
      * Please note, this method allocates a [ClassProxy].
      * Use [classDef] where possible.
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     val mutableClass by lazy { data.proxy(classDef).resolve() }
 
     /**

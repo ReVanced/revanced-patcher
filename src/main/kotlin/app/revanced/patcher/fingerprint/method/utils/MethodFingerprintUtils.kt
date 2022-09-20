@@ -68,6 +68,7 @@ object MethodFingerprintUtils {
             )
         ) return false
 
+        @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
         if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(context))
             return false
 
