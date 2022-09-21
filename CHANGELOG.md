@@ -1,3 +1,24 @@
+# [5.0.0](https://github.com/revanced/revanced-patcher/compare/v4.5.0...v5.0.0) (2022-09-21)
+
+
+### Bug Fixes
+
+* **tests:** access `patternScanResult` through `scanResult` ([76676fb](https://github.com/revanced/revanced-patcher/commit/76676fb5673a9e92517ee3a13943cdc98dd5102a))
+
+
+* refactor!: move utility methods from `MethodFingerprintUtils` `MethodFingerprint` ([d802ef8](https://github.com/revanced/revanced-patcher/commit/d802ef844edf65d4d26328d6ca72e3ddd5a52b15))
+* feat(fingerprint)!: `StringsScanResult` for `MethodFingerprint` ([3813e28](https://github.com/revanced/revanced-patcher/commit/3813e28ac2ad6710d8d935526ca679e7b1b5980e))
+
+
+### BREAKING CHANGES
+
+* Imports will have to be updated from `MethodFingerprintUtils` to `MethodFingerprint.Companion`.
+
+Signed-off-by: oSumAtrIX <johan.melkonyan1@web.de>
+* `MethodFingerprint` now has a field for `MethodFingerprintScanResult`. `MethodFingerprintScanResult` now holds the previous field `MethodFingerprint.patternScanResult`.
+
+Signed-off-by: oSumAtrIX <johan.melkonyan1@web.de>
+
 # [4.5.0](https://github.com/revanced/revanced-patcher/compare/v4.4.2...v4.5.0) (2022-09-20)
 
 
