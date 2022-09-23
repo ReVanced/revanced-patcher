@@ -1,3 +1,10 @@
+## [5.0.1](https://github.com/revanced/revanced-patcher/compare/v5.0.0...v5.0.1) (2022-09-23)
+
+
+### Reverts
+
+* revert breaking changes ([#106](https://github.com/revanced/revanced-patcher/issues/106)) ([124332f](https://github.com/revanced/revanced-patcher/commit/124332f0e9bbdaf4f1aeeb6a31333093eeba1642))
+
 # [5.0.0](https://github.com/revanced/revanced-patcher/compare/v4.5.0...v5.0.0) (2022-09-21)
 
 
