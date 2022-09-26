@@ -1,7 +1,6 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.data.Data
-import app.revanced.patcher.data.PackageMetadata
 import app.revanced.patcher.data.impl.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.deprecated
@@ -47,84 +46,30 @@ private val NAMER = BasicDexFileNamer()
 class Patcher(private val options: PatcherOptions) {
     private val logger = options.logger
     private val opcodes: Opcodes
-
+    private var resourceDecodingMode = ResourceDecodingMode.MANIFEST_ONLY
     val data: PatcherData
 
     companion object {
         @JvmStatic
         val version = VersionReader.read()
+        private fun BuildOptions.setBuildOptions(options: PatcherOptions) {
+            this.aaptPath = options.aaptPath
+            this.useAapt2 = true
+            this.frameworkFolderLocation = options.frameworkFolderLocation
+        }
     }
 
     init {
-        val extInputFile = ExtFile(options.inputFile)
-        try {
-            val outDir = File(options.resourceCacheDirectory)
-            if (outDir.exists()) {
-                logger.info("Deleting existing resource cache directory")
-                outDir.deleteRecursively()
-            }
-            outDir.mkdirs()
+        logger.info("Reading dex files")
+        // read dex files
+        val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
+        // get the opcodes
+        opcodes = dexFile.opcodes
+        // finally create patcher data
+        data = PatcherData(dexFile.classes.toMutableList(), options.resourceCacheDirectory)
 
-            val androlib = Androlib(BuildOptions().also { it.setBuildOptions(options) })
-            val resourceTable = androlib.getResTable(extInputFile, true)
-
-            val packageMetadata = PackageMetadata()
-
-            if (options.patchResources) {
-                logger.info("Decoding resources")
-
-                // decode resources to cache directory
-                androlib.decodeManifestWithResources(extInputFile, outDir, resourceTable)
-                androlib.decodeResourcesFull(extInputFile, outDir, resourceTable)
-
-                // read additional metadata from the resource table
-                packageMetadata.metaInfo.usesFramework = UsesFramework().also { framework ->
-                    framework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
-                }
-
-                packageMetadata.metaInfo.doNotCompress = buildList {
-                    androlib.recordUncompressedFiles(extInputFile, this)
-                }
-
-            } else {
-                logger.info("Only decoding AndroidManifest.xml because resource patching is disabled")
-
-                // create decoder for the resource table
-                val decoder = ResAttrDecoder()
-                decoder.currentPackage = ResPackage(resourceTable, 0, null)
-
-                // create xml parser with the decoder
-                val axmlParser = AXmlResourceParser()
-                axmlParser.attrDecoder = decoder
-
-                // parse package information with the decoder and parser which will set required values in the resource table
-                // instead of decodeManifest another more low level solution can be created to make it faster/better
-                XmlPullStreamDecoder(
-                    axmlParser, AndrolibResources().resXmlSerializer
-                ).decodeManifest(
-                    extInputFile.directory.getFileInput("AndroidManifest.xml"), nullOutputStream
-                )
-            }
-
-            packageMetadata.packageName = resourceTable.currentResPackage.name
-            packageMetadata.packageVersion = resourceTable.versionInfo.versionName
-            packageMetadata.metaInfo.versionInfo = resourceTable.versionInfo
-            packageMetadata.metaInfo.sdkInfo = resourceTable.sdkInfo
-
-            logger.info("Reading dex files")
-
-            // read dex files
-            val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
-            // get the opcodes
-            opcodes = dexFile.opcodes
-
-            // finally create patcher data
-            data = PatcherData(
-                dexFile.classes.toMutableList(), options.resourceCacheDirectory, packageMetadata
-            )
-        } finally {
-            extInputFile.close()
-        }
+        // decode manifest file
+        decodeResources(ResourceDecodingMode.MANIFEST_ONLY)
     }
 
     /**
@@ -175,48 +120,51 @@ class Patcher(private val options: PatcherOptions) {
         val metaInfo = packageMetadata.metaInfo
         var resourceFile: File? = null
 
-        if (options.patchResources) {
-            val cacheDirectory = ExtFile(options.resourceCacheDirectory)
-            try {
-                val androlibResources = AndrolibResources().also { resources ->
-                    resources.buildOptions = BuildOptions().also { buildOptions ->
-                        buildOptions.setBuildOptions(options)
-                        buildOptions.isFramework = metaInfo.isFrameworkApk
-                        buildOptions.resourcesAreCompressed = metaInfo.compressionType
-                        buildOptions.doNotCompress = metaInfo.doNotCompress
+        when (resourceDecodingMode) {
+            ResourceDecodingMode.FULL -> {
+                val cacheDirectory = ExtFile(options.resourceCacheDirectory)
+                try {
+                    val androlibResources = AndrolibResources().also { resources ->
+                        resources.buildOptions = BuildOptions().also { buildOptions ->
+                            buildOptions.setBuildOptions(options)
+                            buildOptions.isFramework = metaInfo.isFrameworkApk
+                            buildOptions.resourcesAreCompressed = metaInfo.compressionType
+                            buildOptions.doNotCompress = metaInfo.doNotCompress
+                        }
+
+                        resources.setSdkInfo(metaInfo.sdkInfo)
+                        resources.setVersionInfo(metaInfo.versionInfo)
+                        resources.setSharedLibrary(metaInfo.sharedLibrary)
+                        resources.setSparseResources(metaInfo.sparseResources)
                     }
 
-                    resources.setSdkInfo(metaInfo.sdkInfo)
-                    resources.setVersionInfo(metaInfo.versionInfo)
-                    resources.setSharedLibrary(metaInfo.sharedLibrary)
-                    resources.setSparseResources(metaInfo.sparseResources)
-                }
+                    val manifestFile = cacheDirectory.resolve("AndroidManifest.xml")
 
-                val manifestFile = cacheDirectory.resolve("AndroidManifest.xml")
+                    ResXmlPatcher.fixingPublicAttrsInProviderAttributes(manifestFile)
 
-                ResXmlPatcher.fixingPublicAttrsInProviderAttributes(manifestFile)
+                    val aaptFile = cacheDirectory.resolve("aapt_temp_file")
 
-                val aaptFile = cacheDirectory.resolve("aapt_temp_file")
+                    // delete if it exists
+                    Files.deleteIfExists(aaptFile.toPath())
 
-                // delete if it exists
-                Files.deleteIfExists(aaptFile.toPath())
+                    val resDirectory = cacheDirectory.resolve("res")
+                    val includedFiles = metaInfo.usesFramework.ids.map { id ->
+                        androlibResources.getFrameworkApk(
+                            id, metaInfo.usesFramework.tag
+                        )
+                    }.toTypedArray()
 
-                val resDirectory = cacheDirectory.resolve("res")
-                val includedFiles = metaInfo.usesFramework.ids.map { id ->
-                    androlibResources.getFrameworkApk(
-                        id, metaInfo.usesFramework.tag
+                    logger.info("Compiling resources")
+                    androlibResources.aaptPackage(
+                        aaptFile, manifestFile, resDirectory, null, null, includedFiles
                     )
-                }.toTypedArray()
 
-                logger.info("Compiling resources")
-                androlibResources.aaptPackage(
-                    aaptFile, manifestFile, resDirectory, null, null, includedFiles
-                )
-
-                resourceFile = aaptFile
-            } finally {
-                cacheDirectory.close()
+                    resourceFile = aaptFile
+                } finally {
+                    cacheDirectory.close()
+                }
             }
+            else -> logger.info("Not compiling resources because resource patching is not required")
         }
 
         logger.trace("Creating new dex file")
@@ -242,7 +190,9 @@ class Patcher(private val options: PatcherOptions) {
         return PatcherResult(
             dexFiles.map {
                 app.revanced.patcher.util.dex.DexFile(it.key, it.value.readAt(0))
-            }, metaInfo.doNotCompress?.toList(), resourceFile
+            },
+            metaInfo.doNotCompress?.toList(),
+            resourceFile
         )
     }
 
@@ -251,16 +201,29 @@ class Patcher(private val options: PatcherOptions) {
      * @param patches [Patch]es The patches to add.
      */
     fun addPatches(patches: Iterable<Class<out Patch<Data>>>) {
-        for (patch in patches) {
-            val needsVersion = patch.sincePatcherVersion
-            if (needsVersion != null && needsVersion > version) {
-                logger.error("Patch '${patch.patchName}' requires Patcher version $needsVersion or higher")
-                logger.error("Current Patcher version is $version")
-                logger.warn("Skipping '${patch.patchName}'!")
-                continue // TODO: continue or halt/throw?
-            }
+        /**
+         * Fill the cache with the instances of the [Patch]es for later use.
+         * Note: Dependencies of the [Patch] will be cached as well.
+         */
+        fun Class<out Patch<Data>>.isResource() {
+            this.also {
+                if (!ResourcePatch::class.java.isAssignableFrom(it)) return
+                // set the mode to decode all resources before running the patches
+                resourceDecodingMode = ResourceDecodingMode.FULL
+            }.dependencies?.forEach { it.java.isResource() }
         }
-        data.patches.addAll(patches)
+
+        data.patches.addAll(
+            patches.onEach(Class<out Patch<Data>>::isResource).onEach { patch ->
+                val needsVersion = patch.sincePatcherVersion
+                if (needsVersion != null && needsVersion > version) {
+                    logger.error("Patch '${patch.patchName}' requires Patcher version $needsVersion or higher")
+                    logger.error("Current Patcher version is $version")
+                    logger.warn("Skipping '${patch.patchName}'!")
+                    return@onEach // TODO: continue or halt/throw?
+                }
+            }
+        )
     }
 
     /**
@@ -286,49 +249,119 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         // recursively apply all dependency patches
-        patch.dependencies?.forEach {
-            val patchDependency = it.java
-
-            val result = applyPatch(patchDependency, appliedPatches)
+        patch.dependencies?.forEach { dependency ->
+            val result = applyPatch(dependency.java, appliedPatches)
 
             if (result.isSuccess()) return@forEach
 
             val error = result.error()!!
             val errorMessage = error.cause ?: error.message
-            return PatchResultError("'$patchName' depends on '${patchDependency.patchName}' but the following error was raised: $errorMessage")
+            return PatchResultError("'$patchName' depends on '${patch.patchName}' but the following error was raised: $errorMessage")
+        }
+
+        patch.deprecated?.let { (reason, replacement) ->
+            logger.warn("'$patchName' is deprecated, reason: $reason")
+            if (replacement != null) logger.warn("Use '${replacement.java.patchName}' instead")
         }
 
         val patchInstance = patch.getDeclaredConstructor().newInstance()
 
-        // if the current patch is a resource patch but resource patching is disabled, return an error
-        val isResourcePatch = patchInstance is ResourcePatch
-        if (!options.patchResources && isResourcePatch) {
-            return PatchResultError("'$patchName' is a resource patch, but resource patching is disabled")
-        }
-
-        patch.deprecated?.let { (reason, replacement) ->
-            logger.warn("'$patchName' is deprecated: $reason")
-            if (replacement != null) logger.warn("Use '${replacement.java.patchName}' instead")
-        }
-
-        // TODO: find a solution for this
+        val isResourcePatch = ResourcePatch::class.java.isAssignableFrom(patch)
+        // TODO: implement this in a more polymorphic way
         val data = if (isResourcePatch) {
             data.resourceData
         } else {
-            val bytecodeData = data.bytecodeData
-            (patchInstance as BytecodePatch).fingerprints?.resolve(bytecodeData, bytecodeData.classes.internalClasses)
-            bytecodeData
+            data.bytecodeData.also { data ->
+                (patchInstance as BytecodePatch).fingerprints?.resolve(
+                    data,
+                    data.classes.internalClasses
+                )
+            }
         }
 
         logger.trace("Executing '$patchName' of type: ${if (isResourcePatch) "resource" else "bytecode"}")
 
         return try {
-            val result = patchInstance.execute(data)
-            appliedPatches[patchName] = AppliedPatch(patchInstance, result.isSuccess())
-            result
+            patchInstance.execute(data).also {
+                appliedPatches[patchName] = AppliedPatch(patchInstance, it.isSuccess())
+            }
         } catch (e: Exception) {
-            appliedPatches[patchName] = AppliedPatch(patchInstance, false)
-            PatchResultError(e)
+            PatchResultError(e).also {
+                appliedPatches[patchName] = AppliedPatch(patchInstance, false)
+            }
+        }
+    }
+
+    /**
+     * Decode resources for the patcher.
+     *
+     * @param mode The [ResourceDecodingMode] to use when decoding.
+     */
+    private fun decodeResources(mode: ResourceDecodingMode) {
+        val extInputFile = ExtFile(options.inputFile)
+        try {
+            val androlib = Androlib(BuildOptions().also { it.setBuildOptions(options) })
+            val resourceTable = androlib.getResTable(extInputFile, true)
+            when (mode) {
+                ResourceDecodingMode.FULL -> {
+                    val outDir = File(options.resourceCacheDirectory)
+                    if (outDir.exists()) {
+                        logger.info("Deleting existing resource cache directory")
+                        if (!outDir.deleteRecursively()) {
+                            logger.error("Failed to delete existing resource cache directory")
+                        }
+                    }
+                    outDir.mkdirs()
+
+                    logger.info("Decoding resources")
+
+                    // decode resources to cache directory
+                    androlib.decodeManifestWithResources(extInputFile, outDir, resourceTable)
+                    androlib.decodeResourcesFull(extInputFile, outDir, resourceTable)
+
+                    // read additional metadata from the resource table
+                    data.packageMetadata.let { metadata ->
+                        metadata.metaInfo.usesFramework = UsesFramework().also { framework ->
+                            framework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
+                        }
+
+                        // read files to not compress
+                        metadata.metaInfo.doNotCompress = buildList {
+                            androlib.recordUncompressedFiles(extInputFile, this)
+                        }
+                    }
+
+                }
+                ResourceDecodingMode.MANIFEST_ONLY -> {
+                    logger.info("Decoding AndroidManifest.xml only, because resources are not needed")
+
+                    // create decoder for the resource table
+                    val decoder = ResAttrDecoder()
+                    decoder.currentPackage = ResPackage(resourceTable, 0, null)
+
+                    // create xml parser with the decoder
+                    val axmlParser = AXmlResourceParser()
+                    axmlParser.attrDecoder = decoder
+
+                    // parse package information with the decoder and parser which will set required values in the resource table
+                    // instead of decodeManifest another more low level solution can be created to make it faster/better
+                    XmlPullStreamDecoder(
+                        axmlParser, AndrolibResources().resXmlSerializer
+                    ).decodeManifest(
+                        extInputFile.directory.getFileInput("AndroidManifest.xml"), nullOutputStream
+                    )
+                }
+            }
+
+            // read of the resourceTable which is created by reading the manifest file
+            data.packageMetadata.let { metadata ->
+                metadata.packageName = resourceTable.currentResPackage.name
+                metadata.packageVersion = resourceTable.versionInfo.versionName
+                metadata.metaInfo.versionInfo = resourceTable.versionInfo
+                metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
+            }
+        } finally {
+            extInputFile.close()
         }
     }
 
@@ -338,6 +371,9 @@ class Patcher(private val options: PatcherOptions) {
      * @return A pair of the name of the [Patch] and its [PatchResult].
      */
     fun applyPatches(stopOnError: Boolean = false) = sequence {
+        // prevent from decoding the manifest twice if it is not needed
+        if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
+
         logger.trace("Applying all patches")
 
         val appliedPatches = LinkedHashMap<String, AppliedPatch>() // first is name
@@ -364,6 +400,21 @@ class Patcher(private val options: PatcherOptions) {
             }
         }
     }
+
+    /**
+     * The type of decoding the resources.
+     */
+    private enum class ResourceDecodingMode {
+        /**
+         * Decode all resources.
+         */
+        FULL,
+
+        /**
+         * Decode the manifest file only.
+         */
+        MANIFEST_ONLY,
+    }
 }
 
 /**
@@ -373,9 +424,3 @@ class Patcher(private val options: PatcherOptions) {
  * @param success The result of the [Patch].
  */
 internal data class AppliedPatch(val patchInstance: Patch<Data>, val success: Boolean)
-
-private fun BuildOptions.setBuildOptions(options: PatcherOptions) {
-    this.aaptPath = options.aaptPath
-    this.useAapt2 = true
-    this.frameworkFolderLocation = options.frameworkFolderLocation
-}
