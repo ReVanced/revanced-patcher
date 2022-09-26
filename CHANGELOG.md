@@ -1,3 +1,10 @@
+## [5.1.1](https://github.com/revanced/revanced-patcher/compare/v5.1.0...v5.1.1) (2022-09-26)
+
+
+### Performance Improvements
+
+* decode resources only when necessary ([3ba4be2](https://github.com/revanced/revanced-patcher/commit/3ba4be240bf0a424e4bbfbaca9605644fda0984e))
+
 # [5.1.0](https://github.com/revanced/revanced-patcher/compare/v5.0.1...v5.1.0) (2022-09-26)
 
 
