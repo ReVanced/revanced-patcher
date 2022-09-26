@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/revanced/revanced-patcher/compare/v5.0.1...v5.1.0) (2022-09-26)
+
+
+### Features
+
+* RwLock for opening files in `DomFileEditor` ([db4348c](https://github.com/revanced/revanced-patcher/commit/db4348c4faf51bfe29678baacfbe76ba645ec0b9))
+
 ## [5.0.1](https://github.com/revanced/revanced-patcher/compare/v5.0.0...v5.0.1) (2022-09-23)
 
 
