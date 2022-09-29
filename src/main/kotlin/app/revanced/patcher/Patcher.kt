@@ -207,7 +207,7 @@ class Patcher(private val options: PatcherOptions) {
          */
         fun Class<out Patch<Data>>.isResource() {
             this.also {
-                if (!ResourcePatch::class.java.isAssignableFrom(it)) return
+                if (!ResourcePatch::class.java.isAssignableFrom(it)) return@also
                 // set the mode to decode all resources before running the patches
                 resourceDecodingMode = ResourceDecodingMode.FULL
             }.dependencies?.forEach { it.java.isResource() }
@@ -249,14 +249,15 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         // recursively apply all dependency patches
-        patch.dependencies?.forEach { dependency ->
-            val result = applyPatch(dependency.java, appliedPatches)
+        patch.dependencies?.forEach { dependencyClass ->
+            val dependency = dependencyClass.java
 
+            val result = applyPatch(dependency, appliedPatches)
             if (result.isSuccess()) return@forEach
 
             val error = result.error()!!
             val errorMessage = error.cause ?: error.message
-            return PatchResultError("'$patchName' depends on '${patch.patchName}' but the following error was raised: $errorMessage")
+            return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
         }
 
         patch.deprecated?.let { (reason, replacement) ->
