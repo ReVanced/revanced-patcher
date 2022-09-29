@@ -1,3 +1,11 @@
+## [5.1.2](https://github.com/revanced/revanced-patcher/compare/v5.1.1...v5.1.2) (2022-09-29)
+
+
+### Bug Fixes
+
+* check dependencies for resource patches ([9c07ffc](https://github.com/revanced/revanced-patcher/commit/9c07ffcc7af9f088426528561f4321c5cc6b5b15))
+* use instruction index instead of strings list index for `StringMatch` ([843e62a](https://github.com/revanced/revanced-patcher/commit/843e62ad290ee0a707be9322ee943921da3ea420))
+
 ## [5.1.1](https://github.com/revanced/revanced-patcher/compare/v5.1.0...v5.1.1) (2022-09-26)
 
 
