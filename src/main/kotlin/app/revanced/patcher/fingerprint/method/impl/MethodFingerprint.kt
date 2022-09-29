@@ -102,17 +102,17 @@ abstract class MethodFingerprint(
 
                             val stringsList = methodFingerprint.strings.toMutableList()
 
-                            implementation.instructions.forEach { instruction ->
-                                if (instruction.opcode.ordinal != Opcode.CONST_STRING.ordinal) return@forEach
+                            implementation.instructions.forEachIndexed { instructionIndex, instruction ->
+                                if (instruction.opcode.ordinal != Opcode.CONST_STRING.ordinal) return@forEachIndexed
 
                                 val string = ((instruction as ReferenceInstruction).reference as StringReference).string
                                 val index = stringsList.indexOfFirst { it == string }
-                                if (index == -1) return@forEach
+                                if (index == -1) return@forEachIndexed
 
                                 add(
                                     StringMatch(
                                         string,
-                                        index
+                                        instructionIndex
                                     )
                                 )
                                 stringsList.removeAt(index)
