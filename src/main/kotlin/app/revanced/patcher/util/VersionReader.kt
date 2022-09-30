@@ -4,15 +4,15 @@ import java.util.*
 
 internal object VersionReader {
     @JvmStatic
-    private val props = Properties().apply {
+    private val properties = Properties().apply {
         load(
-            VersionReader::class.java.getResourceAsStream("/revanced-patcher/version.properties")
+            VersionReader::class.java.getResourceAsStream("/app/revanced/patcher/version.properties")
                 ?: throw IllegalStateException("Could not load version.properties")
         )
     }
 
     @JvmStatic
     fun read(): String {
-        return props.getProperty("version") ?: throw IllegalStateException("Version not found")
+        return properties.getProperty("version") ?: throw IllegalStateException("Version not found")
     }
 }

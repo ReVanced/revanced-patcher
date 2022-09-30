@@ -1,6 +1,6 @@
 package app.revanced.patcher.fingerprint.method.impl
 
-import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyScanThreshold
 import app.revanced.patcher.extensions.parametersEqual
@@ -47,10 +47,10 @@ abstract class MethodFingerprint(
          * @return True if the resolution was successful, false otherwise.
          */
         fun Iterable<MethodFingerprint>.resolve(context: BytecodeContext, classes: Iterable<ClassDef>) {
-            for (fingerprint in this) // For each fingerprint
-                classes@ for (classDef in classes) // search through all classes for the fingerprint
+            for (fingerprint in this)
+                classes@ for (classDef in classes)
                     if (fingerprint.resolve(context, classDef))
-                        break@classes // if the resolution succeeded, continue with the next fingerprint
+                        break@classes // If the resolution succeeded, continue with the next fingerprint.
         }
 
         /**
@@ -167,18 +167,18 @@ abstract class MethodFingerprint(
                     val patternOpcode = pattern.elementAt(patternIndex)
 
                     if (patternOpcode != null && patternOpcode.ordinal != originalOpcode.ordinal) {
-                        // reaching maximum threshold (0) means,
-                        // the pattern does not match to the current instructions
+                        // Reaching maximum threshold (0) means,
+                        // the pattern does not match to the current instructions.
                         if (threshold-- == 0) break
                     }
 
                     if (patternIndex < patternLength - 1) {
-                        // if the entire pattern has not been scanned yet
-                        // continue the scan
+                        // If the entire pattern has not been scanned yet
+                        // continue the scan.
                         patternIndex++
                         continue
                     }
-                    // the pattern is valid, generate warnings if fuzzyPatternScanMethod is FuzzyPatternScanMethod
+                    // The pattern is valid, generate warnings if fuzzyPatternScanMethod is FuzzyPatternScanMethod.
                     val result =
                         MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult(
                             index,
@@ -290,7 +290,7 @@ data class MethodFingerprintResult(
      * Use [classDef] where possible.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    val mutableClass by lazy { context.proxy(classDef).mutableClass }
+    val mutableClass by lazy { context.classes.proxy(classDef).mutableClass }
 
     /**
      * Returns a mutable clone of [method]

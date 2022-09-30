@@ -2,9 +2,9 @@
 
 package app.revanced.patcher.util.patch
 
-import app.revanced.patcher.data.Context
-import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchClass
+import dalvik.system.DexClassLoader
 import org.jf.dexlib2.DexFileFactory
 import java.io.File
 import java.net.URLClassLoader
@@ -12,64 +12,63 @@ import java.util.jar.JarFile
 
 /**
  * A patch bundle.
-
- * @param path The path to the patch bundle.
+ *
+ * @param patchClassNames The class names of [Patch]es.
  */
-sealed class PatchBundle(path: String) : File(path) {
-    internal fun loadPatches(classLoader: ClassLoader, classNames: Iterator<String>) = buildList {
-        classNames.forEach { className ->
-            val clazz = classLoader.loadClass(className)
-            if (!clazz.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) return@forEach
-            @Suppress("UNCHECKED_CAST") this.add(clazz as Class<out Patch<Context>>)
+abstract class PatchBundle(private val patchClassNames: Iterable<String>) {
+
+    internal fun loadPatches(classLoader: ClassLoader) = buildList {
+        patchClassNames.sorted().forEach { className ->
+            classLoader.loadClass(className).let {
+                if (!it.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) return@forEach
+                @Suppress("UNCHECKED_CAST") this@buildList.add(it as PatchClass)
+            }
         }
-    }.sortedBy { it.patchName }
+    }
 
     /**
      * A patch bundle of type [Jar].
      *
-     * @param patchBundlePath The path to the patch bundle.
+     * @param patchBundlePath The path to a patch bundle.
      */
-    class Jar(patchBundlePath: String) : PatchBundle(patchBundlePath) {
+    class Jar(patchBundlePath: String) : PatchBundle(JarFile(patchBundlePath).entries().toList()
+        .filter { it.name.endsWith(".class") && !it.name.contains("$") }.map { classFile ->
+            classFile.realName
+                .let { it.substring(0, it.length - (CLASS_FILE_EXTENSION_LENGTH + 1)) } // remove file extension
+                .replace('/', '.') // file path to package name
+        }) {
+        private val patchBundleUrls = arrayOf(File(patchBundlePath).toURI().toURL())
 
         /**
-         * Load patches from the patch bundle.
-         *
-         * Patches will be loaded with a new [URLClassLoader].
-         */
-        fun loadPatches() = loadPatches(
-            URLClassLoader(
-                arrayOf(this.toURI().toURL()),
-                Thread.currentThread().contextClassLoader // TODO: find out why this is required
-            ),
-            StringIterator(
-                JarFile(this)
-                    .entries()
-                    .toList() // TODO: find a cleaner solution than that to filter non class files
-                    .filter {
-                        it.name.endsWith(".class") && !it.name.contains("$")
-                    }
-                    .iterator()
-            ) {
-                it.realName.replace('/', '.').replace(".class", "")
-            }
-        )
+         * (Re)load patches from the patch bundle.
+         **/
+        fun loadPatches() = loadPatches(URLClassLoader(patchBundleUrls))
+
+        companion object {
+            private const val CLASS_FILE_EXTENSION_LENGTH = 5
+        }
     }
 
     /**
      * A patch bundle of type [Dex] format.
      *
      * @param patchBundlePath The path to a patch bundle of dex format.
-     * @param dexClassLoader The dex class loader.
      */
-    class Dex(patchBundlePath: String, private val dexClassLoader: ClassLoader) : PatchBundle(patchBundlePath) {
+    class Dex(private val patchBundlePath: String) : PatchBundle(
+        DexFileFactory.loadDexFile(patchBundlePath, null).classes.map {
+            it.type
+                .substring(1, it.length - 1)
+                .replace('/', '.')
+        }
+    ) {
+
         /**
-         * Load patches from the patch bundle.
+         * (Re)load patches from the patch bundle.
          *
-         * Patches will be loaded to the provided [dexClassLoader].
+         * @param optimizedDirectory The directory for [DexClassLoader].
          */
-        fun loadPatches() = loadPatches(dexClassLoader,
-            StringIterator(DexFileFactory.loadDexFile(path, null).classes.iterator()) { classDef ->
-                classDef.type.substring(1, classDef.length - 1).replace('/', '.')
-            })
+        fun loadPatches(optimizedDirectory: String) = loadPatches(
+            DexClassLoader(patchBundlePath, optimizedDirectory, null, null)
+        )
     }
 }

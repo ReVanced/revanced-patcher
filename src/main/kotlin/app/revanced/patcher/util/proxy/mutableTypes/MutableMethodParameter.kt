@@ -4,7 +4,7 @@ import app.revanced.patcher.util.proxy.mutableTypes.MutableAnnotation.Companion.
 import org.jf.dexlib2.base.BaseMethodParameter
 import org.jf.dexlib2.iface.MethodParameter
 
-// TODO: finish overriding all members if necessary
+// TODO: Finish overriding all members if necessary.
 class MutableMethodParameter(parameter: MethodParameter) : MethodParameter, BaseMethodParameter() {
     private var type = parameter.type
     private var name = parameter.name

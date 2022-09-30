@@ -1,16 +1,32 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.util.dex.DexFile
-import java.io.File
+import app.revanced.patcher.apk.Apk
 
 /**
  * The result of a patcher.
- * @param dexFiles The patched dex files.
- * @param doNotCompress List of relative paths to files to exclude from compressing.
- * @param resourceFile File containing resources that need to be extracted into the APK.
+ * @param apkFiles The patched [Apk] files.
  */
-data class PatcherResult(
-    val dexFiles: List<DexFile>,
-    val doNotCompress: List<String>? = null,
-    val resourceFile: File?
-)
+data class PatcherResult(val apkFiles: List<Patch>) {
+
+    /**
+     * The result of a patch.
+     *
+     * @param apk The patched [Apk] file.
+     */
+    sealed class Patch(val apk: Apk) {
+
+        /**
+         * The result of a patch of an [Apk.Split] file.
+         *
+         * @param apk The patched [Apk.Split] file.
+         */
+        class Split(apk: Apk.Split) : Patch(apk)
+
+        /**
+         * The result of a patch of an [Apk.Split] file.
+         *
+         * @param apk The patched [Apk.Base] file.
+         */
+        class Base(apk: Apk.Base) : Patch(apk)
+    }
+}

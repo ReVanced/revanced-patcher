@@ -1,11 +1,13 @@
 package app.revanced.patcher.extensions
 
-import app.revanced.patcher.annotation.*
-import app.revanced.patcher.data.Context
+import app.revanced.patcher.annotation.Compatibility
+import app.revanced.patcher.annotation.Description
+import app.revanced.patcher.annotation.Name
+import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.patch.OptionsContainer
-import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchClass
 import app.revanced.patcher.patch.PatchOptions
 import app.revanced.patcher.patch.annotations.DependsOn
 import kotlin.reflect.KClass
@@ -40,25 +42,25 @@ private fun <T : Annotation> Class<*>.findAnnotationRecursively(
 }
 
 object PatchExtensions {
-    val Class<out Patch<Context>>.patchName: String
+    val PatchClass.patchName: String
         get() = findAnnotationRecursively(Name::class)?.name ?: this.simpleName
 
-    val Class<out Patch<Context>>.version
+    val PatchClass.version
         get() = findAnnotationRecursively(Version::class)?.version
 
-    val Class<out Patch<Context>>.include
+    val PatchClass.include
         get() = findAnnotationRecursively(app.revanced.patcher.patch.annotations.Patch::class)!!.include
 
-    val Class<out Patch<Context>>.description
+    val PatchClass.description
         get() = findAnnotationRecursively(Description::class)?.description
 
-    val Class<out Patch<Context>>.dependencies
+    val PatchClass.dependencies
         get() = findAnnotationRecursively(DependsOn::class)?.dependencies
 
-    val Class<out Patch<Context>>.compatiblePackages
+    val PatchClass.compatiblePackages
         get() = findAnnotationRecursively(Compatibility::class)?.compatiblePackages
 
-    val Class<out Patch<Context>>.options: PatchOptions?
+    val PatchClass.options: PatchOptions?
         get() = kotlin.companionObject?.let { cl ->
             if (cl.visibility != KVisibility.PUBLIC) return null
             kotlin.companionObjectInstance?.let {

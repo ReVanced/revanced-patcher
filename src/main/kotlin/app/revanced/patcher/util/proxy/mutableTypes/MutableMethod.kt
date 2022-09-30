@@ -13,7 +13,7 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
     private var accessFlags = method.accessFlags
     private var returnType = method.returnType
 
-    // Create own mutable MethodImplementation (due to not being able to change members like register count)
+    // Create own mutable MethodImplementation (due to not being able to change members like register count).
     private val _implementation by lazy { method.implementation?.let { MutableMethodImplementation(it) } }
     private val _annotations by lazy { method.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
     private val _parameters by lazy { method.parameters.map { parameter -> parameter.toMutable() }.toMutableList() }

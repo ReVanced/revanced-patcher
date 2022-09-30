@@ -1,13 +1,16 @@
 package app.revanced.patcher.usage.bytecode
 
+import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
-import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.replaceInstruction
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.BytecodePatch
+import app.revanced.patcher.patch.OptionsContainer
+import app.revanced.patcher.patch.PatchOption
+import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
 import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
@@ -60,7 +63,7 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         implementation.replaceStringAt(startIndex, "Hello, ReVanced! Editing bytecode.")
 
         // Get the class in which the method matching our fingerprint is defined in.
-        val mainClass = context.findClass {
+        val mainClass = context.classes.findClassProxied {
             it.type == result.classDef.type
         }!!.mutableClass
 
@@ -129,10 +132,10 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         )
 
         // Finally, tell the patcher that this patch was a success.
-        // You can also return PatchResultError with a message.
+        // You can also return PatchResult.Error with a message.
         // If an exception is thrown inside this function,
         // a PatchResultError will be returned with the error message.
-        return PatchResultSuccess()
+        return PatchResult.Success
     }
 
     /**

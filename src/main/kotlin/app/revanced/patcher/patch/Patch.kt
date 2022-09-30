@@ -1,8 +1,8 @@
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.data.Context
-import app.revanced.patcher.data.ResourceContext
+import app.revanced.patcher.BytecodeContext
+import app.revanced.patcher.Context
+import app.revanced.patcher.ResourceContext
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import java.io.Closeable
 
@@ -42,3 +42,8 @@ interface ResourcePatch : Patch<ResourceContext>
 abstract class BytecodePatch(
     internal val fingerprints: Iterable<MethodFingerprint>? = null
 ) : Patch<BytecodeContext>
+
+/**
+ * The class type of [Patch].
+ */
+typealias PatchClass = Class<out Patch<Context>>

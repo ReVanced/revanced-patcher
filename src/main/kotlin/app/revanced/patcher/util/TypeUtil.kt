@@ -1,6 +1,6 @@
 package app.revanced.patcher.util
 
-import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
 
 object TypeUtil {
@@ -12,7 +12,7 @@ object TypeUtil {
      */
     fun BytecodeContext.traverseClassHierarchy(targetClass: MutableClass, callback: MutableClass.() -> Unit) {
         callback(targetClass)
-        this.findClass(targetClass.superclass ?: return)?.mutableClass?.let {
+        this.classes.findClassProxied(targetClass.superclass ?: return)?.mutableClass?.let {
             traverseClassHierarchy(it, callback)
         }
     }

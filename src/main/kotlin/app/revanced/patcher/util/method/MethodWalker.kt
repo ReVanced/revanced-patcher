@@ -1,6 +1,6 @@
 package app.revanced.patcher.util.method
 
-import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction
@@ -41,7 +41,7 @@ class MethodWalker internal constructor(
             val instruction = instructions.elementAt(offset)
 
             val newMethod = (instruction as ReferenceInstruction).reference as MethodReference
-            val proxy = bytecodeContext.findClass(newMethod.definingClass)!!
+            val proxy = bytecodeContext.classes.findClassProxied(newMethod.definingClass)!!
 
             val methods = if (walkMutable) proxy.mutableClass.methods else proxy.immutableClass.methods
             currentMethod = methods.first {
