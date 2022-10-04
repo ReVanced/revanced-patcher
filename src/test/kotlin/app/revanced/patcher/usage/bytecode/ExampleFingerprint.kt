@@ -5,7 +5,6 @@ import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
-import app.revanced.patcher.usage.bytecode.ExampleBytecodeCompatibility
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcode
 
