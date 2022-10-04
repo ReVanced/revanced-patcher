@@ -58,12 +58,6 @@ object PatchExtensions {
                 if (cl == Patch::class) null else cl
             }
         }
-
-    @JvmStatic
-    fun Class<out Patch<Data>>.dependsOn(patch: Class<out Patch<Data>>): Boolean {
-        if (this.patchName == patch.patchName) throw IllegalArgumentException("thisval and patch may not be the same")
-        return this.dependencies?.any { it.java.patchName == this@dependsOn.patchName } == true
-    }
 }
 
 object MethodFingerprintExtensions {
