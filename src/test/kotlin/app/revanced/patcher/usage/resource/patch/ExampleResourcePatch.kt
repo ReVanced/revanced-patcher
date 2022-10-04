@@ -7,7 +7,7 @@ import app.revanced.patcher.data.impl.ResourceData
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.Patch
-import app.revanced.patcher.patch.impl.ResourcePatch
+import app.revanced.patcher.patch.ResourcePatch
 import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
 import org.w3c.dom.Element
 
@@ -16,7 +16,7 @@ import org.w3c.dom.Element
 @Description("Example demonstration of a resource patch.")
 @ExampleResourceCompatibility
 @Version("0.0.1")
-class ExampleResourcePatch : ResourcePatch() {
+class ExampleResourcePatch : ResourcePatch {
     override fun execute(data: ResourceData): PatchResult {
         data.xmlEditor["AndroidManifest.xml"].use { editor ->
             val element = editor // regular DomFileEditor

@@ -1,8 +1,9 @@
 package app.revanced.patcher.patch
 
 import app.revanced.patcher.data.Data
-import app.revanced.patcher.patch.impl.BytecodePatch
-import app.revanced.patcher.patch.impl.ResourcePatch
+import app.revanced.patcher.data.impl.BytecodeData
+import app.revanced.patcher.data.impl.ResourceData
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import java.io.Closeable
 
 /**
@@ -12,11 +13,11 @@ import java.io.Closeable
  * If it implements [Closeable], it will be closed after all patches have been executed.
  * Closing will be done in reverse execution order.
  */
-abstract class Patch<out T : Data> {
+sealed interface Patch<out T : Data> {
     /**
      * The main function of the [Patch] which the patcher will call.
      */
-    abstract fun execute(data: @UnsafeVariance T): PatchResult
+    fun execute(data: @UnsafeVariance T): PatchResult
 }
 
 abstract class OptionsContainer {
@@ -32,3 +33,16 @@ abstract class OptionsContainer {
         return opt
     }
 }
+
+/**
+ * Resource patch for the Patcher.
+ */
+interface ResourcePatch : Patch<ResourceData>
+
+/**
+ * Bytecode patch for the Patcher.
+ * @param fingerprints A list of [MethodFingerprint] this patch relies on.
+ */
+abstract class BytecodePatch(
+    internal val fingerprints: Iterable<MethodFingerprint>? = null
+) : Patch<BytecodeData>

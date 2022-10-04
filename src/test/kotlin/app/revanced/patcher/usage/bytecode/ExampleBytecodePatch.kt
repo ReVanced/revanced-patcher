@@ -13,7 +13,7 @@ import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
-import app.revanced.patcher.patch.impl.BytecodePatch
+import app.revanced.patcher.patch.BytecodePatch
 import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable

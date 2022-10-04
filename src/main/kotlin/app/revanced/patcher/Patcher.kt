@@ -11,8 +11,8 @@ import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.PatchResultError
 import app.revanced.patcher.patch.PatchResultSuccess
-import app.revanced.patcher.patch.impl.BytecodePatch
-import app.revanced.patcher.patch.impl.ResourcePatch
+import app.revanced.patcher.patch.BytecodePatch
+import app.revanced.patcher.patch.ResourcePatch
 import app.revanced.patcher.util.ListBackedSet
 import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
