@@ -20,20 +20,6 @@ sealed interface Patch<out T : Data> {
     fun execute(data: @UnsafeVariance T): PatchResult
 }
 
-abstract class OptionsContainer {
-    /**
-     * A list of [PatchOption]s.
-     * @see PatchOptions
-     */
-    @Suppress("MemberVisibilityCanBePrivate")
-    val options = PatchOptions()
-
-    protected fun <T> option(opt: PatchOption<T>): PatchOption<T> {
-        options.register(opt)
-        return opt
-    }
-}
-
 /**
  * Resource patch for the Patcher.
  */
