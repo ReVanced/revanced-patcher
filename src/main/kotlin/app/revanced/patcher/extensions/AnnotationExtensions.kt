@@ -65,8 +65,6 @@ object MethodFingerprintExtensions {
         get() = javaClass.recursiveAnnotation(Name::class)?.name ?: this.javaClass.simpleName
     val MethodFingerprint.version get() = javaClass.recursiveAnnotation(Version::class)?.version ?: "0.0.1"
     val MethodFingerprint.description get() = javaClass.recursiveAnnotation(Description::class)?.description
-    val MethodFingerprint.compatiblePackages get() = javaClass.recursiveAnnotation(Compatibility::class)?.compatiblePackages
-    val MethodFingerprint.matchingMethod get() = javaClass.recursiveAnnotation(app.revanced.patcher.fingerprint.method.annotation.MatchingMethod::class)
     val MethodFingerprint.fuzzyPatternScanMethod get() = javaClass.recursiveAnnotation(app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod::class)
     val MethodFingerprint.fuzzyScanThreshold get() = fuzzyPatternScanMethod?.threshold ?: 0
 }
