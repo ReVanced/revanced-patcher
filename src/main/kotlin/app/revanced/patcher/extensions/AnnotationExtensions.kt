@@ -58,7 +58,6 @@ object PatchExtensions {
                 if (cl == Patch::class) null else cl
             }
         }
-    val Class<out Patch<Data>>.sincePatcherVersion get() = recursiveAnnotation(SincePatcher::class)?.version
 
     @JvmStatic
     fun Class<out Patch<Data>>.dependsOn(patch: Class<out Patch<Data>>): Boolean {

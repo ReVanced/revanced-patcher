@@ -5,7 +5,6 @@ import app.revanced.patcher.data.impl.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.deprecated
 import app.revanced.patcher.extensions.PatchExtensions.patchName
-import app.revanced.patcher.extensions.PatchExtensions.sincePatcherVersion
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.Patch
@@ -213,17 +212,7 @@ class Patcher(private val options: PatcherOptions) {
             }.dependencies?.forEach { it.java.isResource() }
         }
 
-        data.patches.addAll(
-            patches.onEach(Class<out Patch<Data>>::isResource).onEach { patch ->
-                val needsVersion = patch.sincePatcherVersion
-                if (needsVersion != null && needsVersion > version) {
-                    logger.error("Patch '${patch.patchName}' requires Patcher version $needsVersion or higher")
-                    logger.error("Current Patcher version is $version")
-                    logger.warn("Skipping '${patch.patchName}'!")
-                    return@onEach // TODO: continue or halt/throw?
-                }
-            }
-        )
+        data.patches.addAll(patches.onEach(Class<out Patch<Data>>::isResource))
     }
 
     /**
