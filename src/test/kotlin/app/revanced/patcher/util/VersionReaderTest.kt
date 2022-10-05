@@ -1,8 +1,7 @@
 package app.revanced.patcher.util
 
-import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 internal class VersionReaderTest {
     @Test

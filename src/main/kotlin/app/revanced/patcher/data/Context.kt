@@ -1,6 +1,9 @@
-package app.revanced.patcher.data.impl
+package app.revanced.patcher.data
 
-import app.revanced.patcher.data.Data
+import app.revanced.patcher.util.ProxyBackedClassList
+import app.revanced.patcher.util.method.MethodWalker
+import org.jf.dexlib2.iface.ClassDef
+import org.jf.dexlib2.iface.Method
 import org.w3c.dom.Document
 import java.io.Closeable
 import java.io.File
@@ -11,7 +14,79 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
-class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<File> {
+/**
+ * A common interface to constrain [Context] to [BytecodeContext] and [ResourceContext].
+ */
+
+sealed interface Context
+
+class BytecodeContext internal constructor(classes: MutableList<ClassDef>) : Context {
+    /**
+     * The list of classes.
+     */
+    val classes = ProxyBackedClassList(classes)
+
+    /**
+     * Find a class by a given class name.
+     *
+     * @param className The name of the class.
+     * @return A proxy for the first class that matches the class name.
+     */
+    fun findClass(className: String) = findClass { it.type.contains(className) }
+
+    /**
+     * Find a class by a given predicate.
+     *
+     * @param predicate A predicate to match the class.
+     * @return A proxy for the first class that matches the predicate.
+     */
+    fun findClass(predicate: (ClassDef) -> Boolean) =
+        // if we already proxied the class matching the predicate...
+        classes.proxies.firstOrNull { predicate(it.immutableClass) } ?:
+        // else resolve the class to a proxy and return it, if the predicate is matching a class
+        classes.find(predicate)?.let { proxy(it) }
+
+    fun proxy(classDef: ClassDef): app.revanced.patcher.util.proxy.ClassProxy {
+        var proxy = this.classes.proxies.find { it.immutableClass.type == classDef.type }
+        if (proxy == null) {
+            proxy = app.revanced.patcher.util.proxy.ClassProxy(classDef)
+            this.classes.add(proxy)
+        }
+        return proxy
+    }
+
+    private companion object {
+        inline fun <reified T> Iterable<T>.find(predicate: (T) -> Boolean): T? {
+            for (element in this) {
+                if (predicate(element)) {
+                    return element
+                }
+            }
+            return null
+        }
+    }
+}
+
+/**
+ * Create a [MethodWalker] instance for the current [BytecodeContext].
+ *
+ * @param startMethod The method to start at.
+ * @return A [MethodWalker] instance.
+ */
+fun BytecodeContext.toMethodWalker(startMethod: Method): MethodWalker {
+    return MethodWalker(this, startMethod)
+}
+
+internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair<T, Int>? {
+    for ((index, element) in this.withIndex()) {
+        if (predicate(element)) {
+            return element to index
+        }
+    }
+    return null
+}
+
+class ResourceContext internal constructor(private val resourceCacheDirectory: File) : Context, Iterable<File> {
     val xmlEditor = XmlFileHolder()
 
     operator fun get(path: String) = resourceCacheDirectory.resolve(path)
@@ -23,7 +98,7 @@ class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<Fi
             DomFileEditor(inputStream)
 
         operator fun get(path: String): DomFileEditor {
-            return DomFileEditor(this@ResourceData[path])
+            return DomFileEditor(this@ResourceContext[path])
         }
 
     }
@@ -31,7 +106,9 @@ class ResourceData(private val resourceCacheDirectory: File) : Data, Iterable<Fi
 
 /**
  * Wrapper for a file that can be edited as a dom document.
- * Note: This constructor does not check for locks to the file when writing. Use the secondary constructor.
+ *
+ * This constructor does not check for locks to the file when writing.
+ * Use the secondary constructor.
  *
  * @param inputStream the input stream to read the xml file from.
  * @param outputStream the output stream to write the xml file to. If null, the file will be read only.
@@ -63,7 +140,8 @@ class DomFileEditor internal constructor(
 
     /**
      * Closes the editor. Write backs and decreases the lock count.
-     * Note: Will not write back to the file if the file is still locked.
+     *
+     * Will not write back to the file if the file is still locked.
      */
     override fun close() {
         if (closed) return

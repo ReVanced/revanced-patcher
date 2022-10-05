@@ -3,18 +3,15 @@ package app.revanced.patcher.usage.bytecode
 import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
-import app.revanced.patcher.data.impl.BytecodeData
+import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.replaceInstruction
-import app.revanced.patcher.patch.OptionsContainer
-import app.revanced.patcher.patch.PatchOption
-import app.revanced.patcher.patch.PatchResult
-import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
-import app.revanced.patcher.patch.BytecodePatch
 import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
+import app.revanced.patcher.usage.resource.patch.ExampleResourcePatch
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import com.google.common.collect.ImmutableList
@@ -39,11 +36,11 @@ import kotlin.io.path.Path
 @Description("Example demonstration of a bytecode patch.")
 @ExampleResourceCompatibility
 @Version("0.0.1")
-@DependsOn([ExampleBytecodePatch::class])
+@DependsOn([ExampleResourcePatch::class])
 class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor
-    override fun execute(data: BytecodeData): PatchResult {
+    override fun execute(context: BytecodeContext): PatchResult {
         // Get the resolved method by its fingerprint from the resolver cache
         val result = ExampleFingerprint.result!!
 
@@ -63,9 +60,9 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         implementation.replaceStringAt(startIndex, "Hello, ReVanced! Editing bytecode.")
 
         // Get the class in which the method matching our fingerprint is defined in.
-        val mainClass = data.findClass {
+        val mainClass = context.findClass {
             it.type == result.classDef.type
-        }!!.resolve()
+        }!!.mutableClass
 
         // Add a new method returning a string
         mainClass.methods.add(
@@ -169,6 +166,7 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         )
     }
 
+    @Suppress("unused")
     companion object : OptionsContainer() {
         private var key1 by option(
             PatchOption.StringOption(

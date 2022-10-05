@@ -1,6 +1,6 @@
 package app.revanced.patcher.patch.annotations
 
-import app.revanced.patcher.data.Data
+import app.revanced.patcher.data.Context
 import app.revanced.patcher.patch.Patch
 import kotlin.reflect.KClass
 
@@ -20,5 +20,5 @@ annotation class Patch(val include: Boolean = true)
 @Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
 annotation class DependsOn(
-    val dependencies: Array<KClass<out Patch<Data>>> = []
+    val dependencies: Array<KClass<out Patch<Context>>> = []
 )

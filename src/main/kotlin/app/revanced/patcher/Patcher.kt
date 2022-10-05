@@ -1,19 +1,13 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.data.Data
-import app.revanced.patcher.data.impl.findIndexed
+import app.revanced.patcher.data.Context
+import app.revanced.patcher.data.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.deprecated
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
-import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.PatchResult
-import app.revanced.patcher.patch.PatchResultError
-import app.revanced.patcher.patch.PatchResultSuccess
-import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.ResourcePatch
-import app.revanced.patcher.util.ListBackedSet
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
@@ -29,10 +23,8 @@ import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
-import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
-import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 
@@ -46,7 +38,7 @@ class Patcher(private val options: PatcherOptions) {
     private val logger = options.logger
     private val opcodes: Opcodes
     private var resourceDecodingMode = ResourceDecodingMode.MANIFEST_ONLY
-    val data: PatcherData
+    val context: PatcherContext
 
     companion object {
         @JvmStatic
@@ -64,8 +56,8 @@ class Patcher(private val options: PatcherOptions) {
         val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
         // get the opcodes
         opcodes = dexFile.opcodes
-        // finally create patcher data
-        data = PatcherData(dexFile.classes.toMutableList(), options.resourceCacheDirectory)
+        // finally create patcher context
+        context = PatcherContext(dexFile.classes.toMutableList(), File(options.resourceCacheDirectory))
 
         // decode manifest file
         decodeResources(ResourceDecodingMode.MANIFEST_ONLY)
@@ -88,12 +80,12 @@ class Patcher(private val options: PatcherOptions) {
             for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
                 val type = classDef.type
 
-                val existingClass = data.bytecodeData.classes.internalClasses.findIndexed { it.type == type }
+                val existingClass = context.bytecodeContext.classes.classes.findIndexed { it.type == type }
                 if (existingClass == null) {
                     if (throwOnDuplicates) throw Exception("Class $type has already been added to the patcher")
 
                     logger.trace("Merging $type")
-                    data.bytecodeData.classes.internalClasses.add(classDef)
+                    context.bytecodeContext.classes.classes.add(classDef)
                     modified = true
 
                     continue
@@ -104,7 +96,7 @@ class Patcher(private val options: PatcherOptions) {
                 logger.trace("Overwriting $type")
 
                 val index = existingClass.second
-                data.bytecodeData.classes.internalClasses[index] = classDef
+                context.bytecodeContext.classes.classes[index] = classDef
                 modified = true
             }
             if (modified) callback(file)
@@ -115,7 +107,7 @@ class Patcher(private val options: PatcherOptions) {
      * Save the patched dex file.
      */
     fun save(): PatcherResult {
-        val packageMetadata = data.packageMetadata
+        val packageMetadata = context.packageMetadata
         val metaInfo = packageMetadata.metaInfo
         var resourceFile: File? = null
 
@@ -168,14 +160,8 @@ class Patcher(private val options: PatcherOptions) {
 
         logger.trace("Creating new dex file")
         val newDexFile = object : DexFile {
-            override fun getClasses(): Set<ClassDef> {
-                data.bytecodeData.classes.applyProxies()
-                return ListBackedSet(data.bytecodeData.classes.internalClasses)
-            }
-
-            override fun getOpcodes(): Opcodes {
-                return this@Patcher.opcodes
-            }
+            override fun getClasses() = context.bytecodeContext.classes.also { it.replaceClasses() }
+            override fun getOpcodes() = this@Patcher.opcodes
         }
 
         // write modified dex files
@@ -199,12 +185,12 @@ class Patcher(private val options: PatcherOptions) {
      * Add [Patch]es to the patcher.
      * @param patches [Patch]es The patches to add.
      */
-    fun addPatches(patches: Iterable<Class<out Patch<Data>>>) {
+    fun addPatches(patches: Iterable<Class<out Patch<Context>>>) {
         /**
          * Fill the cache with the instances of the [Patch]es for later use.
          * Note: Dependencies of the [Patch] will be cached as well.
          */
-        fun Class<out Patch<Data>>.isResource() {
+        fun Class<out Patch<Context>>.isResource() {
             this.also {
                 if (!ResourcePatch::class.java.isAssignableFrom(it)) return@also
                 // set the mode to decode all resources before running the patches
@@ -212,74 +198,7 @@ class Patcher(private val options: PatcherOptions) {
             }.dependencies?.forEach { it.java.isResource() }
         }
 
-        data.patches.addAll(patches.onEach(Class<out Patch<Data>>::isResource))
-    }
-
-    /**
-     * Apply a [patch] and its dependencies recursively.
-     * @param patch The [patch] to apply.
-     * @param appliedPatches A map of [patch]es paired to a boolean indicating their success, to prevent infinite recursion.
-     * @return The result of executing the [patch].
-     */
-    private fun applyPatch(
-        patch: Class<out Patch<Data>>,
-        appliedPatches: LinkedHashMap<String, AppliedPatch>
-    ): PatchResult {
-        val patchName = patch.patchName
-
-        // if the patch has already applied silently skip it
-        if (appliedPatches.contains(patchName)) {
-            if (!appliedPatches[patchName]!!.success)
-                return PatchResultError("'$patchName' did not succeed previously")
-
-            logger.trace("Skipping '$patchName' because it has already been applied")
-
-            return PatchResultSuccess()
-        }
-
-        // recursively apply all dependency patches
-        patch.dependencies?.forEach { dependencyClass ->
-            val dependency = dependencyClass.java
-
-            val result = applyPatch(dependency, appliedPatches)
-            if (result.isSuccess()) return@forEach
-
-            val error = result.error()!!
-            val errorMessage = error.cause ?: error.message
-            return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
-        }
-
-        patch.deprecated?.let { (reason, replacement) ->
-            logger.warn("'$patchName' is deprecated, reason: $reason")
-            if (replacement != null) logger.warn("Use '${replacement.java.patchName}' instead")
-        }
-
-        val patchInstance = patch.getDeclaredConstructor().newInstance()
-
-        val isResourcePatch = ResourcePatch::class.java.isAssignableFrom(patch)
-        // TODO: implement this in a more polymorphic way
-        val data = if (isResourcePatch) {
-            data.resourceData
-        } else {
-            data.bytecodeData.also { data ->
-                (patchInstance as BytecodePatch).fingerprints?.resolve(
-                    data,
-                    data.classes.internalClasses
-                )
-            }
-        }
-
-        logger.trace("Executing '$patchName' of type: ${if (isResourcePatch) "resource" else "bytecode"}")
-
-        return try {
-            patchInstance.execute(data).also {
-                appliedPatches[patchName] = AppliedPatch(patchInstance, it.isSuccess())
-            }
-        } catch (e: Exception) {
-            PatchResultError(e).also {
-                appliedPatches[patchName] = AppliedPatch(patchInstance, false)
-            }
-        }
+        context.patches.addAll(patches.onEach(Class<out Patch<Context>>::isResource))
     }
 
     /**
@@ -310,7 +229,7 @@ class Patcher(private val options: PatcherOptions) {
                     androlib.decodeResourcesFull(extInputFile, outDir, resourceTable)
 
                     // read additional metadata from the resource table
-                    data.packageMetadata.let { metadata ->
+                    context.packageMetadata.let { metadata ->
                         metadata.metaInfo.usesFramework = UsesFramework().also { framework ->
                             framework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
                         }
@@ -344,7 +263,7 @@ class Patcher(private val options: PatcherOptions) {
             }
 
             // read of the resourceTable which is created by reading the manifest file
-            data.packageMetadata.let { metadata ->
+            context.packageMetadata.let { metadata ->
                 metadata.packageName = resourceTable.currentResPackage.name
                 metadata.packageVersion = resourceTable.versionInfo.versionName
                 metadata.metaInfo.versionInfo = resourceTable.versionInfo
@@ -356,37 +275,105 @@ class Patcher(private val options: PatcherOptions) {
     }
 
     /**
-     * Apply patches loaded into the patcher.
+     * Execute patches added the patcher.
+     *
      * @param stopOnError If true, the patches will stop on the first error.
      * @return A pair of the name of the [Patch] and its [PatchResult].
      */
-    fun applyPatches(stopOnError: Boolean = false) = sequence {
-        // prevent from decoding the manifest twice if it is not needed
-        if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
+    fun executePatches(stopOnError: Boolean = false): Sequence<Pair<String, Result<PatchResultSuccess>>> {
+        /**
+         * Execute a [Patch] and its dependencies recursively.
+         *
+         * @param patchClass The [Patch] to execute.
+         * @param executedPatches A map of [Patch]es paired to a boolean indicating their success, to prevent infinite recursion.
+         * @return The result of executing the [Patch].
+         */
+        fun executePatch(
+            patchClass: Class<out Patch<Context>>,
+            executedPatches: LinkedHashMap<String, ExecutedPatch>
+        ): PatchResult {
+            val patchName = patchClass.patchName
 
-        logger.trace("Applying all patches")
+            // if the patch has already applied silently skip it
+            if (executedPatches.contains(patchName)) {
+                if (!executedPatches[patchName]!!.success)
+                    return PatchResultError("'$patchName' did not succeed previously")
 
-        val appliedPatches = LinkedHashMap<String, AppliedPatch>() // first is name
+                logger.trace("Skipping '$patchName' because it has already been applied")
 
-        try {
-            for (patch in data.patches) {
-                val patchResult = applyPatch(patch, appliedPatches)
-
-                val result = if (patchResult.isSuccess()) {
-                    Result.success(patchResult.success()!!)
-                } else {
-                    Result.failure(patchResult.error()!!)
-                }
-
-                yield(patch.patchName to result)
-                if (stopOnError && patchResult.isError()) break
+                return PatchResultSuccess()
             }
-        } finally {
-            // close all closeable patches in order
-            for ((patch, _) in appliedPatches.values.reversed()) {
-                if (patch !is Closeable) continue
 
-                patch.close()
+            // recursively execute all dependency patches
+            patchClass.dependencies?.forEach { dependencyClass ->
+                val dependency = dependencyClass.java
+
+                val result = executePatch(dependency, executedPatches)
+                if (result.isSuccess()) return@forEach
+
+                val error = result.error()!!
+                val errorMessage = error.cause ?: error.message
+                return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
+            }
+
+            patchClass.deprecated?.let { (reason, replacement) ->
+                logger.warn("'$patchName' is deprecated, reason: $reason")
+                if (replacement != null) logger.warn("Use '${replacement.java.patchName}' instead")
+            }
+
+            val isResourcePatch = ResourcePatch::class.java.isAssignableFrom(patchClass)
+            val patchInstance = patchClass.getDeclaredConstructor().newInstance()
+
+            // TODO: implement this in a more polymorphic way
+            val patchContext = if (isResourcePatch) {
+                context.resourceContext
+            } else {
+                context.bytecodeContext.also { context ->
+                    (patchInstance as BytecodePatch).fingerprints?.resolve(
+                        context,
+                        context.classes.classes
+                    )
+                }
+            }
+
+            logger.trace("Executing '$patchName' of type: ${if (isResourcePatch) "resource" else "bytecode"}")
+
+            return try {
+                patchInstance.execute(patchContext).also {
+                    executedPatches[patchName] = ExecutedPatch(patchInstance, it.isSuccess())
+                }
+            } catch (e: Exception) {
+                PatchResultError(e).also {
+                    executedPatches[patchName] = ExecutedPatch(patchInstance, false)
+                }
+            }
+        }
+
+        return sequence {
+            // prevent from decoding the manifest twice if it is not needed
+            if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
+
+            logger.trace("Executing all patches")
+
+            val executedPatches = LinkedHashMap<String, ExecutedPatch>() // first is name
+
+            try {
+                context.patches.forEach { patch ->
+                    val patchResult = executePatch(patch, executedPatches)
+
+                    val result = if (patchResult.isSuccess()) {
+                        Result.success(patchResult.success()!!)
+                    } else {
+                        Result.failure(patchResult.error()!!)
+                    }
+
+                    yield(patch.patchName to result)
+                    if (stopOnError && patchResult.isError()) return@sequence
+                }
+            } finally {
+                executedPatches.values.reversed().forEach { (patch, _) ->
+                    patch.close()
+                }
             }
         }
     }
@@ -408,9 +395,9 @@ class Patcher(private val options: PatcherOptions) {
 }
 
 /**
- * A result of applying a [Patch].
+ * A result of executing a [Patch].
  *
  * @param patchInstance The instance of the [Patch] that was applied.
  * @param success The result of the [Patch].
  */
-internal data class AppliedPatch(val patchInstance: Patch<Data>, val success: Boolean)
+internal data class ExecutedPatch(val patchInstance: Patch<Context>, val success: Boolean)

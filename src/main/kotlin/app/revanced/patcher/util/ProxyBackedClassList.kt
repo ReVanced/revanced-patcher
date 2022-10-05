@@ -3,40 +3,44 @@ package app.revanced.patcher.util
 import app.revanced.patcher.util.proxy.ClassProxy
 import org.jf.dexlib2.iface.ClassDef
 
-class ProxyBackedClassList(internal val internalClasses: MutableList<ClassDef>) : List<ClassDef> {
-    private val internalProxies = mutableListOf<ClassProxy>()
-    internal val proxies: List<ClassProxy> = internalProxies
-
-    fun add(classDef: ClassDef) = internalClasses.add(classDef)
-    fun add(classProxy: ClassProxy) = internalProxies.add(classProxy)
+/**
+ * A class that represents a set of classes and proxies.
+ *
+ * @param classes The classes to be backed by proxies.
+ */
+class ProxyBackedClassList(internal val classes: MutableList<ClassDef>) : Set<ClassDef> {
+    internal val proxies = mutableListOf<ClassProxy>()
 
     /**
-     * Apply all resolved classes into [internalClasses] and clean the [proxies] list.
+     * Add a [ClassDef].
      */
-    internal fun applyProxies() {
-        // FIXME: check if this could cause issues when multiple patches use the same proxy
-        internalProxies.removeIf { proxy ->
-            // if the proxy is unused, keep it in the list
-            if (!proxy.proxyUsed) return@removeIf false
+    fun add(classDef: ClassDef) = classes.add(classDef)
 
-            // if it has been used, replace the internal class which it proxied
-            val index = internalClasses.indexOfFirst { it.type == proxy.immutableClass.type }
-            internalClasses[index] = proxy.mutatedClass
+    /**
+     * Add a [ClassProxy].
+     */
+    fun add(classProxy: ClassProxy) = proxies.add(classProxy)
+
+    /**
+     * Replace all classes with their mutated versions.
+     */
+    internal fun replaceClasses() =
+        proxies.removeIf { proxy ->
+            // if the proxy is unused, keep it in the list
+            if (!proxy.resolved) return@removeIf false
+
+            // if it has been used, replace the original class with the new class
+            val index = classes.indexOfFirst { it.type == proxy.immutableClass.type }
+            classes[index] = proxy.mutableClass
 
             // return true to remove it from the proxies list
             return@removeIf true
         }
-    }
 
-    override val size get() = internalClasses.size
-    override fun contains(element: ClassDef) = internalClasses.contains(element)
-    override fun containsAll(elements: Collection<ClassDef>) = internalClasses.containsAll(elements)
-    override fun get(index: Int) = internalClasses[index]
-    override fun indexOf(element: ClassDef) = internalClasses.indexOf(element)
-    override fun isEmpty() = internalClasses.isEmpty()
-    override fun iterator() = internalClasses.iterator()
-    override fun lastIndexOf(element: ClassDef) = internalClasses.lastIndexOf(element)
-    override fun listIterator() = internalClasses.listIterator()
-    override fun listIterator(index: Int) = internalClasses.listIterator(index)
-    override fun subList(fromIndex: Int, toIndex: Int) = internalClasses.subList(fromIndex, toIndex)
+
+    override val size get() = classes.size
+    override fun contains(element: ClassDef) = classes.contains(element)
+    override fun containsAll(elements: Collection<ClassDef>) = classes.containsAll(elements)
+    override fun isEmpty() = classes.isEmpty()
+    override fun iterator() = classes.iterator()
 }
