@@ -11,10 +11,3 @@ import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 annotation class FuzzyPatternScanMethod(
     val threshold: Int = 1
 )
-
-/**
- * Annotations to scan a pattern [MethodFingerprint] directly.
- */
-@Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class DirectPatternScanMethod
