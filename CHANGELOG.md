@@ -1,3 +1,26 @@
+# [6.0.0](https://github.com/revanced/revanced-patcher/compare/v5.1.2...v6.0.0) (2022-10-05)
+
+
+### Code Refactoring
+
+* improve structuring of classes and their implementations ([4aa14bb](https://github.com/revanced/revanced-patcher/commit/4aa14bbb858af9253eae9328b759f3298b65a215))
+
+
+### Features
+
+* remove unused annotation `DirectPatternScanMethod` ([538b2a8](https://github.com/revanced/revanced-patcher/commit/538b2a859962570c700362afc88704ed3611aa87))
+* remove unused annotation `SincePatcher` ([4ae9ad0](https://github.com/revanced/revanced-patcher/commit/4ae9ad09d64a3f69512ccb037f816cb847d7350f))
+* remove unused extension `dependsOn` ([797286b](https://github.com/revanced/revanced-patcher/commit/797286b7588646272dea2fd35e8e78b0ffb18a0f))
+* remove unused patch extensions ([5583904](https://github.com/revanced/revanced-patcher/commit/55839049948033ad02414517fd3ba03619216aec))
+
+
+### BREAKING CHANGES
+
+* various changes in which packages classes previously where and their implementation
+* These extensions do not exist anymore and any use should be removed
+* The extension does not exist anymore and any use should be removed
+* The annotation does not exist anymore and any use should be removed
+
 ## [5.1.2](https://github.com/revanced/revanced-patcher/compare/v5.1.1...v5.1.2) (2022-09-29)
 
 

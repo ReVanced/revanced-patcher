@@ -1,4 +1,3 @@
-package app.revanced.patcher
 
 import app.revanced.patcher.data.Data
 import app.revanced.patcher.data.impl.BytecodeData

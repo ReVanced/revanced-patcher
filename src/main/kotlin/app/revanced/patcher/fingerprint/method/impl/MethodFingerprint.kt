@@ -1,6 +1,6 @@
 package app.revanced.patcher.fingerprint.method.impl
 
-import app.revanced.patcher.data.impl.BytecodeData
+import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyScanThreshold
 import app.revanced.patcher.extensions.parametersEqual
@@ -41,64 +41,67 @@ abstract class MethodFingerprint(
     companion object {
         /**
          * Resolve a list of [MethodFingerprint] against a list of [ClassDef].
-         * @param context The classes on which to resolve the [MethodFingerprint].
-         * @param forData The [BytecodeData] to host proxies.
+         *
+         * @param classes The classes on which to resolve the [MethodFingerprint] in.
+         * @param context The [BytecodeContext] to host proxies.
          * @return True if the resolution was successful, false otherwise.
          */
-        fun Iterable<MethodFingerprint>.resolve(forData: BytecodeData, context: Iterable<ClassDef>) {
+        fun Iterable<MethodFingerprint>.resolve(context: BytecodeContext, classes: Iterable<ClassDef>) {
             for (fingerprint in this) // For each fingerprint
-                classes@ for (classDef in context) // search through all classes for the fingerprint
-                    if (fingerprint.resolve(forData, classDef))
+                classes@ for (classDef in classes) // search through all classes for the fingerprint
+                    if (fingerprint.resolve(context, classDef))
                         break@classes // if the resolution succeeded, continue with the next fingerprint
         }
 
         /**
          * Resolve a [MethodFingerprint] against a [ClassDef].
-         * @param context The class on which to resolve the [MethodFingerprint].
-         * @param forData The [BytecodeData] to host proxies.
+         *
+         * @param forClass The class on which to resolve the [MethodFingerprint] in.
+         * @param context The [BytecodeContext] to host proxies.
          * @return True if the resolution was successful, false otherwise.
          */
-        fun MethodFingerprint.resolve(forData: BytecodeData, context: ClassDef): Boolean {
-            for (method in context.methods)
-                if (this.resolve(forData, method, context))
+        fun MethodFingerprint.resolve(context: BytecodeContext, forClass: ClassDef): Boolean {
+            for (method in forClass.methods)
+                if (this.resolve(context, method, forClass))
                     return true
             return false
         }
 
         /**
          * Resolve a [MethodFingerprint] against a [Method].
-         * @param context The context on which to resolve the [MethodFingerprint].
-         * @param classDef The class of the matching [Method].
-         * @param forData The [BytecodeData] to host proxies.
+         *
+         * @param method The class on which to resolve the [MethodFingerprint] in.
+         * @param forClass The class on which to resolve the [MethodFingerprint].
+         * @param context The [BytecodeContext] to host proxies.
          * @return True if the resolution was successful or if the fingerprint is already resolved, false otherwise.
          */
-        fun MethodFingerprint.resolve(forData: BytecodeData, context: Method, classDef: ClassDef): Boolean {
+        fun MethodFingerprint.resolve(context: BytecodeContext, method: Method, forClass: ClassDef): Boolean {
             val methodFingerprint = this
 
             if (methodFingerprint.result != null) return true
 
-            if (methodFingerprint.returnType != null && !context.returnType.startsWith(methodFingerprint.returnType))
+            if (methodFingerprint.returnType != null && !method.returnType.startsWith(methodFingerprint.returnType))
                 return false
 
-            if (methodFingerprint.access != null && methodFingerprint.access != context.accessFlags)
+            if (methodFingerprint.access != null && methodFingerprint.access != method.accessFlags)
                 return false
 
 
             if (methodFingerprint.parameters != null && !parametersEqual(
                     methodFingerprint.parameters, // TODO: parseParameters()
-                    context.parameterTypes
+                    method.parameterTypes
                 )
             ) return false
 
             @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-            if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(context))
+            if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(method))
                 return false
 
             val stringsScanResult: StringsScanResult? =
                 if (methodFingerprint.strings != null) {
                     StringsScanResult(
                         buildList {
-                            val implementation = context.implementation ?: return false
+                            val implementation = method.implementation ?: return false
 
                             val stringsList = methodFingerprint.strings.toMutableList()
 
@@ -124,19 +127,19 @@ abstract class MethodFingerprint(
                 } else null
 
             val patternScanResult = if (methodFingerprint.opcodes != null) {
-                context.implementation?.instructions ?: return false
+                method.implementation?.instructions ?: return false
 
-                context.patternScan(methodFingerprint) ?: return false
+                method.patternScan(methodFingerprint) ?: return false
             } else null
 
             methodFingerprint.result = MethodFingerprintResult(
-                context,
-                classDef,
+                method,
+                forClass,
                 MethodFingerprintResult.MethodFingerprintScanResult(
                     patternScanResult,
                     stringsScanResult
                 ),
-                forData
+                context
             )
 
             return true
@@ -215,16 +218,17 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
 
 /**
  * Represents the result of a [MethodFingerprintResult].
+ *
  * @param method The matching method.
  * @param classDef The [ClassDef] that contains the matching [method].
  * @param scanResult The result of scanning for the [MethodFingerprint].
- * @param data The [BytecodeData] this [MethodFingerprintResult] is attached to, to create proxies.
+ * @param context The [BytecodeContext] this [MethodFingerprintResult] is attached to, to create proxies.
  */
 data class MethodFingerprintResult(
     val method: Method,
     val classDef: ClassDef,
     val scanResult: MethodFingerprintScanResult,
-    internal val data: BytecodeData
+    internal val context: BytecodeContext
 ) {
 
     /**
@@ -283,7 +287,7 @@ data class MethodFingerprintResult(
      * Use [classDef] where possible.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    val mutableClass by lazy { data.proxy(classDef).resolve() }
+    val mutableClass by lazy { context.proxy(classDef).mutableClass }
 
     /**
      * Returns a mutable clone of [method]

@@ -1,6 +1,6 @@
 package app.revanced.patcher.annotation
 
-import app.revanced.patcher.data.Data
+import app.revanced.patcher.data.Context
 import app.revanced.patcher.patch.Patch
 import kotlin.reflect.KClass
 
@@ -14,6 +14,6 @@ import kotlin.reflect.KClass
 @MustBeDocumented
 annotation class PatchDeprecated(
     val reason: String,
-    val replacement: KClass<out Patch<Data>> = Patch::class
+    val replacement: KClass<out Patch<Context>> = Patch::class
     // Values cannot be nullable in annotations, so this will have to do.
 )
