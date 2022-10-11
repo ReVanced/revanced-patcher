@@ -1,5 +1,6 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.apk.SplitApkFile
 import app.revanced.patcher.logging.Logger
 import app.revanced.patcher.logging.impl.NopLogger
 
@@ -12,7 +13,7 @@ import app.revanced.patcher.logging.impl.NopLogger
  * @param logger Custom logger implementation for the [Patcher].
  */
 data class PatcherOptions(
-    internal val inputFiles: List<Apk>,
+    internal val inputFiles: SplitApkFile,
     internal val resourceCacheDirectory: String,
     internal val aaptPath: String = "",
     internal val frameworkPath: String? = null,

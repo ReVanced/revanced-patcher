@@ -1,6 +1,6 @@
 package app.revanced.patcher.fingerprint.method.impl
 
-import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyScanThreshold
 import app.revanced.patcher.extensions.parametersEqual

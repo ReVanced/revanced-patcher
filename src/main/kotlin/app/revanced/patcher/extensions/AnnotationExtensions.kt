@@ -1,7 +1,7 @@
 package app.revanced.patcher.extensions
 
 import app.revanced.patcher.annotation.*
-import app.revanced.patcher.data.Context
+import app.revanced.patcher.Context
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.patch.OptionsContainer

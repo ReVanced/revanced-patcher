@@ -2,7 +2,7 @@
 
 package app.revanced.patcher.util.patch
 
-import app.revanced.patcher.data.Context
+import app.revanced.patcher.Context
 import app.revanced.patcher.patch.Patch
 import org.jf.dexlib2.DexFileFactory
 import java.io.File

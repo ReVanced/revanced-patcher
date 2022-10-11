@@ -1,6 +1,6 @@
 package app.revanced.patcher.util.method
 
-import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import org.jf.dexlib2.iface.Method

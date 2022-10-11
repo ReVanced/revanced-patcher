@@ -1,6 +1,6 @@
 package app.revanced.patcher.annotation
 
-import app.revanced.patcher.data.Context
+import app.revanced.patcher.Context
 import app.revanced.patcher.patch.Patch
 import kotlin.reflect.KClass
 

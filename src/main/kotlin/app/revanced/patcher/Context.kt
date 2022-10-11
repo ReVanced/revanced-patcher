@@ -1,4 +1,4 @@
-package app.revanced.patcher.data
+package app.revanced.patcher
 
 import app.revanced.patcher.util.ProxyBackedClassList
 import app.revanced.patcher.util.method.MethodWalker
@@ -54,17 +54,6 @@ class BytecodeContext internal constructor(classes: MutableList<ClassDef>) : Con
         }
         return proxy
     }
-
-    private companion object {
-        inline fun <reified T> Iterable<T>.find(predicate: (T) -> Boolean): T? {
-            for (element in this) {
-                if (predicate(element)) {
-                    return element
-                }
-            }
-            return null
-        }
-    }
 }
 
 /**
@@ -75,15 +64,6 @@ class BytecodeContext internal constructor(classes: MutableList<ClassDef>) : Con
  */
 fun BytecodeContext.toMethodWalker(startMethod: Method): MethodWalker {
     return MethodWalker(this, startMethod)
-}
-
-internal inline fun <T> Iterable<T>.findIndexed(predicate: (T) -> Boolean): Pair<T, Int>? {
-    for ((index, element) in this.withIndex()) {
-        if (predicate(element)) {
-            return element to index
-        }
-    }
-    return null
 }
 
 class ResourceContext internal constructor(private val resourceCacheDirectory: File) : Context, Iterable<File> {
