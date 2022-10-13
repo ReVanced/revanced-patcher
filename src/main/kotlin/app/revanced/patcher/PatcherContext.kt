@@ -5,7 +5,7 @@ import org.jf.dexlib2.iface.ClassDef
 import java.io.File
 
 data class PatcherContext(
-    private val classes: MutableList<ClassDef>,
+    val classes: MutableList<ClassDef>,
     private val resourceCacheDirectory: File,
 ) {
     internal val patches = mutableListOf<Class<out Patch<Context>>>()
