@@ -17,16 +17,16 @@ internal class PatchOptionsTest {
     }
 
     @Test
-    fun `there's only 1 option`() {
-        val options = ExampleBytecodePatch.options()
-        assertNotNull(options)
-        assertEquals(options.size, 2)
-        assertEquals(options.first().key, "key1")
-    }
-
-    @Test
     fun `extension works`() {
         assertNotNull(ExampleBytecodePatch::class.java.options)
         assertEquals(ExampleBytecodePatch as OptionsContainer, ExampleBytecodePatch::class.java.options)
+    }
+
+    @Test
+    fun `first option should have correct key`() {
+        val options = ExampleBytecodePatch.options()
+        assertNotNull(options)
+        assert(options.isNotEmpty())
+        assertEquals(options.first().key, "key1")
     }
 }
