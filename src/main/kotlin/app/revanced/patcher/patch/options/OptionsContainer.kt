@@ -7,7 +7,7 @@ import java.net.URI
 class NoSuchOptionException(option: String) : Exception("No such option: $option")
 
 /**
- * A container for patch options.
+ * A container for [PatchOption]s.
  */
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class OptionsContainer {

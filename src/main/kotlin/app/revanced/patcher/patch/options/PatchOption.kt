@@ -15,7 +15,7 @@ class PatchOption<T> internal constructor(
         require(key.isNotBlank()) { "Key cannot be blank" }
         require(title.isNotBlank()) { "Title cannot be blank" }
         require(description.isNotBlank()) { "Description cannot be blank" }
-        require(key.matches(KEY_REGEX)) { "Key may only contain alphanumeric characters, underscores and dots" }
+        require(key.matches(KEY_REGEX)) { "Key may only contain alphanumeric characters and underscores" }
     }
 
     internal var value: T = defaultValue
