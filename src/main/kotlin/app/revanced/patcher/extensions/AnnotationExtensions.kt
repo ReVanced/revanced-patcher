@@ -4,10 +4,9 @@ import app.revanced.patcher.annotation.*
 import app.revanced.patcher.data.Context
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
-import app.revanced.patcher.patch.OptionsContainer
 import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.PatchOptions
 import app.revanced.patcher.patch.annotations.DependsOn
+import app.revanced.patcher.patch.options.OptionsContainer
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.companionObject
@@ -58,11 +57,11 @@ object PatchExtensions {
     val Class<out Patch<Context>>.compatiblePackages
         get() = findAnnotationRecursively(Compatibility::class)?.compatiblePackages
 
-    val Class<out Patch<Context>>.options: PatchOptions?
+    val Class<out Patch<Context>>.options: OptionsContainer?
         get() = kotlin.companionObject?.let { cl ->
             if (cl.visibility != KVisibility.PUBLIC) return null
             kotlin.companionObjectInstance?.let {
-                (it as? OptionsContainer)?.options
+                it as? OptionsContainer
             }
         }
 

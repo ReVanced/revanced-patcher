@@ -7,9 +7,12 @@ import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.replaceInstruction
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.BytecodePatch
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.PatchResultSuccess
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
+import app.revanced.patcher.patch.options.OptionsContainer
 import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
 import app.revanced.patcher.usage.resource.patch.ExampleResourcePatch
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
@@ -29,7 +32,6 @@ import org.jf.dexlib2.immutable.reference.ImmutableFieldReference
 import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
-import kotlin.io.path.Path
 
 @Patch
 @Name("example-bytecode-patch")
@@ -46,7 +48,6 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
 
         // Patch options
         println(key1)
-        key2 = false
 
         // Get the implementation for the resolved method
         val method = result.mutableMethod
@@ -166,37 +167,8 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         )
     }
 
-    @Suppress("unused")
-    companion object : OptionsContainer() {
-        private var key1 by option(
-            PatchOption.StringOption(
-                "key1", "default", "title", "description", true
-            )
-        )
-        private var key2 by option(
-            PatchOption.BooleanOption(
-                "key2", true, "title", "description" // required defaults to false
-            )
-        )
-        private var key3 by option(
-            PatchOption.StringListOption(
-                "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
-            )
-        )
-        private var key4 by option(
-            PatchOption.IntListOption(
-                "key4", 1, listOf(1, 2, 3), "title", "description"
-            )
-        )
-        private var key5 by option(
-            PatchOption.StringOption(
-                "key5", null, "title", "description", true
-            )
-        )
-        private var key6 by option(
-            PatchOption.PathOption(
-                "key6", Path("test.txt"), "title", "description", true
-            )
-        )
+    companion object : OptionsContainer() { // update tests if you change this
+        private var key1 by stringPreference("key1", "title1", "description1", "default")
+        private var key2 by stringPreference("key2", "title2", "description2", "test")
     }
 }
