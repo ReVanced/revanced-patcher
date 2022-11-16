@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/revanced/revanced-patcher/compare/v6.0.0...v6.0.1) (2022-11-14)
+
+
+### Bug Fixes
+
+* remove unnecessary dummy nop instructions ([#111](https://github.com/revanced/revanced-patcher/issues/111)) ([f9bc95f](https://github.com/revanced/revanced-patcher/commit/f9bc95f220aa434308ce6950ba6ad2e7efac9c8a))
+
 # [6.0.0](https://github.com/revanced/revanced-patcher/compare/v5.1.2...v6.0.0) (2022-10-05)
 
 

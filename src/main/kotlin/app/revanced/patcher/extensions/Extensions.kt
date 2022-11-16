@@ -139,10 +139,10 @@ fun MutableMethod.addInstructions(index: Int, smali: String, externalLabels: Lis
 
     // Add the compiled list of instructions to the method.
     val methodImplementation = this.implementation!!
-    methodImplementation.addInstructions(index, compiledInstructions)
+    methodImplementation.addInstructions(index, compiledInstructions.subList(0, compiledInstructions.size - externalLabels.size))
 
     val methodInstructions = methodImplementation.instructions
-    methodInstructions.subList(index, index + compiledInstructions.size)
+    methodInstructions.subList(index, index + compiledInstructions.size - externalLabels.size)
         .forEachIndexed { compiledInstructionIndex, compiledInstruction ->
             // If the compiled instruction is not an offset instruction, skip it.
             if (compiledInstruction !is BuilderOffsetInstruction) return@forEachIndexed
