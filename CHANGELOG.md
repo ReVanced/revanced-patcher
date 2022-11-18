@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/revanced/revanced-patcher/compare/v6.0.1...v6.0.2) (2022-11-18)
+
+
+### Bug Fixes
+
+* fallback to patch class name instead of `java.lang.Class` class name ([4164cb0](https://github.com/revanced/revanced-patcher/commit/4164cb0deacc7e1eed9fce63dab030180f28b762))
+
 ## [6.0.1](https://github.com/revanced/revanced-patcher/compare/v6.0.0...v6.0.1) (2022-11-14)
 
 
