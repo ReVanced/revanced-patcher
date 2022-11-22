@@ -1,3 +1,10 @@
+# [6.1.0](https://github.com/revanced/revanced-patcher/compare/v6.0.2...v6.1.0) (2022-11-22)
+
+
+### Features
+
+* apply changes from ReVanced Patcher ([ba9d998](https://github.com/revanced/revanced-patcher/commit/ba9d99868103406fe36b9aa0cfaa0ed5023edfab))
+
 ## [6.0.2](https://github.com/revanced/revanced-patcher/compare/v6.0.1...v6.0.2) (2022-11-18)
 
 
