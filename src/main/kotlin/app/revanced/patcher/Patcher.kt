@@ -3,7 +3,6 @@ package app.revanced.patcher
 import app.revanced.patcher.data.Context
 import app.revanced.patcher.data.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
-import app.revanced.patcher.extensions.PatchExtensions.deprecated
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
@@ -314,11 +313,6 @@ class Patcher(private val options: PatcherOptions) {
                 val error = result.error()!!
                 val errorMessage = error.cause ?: error.message
                 return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
-            }
-
-            patchClass.deprecated?.let { (reason, replacement) ->
-                logger.warn("'$patchName' is deprecated, reason: $reason")
-                if (replacement != null) logger.warn("Use '${replacement.java.patchName}' instead")
             }
 
             val isResourcePatch = ResourcePatch::class.java.isAssignableFrom(patchClass)
