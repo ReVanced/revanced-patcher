@@ -1,11 +1,11 @@
 package app.revanced.patcher.util.method
 
 import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import org.jf.dexlib2.iface.reference.MethodReference
+import org.jf.dexlib2.util.MethodUtil
 
 /**
  * Find a method from another method via instruction offsets.
@@ -44,8 +44,8 @@ class MethodWalker internal constructor(
             val proxy = bytecodeContext.findClass(newMethod.definingClass)!!
 
             val methods = if (walkMutable) proxy.mutableClass.methods else proxy.immutableClass.methods
-            currentMethod = methods.first { it ->
-                return@first it.softCompareTo(newMethod)
+            currentMethod = methods.first {
+                return@first MethodUtil.methodSignaturesMatch(it, newMethod)
             }
             return this
         }
