@@ -1,3 +1,10 @@
+## [6.1.1](https://github.com/revanced/revanced-patcher/compare/v6.1.0...v6.1.1) (2022-11-25)
+
+
+### Bug Fixes
+
+* use `MethodUtil.methodSignaturesMatch` instead of `Method.softCompareTo` ([bd053b7](https://github.com/revanced/revanced-patcher/commit/bd053b7e9974c0282d56e6762459db7070452e4a))
+
 # [6.1.0](https://github.com/revanced/revanced-patcher/compare/v6.0.2...v6.1.0) (2022-11-22)
 
 
