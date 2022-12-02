@@ -8,6 +8,10 @@ import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.VersionReader
+import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
+import app.revanced.patcher.util.proxy.mutableTypes.MutableClass.Companion.toMutable
+import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
+import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
 import brut.androlib.options.BuildOptions
@@ -22,7 +26,9 @@ import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
+import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
+import org.jf.dexlib2.util.MethodUtil
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
 import java.nio.file.Files
@@ -65,40 +71,85 @@ class Patcher(private val options: PatcherOptions) {
     /**
      * Add additional dex file container to the patcher.
      * @param files The dex file containers to add to the patcher.
-     * @param allowedOverwrites A list of class types that are allowed to be overwritten.
-     * @param throwOnDuplicates If this is set to true, the patcher will throw an exception if a duplicate class has been found.
+     * @param process The callback for [files] which are being added.
      */
     fun addFiles(
         files: List<File>,
-        allowedOverwrites: Iterable<String> = emptyList(),
-        throwOnDuplicates: Boolean = false,
-        callback: (File) -> Unit
+        process: (File) -> Unit
     ) {
-        for (file in files) {
-            var modified = false
-            for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
-                val type = classDef.type
+        with(context.bytecodeContext.classes) {
+            for (file in files) {
+                process(file)
+                for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
+                    val type = classDef.type
 
-                val existingClass = context.bytecodeContext.classes.classes.findIndexed { it.type == type }
-                if (existingClass == null) {
-                    if (throwOnDuplicates) throw Exception("Class $type has already been added to the patcher")
+                    val result = classes.findIndexed { it.type == type }
+                    if (result == null) {
+                        logger.trace("Merging type $type")
+                        classes.add(classDef)
+                    } else {
+                        val (existingClass, existingClassIndex) = result
 
-                    logger.trace("Merging $type")
-                    context.bytecodeContext.classes.classes.add(classDef)
-                    modified = true
+                        logger.trace("Type $type exists. Adding missing methods and fields.")
 
-                    continue
+                        /**
+                         * Add missing fields and methods from [from].
+                         *
+                         * @param from The class to add methods and fields from.
+                         */
+                        fun ClassDef.addMissingFrom(from: ClassDef) {
+                            var changed = false
+                            fun <T> ClassDef.transformClass(transform: (MutableClass) -> T): T {
+                                fun toMutableClass() =
+                                    if (this@transformClass is MutableClass) this else this.toMutable()
+                                return transform(toMutableClass())
+                            }
+
+                            fun ClassDef.addMissingMethods(): ClassDef {
+                                fun getMissingMethods() = from.methods.filterNot {
+                                    this@addMissingMethods.methods.any { original ->
+                                        MethodUtil.methodSignaturesMatch(original, it)
+                                    }
+                                }
+
+                                return getMissingMethods()
+                                    .apply {
+                                        if (isEmpty()) return@addMissingMethods this@addMissingMethods else changed =
+                                            true
+                                    }
+                                    .map { it.toMutable() }
+                                    .let { missingMethods ->
+                                        this@addMissingMethods.transformClass { classDef ->
+                                            classDef.apply { methods.addAll(missingMethods) }
+                                        }
+                                    }
+                            }
+
+                            fun ClassDef.addMissingFields(): ClassDef {
+                                fun getMissingFields() = from.fields.filterNot {
+                                    this@addMissingFields.fields.any { original -> original.name == it.name }
+                                }
+
+                                return getMissingFields()
+                                    .apply {
+                                        if (isEmpty()) return@addMissingFields this@addMissingFields else changed = true
+                                    }
+                                    .map { it.toMutable() }
+                                    .let { missingFields ->
+                                        this@addMissingFields.transformClass { classDef ->
+                                            classDef.apply { fields.addAll(missingFields) }
+                                        }
+                                    }
+                            }
+
+                            classes[existingClassIndex] = addMissingMethods().addMissingFields()
+                                .apply { if (!changed) return }
+                        }
+
+                        existingClass.addMissingFrom(classDef)
+                    }
                 }
-
-                if (!allowedOverwrites.contains(type)) continue
-
-                logger.trace("Overwriting $type")
-
-                val index = existingClass.second
-                context.bytecodeContext.classes.classes[index] = classDef
-                modified = true
             }
-            if (modified) callback(file)
         }
     }
 
@@ -154,6 +205,7 @@ class Patcher(private val options: PatcherOptions) {
                     cacheDirectory.close()
                 }
             }
+
             else -> logger.info("Not compiling resources because resource patching is not required")
         }
 
@@ -240,6 +292,7 @@ class Patcher(private val options: PatcherOptions) {
                     }
 
                 }
+
                 ResourceDecodingMode.MANIFEST_ONLY -> {
                     logger.info("Decoding AndroidManifest.xml only, because resources are not needed")
 
