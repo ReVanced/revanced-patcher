@@ -3,6 +3,7 @@
 package app.revanced.patcher.util.patch
 
 import app.revanced.patcher.data.Context
+import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.patch.Patch
 import org.jf.dexlib2.DexFileFactory
 import java.io.File
@@ -16,12 +17,12 @@ import java.util.jar.JarFile
  */
 sealed class PatchBundle(path: String) : File(path) {
     internal fun loadPatches(classLoader: ClassLoader, classNames: Iterator<String>) = buildList {
-        for (className in classNames) {
+        classNames.forEach { className ->
             val clazz = classLoader.loadClass(className)
-            if (!clazz.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) continue
+            if (!clazz.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) return@forEach
             @Suppress("UNCHECKED_CAST") this.add(clazz as Class<out Patch<Context>>)
         }
-    }
+    }.sortedBy { it.patchName }
 
     /**
      * A patch bundle of type [Jar].
