@@ -1,3 +1,10 @@
+# [6.2.0](https://github.com/revanced/revanced-patcher/compare/v6.1.1...v6.2.0) (2022-12-02)
+
+
+### Features
+
+* merge classes on addition ([#127](https://github.com/revanced/revanced-patcher/issues/127)) ([a925650](https://github.com/revanced/revanced-patcher/commit/a9256500440f9b4117f1b8813ba0097dafee4ebb))
+
 ## [6.1.1](https://github.com/revanced/revanced-patcher/compare/v6.1.0...v6.1.1) (2022-11-25)
 
 
