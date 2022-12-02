@@ -1,3 +1,10 @@
+# [6.3.0](https://github.com/revanced/revanced-patcher/compare/v6.2.0...v6.3.0) (2022-12-02)
+
+
+### Features
+
+* sort patches in lexicographical order ([a306561](https://github.com/revanced/revanced-patcher/commit/a306561b55ac848792046378f582a036f7ffab03)), closes [#125](https://github.com/revanced/revanced-patcher/issues/125)
+
 # [6.2.0](https://github.com/revanced/revanced-patcher/compare/v6.1.1...v6.2.0) (2022-12-02)
 
 
