@@ -1,0 +1,26 @@
+name: Weekly dev2main
+
+on:
+  schedule:
+    - cron: '0 0 * * SUN'
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: Reset branch
+        run: |
+          git fetch origin dev:dev
+          git reset --hard dev
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: 'feat: weekly dev2main'
+          title: 'feat: weekly dev2main'
+          body: 'Hi folks, time for another dev2main PR!'
+          base: main
+          branch: 'feat/dev2main'
