@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  MESSAGE: merge branch `${{ github.head_ref || github.ref_name }}` to `main`
+  MESSAGE: merge branch \`${{ github.head_ref || github.ref_name }}\` to \`main\`
 
 jobs:
   pull-request:
@@ -20,5 +20,5 @@ jobs:
         with:
           destination_branch: 'main'
           pr_title: 'chore: ${{ env.MESSAGE }}'
-          pr_body: 'This pull request will perform ${{ env.MESSAGE }}.'
+          pr_body: 'This pull request will ${{ env.MESSAGE }}.'
           pr_draft: true
