@@ -1,3 +1,5 @@
+## [6.3.1-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.3.0...v6.3.1-dev.1) (2022-12-05)
+
 # [6.3.0](https://github.com/revanced/revanced-patcher/compare/v6.2.0...v6.3.0) (2022-12-02)
 
 
