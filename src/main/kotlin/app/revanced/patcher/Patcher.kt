@@ -7,6 +7,7 @@ import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
+import app.revanced.patcher.util.TypeUtil.traverseClassHierarchy
 import app.revanced.patcher.util.VersionReader
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass.Companion.toMutable
@@ -25,6 +26,7 @@ import brut.directory.ExtFile
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
+import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
@@ -105,6 +107,27 @@ class Patcher(private val options: PatcherOptions) {
                                 return transform(toMutableClass())
                             }
 
+                            /**
+                             * Check if the [AccessFlags.PUBLIC] flag is set.
+                             *
+                             * @return True, if the flag is set.
+                             */
+                            fun Int.isPublic() = AccessFlags.PUBLIC.isSet(this)
+
+                            /**
+                             * Make a class and its super class public recursively.
+                             */
+                            fun MutableClass.publicize() {
+                                context.bytecodeContext.traverseClassHierarchy(this) {
+                                    if (accessFlags.isPublic()) return@traverseClassHierarchy
+
+                                    accessFlags = accessFlags.or(AccessFlags.PUBLIC.value)
+                                }
+                            }
+
+                            /**
+                             * Add missing methods to the class, considering to publicise the [ClassDef] if necessary.
+                             */
                             fun ClassDef.addMissingMethods(): ClassDef {
                                 fun getMissingMethods() = from.methods.filterNot {
                                     this@addMissingMethods.methods.any { original ->
@@ -120,11 +143,20 @@ class Patcher(private val options: PatcherOptions) {
                                     .map { it.toMutable() }
                                     .let { missingMethods ->
                                         this@addMissingMethods.transformClass { classDef ->
-                                            classDef.apply { methods.addAll(missingMethods) }
+                                            classDef.apply {
+                                                // make sure the class is public, if the class contains public methods
+                                                if (missingMethods.any { it.accessFlags.isPublic() })
+                                                    classDef.publicize()
+
+                                                methods.addAll(missingMethods)
+                                            }
                                         }
                                     }
                             }
 
+                            /**
+                             * Add missing fields to the class, considering to publicise the [ClassDef] if necessary.
+                             */
                             fun ClassDef.addMissingFields(): ClassDef {
                                 fun getMissingFields() = from.fields.filterNot {
                                     this@addMissingFields.fields.any { original -> original.name == it.name }
@@ -137,6 +169,10 @@ class Patcher(private val options: PatcherOptions) {
                                     .map { it.toMutable() }
                                     .let { missingFields ->
                                         this@addMissingFields.transformClass { classDef ->
+                                            // make sure the class is public, if the class contains public fields
+                                            if (missingFields.any { it.accessFlags.isPublic() })
+                                                classDef.publicize()
+
                                             classDef.apply { fields.addAll(missingFields) }
                                         }
                                     }

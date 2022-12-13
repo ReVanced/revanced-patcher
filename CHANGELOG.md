@@ -1,3 +1,10 @@
+## [6.3.1-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.3.0...v6.3.1-dev.1) (2022-12-13)
+
+
+### Bug Fixes
+
+* publicize types when merging files if necessary ([#137](https://github.com/revanced/revanced-patcher/issues/137)) ([9ec720e](https://github.com/revanced/revanced-patcher/commit/9ec720e983785d8b1dde330cc0e0e0f914c1803c))
+
 # [6.3.0](https://github.com/revanced/revanced-patcher/compare/v6.2.0...v6.3.0) (2022-12-02)
 
 
