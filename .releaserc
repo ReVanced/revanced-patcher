@@ -27,7 +27,8 @@
     [
       "@saithodev/semantic-release-backmerge",
       {
-        "branches": ["dev"]
+        branches: [{from: "main", to: "dev"}],
+        clearWorkspace: true
       }
     ],
     "@semantic-release/github"
