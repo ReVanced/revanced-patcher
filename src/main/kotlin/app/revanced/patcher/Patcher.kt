@@ -399,9 +399,10 @@ class Patcher(private val options: PatcherOptions) {
                 val result = executePatch(dependency, executedPatches)
                 if (result.isSuccess()) return@forEach
 
-                val error = result.error()!!
-                val errorMessage = error.cause ?: error.message
-                return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
+                return PatchResultError(
+                    "'$patchName' depends on '${dependency.patchName}' but the following error was raised: " +
+                            result.error()!!.let { it.cause?.stackTraceToString() ?: it.message }
+                )
             }
 
             val isResourcePatch = ResourcePatch::class.java.isAssignableFrom(patchClass)
