@@ -1,3 +1,11 @@
+## [6.3.2-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.3.1...v6.3.2-dev.1) (2022-12-18)
+
+
+### Bug Fixes
+
+* check if fingerprint string is substring of any string references ([c5de9e2](https://github.com/revanced/revanced-patcher/commit/c5de9e29889dffd18b31e62a892881cc48e8b607))
+* print full exception when patch fails ([7cf79e6](https://github.com/revanced/revanced-patcher/commit/7cf79e68e0e9dfd9faddee33139b127b71882d3e))
+
 ## [6.3.2-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.3.1...v6.3.2-dev.1) (2022-12-17)
 
 
