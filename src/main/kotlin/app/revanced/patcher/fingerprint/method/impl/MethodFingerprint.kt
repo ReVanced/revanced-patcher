@@ -109,7 +109,7 @@ abstract class MethodFingerprint(
                                 if (instruction.opcode.ordinal != Opcode.CONST_STRING.ordinal) return@forEachIndexed
 
                                 val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                                val index = stringsList.indexOfFirst { it == string }
+                                val index = stringsList.indexOfFirst(string::contains)
                                 if (index == -1) return@forEachIndexed
 
                                 add(
