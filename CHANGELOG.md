@@ -1,3 +1,90 @@
+# [4.0.0](https://github.com/Canny1913/revanced-patcher/compare/v3.3.3...v4.0.0) (2022-12-20)
+
+
+### Bug Fixes
+
+* add tests for PathOption ([d6308e1](https://github.com/Canny1913/revanced-patcher/commit/d6308e126c6217b098192c51b6e98bc85a8656bd))
+* broken deprecation message ([62aa295](https://github.com/Canny1913/revanced-patcher/commit/62aa295e7372014238415af36d902a4e88e2acbc))
+* check dependencies for resource patches ([9c07ffc](https://github.com/Canny1913/revanced-patcher/commit/9c07ffcc7af9f088426528561f4321c5cc6b5b15))
+* check if fingerprint string is substring of any string references ([c5de9e2](https://github.com/Canny1913/revanced-patcher/commit/c5de9e29889dffd18b31e62a892881cc48e8b607))
+* compare any methods parameters ([#101](https://github.com/Canny1913/revanced-patcher/issues/101)) ([085a3a4](https://github.com/Canny1913/revanced-patcher/commit/085a3a479d7bd411dcb0492b283daca538c824a1))
+* fallback to patch class name instead of `java.lang.Class` class name ([4164cb0](https://github.com/Canny1913/revanced-patcher/commit/4164cb0deacc7e1eed9fce63dab030180f28b762))
+* **fingerprint:** do not throw on `MethodFingerprint.result` getter ([2f7e62e](https://github.com/Canny1913/revanced-patcher/commit/2f7e62ef65422f2c75ef8b09b9cd27076e172b30))
+* handle option types and nulls properly ([aff4968](https://github.com/Canny1913/revanced-patcher/commit/aff4968e6f67239afa3b5c02cc133a17d9c3cbeb))
+* handle private companion objects ([ad3d332](https://github.com/Canny1913/revanced-patcher/commit/ad3d332e27d07e9d074bbaaf51af7eb2f9bfc7d5))
+* invalid type propagation in options ([b873228](https://github.com/Canny1913/revanced-patcher/commit/b873228ef0a9e6e431a4278c979caa5fcc508e0d)), closes [#98](https://github.com/Canny1913/revanced-patcher/issues/98)
+* invalid types for example options ([79f91e0](https://github.com/Canny1913/revanced-patcher/commit/79f91e0e5a6d99828f30aae55339ce0d897394c7))
+* make patcher version public ([76c45dd](https://github.com/Canny1913/revanced-patcher/commit/76c45dd7c1ffdca57e30ae7109c9fe0e5768f877))
+* only run list option check if not null ([4055939](https://github.com/Canny1913/revanced-patcher/commit/4055939c089e3c396c308c980215d93a1dea5954))
+* PathOption should be open, not sealed ([a562e47](https://github.com/Canny1913/revanced-patcher/commit/a562e476c085841efbc7ee98b01d8e6bb18ed757))
+* print full exception when patch fails ([7cf79e6](https://github.com/Canny1913/revanced-patcher/commit/7cf79e68e0e9dfd9faddee33139b127b71882d3e))
+* publicize types when merging files if necessary ([#137](https://github.com/Canny1913/revanced-patcher/issues/137)) ([9ec720e](https://github.com/Canny1913/revanced-patcher/commit/9ec720e983785d8b1dde330cc0e0e0f914c1803c))
+* remove default param from Package.versions ([4b81318](https://github.com/Canny1913/revanced-patcher/commit/4b813187107e85dc267dbc2d353884b2cc671cc4))
+* remove repeatable from PatchDeprecated ([6e73631](https://github.com/Canny1913/revanced-patcher/commit/6e73631d4d21e5e862f07ed7517244f36394e5ca))
+* remove unnecessary dummy nop instructions ([#111](https://github.com/Canny1913/revanced-patcher/issues/111)) ([f9bc95f](https://github.com/Canny1913/revanced-patcher/commit/f9bc95f220aa434308ce6950ba6ad2e7efac9c8a))
+* **tests:** access `patternScanResult` through `scanResult` ([76676fb](https://github.com/Canny1913/revanced-patcher/commit/76676fb5673a9e92517ee3a13943cdc98dd5102a))
+* typo in ListOption ([3921648](https://github.com/Canny1913/revanced-patcher/commit/392164862c83d6e76b2a2113d6f6d59fef0020d1))
+* use `MethodUtil.methodSignaturesMatch` instead of `Method.softCompareTo` ([bd053b7](https://github.com/Canny1913/revanced-patcher/commit/bd053b7e9974c0282d56e6762459db7070452e4a))
+* use instruction index instead of strings list index for `StringMatch` ([843e62a](https://github.com/Canny1913/revanced-patcher/commit/843e62ad290ee0a707be9322ee943921da3ea420))
+* wrong value for iterator in PatchOptions ([e31ac1f](https://github.com/Canny1913/revanced-patcher/commit/e31ac1f132df56ba7d2f8446d289ae03ef28f67d))
+
+
+### Code Refactoring
+
+* Improve Patch Options ([6b909c1](https://github.com/Canny1913/revanced-patcher/commit/6b909c1ee6b8c2ea08bbca059df755e2e5f31656))
+* improve structuring of classes and their implementations ([4aa14bb](https://github.com/Canny1913/revanced-patcher/commit/4aa14bbb858af9253eae9328b759f3298b65a215))
+
+
+* refactor!: move utility methods from `MethodFingerprintUtils` `MethodFingerprint` ([d802ef8](https://github.com/Canny1913/revanced-patcher/commit/d802ef844edf65d4d26328d6ca72e3ddd5a52b15))
+* feat(fingerprint)!: `StringsScanResult` for `MethodFingerprint` ([3813e28](https://github.com/Canny1913/revanced-patcher/commit/3813e28ac2ad6710d8d935526ca679e7b1b5980e))
+
+
+### Features
+
+* add PathOption back ([172655b](https://github.com/Canny1913/revanced-patcher/commit/172655bde06efdb0955431b44d269e6a64fe317a))
+* apply changes from ReVanced Patcher ([ba9d998](https://github.com/Canny1913/revanced-patcher/commit/ba9d99868103406fe36b9aa0cfaa0ed5023edfab))
+* default value for `Package.versions` annotation parameter ([131dedd](https://github.com/Canny1913/revanced-patcher/commit/131dedd4b021fe1c3b0be49ccba4764b325770ea))
+* deprecation for patches ([80c2e80](https://github.com/Canny1913/revanced-patcher/commit/80c2e809251cdb04d2dd3b3bfdbb8844bdfa31fa))
+* improved Patch Options ([e722e3f](https://github.com/Canny1913/revanced-patcher/commit/e722e3f4f9dc64acf53595802a0a83cf46ee96b8))
+* make `aaptPath` nullable ([d9da6d0](https://github.com/Canny1913/revanced-patcher/commit/d9da6d01f980a95e04833cebdb4de2b3dbbc343a))
+* merge classes on addition ([#127](https://github.com/Canny1913/revanced-patcher/issues/127)) ([a925650](https://github.com/Canny1913/revanced-patcher/commit/a9256500440f9b4117f1b8813ba0097dafee4ebb))
+* nullable parameters ([7882a8d](https://github.com/Canny1913/revanced-patcher/commit/7882a8d928cad8de8cfea711947fc02659549d20))
+* remove unused annotation `DirectPatternScanMethod` ([538b2a8](https://github.com/Canny1913/revanced-patcher/commit/538b2a859962570c700362afc88704ed3611aa87))
+* remove unused annotation `SincePatcher` ([4ae9ad0](https://github.com/Canny1913/revanced-patcher/commit/4ae9ad09d64a3f69512ccb037f816cb847d7350f))
+* remove unused extension `dependsOn` ([797286b](https://github.com/Canny1913/revanced-patcher/commit/797286b7588646272dea2fd35e8e78b0ffb18a0f))
+* remove unused patch extensions ([5583904](https://github.com/Canny1913/revanced-patcher/commit/55839049948033ad02414517fd3ba03619216aec))
+* RwLock for opening files in `DomFileEditor` ([db4348c](https://github.com/Canny1913/revanced-patcher/commit/db4348c4faf51bfe29678baacfbe76ba645ec0b9))
+* section `acknowledgements` for issue templates ([a0cb449](https://github.com/Canny1913/revanced-patcher/commit/a0cb449c60310917141e2809abaa16b4174dc002))
+* SincePatcher annotation ([25f74dc](https://github.com/Canny1913/revanced-patcher/commit/25f74dc5e9ed1a09258345b920d4f5a0dd7da527))
+* sort patches in lexicographical order ([a306561](https://github.com/Canny1913/revanced-patcher/commit/a306561b55ac848792046378f582a036f7ffab03)), closes [#125](https://github.com/Canny1913/revanced-patcher/issues/125)
+
+
+### Performance Improvements
+
+* decode resources only when necessary ([3ba4be2](https://github.com/Canny1913/revanced-patcher/commit/3ba4be240bf0a424e4bbfbaca9605644fda0984e))
+* **fingerprint:** do not resolve already resolved fingerprints ([4bfd7eb](https://github.com/Canny1913/revanced-patcher/commit/4bfd7ebff8b6623b0da4a46d6048bed08c5070d4))
+* make exception an object ([75d2be8](https://github.com/Canny1913/revanced-patcher/commit/75d2be88037c9cf5436ab69d92abea575409a865))
+
+
+### Reverts
+
+* revert breaking changes ([#106](https://github.com/Canny1913/revanced-patcher/issues/106)) ([124332f](https://github.com/Canny1913/revanced-patcher/commit/124332f0e9bbdaf4f1aeeb6a31333093eeba1642))
+
+
+### BREAKING CHANGES
+
+* various changes in which packages classes previously where and their implementation
+* These extensions do not exist anymore and any use should be removed
+* The extension does not exist anymore and any use should be removed
+* The annotation does not exist anymore and any use should be removed
+* Imports will have to be updated from `MethodFingerprintUtils` to `MethodFingerprint.Companion`.
+
+Signed-off-by: oSumAtrIX <johan.melkonyan1@web.de>
+* `MethodFingerprint` now has a field for `MethodFingerprintScanResult`. `MethodFingerprintScanResult` now holds the previous field `MethodFingerprint.patternScanResult`.
+
+Signed-off-by: oSumAtrIX <johan.melkonyan1@web.de>
+* Options has been moved from Patch to a new interface called OptionsContainer and are now handled entirely different. Make sure to check the examples to understand how it works.
+
 ## [6.3.2](https://github.com/revanced/revanced-patcher/compare/v6.3.1...v6.3.2) (2022-12-18)
 
 
