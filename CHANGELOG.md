@@ -1,3 +1,10 @@
+# [6.4.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.3.2...v6.4.0-dev.1) (2022-12-20)
+
+
+### Features
+
+* make `aaptPath` nullable ([#146](https://github.com/revanced/revanced-patcher/issues/146)) ([9f0a09a](https://github.com/revanced/revanced-patcher/commit/9f0a09a7569fd5dd78afa27cb66a73d1662edc69))
+
 ## [6.3.2](https://github.com/revanced/revanced-patcher/compare/v6.3.1...v6.3.2) (2022-12-18)
 
 
