@@ -33,8 +33,8 @@ internal object ClassMerger {
      * @param logger A logger.
      */
     fun ClassDef.merge(otherClass: ClassDef, context: PatcherContext, logger: Logger? = null) = this
-        .fixFieldAccess(otherClass, logger)
-        .fixMethodAccess(otherClass, logger)
+        //.fixFieldAccess(otherClass, logger)
+        //.fixMethodAccess(otherClass, logger)
         .addMissingFields(otherClass, logger)
         .addMissingMethods(otherClass, logger)
         .publicize(otherClass, context, logger)
