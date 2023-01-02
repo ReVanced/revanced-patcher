@@ -7,12 +7,8 @@ import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.util.TypeUtil.traverseClassHierarchy
+import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.VersionReader
-import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
-import app.revanced.patcher.util.proxy.mutableTypes.MutableClass.Companion.toMutable
-import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
-import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
 import brut.androlib.options.BuildOptions
@@ -26,11 +22,8 @@ import brut.directory.ExtFile
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
-import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcodes
-import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
-import org.jf.dexlib2.util.MethodUtil
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
 import java.nio.file.Files
@@ -89,100 +82,16 @@ class Patcher(private val options: PatcherOptions) {
                     if (result == null) {
                         logger.trace("Merging type $type")
                         classes.add(classDef)
-                    } else {
-                        val (existingClass, existingClassIndex) = result
+                        continue
+                    }
 
-                        logger.trace("Type $type exists. Adding missing methods and fields.")
+                    val (existingClass, existingClassIndex) = result
 
-                        /**
-                         * Add missing fields and methods from [from].
-                         *
-                         * @param from The class to add methods and fields from.
-                         */
-                        fun ClassDef.addMissingFrom(from: ClassDef) {
-                            var changed = false
-                            fun <T> ClassDef.transformClass(transform: (MutableClass) -> T): T {
-                                fun toMutableClass() =
-                                    if (this@transformClass is MutableClass) this else this.toMutable()
-                                return transform(toMutableClass())
-                            }
+                    logger.trace("Type $type exists. Adding missing methods and fields.")
 
-                            /**
-                             * Check if the [AccessFlags.PUBLIC] flag is set.
-                             *
-                             * @return True, if the flag is set.
-                             */
-                            fun Int.isPublic() = AccessFlags.PUBLIC.isSet(this)
-
-                            /**
-                             * Make a class and its super class public recursively.
-                             */
-                            fun MutableClass.publicize() {
-                                context.bytecodeContext.traverseClassHierarchy(this) {
-                                    if (accessFlags.isPublic()) return@traverseClassHierarchy
-
-                                    accessFlags = accessFlags.or(AccessFlags.PUBLIC.value)
-                                }
-                            }
-
-                            /**
-                             * Add missing methods to the class, considering to publicise the [ClassDef] if necessary.
-                             */
-                            fun ClassDef.addMissingMethods(): ClassDef {
-                                fun getMissingMethods() = from.methods.filterNot {
-                                    this@addMissingMethods.methods.any { original ->
-                                        MethodUtil.methodSignaturesMatch(original, it)
-                                    }
-                                }
-
-                                return getMissingMethods()
-                                    .apply {
-                                        if (isEmpty()) return@addMissingMethods this@addMissingMethods else changed =
-                                            true
-                                    }
-                                    .map { it.toMutable() }
-                                    .let { missingMethods ->
-                                        this@addMissingMethods.transformClass { classDef ->
-                                            classDef.apply {
-                                                // make sure the class is public, if the class contains public methods
-                                                if (missingMethods.any { it.accessFlags.isPublic() })
-                                                    classDef.publicize()
-
-                                                methods.addAll(missingMethods)
-                                            }
-                                        }
-                                    }
-                            }
-
-                            /**
-                             * Add missing fields to the class, considering to publicise the [ClassDef] if necessary.
-                             */
-                            fun ClassDef.addMissingFields(): ClassDef {
-                                fun getMissingFields() = from.fields.filterNot {
-                                    this@addMissingFields.fields.any { original -> original.name == it.name }
-                                }
-
-                                return getMissingFields()
-                                    .apply {
-                                        if (isEmpty()) return@addMissingFields this@addMissingFields else changed = true
-                                    }
-                                    .map { it.toMutable() }
-                                    .let { missingFields ->
-                                        this@addMissingFields.transformClass { classDef ->
-                                            // make sure the class is public, if the class contains public fields
-                                            if (missingFields.any { it.accessFlags.isPublic() })
-                                                classDef.publicize()
-
-                                            classDef.apply { fields.addAll(missingFields) }
-                                        }
-                                    }
-                            }
-
-                            classes[existingClassIndex] = addMissingMethods().addMissingFields()
-                                .apply { if (!changed) return }
-                        }
-
-                        existingClass.addMissingFrom(classDef)
+                    existingClass.merge(classDef, context, logger).let { mergedClass ->
+                        if (mergedClass !== existingClass) // referential equality check
+                            classes[existingClassIndex] = mergedClass
                     }
                 }
             }
