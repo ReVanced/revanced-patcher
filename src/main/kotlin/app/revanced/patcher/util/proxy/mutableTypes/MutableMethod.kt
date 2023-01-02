@@ -20,6 +20,22 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
     private val _parameterTypes by lazy { method.parameterTypes.toMutableList() }
     private val _hiddenApiRestrictions by lazy { method.hiddenApiRestrictions }
 
+    fun setDefiningClass(definingClass: String) {
+        this.definingClass = definingClass
+    }
+
+    fun setName(name: String) {
+        this.name = name
+    }
+
+    fun setAccessFlags(accessFlags: Int) {
+        this.accessFlags = accessFlags
+    }
+
+    fun setReturnType(returnType: String) {
+        this.returnType = returnType
+    }
+
     override fun getDefiningClass(): String {
         return definingClass
     }
