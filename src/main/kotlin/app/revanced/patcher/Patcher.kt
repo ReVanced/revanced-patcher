@@ -82,15 +82,16 @@ class Patcher(private val options: PatcherOptions) {
                     if (result == null) {
                         logger.trace("Merging type $type")
                         classes.add(classDef)
-                    } else {
-                        val (existingClass, existingClassIndex) = result
+                        continue
+                    }
 
-                        logger.trace("Type $type exists. Adding missing methods and fields.")
+                    val (existingClass, existingClassIndex) = result
 
-                        existingClass.merge(classDef, context, logger).let { mergedClass ->
-                            if (mergedClass !== existingClass) // referential equality check
-                                classes[existingClassIndex] = mergedClass
-                        }
+                    logger.trace("Type $type exists. Adding missing methods and fields.")
+
+                    existingClass.merge(classDef, context, logger).let { mergedClass ->
+                        if (mergedClass !== existingClass) // referential equality check
+                            classes[existingClassIndex] = mergedClass
                     }
                 }
             }
