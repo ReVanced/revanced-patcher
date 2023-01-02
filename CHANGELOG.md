@@ -1,3 +1,12 @@
+# [6.4.0-dev.2](https://github.com/revanced/revanced-patcher/compare/v6.4.0-dev.1...v6.4.0-dev.2) (2023-01-02)
+
+
+### Features
+
+* add missing setter to `MutableMethod` ([8f3ecc3](https://github.com/revanced/revanced-patcher/commit/8f3ecc318c39f0270aff53efdee7a1c8d82af421))
+* do not fix methods or methods in class merger ([4102f43](https://github.com/revanced/revanced-patcher/commit/4102f43b8a9473fd0ee96c5d4fb8f6e9b4e30e70))
+* fix method and field access when merging classes ([5c09ef7](https://github.com/revanced/revanced-patcher/commit/5c09ef7837f9b731e137b66c19da77f63c007595))
+
 # [6.4.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.3.2...v6.4.0-dev.1) (2022-12-20)
 
 
