@@ -5,6 +5,13 @@
 
 * update dependency `app.revanced:multidexlib2` ([#150](https://github.com/revanced/revanced-patcher/issues/150)) ([dd7dd38](https://github.com/revanced/revanced-patcher/commit/dd7dd383577dcfc95e97f77b446a89b41b589dc0))
 
+## [6.4.1](https://github.com/revanced/revanced-patcher/compare/v6.4.0...v6.4.1) (2023-01-15)
+
+
+### Bug Fixes
+
+* update dependency `app.revanced:multidexlib2` ([#150](https://github.com/revanced/revanced-patcher/issues/150)) ([dd7dd38](https://github.com/revanced/revanced-patcher/commit/dd7dd383577dcfc95e97f77b446a89b41b589dc0))
+
 ## [6.4.1-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.4.0...v6.4.1-dev.1) (2023-01-15)
 
 
