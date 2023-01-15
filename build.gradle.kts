@@ -23,7 +23,7 @@ repositories {
 dependencies {
     implementation("xpp3:xpp3:1.1.4c")
     implementation("org.smali:smali:2.5.2")
-    implementation("app.revanced:multidexlib2:2.5.2.r2")
+    implementation("app.revanced:multidexlib2:2.5.3-8649b642")
     implementation("org.apktool:apktool-lib:2.9.0-SNAPSHOT")
 
     implementation(kotlin("reflect"))
