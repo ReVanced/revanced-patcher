@@ -1,3 +1,10 @@
+## [6.4.2](https://github.com/revanced/revanced-patcher/compare/v6.4.1...v6.4.2) (2023-01-17)
+
+
+### Bug Fixes
+
+* resolve failing builds ([a263fdf](https://github.com/revanced/revanced-patcher/commit/a263fdfd413fc05098e28d4800e36ce7d313085b))
+
 ## [6.4.2-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.4.1...v6.4.2-dev.1) (2023-01-17)
 
 
