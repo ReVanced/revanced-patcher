@@ -24,7 +24,7 @@ dependencies {
     implementation("xpp3:xpp3:1.1.4c")
     implementation("app.revanced:smali:2.5.3-a3836654")
     implementation("app.revanced:multidexlib2:2.5.3-a3836654")
-    implementation("app.revanced:apktool-lib:2.9.0-SNAPSHOT")
+    implementation("app.revanced:apktool-lib:2.7.0")
 
     implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
