@@ -1,6 +1,6 @@
 package app.revanced.patcher.util
 
-import app.revanced.patcher.PatcherContext
+import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.logging.Logger
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
@@ -32,7 +32,7 @@ internal object ClassMerger {
      * @param context The context to traverse the class hierarchy in.
      * @param logger A logger.
      */
-    fun ClassDef.merge(otherClass: ClassDef, context: PatcherContext, logger: Logger? = null) = this
+    fun ClassDef.merge(otherClass: ClassDef, context: BytecodeContext, logger: Logger? = null) = this
         //.fixFieldAccess(otherClass, logger)
         //.fixMethodAccess(otherClass, logger)
         .addMissingFields(otherClass, logger)
@@ -89,10 +89,10 @@ internal object ClassMerger {
      * @param context The context to traverse the class hierarchy in.
      * @param logger A logger.
      */
-    private fun ClassDef.publicize(reference: ClassDef, context: PatcherContext, logger: Logger? = null) =
+    private fun ClassDef.publicize(reference: ClassDef, context: BytecodeContext, logger: Logger? = null) =
         if (reference.accessFlags.isPublic() && !accessFlags.isPublic())
             this.asMutableClass().apply {
-                context.bytecodeContext.traverseClassHierarchy(this) {
+                context.traverseClassHierarchy(this) {
                     if (accessFlags.isPublic()) return@traverseClassHierarchy
 
                     logger?.trace("Publicizing ${this.type}")

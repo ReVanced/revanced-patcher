@@ -70,21 +70,23 @@ class Patcher(private val options: PatcherOptions) {
                 for (classDef in MultiDexIO.readDexFile(true, file, dexFileNamer, null, null).classes) {
                     val type = classDef.type
 
-                    val existingClassIndex = indexOfFirst { it.type == type }
+                    val existingClassIndex = this.indexOfFirst { it.type == type }
                     if (existingClassIndex == -1) {
                         logger.trace("Merging type $type")
-                        classes.add(classDef)
+                        add(classDef)
                         continue
                     }
 
-                    val (existingClass, existingClassIndex) = result
 
                     logger.trace("Type $type exists. Adding missing methods and fields.")
 
-                    existingClass.merge(classDef, context, logger).let { mergedClass ->
-                        if (mergedClass !== existingClass) // referential equality check
-                            classes[existingClassIndex] = mergedClass
+                    get(existingClassIndex).apply {
+                        merge(classDef, context.bytecodeContext, logger).let { mergedClass ->
+                            if (mergedClass !== this) // referential equality check
+                                set(existingClassIndex, mergedClass)
+                        }
                     }
+
                 }
             }
         }
