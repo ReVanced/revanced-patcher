@@ -106,7 +106,10 @@ abstract class MethodFingerprint(
                             val stringsList = methodFingerprint.strings.toMutableList()
 
                             implementation.instructions.forEachIndexed { instructionIndex, instruction ->
-                                if (instruction.opcode.ordinal != Opcode.CONST_STRING.ordinal) return@forEachIndexed
+                                if (
+                                    instruction.opcode != Opcode.CONST_STRING &&
+                                    instruction.opcode != Opcode.CONST_STRING_JUMBO
+                                ) return@forEachIndexed
 
                                 val string = ((instruction as ReferenceInstruction).reference as StringReference).string
                                 val index = stringsList.indexOfFirst(string::contains)
@@ -244,7 +247,7 @@ data class MethodFingerprintResult(
          * The result of scanning strings on the [MethodFingerprint].
          * @param matches The list of strings that were matched.
          */
-        data class StringsScanResult(val matches: List<StringMatch>){
+        data class StringsScanResult(val matches: List<StringMatch>) {
             /**
              * Represents a match for a string at an index.
              * @param string The string that was matched.
