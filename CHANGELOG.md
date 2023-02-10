@@ -1,3 +1,10 @@
+## [6.4.3](https://github.com/revanced/revanced-patcher/compare/v6.4.2...v6.4.3) (2023-02-10)
+
+
+### Bug Fixes
+
+* check `CONST_STRING_JUMP` instructions for matching string ([058d292](https://github.com/revanced/revanced-patcher/commit/058d292ad5e297f4c652ff543c13e77a39f7fb1b))
+
 ## [6.4.3-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.4.2...v6.4.3-dev.1) (2023-02-10)
 
 
