@@ -101,7 +101,7 @@ fun MutableMethod.removeInstruction(index: Int) = this.implementation!!.removeIn
 fun MutableMethod.label(index: Int) = this.implementation!!.newLabelForIndex(index)
 
 /**
- * Get the instruction at given index in the method's implementation.
+ * Get the instruction at the given index in the method's implementation.
  * @param index The index to get the instruction at.
  * @return The instruction.
  */
