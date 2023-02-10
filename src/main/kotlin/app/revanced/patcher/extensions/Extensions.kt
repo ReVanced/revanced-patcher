@@ -13,7 +13,6 @@ import org.jf.dexlib2.builder.MutableMethodImplementation
 import org.jf.dexlib2.builder.instruction.*
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
-import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.immutable.ImmutableMethod
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation
 import java.io.OutputStream
@@ -43,17 +42,6 @@ fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) {
     for (i in count downTo 0) {
         this.removeInstruction(index + i)
     }
-}
-
-/**
- * Compare a method to another, considering name and parameters.
- * @param otherMethod The method to compare against.
- * @return True if the methods match given the conditions.
- */
-fun Method.softCompareTo(otherMethod: MethodReference): Boolean {
-    return this.name == otherMethod.name && parametersEqual(
-        this.parameterTypes, otherMethod.parameterTypes
-    )
 }
 
 /**
@@ -113,7 +101,7 @@ fun MutableMethod.removeInstruction(index: Int) = this.implementation!!.removeIn
 fun MutableMethod.label(index: Int) = this.implementation!!.newLabelForIndex(index)
 
 /**
- * Get the instruction at given index in the method's implementation.
+ * Get the instruction at the given index in the method's implementation.
  * @param index The index to get the instruction at.
  * @return The instruction.
  */
@@ -139,10 +127,10 @@ fun MutableMethod.addInstructions(index: Int, smali: String, externalLabels: Lis
 
     // Add the compiled list of instructions to the method.
     val methodImplementation = this.implementation!!
-    methodImplementation.addInstructions(index, compiledInstructions)
+    methodImplementation.addInstructions(index, compiledInstructions.subList(0, compiledInstructions.size - externalLabels.size))
 
     val methodInstructions = methodImplementation.instructions
-    methodInstructions.subList(index, index + compiledInstructions.size)
+    methodInstructions.subList(index, index + compiledInstructions.size - externalLabels.size)
         .forEachIndexed { compiledInstructionIndex, compiledInstruction ->
             // If the compiled instruction is not an offset instruction, skip it.
             if (compiledInstruction !is BuilderOffsetInstruction) return@forEachIndexed
@@ -239,21 +227,4 @@ internal fun parametersEqual(
 
 internal val nullOutputStream = object : OutputStream() {
     override fun write(b: Int) {}
-}
-
-/**
- * Should be used to parse a list of parameters represented by their first letter,
- * or in the case of arrays prefixed with an unspecified amount of '[' character.
- */
-internal fun String.parseParameters(): List<String> {
-    val parameters = mutableListOf<String>()
-    var parameter = ""
-    for (char in this.toCharArray()) {
-        parameter += char
-        if (char == '[') continue
-
-        parameters.add(parameter)
-        parameter = ""
-    }
-    return parameters
 }

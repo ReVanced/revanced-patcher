@@ -3,11 +3,11 @@ package app.revanced.patcher
 import app.revanced.patcher.data.Context
 import app.revanced.patcher.data.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
-import app.revanced.patcher.extensions.PatchExtensions.deprecated
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
+import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
@@ -66,40 +66,35 @@ class Patcher(private val options: PatcherOptions) {
     /**
      * Add additional dex file container to the patcher.
      * @param files The dex file containers to add to the patcher.
-     * @param allowedOverwrites A list of class types that are allowed to be overwritten.
-     * @param throwOnDuplicates If this is set to true, the patcher will throw an exception if a duplicate class has been found.
+     * @param process The callback for [files] which are being added.
      */
     fun addFiles(
         files: List<File>,
-        allowedOverwrites: Iterable<String> = emptyList(),
-        throwOnDuplicates: Boolean = false,
-        callback: (File) -> Unit
+        process: (File) -> Unit
     ) {
-        for (file in files) {
-            var modified = false
-            for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
-                val type = classDef.type
+        with(context.bytecodeContext.classes) {
+            for (file in files) {
+                process(file)
+                for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
+                    val type = classDef.type
 
-                val existingClass = context.bytecodeContext.classes.classes.findIndexed { it.type == type }
-                if (existingClass == null) {
-                    if (throwOnDuplicates) throw Exception("Class $type has already been added to the patcher")
+                    val result = classes.findIndexed { it.type == type }
+                    if (result == null) {
+                        logger.trace("Merging type $type")
+                        classes.add(classDef)
+                        continue
+                    }
 
-                    logger.trace("Merging $type")
-                    context.bytecodeContext.classes.classes.add(classDef)
-                    modified = true
+                    val (existingClass, existingClassIndex) = result
 
-                    continue
+                    logger.trace("Type $type exists. Adding missing methods and fields.")
+
+                    existingClass.merge(classDef, context, logger).let { mergedClass ->
+                        if (mergedClass !== existingClass) // referential equality check
+                            classes[existingClassIndex] = mergedClass
+                    }
                 }
-
-                if (!allowedOverwrites.contains(type)) continue
-
-                logger.trace("Overwriting $type")
-
-                val index = existingClass.second
-                context.bytecodeContext.classes.classes[index] = classDef
-                modified = true
             }
-            if (modified) callback(file)
         }
     }
 
@@ -155,6 +150,7 @@ class Patcher(private val options: PatcherOptions) {
                     cacheDirectory.close()
                 }
             }
+
             else -> logger.info("Not compiling resources because resource patching is not required")
         }
 
@@ -241,6 +237,7 @@ class Patcher(private val options: PatcherOptions) {
                     }
 
                 }
+
                 ResourceDecodingMode.MANIFEST_ONLY -> {
                     logger.info("Decoding AndroidManifest.xml only, because resources are not needed")
 
@@ -311,14 +308,10 @@ class Patcher(private val options: PatcherOptions) {
                 val result = executePatch(dependency, executedPatches)
                 if (result.isSuccess()) return@forEach
 
-                val error = result.error()!!
-                val errorMessage = error.cause ?: error.message
-                return PatchResultError("'$patchName' depends on '${dependency.patchName}' but the following error was raised: $errorMessage")
-            }
-
-            patchClass.deprecated?.let { (reason, replacement) ->
-                logger.warn("'$patchName' is deprecated, reason: $reason")
-                if (replacement != null) logger.warn("Use '${replacement.java.patchName}' instead")
+                return PatchResultError(
+                    "'$patchName' depends on '${dependency.patchName}' but the following error was raised: " +
+                            result.error()!!.let { it.cause?.stackTraceToString() ?: it.message }
+                )
             }
 
             val isResourcePatch = ResourcePatch::class.java.isAssignableFrom(patchClass)

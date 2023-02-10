@@ -4,7 +4,6 @@ import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyScanThreshold
 import app.revanced.patcher.extensions.parametersEqual
-import app.revanced.patcher.extensions.softCompareTo
 import app.revanced.patcher.fingerprint.Fingerprint
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.util.proxy.ClassProxy
@@ -14,6 +13,7 @@ import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.instruction.Instruction
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import org.jf.dexlib2.iface.reference.StringReference
+import org.jf.dexlib2.util.MethodUtil
 
 /**
  * Represents the [MethodFingerprint] for a method.
@@ -106,10 +106,13 @@ abstract class MethodFingerprint(
                             val stringsList = methodFingerprint.strings.toMutableList()
 
                             implementation.instructions.forEachIndexed { instructionIndex, instruction ->
-                                if (instruction.opcode.ordinal != Opcode.CONST_STRING.ordinal) return@forEachIndexed
+                                if (
+                                    instruction.opcode != Opcode.CONST_STRING &&
+                                    instruction.opcode != Opcode.CONST_STRING_JUMBO
+                                ) return@forEachIndexed
 
                                 val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                                val index = stringsList.indexOfFirst { it == string }
+                                val index = stringsList.indexOfFirst(string::contains)
                                 if (index == -1) return@forEachIndexed
 
                                 add(
@@ -259,7 +262,7 @@ data class MethodFingerprintResult(
          * The result of scanning strings on the [MethodFingerprint].
          * @param matches The list of strings that were matched.
          */
-        data class StringsScanResult(val matches: List<StringMatch>){
+        data class StringsScanResult(val matches: List<StringMatch>) {
             /**
              * Represents a match for a string at an index.
              * @param string The string that was matched.
@@ -312,7 +315,7 @@ data class MethodFingerprintResult(
      */
     val mutableMethod by lazy {
         mutableClass.methods.first {
-            it.softCompareTo(this.method)
+            MethodUtil.methodSignaturesMatch(it, this.method)
         }
     }
 }

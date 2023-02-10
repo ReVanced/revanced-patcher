@@ -115,3 +115,6 @@ gradle-app.setting
 
 # Avoid ignoring test resources
 !src/test/resources/*
+
+# Dependency directories
+node_modules/

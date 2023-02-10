@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 annotation class Patch(val include: Boolean = true)
 
 /**
- * Annotation for dependencies of [Patch]es .
+ * Annotation for dependencies of [Patch]es.
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

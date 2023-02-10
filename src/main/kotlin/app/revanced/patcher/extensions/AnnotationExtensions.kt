@@ -41,7 +41,7 @@ private fun <T : Annotation> Class<*>.findAnnotationRecursively(
 
 object PatchExtensions {
     val Class<out Patch<Context>>.patchName: String
-        get() = findAnnotationRecursively(Name::class)?.name ?: this.javaClass.simpleName
+        get() = findAnnotationRecursively(Name::class)?.name ?: this.simpleName
 
     val Class<out Patch<Context>>.version
         get() = findAnnotationRecursively(Version::class)?.version
@@ -65,24 +65,11 @@ object PatchExtensions {
                 (it as? OptionsContainer)?.options
             }
         }
-
-    val Class<out Patch<Context>>.deprecated: Pair<String, KClass<out Patch<Context>>?>?
-        get() = findAnnotationRecursively(PatchDeprecated::class)?.let {
-            it.reason to it.replacement.let { cl ->
-                if (cl == Patch::class) null else cl
-            }
-        }
 }
 
 object MethodFingerprintExtensions {
     val MethodFingerprint.name: String
-        get() = javaClass.findAnnotationRecursively(Name::class)?.name ?: this.javaClass.simpleName
-
-    val MethodFingerprint.version
-        get() = javaClass.findAnnotationRecursively(Version::class)?.version ?: "0.0.1"
-
-    val MethodFingerprint.description
-        get() = javaClass.findAnnotationRecursively(Description::class)?.description
+        get() = this.javaClass.simpleName
 
     val MethodFingerprint.fuzzyPatternScanMethod
         get() = javaClass.findAnnotationRecursively(FuzzyPatternScanMethod::class)
