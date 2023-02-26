@@ -7,8 +7,6 @@ import app.revanced.patcher.patch.Patch
  * @param name A suggestive name for the [Patch].
  */
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
 annotation class Name(
     val name: String,
 )
@@ -18,8 +16,6 @@ annotation class Name(
  * @param description A description for the [Patch].
  */
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
 annotation class Description(
     val description: String,
 )
@@ -30,8 +26,6 @@ annotation class Description(
  * @param version The version of a [Patch].
  */
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
 annotation class Version(
     val version: String,
 )

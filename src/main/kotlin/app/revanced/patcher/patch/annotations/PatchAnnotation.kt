@@ -9,16 +9,12 @@ import kotlin.reflect.KClass
  * @param include If false, the patch should be treated as optional by default.
  */
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
 annotation class Patch(val include: Boolean = true)
 
 /**
  * Annotation for dependencies of [Patch]es.
  */
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
 annotation class DependsOn(
     val dependencies: Array<KClass<out Patch<Context>>> = []
 )
