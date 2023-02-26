@@ -8,6 +8,7 @@ import app.revanced.patcher.patch.OptionsContainer
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchOptions
 import app.revanced.patcher.patch.annotations.DependsOn
+import app.revanced.patcher.patch.annotations.RequiresIntegrations
 import kotlin.reflect.KClass
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.companionObject
@@ -57,6 +58,9 @@ object PatchExtensions {
 
     val Class<out Patch<Context>>.compatiblePackages
         get() = findAnnotationRecursively(Compatibility::class)?.compatiblePackages
+
+    internal val Class<out Patch<Context>>.requiresIntegrations
+        get() = findAnnotationRecursively(RequiresIntegrations::class) != null
 
     val Class<out Patch<Context>>.options: PatchOptions?
         get() = kotlin.companionObject?.let { cl ->
