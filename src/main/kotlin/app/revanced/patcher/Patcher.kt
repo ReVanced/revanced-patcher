@@ -1,13 +1,12 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.data.Context
-import app.revanced.patcher.data.findIndexed
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
+import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
@@ -28,7 +27,7 @@ import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
 import java.nio.file.Files
 
-private val NAMER = BasicDexFileNamer()
+internal val NAMER = BasicDexFileNamer()
 
 /**
  * The ReVanced Patcher.
@@ -38,6 +37,7 @@ class Patcher(private val options: PatcherOptions) {
     private val logger = options.logger
     private val opcodes: Opcodes
     private var resourceDecodingMode = ResourceDecodingMode.MANIFEST_ONLY
+    private var mergeIntegrations = false
     val context: PatcherContext
 
     companion object {
@@ -64,37 +64,19 @@ class Patcher(private val options: PatcherOptions) {
     }
 
     /**
-     * Add additional dex file container to the patcher.
-     * @param files The dex file containers to add to the patcher.
-     * @param process The callback for [files] which are being added.
+     * Add integrations to be merged by the patcher.
+     * The integrations will only be merged, if necessary.
+     *
+     * @param integrations The integrations, must be dex files or dex file container such as ZIP, APK or DEX files.
+     * @param callback The callback for [integrations] which are being added.
      */
-    fun addFiles(
-        files: List<File>,
-        process: (File) -> Unit
+    fun addIntegrations(
+        integrations: List<File>,
+        callback: (File) -> Unit
     ) {
-        with(context.bytecodeContext.classes) {
-            for (file in files) {
-                process(file)
-                for (classDef in MultiDexIO.readDexFile(true, file, NAMER, null, null).classes) {
-                    val type = classDef.type
-
-                    val result = classes.findIndexed { it.type == type }
-                    if (result == null) {
-                        logger.trace("Merging type $type")
-                        classes.add(classDef)
-                        continue
-                    }
-
-                    val (existingClass, existingClassIndex) = result
-
-                    logger.trace("Type $type exists. Adding missing methods and fields.")
-
-                    existingClass.merge(classDef, context, logger).let { mergedClass ->
-                        if (mergedClass !== existingClass) // referential equality check
-                            classes[existingClassIndex] = mergedClass
-                    }
-                }
-            }
+        context.integrations.apply integrations@{
+            add(integrations)
+            this@integrations.callback = callback
         }
     }
 
@@ -183,18 +165,29 @@ class Patcher(private val options: PatcherOptions) {
      */
     fun addPatches(patches: Iterable<Class<out Patch<Context>>>) {
         /**
-         * Fill the cache with the instances of the [Patch]es for later use.
-         * Note: Dependencies of the [Patch] will be cached as well.
+         * Returns true if at least one patches or its dependencies matches the given predicate.
          */
-        fun Class<out Patch<Context>>.isResource() {
-            this.also {
-                if (!ResourcePatch::class.java.isAssignableFrom(it)) return@also
-                // set the mode to decode all resources before running the patches
+        fun Class<out Patch<Context>>.anyRecursively(predicate: (Class<out Patch<Context>>) -> Boolean): Boolean =
+            predicate(this) || dependencies?.any { it.java.anyRecursively(predicate) } == true
+
+
+        // Determine if resource patching is required.
+        for (patch in patches) {
+            if (patch.anyRecursively { ResourcePatch::class.java.isAssignableFrom(it) }) {
                 resourceDecodingMode = ResourceDecodingMode.FULL
-            }.dependencies?.forEach { it.java.isResource() }
+                break
+            }
         }
 
-        context.patches.addAll(patches.onEach(Class<out Patch<Context>>::isResource))
+        // Determine if merging integrations is required.
+        for (patch in patches) {
+            if (patch.anyRecursively { it.requiresIntegrations }) {
+                mergeIntegrations = true
+                break
+            }
+        }
+
+        context.patches.addAll(patches)
     }
 
     /**
@@ -343,6 +336,8 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         return sequence {
+            if (mergeIntegrations) context.integrations.merge(logger)
+
             // prevent from decoding the manifest twice if it is not needed
             if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
 
