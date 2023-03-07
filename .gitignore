@@ -74,6 +74,7 @@ cmake-build-*/
 
 # IntelliJ
 out/
+.idea/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
@@ -118,3 +119,6 @@ gradle-app.setting
 
 # Dependency directories
 node_modules/
+
+# Gradle props, to avoid sharing the gpr key
+gradle.properties

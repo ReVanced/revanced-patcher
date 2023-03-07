@@ -7,8 +7,6 @@ import app.revanced.patcher.patch.Patch
  * @param compatiblePackages A list of packages a [Patch] is compatible with.
  */
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
 annotation class Compatibility(
     val compatiblePackages: Array<Package>,
 )
@@ -19,8 +17,6 @@ annotation class Compatibility(
  * @param versions The versions of the package the [Patch] is compatible with.
  */
 @Target()
-@Retention(AnnotationRetention.RUNTIME)
-@MustBeDocumented
 annotation class Package(
     val name: String,
     val versions: Array<String> = [],

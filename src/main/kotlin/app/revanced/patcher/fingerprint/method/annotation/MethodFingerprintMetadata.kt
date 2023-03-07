@@ -7,7 +7,6 @@ import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
  * @param threshold if [threshold] or more of the opcodes do not match, skip.
  */
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
 annotation class FuzzyPatternScanMethod(
     val threshold: Int = 1
 )

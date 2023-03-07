@@ -1,3 +1,27 @@
+# [7.0.0](https://github.com/revanced/revanced-patcher/compare/v6.4.3...v7.0.0) (2023-02-26)
+
+
+* feat!: merge integrations only when necessary ([6e24a85](https://github.com/revanced/revanced-patcher/commit/6e24a85eabd1e7a1484fad229d5ba55c3ba1f1b4))
+
+
+### BREAKING CHANGES
+
+* `Patcher.addFiles` is now renamed to `Patcher.addIntegrations`
+
+Signed-off-by: oSumAtrIX <johan.melkonyan1@web.de>
+
+# [7.0.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v6.4.3...v7.0.0-dev.1) (2023-02-26)
+
+
+* feat!: merge integrations only when necessary ([6e24a85](https://github.com/revanced/revanced-patcher/commit/6e24a85eabd1e7a1484fad229d5ba55c3ba1f1b4))
+
+
+### BREAKING CHANGES
+
+* `Patcher.addFiles` is now renamed to `Patcher.addIntegrations`
+
+Signed-off-by: oSumAtrIX <johan.melkonyan1@web.de>
+
 ## [6.4.3](https://github.com/revanced/revanced-patcher/compare/v6.4.2...v6.4.3) (2023-02-10)
 
 

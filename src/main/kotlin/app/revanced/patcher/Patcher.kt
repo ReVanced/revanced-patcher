@@ -3,12 +3,11 @@ package app.revanced.patcher
 import app.revanced.patcher.apk.Apk
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
+import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.VersionReader
 import lanchon.multidexlib2.BasicDexFileNamer
-import lanchon.multidexlib2.MultiDexIO
 import java.io.File
 
 /**
@@ -16,8 +15,9 @@ import java.io.File
  * @param options The options for the patcher.
  */
 class Patcher(private val options: PatcherOptions) {
-    private val context = PatcherContext()
+    private val context = PatcherContext(options)
     private val logger = options.logger
+    private var mergeIntegrations = false
     private var decodingMode = Apk.ResourceDecodingMode.MANIFEST_ONLY
 
     companion object {
@@ -39,58 +39,46 @@ class Patcher(private val options: PatcherOptions) {
     }
 
     /**
+     * Add integrations to be merged by the patcher.
+     * The integrations will only be merged, if necessary.
+     *
+     * @param integrations The integrations, must be dex files or dex file container such as ZIP, APK or DEX files.
+     */
+    fun addIntegrations(integrations: List<File>) = context.integrations.add(integrations)
+
+    /**
+     * Add [Patch]es to the patcher.
+     * @param patches [Patch]es The patches to add.
+     */
+    /**
      * Add [Patch]es to the patcher.
      * @param patches [Patch]es The patches to add.
      */
     fun addPatches(patches: Iterable<PatchClass>) {
         /**
-         * Fill the cache with the instances of the [Patch]es for later use.
-         * Note: Dependencies of the [Patch] will be cached as well.
+         * Returns true if at least one patches or its dependencies matches the given predicate.
          */
-        fun PatchClass.isResource() {
-            this.also {
-                if (!ResourcePatch::class.java.isAssignableFrom(it)) return@also
-                // Set the mode to decode all resources before running the patches.
+        fun PatchClass.anyRecursively(predicate: (PatchClass) -> Boolean): Boolean =
+            predicate(this) || dependencies?.any { it.java.anyRecursively(predicate) } == true
+
+
+        // Determine if resource patching is required.
+        for (patch in patches) {
+            if (patch.anyRecursively { ResourcePatch::class.java.isAssignableFrom(it) }) {
                 decodingMode = Apk.ResourceDecodingMode.FULL
-            }.dependencies?.forEach { it.java.isResource() }
-        }
-
-        context.patches.addAll(patches.onEach(PatchClass::isResource))
-    }
-
-    /**
-     * Add additional dex file container to the patcher.
-     * @param files The dex file containers to add to the patcher.
-     */
-    fun addFiles(files: List<File>) {
-        context.bytecodeContext.classes.apply {
-            for (file in files) {
-                logger.info("Merging $file")
-
-                for (classDef in MultiDexIO.readDexFile(true, file, dexFileNamer, null, null).classes) {
-                    val type = classDef.type
-
-                    val existingClassIndex = this.indexOfFirst { it.type == type }
-                    if (existingClassIndex == -1) {
-                        logger.trace("Merging type $type")
-                        add(classDef)
-                        continue
-                    }
-
-
-                    logger.trace("Type $type exists. Adding missing methods and fields.")
-
-                    get(existingClassIndex).apply {
-                        merge(classDef, context.bytecodeContext, logger).let { mergedClass ->
-                            if (mergedClass !== this) // referential equality check
-                                set(existingClassIndex, mergedClass)
-                        }
-                    }
-
-                }
+                break
             }
         }
 
+        // Determine if merging integrations is required.
+        for (patch in patches) {
+            if (patch.anyRecursively { it.requiresIntegrations }) {
+                mergeIntegrations = true
+                break
+            }
+        }
+
+        context.patches.addAll(patches)
     }
 
     /**
@@ -166,6 +154,7 @@ class Patcher(private val options: PatcherOptions) {
                 executedPatches[patchName] = ExecutedPatch(patchInstance, it is PatchResult.Success)
             }
         }
+        if (mergeIntegrations) context.integrations.merge(logger, dexFileNamer)
 
         // Prevent from decoding the manifest twice if it is not needed.
         if (decodingMode == Apk.ResourceDecodingMode.FULL) {
@@ -232,13 +221,6 @@ class Patcher(private val options: PatcherOptions) {
         }
 
         return PatcherResult(patchResults)
-    }
-
-    private inner class PatcherContext {
-        val patches = mutableListOf<PatchClass>()
-
-        val bytecodeContext = BytecodeContext(options)
-        val resourceContext = ResourceContext(options)
     }
 }
 
