@@ -26,8 +26,8 @@ dependencies {
     implementation("app.revanced:multidexlib2:2.5.3-a3836654")
     implementation("app.revanced:apktool-lib:2.7.0")
 
-    implementation(kotlin("reflect"))
-    testImplementation(kotlin("test"))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.10")
 }
 
 tasks {
