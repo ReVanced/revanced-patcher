@@ -1,3 +1,10 @@
+# [7.1.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v7.0.0...v7.1.0-dev.1) (2023-04-30)
+
+
+### Features
+
+* add appreciation message for new contributors ([d674362](https://github.com/revanced/revanced-patcher/commit/d67436271ddca9ccfe008272c1ca82c6123ae7ee))
+
 # [7.0.0](https://github.com/revanced/revanced-patcher/compare/v6.4.3...v7.0.0) (2023-02-26)
 
 
