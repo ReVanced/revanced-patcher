@@ -39,7 +39,7 @@ fun MutableMethodImplementation.replaceInstructions(index: Int, instructions: Li
 }
 
 fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) {
-    for (i in count downTo 0) {
+    for (i in (0 until count).reversed()) {
         this.removeInstruction(index + i)
     }
 }
