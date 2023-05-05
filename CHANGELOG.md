@@ -1,3 +1,11 @@
+# [7.1.0](https://github.com/revanced/revanced-patcher/compare/v7.0.0...v7.1.0) (2023-05-05)
+
+
+### Features
+
+* add appreciation message for new contributors ([d674362](https://github.com/revanced/revanced-patcher/commit/d67436271ddca9ccfe008272c1ca82c6123ae7ee))
+* add overload to get instruction as type ([49c173d](https://github.com/revanced/revanced-patcher/commit/49c173dc14137ddd198a611e9882dc71300831ee))
+
 # [7.1.0-dev.2](https://github.com/revanced/revanced-patcher/compare/v7.1.0-dev.1...v7.1.0-dev.2) (2023-05-05)
 
 
