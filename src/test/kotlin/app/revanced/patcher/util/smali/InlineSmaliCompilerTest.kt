@@ -44,7 +44,7 @@ internal class InlineSmaliCompilerTest {
             """
         )
 
-        val insn = method.instruction(insnIndex) as BuilderInstruction21t
+        val insn = method.instruction<BuilderInstruction21t>(insnIndex)
         assertEquals(targetIndex, insn.target.location.index)
     }
 
@@ -73,7 +73,7 @@ internal class InlineSmaliCompilerTest {
             )
         )
 
-        val insn = method.instruction(insnIndex) as BuilderInstruction21t
+        val insn = method.instruction<BuilderInstruction21t>(insnIndex)
         assertTrue(insn.target.isPlaced, "Label was not placed")
         assertEquals(labelIndex, insn.target.location.index)
     }
