@@ -1,3 +1,10 @@
+## [7.1.1](https://github.com/revanced/revanced-patcher/compare/v7.1.0...v7.1.1) (2023-05-07)
+
+
+### Bug Fixes
+
+* remove `count` instead of `count + 1` instructions with `removeInstructions` ([#167](https://github.com/revanced/revanced-patcher/issues/167)) ([98f8eed](https://github.com/revanced/revanced-patcher/commit/98f8eedecd72b0afe6a0f099a3641a1cc6be2698))
+
 ## [7.1.1-dev.1](https://github.com/revanced/revanced-patcher/compare/v7.1.0...v7.1.1-dev.1) (2023-05-07)
 
 
