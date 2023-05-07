@@ -1,2 +1,3 @@
-# Patcher
-Patcher framework used in the ReVanced project.
+# 💉 ReVanced Patcher
+
+ReVanced Patcher used to patch Android applications.
