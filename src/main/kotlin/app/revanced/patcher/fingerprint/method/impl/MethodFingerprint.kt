@@ -31,7 +31,7 @@ abstract class MethodFingerprint(
     internal val parameters: Iterable<String>? = null,
     internal val opcodes: Iterable<Opcode?>? = null,
     internal val strings: Iterable<String>? = null,
-    internal val customFingerprint: ((methodDef: Method) -> Boolean)? = null
+    internal val customFingerprint: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null
 ) : Fingerprint {
     /**
      * The result of the [MethodFingerprint] the [Method].
@@ -94,7 +94,7 @@ abstract class MethodFingerprint(
             ) return false
 
             @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-            if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(method))
+            if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(method, forClass))
                 return false
 
             val stringsScanResult: StringsScanResult? =
