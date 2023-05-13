@@ -1,3 +1,13 @@
+# [8.0.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v7.1.1...v8.0.0-dev.1) (2023-05-10)
+
+
+* feat!: add `classDef` parameter to `MethodFingerprint` (#175) ([a205220](https://github.com/revanced/revanced-patcher/commit/a2052202b23037150df6aadc47f6e91efcd481cf)), closes [#175](https://github.com/revanced/revanced-patcher/issues/175)
+
+
+### BREAKING CHANGES
+
+* This changes the signature of the `customFingerprint` function.
+
 ## [7.1.1](https://github.com/revanced/revanced-patcher/compare/v7.1.0...v7.1.1) (2023-05-07)
 
 

@@ -41,18 +41,13 @@ sealed class PatchBundle(path: String) : File(path) {
                 arrayOf(this.toURI().toURL()),
                 Thread.currentThread().contextClassLoader // TODO: find out why this is required
             ),
-            StringIterator(
-                JarFile(this)
-                    .entries()
-                    .toList() // TODO: find a cleaner solution than that to filter non class files
-                    .filter {
-                        it.name.endsWith(".class") && !it.name.contains("$")
-                    }
-                    .iterator()
-            ) {
-                it.realName.replace('/', '.').replace(".class", "")
-            }
-        )
+            JarFile(this)
+                .stream()
+                .filter {it.name.endsWith(".class") && !it.name.contains("$")}
+                .map({it -> it.realName.replace('/', '.').replace(".class", "")}).iterator()
+            )
+                    
+        
     }
 
     /**
@@ -68,8 +63,8 @@ sealed class PatchBundle(path: String) : File(path) {
          * Patches will be loaded to the provided [dexClassLoader].
          */
         fun loadPatches() = loadPatches(dexClassLoader,
-            StringIterator(DexFileFactory.loadDexFile(path, null).classes.iterator()) { classDef ->
+            DexFileFactory.loadDexFile(path, null).classes.asSequence().map({ classDef ->
                 classDef.type.substring(1, classDef.length - 1).replace('/', '.')
-            })
+            }).iterator())
     }
 }
