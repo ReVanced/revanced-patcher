@@ -54,17 +54,6 @@ class BytecodeContext internal constructor(classes: MutableList<ClassDef>) : Con
         }
         return proxy
     }
-
-    private companion object {
-        inline fun <reified T> Iterable<T>.find(predicate: (T) -> Boolean): T? {
-            for (element in this) {
-                if (predicate(element)) {
-                    return element
-                }
-            }
-            return null
-        }
-    }
 }
 
 /**
