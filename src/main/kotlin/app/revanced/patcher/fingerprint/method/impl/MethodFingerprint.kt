@@ -15,6 +15,9 @@ import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import org.jf.dexlib2.iface.reference.StringReference
 import org.jf.dexlib2.util.MethodUtil
 
+private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult.StringMatch
+private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
+
 /**
  * Represents the [MethodFingerprint] for a method.
  * @param returnType The return type of the method.
@@ -34,7 +37,7 @@ abstract class MethodFingerprint(
     internal val customFingerprint: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null
 ) : Fingerprint {
     /**
-     * The result of the [MethodFingerprint] the [Method].
+     * The result of the [MethodFingerprint].
      */
     var result: MethodFingerprintResult? = null
 
@@ -216,9 +219,6 @@ abstract class MethodFingerprint(
     }
 }
 
-private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult.StringMatch
-private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
-
 /**
  * Represents the result of a [MethodFingerprintResult].
  *
@@ -233,6 +233,26 @@ data class MethodFingerprintResult(
     val scanResult: MethodFingerprintScanResult,
     internal val context: BytecodeContext
 ) {
+    /**
+     * Returns a mutable clone of [classDef]
+     *
+     * Please note, this method allocates a [ClassProxy].
+     * Use [classDef] where possible.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    val mutableClass by lazy { context.proxy(classDef).mutableClass }
+
+    /**
+     * Returns a mutable clone of [method]
+     *
+     * Please note, this method allocates a [ClassProxy].
+     * Use [method] where possible.
+     */
+    val mutableMethod by lazy {
+        mutableClass.methods.first {
+            MethodUtil.methodSignaturesMatch(it, this.method)
+        }
+    }
 
     /**
      * The result of scanning on the [MethodFingerprint].
@@ -280,27 +300,6 @@ data class MethodFingerprintResult(
                 val instructionIndex: Int,
                 val patternIndex: Int,
             )
-        }
-    }
-
-    /**
-     * Returns a mutable clone of [classDef]
-     *
-     * Please note, this method allocates a [ClassProxy].
-     * Use [classDef] where possible.
-     */
-    @Suppress("MemberVisibilityCanBePrivate")
-    val mutableClass by lazy { context.proxy(classDef).mutableClass }
-
-    /**
-     * Returns a mutable clone of [method]
-     *
-     * Please note, this method allocates a [ClassProxy].
-     * Use [method] where possible.
-     */
-    val mutableMethod by lazy {
-        mutableClass.methods.first {
-            MethodUtil.methodSignaturesMatch(it, this.method)
         }
     }
 }
