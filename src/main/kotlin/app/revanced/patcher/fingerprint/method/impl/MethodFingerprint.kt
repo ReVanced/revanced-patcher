@@ -15,10 +15,13 @@ import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import org.jf.dexlib2.iface.reference.StringReference
 import org.jf.dexlib2.util.MethodUtil
 
+private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult.StringMatch
+private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
+
 /**
  * Represents the [MethodFingerprint] for a method.
  * @param returnType The return type of the method.
- * @param access The access flags of the method.
+ * @param accessFlags The access flags of the method.
  * @param parameters The parameters of the method.
  * @param opcodes The list of opcodes of the method.
  * @param strings A list of strings which a method contains.
@@ -27,14 +30,14 @@ import org.jf.dexlib2.util.MethodUtil
  */
 abstract class MethodFingerprint(
     internal val returnType: String? = null,
-    internal val access: Int? = null,
+    internal val accessFlags: Int? = null,
     internal val parameters: Iterable<String>? = null,
     internal val opcodes: Iterable<Opcode?>? = null,
     internal val strings: Iterable<String>? = null,
     internal val customFingerprint: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null
 ) : Fingerprint {
     /**
-     * The result of the [MethodFingerprint] the [Method].
+     * The result of the [MethodFingerprint].
      */
     var result: MethodFingerprintResult? = null
 
@@ -83,7 +86,7 @@ abstract class MethodFingerprint(
             if (methodFingerprint.returnType != null && !method.returnType.startsWith(methodFingerprint.returnType))
                 return false
 
-            if (methodFingerprint.access != null && methodFingerprint.access != method.accessFlags)
+            if (methodFingerprint.accessFlags != null && methodFingerprint.accessFlags != method.accessFlags)
                 return false
 
 
@@ -216,9 +219,6 @@ abstract class MethodFingerprint(
     }
 }
 
-private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult.StringMatch
-private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
-
 /**
  * Represents the result of a [MethodFingerprintResult].
  *
@@ -233,6 +233,26 @@ data class MethodFingerprintResult(
     val scanResult: MethodFingerprintScanResult,
     internal val context: BytecodeContext
 ) {
+    /**
+     * Returns a mutable clone of [classDef]
+     *
+     * Please note, this method allocates a [ClassProxy].
+     * Use [classDef] where possible.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    val mutableClass by lazy { context.proxy(classDef).mutableClass }
+
+    /**
+     * Returns a mutable clone of [method]
+     *
+     * Please note, this method allocates a [ClassProxy].
+     * Use [method] where possible.
+     */
+    val mutableMethod by lazy {
+        mutableClass.methods.first {
+            MethodUtil.methodSignaturesMatch(it, this.method)
+        }
+    }
 
     /**
      * The result of scanning on the [MethodFingerprint].
@@ -280,27 +300,6 @@ data class MethodFingerprintResult(
                 val instructionIndex: Int,
                 val patternIndex: Int,
             )
-        }
-    }
-
-    /**
-     * Returns a mutable clone of [classDef]
-     *
-     * Please note, this method allocates a [ClassProxy].
-     * Use [classDef] where possible.
-     */
-    @Suppress("MemberVisibilityCanBePrivate")
-    val mutableClass by lazy { context.proxy(classDef).mutableClass }
-
-    /**
-     * Returns a mutable clone of [method]
-     *
-     * Please note, this method allocates a [ClassProxy].
-     * Use [method] where possible.
-     */
-    val mutableMethod by lazy {
-        mutableClass.methods.first {
-            MethodUtil.methodSignaturesMatch(it, this.method)
         }
     }
 }
