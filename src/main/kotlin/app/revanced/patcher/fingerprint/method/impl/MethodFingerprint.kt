@@ -21,7 +21,7 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
 /**
  * Represents the [MethodFingerprint] for a method.
  * @param returnType The return type of the method.
- * @param access The access flags of the method.
+ * @param accessFlags The access flags of the method.
  * @param parameters The parameters of the method.
  * @param opcodes The list of opcodes of the method.
  * @param strings A list of strings which a method contains.
@@ -30,7 +30,7 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
  */
 abstract class MethodFingerprint(
     internal val returnType: String? = null,
-    internal val access: Int? = null,
+    internal val accessFlags: Int? = null,
     internal val parameters: Iterable<String>? = null,
     internal val opcodes: Iterable<Opcode?>? = null,
     internal val strings: Iterable<String>? = null,
@@ -86,7 +86,7 @@ abstract class MethodFingerprint(
             if (methodFingerprint.returnType != null && !method.returnType.startsWith(methodFingerprint.returnType))
                 return false
 
-            if (methodFingerprint.access != null && methodFingerprint.access != method.accessFlags)
+            if (methodFingerprint.accessFlags != null && methodFingerprint.accessFlags != method.accessFlags)
                 return false
 
 
