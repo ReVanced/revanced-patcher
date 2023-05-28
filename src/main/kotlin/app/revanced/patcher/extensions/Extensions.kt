@@ -224,13 +224,12 @@ internal fun Method.cloneMutable(registerCount: Int = 0) = clone(registerCount).
 internal fun parametersEqual(
     parameters1: Iterable<CharSequence>, parameters2: Iterable<CharSequence>
 ): Boolean {
-    return parameters1.count() == parameters2.count() && parameters1.all { parameter ->
-        parameters2.any {
-            it.startsWith(
-                parameter
-            )
-        }
+    if (parameters1.count() != parameters2.count()) return false
+    val iterator1 = parameters1.iterator()
+    parameters2.forEach {
+        if (!it.startsWith(iterator1.next())) return false
     }
+    return true
 }
 
 internal val nullOutputStream = object : OutputStream() {
