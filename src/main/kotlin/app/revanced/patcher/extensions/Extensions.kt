@@ -220,7 +220,6 @@ private fun replaceOffset(
  */
 internal fun Method.cloneMutable(registerCount: Int = 0) = clone(registerCount).toMutable()
 
-// FIXME: also check the order of parameters as different order equals different method overload
 internal fun parametersEqual(
     parameters1: Iterable<CharSequence>, parameters2: Iterable<CharSequence>
 ): Boolean {
