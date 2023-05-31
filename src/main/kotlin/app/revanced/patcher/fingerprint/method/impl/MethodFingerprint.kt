@@ -44,94 +44,87 @@ abstract class MethodFingerprint(
     var result: MethodFingerprintResult? = null
 
     companion object {
-        private fun MethodFingerprint.mapLookupName(): String {
+        private fun MethodFingerprint.signatureKey(): String {
             if (accessFlags == null) return ""
 
             var returnTypeValue = returnType
             if (returnTypeValue == null) {
                 if (accessFlags and AccessFlags.CONSTRUCTOR.value != 0) {
+                    // Constructors always have void return type
                     returnTypeValue = "V"
                 } else {
                     return ""
                 }
             }
 
-            val builder = StringBuilder()
-            builder.append(accessFlags).append(returnTypeValue.first())
-            if (parameters != null) {
-                builder.append(parameters.count())
+            return buildString {
+                append(accessFlags)
+                append(returnTypeValue.first())
+                parameters?.forEach { append(it.first()) }
             }
-            return builder.toString()
-        }
-
-        private fun addMethodToMap(methodMap: MutableMap<String, MutableList<Pair<ClassDef, Method>>>,
-                                   key:String, classDef : ClassDef, method: Method) {
-            var list = methodMap[key]
-            if (list == null) {
-                list = LinkedList()
-                methodMap[key] = list
-            }
-            list += Pair(classDef, method)
         }
 
         internal fun createMethodLookupMap(classes: Iterable<ClassDef>) : Map<String, List<Pair<ClassDef, Method>>> {
-            val methodMap : MutableMap<String, MutableList<Pair<ClassDef, Method>>> = mutableMapOf()
+            fun addMethodToMapList(map: MutableMap<String, MutableList<Pair<ClassDef, Method>>>,
+                                   key:String, classDef : ClassDef, method: Method) {
+                var list = map[key]
+                if (list == null) {
+                    list = LinkedList()
+                    map[key] = list
+                }
+                list += Pair(classDef, method)
+            }
+
+            val methodMap = mutableMapOf<String, MutableList<Pair<ClassDef, Method>>>()
             for (classDef in classes) {
                 for (method in classDef.methods) {
                     val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
-                    val accessFlagsReturnParametersKey = accessFlagsReturnKey + method.parameterTypes.count()
+                    val accessFlagsReturnParametersKey = buildString {
+                        append(accessFlagsReturnKey)
+                        method.parameterTypes.forEach { append(it.first()) }
+                    }
 
-                    // No signature at all
-                    addMethodToMap(methodMap, "", classDef, method)
+                    // For signatures with no access or return type specified
+                    addMethodToMapList(methodMap, "", classDef, method)
                     // Only access and return type
-                    addMethodToMap(methodMap, accessFlagsReturnKey, classDef, method)
+                    addMethodToMapList(methodMap, accessFlagsReturnKey, classDef, method)
                     // Access, return, and parameter count
-                    addMethodToMap(methodMap, accessFlagsReturnParametersKey, classDef, method)
+                    addMethodToMapList(methodMap, accessFlagsReturnParametersKey, classDef, method)
                     // Using more fine grained lookup is possible, but in practice it does not improve performance
 
                     // Also allow looking up by Strings.
-                    // Escape the string with a prefix, just in case a literal matches a valid lookup syntax.
-                    method.findStrings().forEach { addMethodToMap(methodMap, "String:$it", classDef, method) }
+                    // Escape the string with a prefix, to prevent any odd strings from matching a method signature key.
+                    method.implementation?.instructions?.forEach { instruction ->
+                        if (instruction.opcode == Opcode.CONST_STRING || instruction.opcode == Opcode.CONST_STRING_JUMBO) {
+                            val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+                            addMethodToMapList(methodMap, "String:$string", classDef, method)
+                        }
+                    }
                 }
             }
             return methodMap
-        }
-
-        private fun Method.findStrings(): List<String> {
-            if (implementation == null) {
-                return emptyList()
-            }
-            val strings = mutableListOf<String>()
-            implementation!!.instructions.forEach { instruction ->
-                if (instruction.opcode == Opcode.CONST_STRING || instruction.opcode == Opcode.CONST_STRING_JUMBO) {
-                    strings += ((instruction as ReferenceInstruction).reference as StringReference).string
-                }
-            }
-            return strings
         }
 
         fun Iterable<MethodFingerprint>.resolve(context: BytecodeContext, methodMap: Map<String, List<Pair<ClassDef, Method>>>) {
             fingerprint@ for (fingerprint in this) { // For each fingerprint
 
                 if (fingerprint.strings != null) {
-                    stringSearching@ for (string in fingerprint.strings) {
-                        // Partial match of strings is allowed. Check for complete matches
-                        val stringMatches = methodMap["String:$string"]
-                        if (stringMatches != null) {
-                            for (methodPair in stringMatches) {
-                                if (fingerprint.resolve(context, methodPair.second, methodPair.first)) {
-                                    continue@fingerprint // if the resolution succeeded, continue with the next fingerprint
-                                }
+                    // Only check the first String declared
+                    val stringMatches = methodMap["String:${fingerprint.strings.first()}"]
+                    // Partial match of strings is allowed, and this lookup will return null
+                    if (stringMatches != null) {
+                        for (methodPair in stringMatches) {
+                            if (fingerprint.resolve(context, methodPair.second, methodPair.first)) {
+                                continue@fingerprint // if the resolution succeeded, continue with the next fingerprint
                             }
-                            // Only search for the the first string declared, as some strings can appear in many places
-                            break@stringSearching
                         }
                     }
+                    //println("Failed to resolving using declared strings: ${fingerprint.name}")
                 }
 
                 // No String declared, or none matched (partial matches are allowed).
                 // Use signature matching.
-                for (methodPair in methodMap[fingerprint.mapLookupName()]!!) {
+                for (methodPair in methodMap[fingerprint.signatureKey()]!!) {
                     if (fingerprint.resolve(context, methodPair.second, methodPair.first))
                         continue@fingerprint
                 }
