@@ -5,6 +5,7 @@ import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.extensions.nullOutputStream
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.createMethodLookupMap
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.VersionReader
@@ -22,7 +23,9 @@ import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
+import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
+import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
 import java.nio.file.Files
@@ -39,6 +42,7 @@ class Patcher(private val options: PatcherOptions) {
     private var resourceDecodingMode = ResourceDecodingMode.MANIFEST_ONLY
     private var mergeIntegrations = false
     val context: PatcherContext
+    private lateinit var methodMap : Map<String, List<Pair<ClassDef, Method>>>
 
     companion object {
         @JvmStatic
@@ -259,6 +263,8 @@ class Patcher(private val options: PatcherOptions) {
                 metadata.metaInfo.versionInfo = resourceTable.versionInfo
                 metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
             }
+
+            methodMap = createMethodLookupMap(context.bytecodeContext.classes.classes)
         } finally {
             extInputFile.close()
         }
@@ -315,10 +321,7 @@ class Patcher(private val options: PatcherOptions) {
                 context.resourceContext
             } else {
                 context.bytecodeContext.also { context ->
-                    (patchInstance as BytecodePatch).fingerprints?.resolve(
-                        context,
-                        context.classes.classes
-                    )
+                    (patchInstance as BytecodePatch).fingerprints?.resolve(context, methodMap)
                 }
             }
 
@@ -326,7 +329,10 @@ class Patcher(private val options: PatcherOptions) {
 
             return try {
                 patchInstance.execute(patchContext).also {
+                    var start = System.currentTimeMillis()
                     executedPatches[patchName] = ExecutedPatch(patchInstance, it.isSuccess())
+                    start = System.currentTimeMillis() - start
+                    if (start > 200) println("$patchName took ${start} ms")
                 }
             } catch (e: Exception) {
                 PatchResultError(e).also {
