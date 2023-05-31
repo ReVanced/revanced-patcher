@@ -329,10 +329,7 @@ class Patcher(private val options: PatcherOptions) {
 
             return try {
                 patchInstance.execute(patchContext).also {
-                    var start = System.currentTimeMillis()
                     executedPatches[patchName] = ExecutedPatch(patchInstance, it.isSuccess())
-                    start = System.currentTimeMillis() - start
-                    if (start > 200) println("$patchName took ${start} ms")
                 }
             } catch (e: Exception) {
                 PatchResultError(e).also {
