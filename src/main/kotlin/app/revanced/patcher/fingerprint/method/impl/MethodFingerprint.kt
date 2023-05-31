@@ -60,7 +60,10 @@ abstract class MethodFingerprint(
             return buildString {
                 append(accessFlags)
                 append(returnTypeValue.first())
-                parameters?.forEach { append(it.first()) }
+                if (parameters != null) {
+                    append("p:")
+                    parameters.forEach { append(it.first()) }
+                }
             }
         }
 
@@ -81,6 +84,7 @@ abstract class MethodFingerprint(
                     val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
                     val accessFlagsReturnParametersKey = buildString {
                         append(accessFlagsReturnKey)
+                        append("p:")
                         method.parameterTypes.forEach { append(it.first()) }
                     }
 
