@@ -3,9 +3,13 @@ package app.revanced.patcher.fingerprint.method.impl
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyScanThreshold
+import app.revanced.patcher.extensions.MethodFingerprintExtensions.name
 import app.revanced.patcher.extensions.parametersEqual
 import app.revanced.patcher.fingerprint.Fingerprint
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
+import app.revanced.patcher.logging.Logger
+import app.revanced.patcher.logging.impl.NopLogger
+import app.revanced.patcher.patch.PatchResultError
 import app.revanced.patcher.util.proxy.ClassProxy
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcode
@@ -44,8 +48,26 @@ abstract class MethodFingerprint(
     var result: MethodFingerprintResult? = null
 
     companion object {
-        private fun MethodFingerprint.signatureKey(): String {
-            if (accessFlags == null) return ""
+
+        private class ClassAndMethod(val classDef: ClassDef, val method: Method)
+        /**
+         * All methods in the target app.
+         */
+        private val allMethods = mutableListOf<ClassAndMethod>()
+        /**
+         * Map of all methods in the target app, keyed to the access/return/parameter signature
+         */
+        private val signatureMap = mutableMapOf<String, MutableList<ClassAndMethod>>()
+        /**
+         * Map of all Strings found in the target app, and the class/method they were found in
+         */
+        private val stringMap = mutableMapOf<String, MutableList<ClassAndMethod>>()
+
+        /**
+         * @return all app methods that have the same access/return/parameters as this signature.
+         */
+        private fun MethodFingerprint.matchingMethodsToSearch() : List<ClassAndMethod> {
+            if (accessFlags == null) return allMethods
 
             var returnTypeValue = returnType
             if (returnTypeValue == null) {
@@ -53,11 +75,11 @@ abstract class MethodFingerprint(
                     // Constructors always have void return type
                     returnTypeValue = "V"
                 } else {
-                    return ""
+                    return allMethods
                 }
             }
 
-            return buildString {
+            val key = buildString {
                 append(accessFlags)
                 append(returnTypeValue.first())
                 if (parameters != null) {
@@ -65,20 +87,23 @@ abstract class MethodFingerprint(
                     parameters.forEach { append(it.first()) }
                 }
             }
+            return signatureMap[key]!!
         }
 
-        internal fun createMethodLookupMap(classes: Iterable<ClassDef>) : Map<String, List<Pair<ClassDef, Method>>> {
-            fun addMethodToMapList(map: MutableMap<String, MutableList<Pair<ClassDef, Method>>>,
-                                   key:String, classDef : ClassDef, method: Method) {
+        /**
+         * resolve faster, by creating culled lists based on method signature and Strings contained.
+         */
+        internal fun createMethodLookupMap(classes: Iterable<ClassDef>) {
+            fun addMethodToMapList(map: MutableMap<String, MutableList<ClassAndMethod>>,
+                                   key: String, classDef : ClassDef, method: Method) {
                 var list = map[key]
                 if (list == null) {
                     list = LinkedList()
                     map[key] = list
                 }
-                list += Pair(classDef, method)
+                list += ClassAndMethod(classDef, method)
             }
 
-            val methodMap = mutableMapOf<String, MutableList<Pair<ClassDef, Method>>>()
             for (classDef in classes) {
                 for (method in classDef.methods) {
                     val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
@@ -88,50 +113,33 @@ abstract class MethodFingerprint(
                         method.parameterTypes.forEach { append(it.first()) }
                     }
 
-                    // For signatures with no access or return type specified
-                    addMethodToMapList(methodMap, "", classDef, method)
-                    // Only access and return type
-                    addMethodToMapList(methodMap, accessFlagsReturnKey, classDef, method)
-                    // Access, return, and parameter count
-                    addMethodToMapList(methodMap, accessFlagsReturnParametersKey, classDef, method)
-                    // Using more fine grained lookup is possible, but in practice it does not improve performance
+                    // For signatures with no access or return type specified.
+                    allMethods += ClassAndMethod(classDef, method)
+                    // Access and return type.
+                    addMethodToMapList(signatureMap, accessFlagsReturnKey, classDef, method)
+                    // Access, return, and parameters.
+                    addMethodToMapList(signatureMap, accessFlagsReturnParametersKey, classDef, method)
+                    // Using more fine grained lookup is possible, but in practice it does not improve performance.
 
-                    // Also allow looking up by Strings.
-                    // Escape the string with a prefix, to prevent any odd strings from matching a method signature key.
+                    // Also look up by Strings.
                     method.implementation?.instructions?.forEach { instruction ->
                         if (instruction.opcode == Opcode.CONST_STRING || instruction.opcode == Opcode.CONST_STRING_JUMBO) {
                             val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                            addMethodToMapList(methodMap, "String:$string", classDef, method)
+                            addMethodToMapList(stringMap, string, classDef, method)
                         }
                     }
                 }
             }
-            return methodMap
         }
 
-        fun Iterable<MethodFingerprint>.resolve(context: BytecodeContext, methodMap: Map<String, List<Pair<ClassDef, Method>>>) {
-            fingerprint@ for (fingerprint in this) { // For each fingerprint
+        internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger) {
+            if (allMethods.isEmpty()) throw PatchResultError("lookup map not initialized")
 
-                if (fingerprint.strings != null) {
-                    // Only check the first String declared
-                    val stringMatches = methodMap["String:${fingerprint.strings.first()}"]
-                    // Partial match of strings is allowed, and this lookup will return null
-                    if (stringMatches != null) {
-                        for (methodPair in stringMatches) {
-                            if (fingerprint.resolve(context, methodPair.second, methodPair.first)) {
-                                continue@fingerprint // if the resolution succeeded, continue with the next fingerprint
-                            }
-                        }
-                    }
-                    //println("Failed to resolving using declared strings: ${fingerprint.name}")
-                }
-
-                // No String declared, or none matched (partial matches are allowed).
-                // Use signature matching.
-                for (methodPair in methodMap[fingerprint.signatureKey()]!!) {
-                    if (fingerprint.resolve(context, methodPair.second, methodPair.first))
-                        continue@fingerprint
-                }
+            for (fingerprint in this) { // For each fingerprint
+                var time = System.currentTimeMillis()
+                fingerprint.resolveUsingLookupMap(context, logger)
+                time = System.currentTimeMillis() - time
+                if (time > 20) logger.info("${fingerprint.name} resolved in $time ms")
             }
         }
 
@@ -147,6 +155,31 @@ abstract class MethodFingerprint(
                 classes@ for (classDef in classes) // search through all classes for the fingerprint
                     if (fingerprint.resolve(context, classDef))
                         break@classes // if the resolution succeeded, continue with the next fingerprint
+        }
+
+        internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger): Boolean {
+            if (strings != null) {
+                // Only check the first String declared
+                val stringMatches = stringMap[strings.first()]
+                // Partial match of strings is allowed, and this lookup will return null
+                if (stringMatches != null) {
+                    for (classAndMethod in stringMatches) {
+                        if (resolve(context, classAndMethod.method, classAndMethod.classDef)) {
+                            return true
+                        }
+                    }
+                }
+                logger.info("$name: could not quickly resolving using declared strings (verify first string is exact match)")
+            }
+
+            // No String declared, or none matched (partial matches are allowed).
+            // Use signature matching.
+            for (classAndMethod in matchingMethodsToSearch()) {
+                if (resolve(context, classAndMethod.method, classAndMethod.classDef)) {
+                    return true
+                }
+            }
+            return false
         }
 
         /**

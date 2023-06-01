@@ -6,8 +6,13 @@ import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.createMethodLookupMap
-import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
+import app.revanced.patcher.patch.BytecodePatch
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.PatchResultError
+import app.revanced.patcher.patch.PatchResultSuccess
+import app.revanced.patcher.patch.ResourcePatch
 import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
@@ -23,9 +28,7 @@ import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
-import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.DexFile
-import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
 import java.nio.file.Files
@@ -42,7 +45,6 @@ class Patcher(private val options: PatcherOptions) {
     private var resourceDecodingMode = ResourceDecodingMode.MANIFEST_ONLY
     private var mergeIntegrations = false
     val context: PatcherContext
-    private lateinit var methodMap : Map<String, List<Pair<ClassDef, Method>>>
 
     companion object {
         @JvmStatic
@@ -264,7 +266,7 @@ class Patcher(private val options: PatcherOptions) {
                 metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
             }
 
-            methodMap = createMethodLookupMap(context.bytecodeContext.classes.classes)
+            createMethodLookupMap(context.bytecodeContext.classes.classes)
         } finally {
             extInputFile.close()
         }
@@ -321,7 +323,7 @@ class Patcher(private val options: PatcherOptions) {
                 context.resourceContext
             } else {
                 context.bytecodeContext.also { context ->
-                    (patchInstance as BytecodePatch).fingerprints?.resolve(context, methodMap)
+                    (patchInstance as BytecodePatch).fingerprints?.resolveUsingLookupMap(context, logger)
                 }
             }
 
