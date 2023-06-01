@@ -90,6 +90,12 @@ abstract class MethodFingerprint(
             return signatureMap[key]!!
         }
 
+        internal fun clearMethodLookupMap() {
+            allMethods.clear()
+            signatureMap.clear()
+            stringMap.clear()
+        }
+
         /**
          * resolve faster, by creating culled lists based on method signature and Strings contained.
          */
@@ -121,7 +127,7 @@ abstract class MethodFingerprint(
                     addMethodToMapList(signatureMap, accessFlagsReturnParametersKey, classDef, method)
                     // Using more fine grained lookup is possible, but in practice it does not improve performance.
 
-                    // Also look up by Strings.
+                    // Look up by Strings (the fastest way to resolve).
                     method.implementation?.instructions?.forEach { instruction ->
                         if (instruction.opcode == Opcode.CONST_STRING || instruction.opcode == Opcode.CONST_STRING_JUMBO) {
                             val string = ((instruction as ReferenceInstruction).reference as StringReference).string
@@ -132,10 +138,13 @@ abstract class MethodFingerprint(
             }
         }
 
+        /**
+         * Resolve using map built in [createMethodLookupMap]
+         */
         internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger) {
             if (allMethods.isEmpty()) throw PatchResultError("lookup map not initialized")
 
-            for (fingerprint in this) { // For each fingerprint
+            for (fingerprint in this) {
                 var time = System.currentTimeMillis()
                 fingerprint.resolveUsingLookupMap(context, logger)
                 time = System.currentTimeMillis() - time
@@ -157,6 +166,11 @@ abstract class MethodFingerprint(
                         break@classes // if the resolution succeeded, continue with the next fingerprint
         }
 
+        /**
+         * Resolve using map built in [createMethodLookupMap]
+         *
+         * @param logger optional logger, to record the time to resolve each fingerprint.
+         */
         internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger): Boolean {
             if (strings != null) {
                 // Only check the first String declared

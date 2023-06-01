@@ -5,7 +5,7 @@ import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.extensions.nullOutputStream
-import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.createMethodLookupMap
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.BytecodePatch
 import app.revanced.patcher.patch.Patch
@@ -266,7 +266,7 @@ class Patcher(private val options: PatcherOptions) {
                 metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
             }
 
-            createMethodLookupMap(context.bytecodeContext.classes.classes)
+            MethodFingerprint.createMethodLookupMap(context.bytecodeContext.classes.classes)
         } finally {
             extInputFile.close()
         }
@@ -364,6 +364,7 @@ class Patcher(private val options: PatcherOptions) {
                     if (stopOnError && patchResult.isError()) return@sequence
                 }
             } finally {
+                MethodFingerprint.clearMethodLookupMap() // No more resolving can occur.
                 executedPatches.values.reversed().forEach { (patch, _) ->
                     patch.close()
                 }
