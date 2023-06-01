@@ -139,7 +139,7 @@ abstract class MethodFingerprint(
                 var time = System.currentTimeMillis()
                 fingerprint.resolveUsingLookupMap(context, logger)
                 time = System.currentTimeMillis() - time
-                if (time > 20) logger.info("${fingerprint.name} resolved in $time ms")
+                if (time > 20) logger.trace("${fingerprint.name} resolved in $time ms")
             }
         }
 
@@ -169,7 +169,7 @@ abstract class MethodFingerprint(
                         }
                     }
                 }
-                logger.info("$name: could not quickly resolving using declared strings (verify first string is exact match)")
+                logger.trace("$name: could not quickly resolving using declared strings (verify first string is an exact match)")
             }
 
             // No String declared, or none matched (partial matches are allowed).
