@@ -101,13 +101,13 @@ abstract class MethodFingerprint(
          */
         internal fun createMethodLookupMap(classes: Iterable<ClassDef>) {
             fun addMethodToMapList(map: MutableMap<String, MutableList<ClassAndMethod>>,
-                                   key: String, classDef : ClassDef, method: Method) {
+                                   key: String, keyValue : ClassAndMethod) {
                 var list = map[key]
                 if (list == null) {
                     list = LinkedList()
                     map[key] = list
                 }
-                list += ClassAndMethod(classDef, method)
+                list += keyValue
             }
 
             for (classDef in classes) {
@@ -118,22 +118,26 @@ abstract class MethodFingerprint(
                         append("p:")
                         method.parameterTypes.forEach { append(it.first()) }
                     }
+                    val classAndMethod = ClassAndMethod(classDef, method)
 
                     // For signatures with no access or return type specified.
-                    allMethods += ClassAndMethod(classDef, method)
+                    allMethods += classAndMethod
                     // Access and return type.
-                    addMethodToMapList(signatureMap, accessFlagsReturnKey, classDef, method)
+                    addMethodToMapList(signatureMap, accessFlagsReturnKey, classAndMethod)
                     // Access, return, and parameters.
-                    addMethodToMapList(signatureMap, accessFlagsReturnParametersKey, classDef, method)
-                    // Using more fine grained lookup is possible, but in practice it does not improve performance.
+                    addMethodToMapList(signatureMap, accessFlagsReturnParametersKey, classAndMethod)
 
                     // Look up by Strings (the fastest way to resolve).
                     method.implementation?.instructions?.forEach { instruction ->
                         if (instruction.opcode == Opcode.CONST_STRING || instruction.opcode == Opcode.CONST_STRING_JUMBO) {
                             val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                            addMethodToMapList(stringMap, string, classDef, method)
+                            addMethodToMapList(stringMap, string, classAndMethod)
                         }
                     }
+
+                    // The only additional lookup that would greatly benefit, is a map of the full class name to its methods.
+                    // This would require adding a 'class name' field to MethodFingerprint,
+                    // as currently the class name can be specified only with a custom fingerprint.
                 }
             }
         }
