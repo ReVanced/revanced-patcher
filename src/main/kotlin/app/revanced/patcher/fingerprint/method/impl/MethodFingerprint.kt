@@ -175,7 +175,7 @@ abstract class MethodFingerprint(
          * @param logger optional logger, to record the time to resolve each fingerprint.
          */
         internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger): Boolean {
-            if (strings != null) {
+            if (strings != null && strings.count() > 0) {
                 // Only check the first String declared
                 val stringMatches = stringMap[strings.first()]
                 // Partial match of strings is allowed, and this lookup will return null
