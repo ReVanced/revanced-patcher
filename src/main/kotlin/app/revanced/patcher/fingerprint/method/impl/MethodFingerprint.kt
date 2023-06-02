@@ -187,7 +187,7 @@ abstract class MethodFingerprint(
                         }
                     }
                 }
-                logger.trace("$name: could not quickly resolving using declared strings (verify first string is an exact match)")
+                logger.trace("$name: could not quickly resolve using declared strings (verify first string is an exact match)")
             }
 
             // No String declared, or none matched (partial matches are allowed).
