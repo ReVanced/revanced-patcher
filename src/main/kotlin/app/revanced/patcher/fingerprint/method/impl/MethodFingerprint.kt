@@ -25,14 +25,26 @@ private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanRes
 private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
 
 /**
- * Represents the [MethodFingerprint] for a method.
- * @param returnType The return type of the method.
- * @param accessFlags The access flags of the method.
- * @param parameters The parameters of the method.
- * @param opcodes The list of opcodes of the method.
+ * A finger print for identifying a method.
+ *
+ * To improve patching performance:
+ * - fastest: specify at least [strings], with the first string being an exact (non-partial) match.
+ * - faster: specify at least [accessFlags], [returnType], [parameters].
+ * - fast: specify at least [accessFlags], [returnType].
+ * - slowest: specify only [opcodes] and nothing else.
+ *
+ * For target apps with only a few patches, the resolving speed does not matter and even the
+ * slowest resolving fingerprints will not be noticed. Only when using dozens of fingerprints
+ * does the patching speed become apparent.
+ *
+ * @param returnType The return type of the method. Partial matches are allowed, and values are compared using startWith.
+ *                   For example: "L" matches any object, while "Landroid/view/View;" matches only to an Android view parameter.
+ * @param accessFlags The access flags of the method using values of [AccessFlags].  Must be an exact match.
+ * @param parameters The parameters of the method. Partial matches allowed and follow same rules as [returnType].
+ * @param opcodes The list of opcodes of the method, and a `null` opcode means unknown or wildcard value.
  * @param strings A list of strings which a method contains.
+ *                Partial matches are allowed, and are compared using contains. For example, "app" matches "happy".
  * @param customFingerprint A custom condition for this fingerprint.
- * A `null` opcode is equals to an unknown opcode.
  */
 abstract class MethodFingerprint(
     internal val returnType: String? = null,
