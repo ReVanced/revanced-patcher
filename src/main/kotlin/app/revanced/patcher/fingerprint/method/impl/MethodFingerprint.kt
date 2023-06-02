@@ -82,7 +82,7 @@ abstract class MethodFingerprint(
 
             var returnTypeValue = returnType
             if (returnTypeValue == null) {
-                if (accessFlags and AccessFlags.CONSTRUCTOR.value != 0) {
+                if (AccessFlags.CONSTRUCTOR.isSet(accessFlags)) {
                     // Constructors always have void return type
                     returnTypeValue = "V"
                 } else {
