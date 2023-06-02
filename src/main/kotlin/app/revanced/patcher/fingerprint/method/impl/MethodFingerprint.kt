@@ -149,9 +149,10 @@ abstract class MethodFingerprint(
             if (allMethods.isEmpty()) throw PatchResultError("lookup map not initialized")
 
             for (fingerprint in this) {
-                val time = System.currentTimeMillis()
+                var time = System.currentTimeMillis()
                 fingerprint.resolveUsingLookupMap(context, logger)
-                if (time > 10) logger.trace("${fingerprint.name} resolved in ${System.currentTimeMillis() - time} ms")
+                time = System.currentTimeMillis() - time
+                if (time > 10) logger.trace("${fingerprint.name} resolved in $time ms")
             }
         }
 
