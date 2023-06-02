@@ -160,7 +160,7 @@ abstract class MethodFingerprint(
                 var time = System.currentTimeMillis()
                 fingerprint.resolveUsingLookupMap(context, logger)
                 time = System.currentTimeMillis() - time
-                if (time > 20) logger.info("${fingerprint.name} resolved in $time ms")
+                if (time > 20) logger.trace("${fingerprint.name} resolved in $time ms")
             }
         }
 
