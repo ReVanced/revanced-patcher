@@ -63,8 +63,19 @@ abstract class MethodFingerprint(
          */
         private val stringMap = mutableMapOf<String, MutableList<ClassAndMethod>>()
 
+        private fun StringBuilder.appendSignatureKeyParameters(parameters: Iterable<CharSequence>) {
+            // Maximum parameters to use in the signature key.
+            // Used to reduce the map size by grouping together uncommon methods.
+            val maxSignatureParameters = 5
+            append("p:")
+            parameters.forEachIndexed { index, parameter ->
+                if (index >= maxSignatureParameters) return
+                append(parameter.first())
+            }
+        }
+
         /**
-         * @return all app methods that have the same access/return/parameters as this signature.
+         * @return all app methods that could match this signature.
          */
         private fun MethodFingerprint.matchingMethodsToSearch() : List<ClassAndMethod> {
             if (accessFlags == null) return allMethods
@@ -82,10 +93,7 @@ abstract class MethodFingerprint(
             val key = buildString {
                 append(accessFlags)
                 append(returnTypeValue.first())
-                if (parameters != null) {
-                    append("p:")
-                    parameters.forEach { append(it.first()) }
-                }
+                if (parameters != null) appendSignatureKeyParameters(parameters)
             }
             return signatureMap[key]!!
         }
@@ -101,7 +109,7 @@ abstract class MethodFingerprint(
          */
         internal fun createMethodLookupMap(classes: Iterable<ClassDef>) {
             fun addMethodToMapList(map: MutableMap<String, MutableList<ClassAndMethod>>,
-                                   key: String, keyValue : ClassAndMethod) {
+                                   key: String, keyValue:  ClassAndMethod) {
                 var list = map[key]
                 if (list == null) {
                     list = LinkedList()
@@ -112,11 +120,11 @@ abstract class MethodFingerprint(
 
             for (classDef in classes) {
                 for (method in classDef.methods) {
+                    // Key structure is: (access)(returnType)(optional: parameter types)
                     val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
                     val accessFlagsReturnParametersKey = buildString {
                         append(accessFlagsReturnKey)
-                        append("p:")
-                        method.parameterTypes.forEach { append(it.first()) }
+                        appendSignatureKeyParameters(method.parameterTypes)
                     }
                     val classAndMethod = ClassAndMethod(classDef, method)
 
@@ -152,7 +160,7 @@ abstract class MethodFingerprint(
                 var time = System.currentTimeMillis()
                 fingerprint.resolveUsingLookupMap(context, logger)
                 time = System.currentTimeMillis() - time
-                if (time > 10) logger.trace("${fingerprint.name} resolved in $time ms")
+                if (time > 20) logger.info("${fingerprint.name} resolved in $time ms")
             }
         }
 
