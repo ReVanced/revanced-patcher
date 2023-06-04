@@ -67,11 +67,11 @@ abstract class MethodFingerprint(
          */
         private val allMethods = mutableListOf<ClassAndMethod>()
         /**
-         * Map of all methods in the target app, keyed to the access/return/parameter signature
+         * Map of all methods in the target app, keyed to the access/return/parameter signature.
          */
         private val signatureMap = mutableMapOf<String, MutableList<ClassAndMethod>>()
         /**
-         * Map of all Strings found in the target app, and the class/method they were found in
+         * Map of all Strings found in the target app, and the class/method they were found in.
          */
         private val stringMap = mutableMapOf<String, MutableList<ClassAndMethod>>()
 
@@ -87,9 +87,21 @@ abstract class MethodFingerprint(
         }
 
         /**
+         * @return all app methods that contain the first string declared in this signature,
+         *         or NULL if no strings are declared or no exact matches exist.
+         */
+        private fun MethodFingerprint.appMethodsWithSameStrings() : List<ClassAndMethod>? {
+            if (strings != null && strings.count() > 0) {
+                // Only check the first String declared
+                return stringMap[strings.first()]
+            }
+            return null
+        }
+
+        /**
          * @return all app methods that could match this signature.
          */
-        private fun MethodFingerprint.matchingMethodsToSearch() : List<ClassAndMethod> {
+        private fun MethodFingerprint.appMethodsWithSameSignature() : List<ClassAndMethod> {
             if (accessFlags == null) return allMethods
 
             var returnTypeValue = returnType
@@ -155,7 +167,7 @@ abstract class MethodFingerprint(
                         }
                     }
 
-                    // The only additional lookup that would greatly benefit, is a map of the full class name to its methods.
+                    // The only additional lookup that could benefit, is a map of the full class name to its methods.
                     // This would require adding a 'class name' field to MethodFingerprint,
                     // as currently the class name can be specified only with a custom fingerprint.
                 }
@@ -196,28 +208,24 @@ abstract class MethodFingerprint(
          * @param logger optional logger, to record the time to resolve each fingerprint.
          */
         internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger): Boolean {
-            if (strings != null && strings.count() > 0) {
-                // Only check the first String declared
-                val stringMatches = stringMap[strings.first()]
-                // Partial match of strings is allowed, and this lookup will return null
-                if (stringMatches != null) {
-                    for (classAndMethod in stringMatches) {
-                        if (resolve(context, classAndMethod.method, classAndMethod.classDef)) {
-                            return true
-                        }
+            fun MethodFingerprint.resolveUsingClassMethod(classMethods: Iterable<ClassAndMethod>): Boolean {
+                for (classAndMethod in classMethods) {
+                    if (resolve(context, classAndMethod.method, classAndMethod.classDef)) {
+                        return true
                     }
                 }
+                return false
+            }
+
+            var methodsWithStrings = appMethodsWithSameStrings()
+            if (methodsWithStrings != null) {
+                if (resolveUsingClassMethod(methodsWithStrings)) return true
                 logger.trace("$name: could not quickly resolve using declared strings (verify first string is an exact match)")
             }
 
             // No String declared, or none matched (partial matches are allowed).
             // Use signature matching.
-            for (classAndMethod in matchingMethodsToSearch()) {
-                if (resolve(context, classAndMethod.method, classAndMethod.classDef)) {
-                    return true
-                }
-            }
-            return false
+            return resolveUsingClassMethod(appMethodsWithSameSignature())
         }
 
         /**
