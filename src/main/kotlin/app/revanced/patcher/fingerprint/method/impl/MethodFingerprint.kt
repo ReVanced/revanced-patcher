@@ -176,6 +176,8 @@ abstract class MethodFingerprint(
 
         /**
          * Resolve using map built in [createMethodLookupMap]
+         *
+         * @param logger optional logger, to record the time to resolve each fingerprint.
          */
         internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger) {
             if (allMethods.isEmpty()) throw PatchResultError("lookup map not initialized")
@@ -204,8 +206,6 @@ abstract class MethodFingerprint(
 
         /**
          * Resolve using map built in [createMethodLookupMap]
-         *
-         * @param logger optional logger, to record the time to resolve each fingerprint.
          */
         internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger): Boolean {
             fun MethodFingerprint.resolveUsingClassMethod(classMethods: Iterable<ClassAndMethod>): Boolean {
