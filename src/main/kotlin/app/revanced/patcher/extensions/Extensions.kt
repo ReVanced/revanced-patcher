@@ -5,10 +5,11 @@ import org.jf.dexlib2.AccessFlags
 
 /**
  * Create a label for the instruction at given index.
+ *
  * @param index The index to create the label for the instruction at.
  * @return The label.
  */
-fun MutableMethod.label(index: Int) = implementation!!.newLabelForIndex(index)
+fun MutableMethod.newLabel(index: Int) = implementation!!.newLabelForIndex(index)
 
 /**
  * Perform a bitwise OR operation between two [AccessFlags].

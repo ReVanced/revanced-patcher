@@ -290,15 +290,13 @@ object InstructionExtensions {
     fun MutableMethod.replaceInstructions(index: Int, smaliInstructions: String) =
         implementation!!.replaceInstructions(index, smaliInstructions.toInstructions(this))
 
-// TODO: Use proper names for functions below.
-
     /**
      * Get an instruction at the given index.
      *
      * @param index The index to get the instruction at.
      * @return The instruction.
      */
-    fun MutableMethodImplementation.instruction(index: Int): BuilderInstruction = instructions[index]
+    fun MutableMethodImplementation.getInstruction(index: Int): BuilderInstruction = instructions[index]
 
     /**
      * Get an instruction at the given index.
@@ -308,14 +306,14 @@ object InstructionExtensions {
      * @return The instruction.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> MutableMethodImplementation.instruction(index: Int): T = instruction(index) as T
+    fun <T> MutableMethodImplementation.getInstruction(index: Int): T = getInstruction(index) as T
 
     /**
      * Get an instruction at the given index.
      * @param index The index to get the instruction at.
      * @return The instruction.
      */
-    fun MutableMethod.instruction(index: Int): BuilderInstruction = implementation!!.instruction(index)
+    fun MutableMethod.getInstruction(index: Int): BuilderInstruction = implementation!!.getInstruction(index)
 
     /**
      * Get an instruction at the given index.
@@ -324,5 +322,5 @@ object InstructionExtensions {
      * @return The instruction.
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T> MutableMethod.instruction(index: Int): T = implementation!!.instruction<T>(index)
+    fun <T> MutableMethod.getInstruction(index: Int): T = implementation!!.getInstruction<T>(index)
 }

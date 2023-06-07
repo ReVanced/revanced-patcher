@@ -1,9 +1,9 @@
 package app.revanced.patcher.util.smali
 
-import app.revanced.patcher.extensions.InstructionExtensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.extensions.InstructionExtensions.InstructionExtensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.InstructionExtensions.InstructionExtensions.instruction
-import app.revanced.patcher.extensions.label
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
+import app.revanced.patcher.extensions.newLabel
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.Opcode
@@ -45,7 +45,7 @@ internal class InlineSmaliCompilerTest {
             """
         )
 
-        val insn = method.instruction<BuilderInstruction21t>(insnIndex)
+        val insn = method.getInstruction<BuilderInstruction21t>(insnIndex)
         assertEquals(targetIndex, insn.target.location.index)
     }
 
@@ -62,7 +62,7 @@ internal class InlineSmaliCompilerTest {
             """
         )
 
-        assertEquals(labelIndex, method.label(labelIndex).location.index)
+        assertEquals(labelIndex, method.newLabel(labelIndex).location.index)
 
         method.addInstructionsWithLabels(
             method.implementation!!.instructions.size,
@@ -71,10 +71,10 @@ internal class InlineSmaliCompilerTest {
                 if-eqz v0, :test
                 return-void
             """,
-            ExternalLabel("test", method.instruction(1))
+            ExternalLabel("test", method.getInstruction(1))
         )
 
-        val insn = method.instruction<BuilderInstruction21t>(insnIndex)
+        val insn = method.getInstruction<BuilderInstruction21t>(insnIndex)
         assertTrue(insn.target.isPlaced, "Label was not placed")
         assertEquals(labelIndex, insn.target.location.index)
     }
