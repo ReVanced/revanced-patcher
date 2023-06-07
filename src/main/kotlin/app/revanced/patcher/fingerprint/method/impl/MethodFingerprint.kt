@@ -2,7 +2,6 @@ package app.revanced.patcher.fingerprint.method.impl
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
-import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyScanThreshold
 import app.revanced.patcher.fingerprint.Fingerprint
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.util.proxy.ClassProxy
@@ -165,7 +164,7 @@ abstract class MethodFingerprint(
             fingerprint: MethodFingerprint
         ): MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult? {
             val instructions = this.implementation!!.instructions
-            val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyScanThreshold
+            val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyPatternScanMethod?.threshold ?: 0
 
             val pattern = fingerprint.opcodes!!
             val instructionLength = instructions.count()
