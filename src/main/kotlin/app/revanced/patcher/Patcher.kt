@@ -4,7 +4,6 @@ import app.revanced.patcher.data.Context
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
-import app.revanced.patcher.extensions.nullOutputStream
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.VersionReader
@@ -25,6 +24,7 @@ import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import java.io.File
+import java.io.OutputStream
 import java.nio.file.Files
 
 internal val NAMER = BasicDexFileNamer()
@@ -247,7 +247,7 @@ class Patcher(private val options: PatcherOptions) {
                     XmlPullStreamDecoder(
                         axmlParser, AndrolibResources().resXmlSerializer
                     ).decodeManifest(
-                        extInputFile.directory.getFileInput("AndroidManifest.xml"), nullOutputStream
+                        extInputFile.directory.getFileInput("AndroidManifest.xml"), OutputStream.nullOutputStream()
                     )
                 }
             }
