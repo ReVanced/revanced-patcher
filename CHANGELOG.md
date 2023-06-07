@@ -1,3 +1,13 @@
+# [10.0.0](https://github.com/revanced/revanced-patcher/compare/v9.0.0...v10.0.0) (2023-06-07)
+
+
+* fix!: check for two methods parameters orders (#183) ([b6d6a75](https://github.com/revanced/revanced-patcher/commit/b6d6a7591ba1c0b48ffdef52352709564da8d9be)), closes [#183](https://github.com/revanced/revanced-patcher/issues/183)
+
+
+### BREAKING CHANGES
+
+* This requires changes to `MethodFingerprint`
+
 # [10.0.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v9.0.0...v10.0.0-dev.1) (2023-06-07)
 
 
