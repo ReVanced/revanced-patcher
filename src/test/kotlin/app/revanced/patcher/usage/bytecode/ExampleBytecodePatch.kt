@@ -4,9 +4,9 @@ import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.revanced.patcher.extensions.or
-import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
@@ -119,7 +119,7 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         // For this sake of example I reuse the TestClass field dummyField inside the virtual register 0.
         //
         // Control flow instructions are not supported as of now.
-        method.addInstructions(
+        method.addInstructionsWithLabels(
             startIndex + 2,
             """
                 invoke-static { }, LTestClass;->returnHello()Ljava/lang/String;

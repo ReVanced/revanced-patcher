@@ -1,7 +1,8 @@
 package app.revanced.patcher.util.smali
 
-import app.revanced.patcher.extensions.addInstructions
-import app.revanced.patcher.extensions.instruction
+import app.revanced.patcher.extensions.InstructionExtensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.InstructionExtensions.InstructionExtensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.InstructionExtensions.InstructionExtensions.instruction
 import app.revanced.patcher.extensions.label
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import org.jf.dexlib2.AccessFlags
@@ -35,7 +36,7 @@ internal class InlineSmaliCompilerTest {
         method.addInstructions(arrayOfNulls<String>(insnAmount).also {
             Arrays.fill(it, "const/4 v0, 0x0")
         }.joinToString("\n"))
-        method.addInstructions(
+        method.addInstructionsWithLabels(
             targetIndex,
             """
                 :test
@@ -63,14 +64,14 @@ internal class InlineSmaliCompilerTest {
 
         assertEquals(labelIndex, method.label(labelIndex).location.index)
 
-        method.addInstructions(
+        method.addInstructionsWithLabels(
+            method.implementation!!.instructions.size,
             """
                 const/4 v0, 0x1
                 if-eqz v0, :test
                 return-void
-            """, listOf(
-                ExternalLabel("test",method.instruction(1))
-            )
+            """,
+            ExternalLabel("test", method.instruction(1))
         )
 
         val insn = method.instruction<BuilderInstruction21t>(insnIndex)
