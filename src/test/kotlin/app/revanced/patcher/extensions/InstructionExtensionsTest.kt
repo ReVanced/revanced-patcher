@@ -1,5 +1,13 @@
 package app.revanced.patcher.extensions
 
+import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
+import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
+import app.revanced.patcher.extensions.InstructionExtensions.removeInstructions
+import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.InstructionExtensions.replaceInstructions
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import app.revanced.patcher.util.smali.ExternalLabel
@@ -133,7 +141,7 @@ private object InstructionExtensionsTest {
 
     @Test
     fun addSmaliInstructionsWithExternalLabelToMethodIndexed() = applyOnMethod {
-        val label = ExternalLabel("testLabel", instruction(5))
+        val label = ExternalLabel("testLabel", getInstruction(5))
 
         addInstructionsWithLabels(
             5,
@@ -144,7 +152,7 @@ private object InstructionExtensionsTest {
             assertRegisterIs(1, 6)
             assertRegisterIs(5, 8)
 
-            val gotoTarget = instruction<BuilderOffsetInstruction>(7)
+            val gotoTarget = getInstruction<BuilderOffsetInstruction>(7)
                 .target.location.instruction as OneRegisterInstruction
 
             assertEquals(5, gotoTarget.registerA)
@@ -205,7 +213,7 @@ private object InstructionExtensionsTest {
     }
 
     private fun MutableMethodImplementation.assertRegisterIs(register: Int, atIndex: Int) = assertEquals(
-        register, instruction<OneRegisterInstruction>(atIndex).registerA
+        register, getInstruction<OneRegisterInstruction>(atIndex).registerA
     )
 
     private fun MutableMethod.assertRegisterIs(register: Int, atIndex: Int) =
