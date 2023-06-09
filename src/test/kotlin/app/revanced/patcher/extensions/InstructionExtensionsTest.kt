@@ -41,7 +41,7 @@ private object InstructionExtensionsTest {
     ).let { testMethod = it.toMutable() }
 
     @Test
-    fun addInstructionsToImplementationIndexed() = applyOnImplementation {
+    fun addInstructionsToImplementationIndexed() = applyToImplementation {
         addInstructions(5, getTestInstructions(5..6)).also {
             assertRegisterIs(5, 5)
             assertRegisterIs(6, 6)
@@ -51,7 +51,7 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun addInstructionsToImplementation() = applyOnImplementation {
+    fun addInstructionsToImplementation() = applyToImplementation {
         addInstructions(getTestInstructions(10..11)).also {
             assertRegisterIs(10, 10)
             assertRegisterIs(11, 11)
@@ -59,19 +59,19 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun removeInstructionsFromImplementationIndexed() = applyOnImplementation {
+    fun removeInstructionsFromImplementationIndexed() = applyToImplementation {
         removeInstructions(5, 5).also { assertRegisterIs(4, 4) }
     }
 
     @Test
-    fun removeInstructionsFromImplementation() = applyOnImplementation {
+    fun removeInstructionsFromImplementation() = applyToImplementation {
         removeInstructions(0).also { assertRegisterIs(9, 9) }
         removeInstructions(1).also { assertRegisterIs(1, 0) }
         removeInstructions(2).also { assertRegisterIs(3, 0) }
     }
 
     @Test
-    fun replaceInstructionsInImplementationIndexed() = applyOnImplementation {
+    fun replaceInstructionsInImplementationIndexed() = applyToImplementation {
         replaceInstructions(5, getTestInstructions(0..1)).also {
             assertRegisterIs(0, 5)
             assertRegisterIs(1, 6)
@@ -80,27 +80,27 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun addInstructionToMethodIndexed() = applyOnMethod {
+    fun addInstructionToMethodIndexed() = applyToMethod {
         addInstruction(5, TestInstruction(0)).also { assertRegisterIs(0, 5) }
     }
 
     @Test
-    fun addInstructionToMethod() = applyOnMethod {
+    fun addInstructionToMethod() = applyToMethod {
         addInstruction(TestInstruction(0)).also { assertRegisterIs(0, 10) }
     }
 
     @Test
-    fun addSmaliInstructionToMethodIndexed() = applyOnMethod {
+    fun addSmaliInstructionToMethodIndexed() = applyToMethod {
         addInstruction(5, getTestSmaliInstruction(0)).also { assertRegisterIs(0, 5) }
     }
 
     @Test
-    fun addSmaliInstructionToMethod() = applyOnMethod {
+    fun addSmaliInstructionToMethod() = applyToMethod {
         addInstruction(getTestSmaliInstruction(0)).also { assertRegisterIs(0, 10) }
     }
 
     @Test
-    fun addInstructionsToMethodIndexed() = applyOnMethod {
+    fun addInstructionsToMethodIndexed() = applyToMethod {
         addInstructions(5, getTestInstructions(0..1)).also {
             assertRegisterIs(0, 5)
             assertRegisterIs(1, 6)
@@ -110,7 +110,7 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun addInstructionsToMethod() = applyOnMethod {
+    fun addInstructionsToMethod() = applyToMethod {
         addInstructions(getTestInstructions(0..1)).also {
             assertRegisterIs(0, 10)
             assertRegisterIs(1, 11)
@@ -120,7 +120,7 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun addSmaliInstructionsToMethodIndexed() = applyOnMethod {
+    fun addSmaliInstructionsToMethodIndexed() = applyToMethod {
         addInstructionsWithLabels(5, getTestSmaliInstructions(0..1)).also {
             assertRegisterIs(0, 5)
             assertRegisterIs(1, 6)
@@ -130,7 +130,7 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun addSmaliInstructionsToMethod() = applyOnMethod {
+    fun addSmaliInstructionsToMethod() = applyToMethod {
         addInstructions(getTestSmaliInstructions(0..1)).also {
             assertRegisterIs(0, 10)
             assertRegisterIs(1, 11)
@@ -140,7 +140,7 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun addSmaliInstructionsWithExternalLabelToMethodIndexed() = applyOnMethod {
+    fun addSmaliInstructionsWithExternalLabelToMethodIndexed() = applyToMethod {
         val label = ExternalLabel("testLabel", getInstruction(5))
 
         addInstructionsWithLabels(
@@ -160,7 +160,7 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun removeInstructionFromMethodIndexed() = applyOnMethod {
+    fun removeInstructionFromMethodIndexed() = applyToMethod {
         removeInstruction(5).also {
             assertRegisterIs(4, 4)
             assertRegisterIs(6, 5)
@@ -168,24 +168,24 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun removeInstructionsFromMethodIndexed() = applyOnMethod {
+    fun removeInstructionsFromMethodIndexed() = applyToMethod {
         removeInstructions(5, 5).also { assertRegisterIs(4, 4) }
     }
 
     @Test
-    fun removeInstructionsFromMethod() = applyOnMethod {
+    fun removeInstructionsFromMethod() = applyToMethod {
         removeInstructions(0).also { assertRegisterIs(9, 9) }
         removeInstructions(1).also { assertRegisterIs(1, 0) }
         removeInstructions(2).also { assertRegisterIs(3, 0) }
     }
 
     @Test
-    fun replaceInstructionInMethodIndexed() = applyOnMethod {
+    fun replaceInstructionInMethodIndexed() = applyToMethod {
         replaceInstruction(5, TestInstruction(0)).also { assertRegisterIs(0, 5) }
     }
 
     @Test
-    fun replaceInstructionsInMethodIndexed() = applyOnMethod {
+    fun replaceInstructionsInMethodIndexed() = applyToMethod {
         replaceInstructions(5, getTestInstructions(0..1)).also {
             assertRegisterIs(0, 5)
             assertRegisterIs(1, 6)
@@ -194,7 +194,7 @@ private object InstructionExtensionsTest {
     }
 
     @Test
-    fun replaceSmaliInstructionsInMethodIndexed() = applyOnMethod {
+    fun replaceSmaliInstructionsInMethodIndexed() = applyToMethod {
         replaceInstructions(5, getTestSmaliInstructions(0..1)).also {
             assertRegisterIs(0, 5)
             assertRegisterIs(1, 6)
@@ -204,11 +204,11 @@ private object InstructionExtensionsTest {
 
     // region Helper methods
 
-    private fun applyOnImplementation(block: MutableMethodImplementation.() -> Unit) {
+    private fun applyToImplementation(block: MutableMethodImplementation.() -> Unit) {
         testMethodImplementation.apply(block)
     }
 
-    private fun applyOnMethod(block: MutableMethod.() -> Unit) {
+    private fun applyToMethod(block: MutableMethod.() -> Unit) {
         testMethod.apply(block)
     }
 
