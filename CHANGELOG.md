@@ -1,3 +1,10 @@
+# [11.0.0-dev.2](https://github.com/revanced/revanced-patcher/compare/v11.0.0-dev.1...v11.0.0-dev.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* add imports to fix failing tests ([43d6868](https://github.com/revanced/revanced-patcher/commit/43d6868d1f59922f9812f3e4a2a890f3b331def6))
+
 # [11.0.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v10.0.0...v11.0.0-dev.1) (2023-06-07)
 
 
