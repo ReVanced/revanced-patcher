@@ -12,7 +12,7 @@ object ImmutableExtensions {
 
     fun ImmutableMethodReference.matches(
         instruction: ReferenceInstruction,
-        match: EnumSet<MethodReferenceMatch>
+        match: EnumSet<MethodReferenceMatch> = EnumSet.allOf(MethodReferenceMatch::class.java)
     ): Boolean {
         val ref = (instruction.reference as? MethodReference) ?: return false
 
