@@ -29,7 +29,7 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
  * - Slowest: Specify [opcodes] and nothing else.
  * - Fast: Specify [accessFlags], [returnType].
  * - Faster: Specify [accessFlags], [returnType] and [parameters].
- * - Fastest: Specify [strings], with at least one String being an exact (non-partial) match.
+ * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
  *
  * @param returnType The method's return type compared using [String.startsWith].
  * @param accessFlags The method's exact access flags using values of [AccessFlags].
@@ -71,7 +71,7 @@ abstract class MethodFingerprint(
         private val stringMap = mutableMapOf<String, MutableList<MethodAndClass>>()
 
         /**
-         * Appends a String based on the parameter reference types of this method.
+         * Appends a string based on the parameter reference types of this method.
          */
         private fun StringBuilder.appendSignatureKeyParameters(parameters: Iterable<CharSequence>) {
             // Maximum parameters to use in the signature key.
@@ -226,7 +226,7 @@ abstract class MethodFingerprint(
                 if (resolveUsingClassMethod(methodsWithSameStrings)) return true
             }
 
-            // No String declared, or none matched (partial matches are allowed).
+            // No strings declared or none matched (partial matches are allowed).
             // Use signature matching.
             return resolveUsingClassMethod(getMethodsWithSameSignature())
         }
