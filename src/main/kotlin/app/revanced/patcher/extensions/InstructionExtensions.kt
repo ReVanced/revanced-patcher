@@ -27,8 +27,12 @@ class InstructionInserter(val method: MutableMethod, startIndex: Int) {
 }
 
 object InstructionExtensions {
-    fun MutableMethod.insertInstructions(startIndex: Int = 0, fn: InstructionInserter.() -> Unit): Int {
+    fun MutableMethod.insertInstructions(startIndex: Int, fn: InstructionInserter.() -> Unit): Int {
         return InstructionInserter(this, startIndex).apply(fn).index
+    }
+
+    fun MutableMethod.insertInstructions(fn: InstructionInserter.() -> Unit): Int {
+        return insertInstructions(0, fn)
     }
 
     /**
