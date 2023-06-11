@@ -23,17 +23,6 @@ jobs:
           # https://github.com/cycjimmy/semantic-release-action#private-packages
           persist-credentials: false
           fetch-depth: 0
-      - name: Setup JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'zulu'
-          cache: gradle
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-          cache: 'npm'
       - name: Setup semantic-release
         run: npm install
       - name: Release
