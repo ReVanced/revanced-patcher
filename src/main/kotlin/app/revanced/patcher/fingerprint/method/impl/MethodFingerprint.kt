@@ -22,18 +22,19 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
 /**
  * A fingerprint to resolve methods.
  *
- * [MethodFingerprint] resolution is fast, but if many are present, they can consume a noticeable amount of time to resolve because they are resolved in sequence.
+ * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
+ * amount of time because they are resolved in sequence.
  *
- * To improve patching performance:
+ * For apps with many fingerprints, resolving performance can be improved by:
  * - Slowest: Specify [opcodes] and nothing else.
  * - Fast: Specify [accessFlags], [returnType].
  * - Faster: Specify [accessFlags], [returnType] and [parameters].
- * - Fastest: Specify [strings], with at least one being an exact (non-partial) match.
+ * - Fastest: Specify [strings], with at least one String being an exact (non-partial) match.
  *
  * @param returnType The return type of the method. Partial matches are allowed, and values are compared using startWith.
  *                   For example: "L" matches any object, while "Landroid/view/View;" matches only to an Android view parameter.
  * @param accessFlags The access flags of the method using values of [AccessFlags].  Must be an exact match.
- * @param parameters The parameters of the method. Partial matches allowed and follow same rules as [returnType].
+ * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
  * @param opcodes The list of opcodes of the method, and a `null` opcode means unknown or wildcard value.
  * @param strings A list of strings which a method contains.
  *                Partial matches are allowed, and are compared using contains. For example, "app" matches "happy".
@@ -70,7 +71,7 @@ abstract class MethodFingerprint(
 
         private fun StringBuilder.appendSignatureKeyParameters(parameters: Iterable<CharSequence>) {
             // Maximum parameters to use in the signature key.
-            // Used to reduce the map size by grouping together uncommon methods.
+            // Used to reduce the map size by grouping together uncommon methods with a large number of parameters.
             val maxSignatureParameters = 5
             append("p:")
             parameters.forEachIndexed { index, parameter ->
@@ -118,9 +119,11 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * resolve faster, by creating culled lists based on method signature and Strings contained.
+         * Initializes the faster map based fingerprint resolving.
+         * This speeds up resolving by using a lookup map of methods based on signature
+         * and the Strings contained in the method.
          */
-        internal fun createMethodLookupMap(classes: Iterable<ClassDef>) {
+        internal fun initializeFingerprintMapResolver(classes: Iterable<ClassDef>) {
             fun addMethodToMapList(map: MutableMap<String, MutableList<ClassAndMethod>>,
                                    key: String, keyValue:  ClassAndMethod) {
                 var list = map[key]
@@ -130,6 +133,8 @@ abstract class MethodFingerprint(
                 }
                 list += keyValue
             }
+
+            if (allMethods.isNotEmpty()) throw PatchResultError("Map already initialized")
 
             for (classDef in classes) {
                 for (method in classDef.methods) {
@@ -164,7 +169,7 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve using the lookup map built by [createMethodLookupMap].
+         * Resolve using the lookup map built by [initializeFingerprintMapResolver].
          */
         internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext) {
             if (allMethods.isEmpty()) throw PatchResultError("lookup map not initialized")
@@ -189,7 +194,7 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve using map built in [createMethodLookupMap].
+         * Resolve using map built in [initializeFingerprintMapResolver].
          */
         internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext): Boolean {
             fun MethodFingerprint.resolveUsingClassMethod(classMethods: Iterable<ClassAndMethod>): Boolean {

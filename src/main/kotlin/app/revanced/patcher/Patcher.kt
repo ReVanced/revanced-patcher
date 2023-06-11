@@ -266,7 +266,6 @@ class Patcher(private val options: PatcherOptions) {
                 metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
             }
 
-            MethodFingerprint.createMethodLookupMap(context.bytecodeContext.classes.classes)
         } finally {
             extInputFile.close()
         }
@@ -351,6 +350,8 @@ class Patcher(private val options: PatcherOptions) {
             val executedPatches = LinkedHashMap<String, ExecutedPatch>() // first is name
 
             try {
+                MethodFingerprint.initializeFingerprintMapResolver(context.bytecodeContext.classes.classes)
+
                 context.patches.forEach { patch ->
                     val patchResult = executePatch(patch, executedPatches)
 
