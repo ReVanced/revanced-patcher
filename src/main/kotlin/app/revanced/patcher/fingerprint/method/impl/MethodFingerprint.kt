@@ -23,17 +23,15 @@ private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanRes
 private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
 
 /**
- * A finger print for identifying a method.
+ * A fingerprint to resolve methods.
  *
  * To improve patching performance:
- * - fastest: specify at least [strings], with the first string being an exact (non-partial) match.
- * - faster: specify at least [accessFlags], [returnType], [parameters].
- * - fast: specify at least [accessFlags], [returnType].
- * - slowest: specify only [opcodes] and nothing else.
+ * - Slowest: Specify [opcodes].
+ * - Fast: Specify [accessFlags], [returnType].
+ * - Faster: Specify [accessFlags], [returnType] and [parameters].
+ * - Fastest: Specify [strings], with the first string being an exact (non-partial) match.
  *
- * For target apps with only a few patches, the resolving speed does not matter and even the
- * slowest resolving fingerprints will not be noticed. Only when using dozens of fingerprints
- * does the patching speed become apparent.
+ * [MethodFingerprint] resolution is fast, but if many are present, they can consume a noticeable amount of time to resolve because they are resolved in sequence.
  *
  * @param returnType The return type of the method. Partial matches are allowed, and values are compared using startWith.
  *                   For example: "L" matches any object, while "Landroid/view/View;" matches only to an Android view parameter.
@@ -167,7 +165,7 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve using map built in [createMethodLookupMap]
+         * Resolve using the lookup map built by [createMethodLookupMap].
          *
          * @param logger optional logger, to record the time to resolve each fingerprint.
          */
