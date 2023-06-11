@@ -124,7 +124,7 @@ abstract class MethodFingerprint(
 
         /**
          * Initializes the faster map based fingerprint resolving.
-         * This speeds up resolving by using a lookup map of methods based on signature
+         * This speeds up resolving by using a lookup map of methods based on method signature
          * and the Strings contained in the method.
          */
         internal fun initializeFingerprintMapResolver(classes: Iterable<ClassDef>) {
@@ -142,7 +142,10 @@ abstract class MethodFingerprint(
 
             for (classDef in classes) {
                 for (method in classDef.methods) {
-                    // Key structure is: (access)(returnType)(optional: parameter types)
+                    //
+                    // Method signature key is: (access)(returnType)(optional: parameter types)
+                    // Other combinations of keys were tried, but did not give noticeable performance improvements.
+                    //
                     val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
                     val accessFlagsReturnParametersKey = buildString {
                         append(accessFlagsReturnKey)
@@ -210,9 +213,9 @@ abstract class MethodFingerprint(
                 return false
             }
 
-            val methodsWithStrings = getMethodsWithSameStrings()
-            if (methodsWithStrings != null) {
-                if (resolveUsingClassMethod(methodsWithStrings)) return true
+            val methodsWithSameStrings = getMethodsWithSameStrings()
+            if (methodsWithSameStrings != null) {
+                if (resolveUsingClassMethod(methodsWithSameStrings)) return true
             }
 
             // No String declared, or none matched (partial matches are allowed).
