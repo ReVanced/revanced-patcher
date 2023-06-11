@@ -1,3 +1,29 @@
+# [11.0.0](https://github.com/revanced/revanced-patcher/compare/v10.0.0...v11.0.0) (2023-06-10)
+
+
+### Bug Fixes
+
+* add imports to fix failing tests ([43d6868](https://github.com/revanced/revanced-patcher/commit/43d6868d1f59922f9812f3e4a2a890f3b331def6))
+
+
+* refactor!: move extension functions to their corresponding classes ([a12fe7d](https://github.com/revanced/revanced-patcher/commit/a12fe7dd9e976c38a0a82fe35e6650f58f815de4))
+* refactor!: use proper extension function names ([efdd01a](https://github.com/revanced/revanced-patcher/commit/efdd01a9886b6f06af213731824621964367b2a3))
+* fix!: implement extension functions consistently ([aacf900](https://github.com/revanced/revanced-patcher/commit/aacf9007647b1cc11bc40053625802573efda6ef))
+
+
+### BREAKING CHANGES
+
+* This changes the import paths for extension functions.
+* This changes the names of extension functions
+* This changes the name of functions
+
+# [11.0.0-dev.2](https://github.com/revanced/revanced-patcher/compare/v11.0.0-dev.1...v11.0.0-dev.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* add imports to fix failing tests ([43d6868](https://github.com/revanced/revanced-patcher/commit/43d6868d1f59922f9812f3e4a2a890f3b331def6))
+
 # [11.0.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v10.0.0...v11.0.0-dev.1) (2023-06-07)
 
 
