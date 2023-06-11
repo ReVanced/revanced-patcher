@@ -143,8 +143,10 @@ abstract class MethodFingerprint(
             for (classDef in classes) {
                 for (method in classDef.methods) {
                     //
-                    // Method signature key is: (access)(returnType)(optional: parameter types)
-                    // Other combinations of keys were tried, but did not give noticeable performance improvements.
+                    // Method signature key is: (access)(returnType)(optional: parameter types).
+                    //
+                    // Using keys for other combinations of the method signature were tried,
+                    // but they did not give noticeable performance improvements.
                     //
                     val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
                     val accessFlagsReturnParametersKey = buildString {
