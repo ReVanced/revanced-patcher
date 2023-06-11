@@ -364,7 +364,6 @@ class Patcher(private val options: PatcherOptions) {
                     if (stopOnError && patchResult.isError()) return@sequence
                 }
             } finally {
-                MethodFingerprint.clearMethodLookupMap() // No more resolving can occur.
                 executedPatches.values.reversed().forEach { (patch, _) ->
                     patch.close()
                 }

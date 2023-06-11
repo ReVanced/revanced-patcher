@@ -120,12 +120,6 @@ abstract class MethodFingerprint(
             return signatureMap[key]!!
         }
 
-        internal fun clearMethodLookupMap() {
-            allMethods.clear()
-            signatureMap.clear()
-            stringMap.clear()
-        }
-
         /**
          * resolve faster, by creating culled lists based on method signature and Strings contained.
          */
