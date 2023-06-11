@@ -66,7 +66,7 @@ abstract class MethodFingerprint(
          */
         private val signatureMap = mutableMapOf<String, MutableList<MethodAndClass>>()
         /**
-         * Map of all Strings found in the target app, and the class/method they were found in.
+         * Map of all strings found in the target app, and the class/method they were found in.
          */
         private val stringMap = mutableMapOf<String, MutableList<MethodAndClass>>()
 
@@ -125,7 +125,7 @@ abstract class MethodFingerprint(
         /**
          * Initializes the faster map based fingerprint resolving.
          * This speeds up resolving by using a lookup map of methods based on method signature
-         * and the Strings contained in the method.
+         * and the strings contained in the method.
          */
         internal fun initializeFingerprintMapResolver(classes: Iterable<ClassDef>) {
             fun addMethodToMapList(map: MutableMap<String, MutableList<MethodAndClass>>,
@@ -162,7 +162,7 @@ abstract class MethodFingerprint(
                     // Access, return, and parameters.
                     addMethodToMapList(signatureMap, accessFlagsReturnParametersKey, classAndMethod)
 
-                    // Look up by Strings (the fastest way to resolve).
+                    // Look up by strings (the fastest way to resolve).
                     method.implementation?.instructions?.forEach { instruction ->
                         if (instruction.opcode == Opcode.CONST_STRING || instruction.opcode == Opcode.CONST_STRING_JUMBO) {
                             val string = ((instruction as ReferenceInstruction).reference as StringReference).string
