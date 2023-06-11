@@ -53,19 +53,22 @@ abstract class MethodFingerprint(
 
     companion object {
 
-        private class ClassAndMethod(val classDef: ClassDef, val method: Method)
+        /**
+         * A simple wrapper for a [Method] and it's enclosing [ClassDef].
+         */
+        private class MethodAndClass(val method: Method, val enclosingClass: ClassDef)
         /**
          * All methods in the target app.
          */
-        private val allMethods = mutableListOf<ClassAndMethod>()
+        private val allMethods = mutableListOf<MethodAndClass>()
         /**
          * Map of all methods in the target app, keyed to the access/return/parameter signature.
          */
-        private val signatureMap = mutableMapOf<String, MutableList<ClassAndMethod>>()
+        private val signatureMap = mutableMapOf<String, MutableList<MethodAndClass>>()
         /**
          * Map of all Strings found in the target app, and the class/method they were found in.
          */
-        private val stringMap = mutableMapOf<String, MutableList<ClassAndMethod>>()
+        private val stringMap = mutableMapOf<String, MutableList<MethodAndClass>>()
 
         private fun StringBuilder.appendSignatureKeyParameters(parameters: Iterable<CharSequence>) {
             // Maximum parameters to use in the signature key.
@@ -82,7 +85,7 @@ abstract class MethodFingerprint(
          * @return all app methods that contain the strings of this signature,
          *         or NULL if no strings are declared or no exact matches exist.
          */
-        private fun MethodFingerprint.getMethodsWithSameStrings() : List<ClassAndMethod>? {
+        private fun MethodFingerprint.getMethodsWithSameStrings() : List<MethodAndClass>? {
             if (strings != null && strings.count() > 0) {
                 for (string in strings) {
                     val methods = stringMap[string]
@@ -95,7 +98,7 @@ abstract class MethodFingerprint(
         /**
          * @return all app methods that could match this signature.
          */
-        private fun MethodFingerprint.getMethodsWithSameSignature() : List<ClassAndMethod> {
+        private fun MethodFingerprint.getMethodsWithSameSignature() : List<MethodAndClass> {
             if (accessFlags == null) return allMethods
 
             var returnTypeValue = returnType
@@ -122,8 +125,8 @@ abstract class MethodFingerprint(
          * and the Strings contained in the method.
          */
         internal fun initializeFingerprintMapResolver(classes: Iterable<ClassDef>) {
-            fun addMethodToMapList(map: MutableMap<String, MutableList<ClassAndMethod>>,
-                                   key: String, keyValue:  ClassAndMethod) {
+            fun addMethodToMapList(map: MutableMap<String, MutableList<MethodAndClass>>,
+                                   key: String, keyValue:  MethodAndClass) {
                 var list = map[key]
                 if (list == null) {
                     list = LinkedList()
@@ -142,7 +145,7 @@ abstract class MethodFingerprint(
                         append(accessFlagsReturnKey)
                         appendSignatureKeyParameters(method.parameterTypes)
                     }
-                    val classAndMethod = ClassAndMethod(classDef, method)
+                    val classAndMethod = MethodAndClass(method, classDef)
 
                     // For signatures with no access or return type specified.
                     allMethods += classAndMethod
@@ -195,9 +198,9 @@ abstract class MethodFingerprint(
          * Resolve using map built in [initializeFingerprintMapResolver].
          */
         internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext): Boolean {
-            fun MethodFingerprint.resolveUsingClassMethod(classMethods: Iterable<ClassAndMethod>): Boolean {
+            fun MethodFingerprint.resolveUsingClassMethod(classMethods: Iterable<MethodAndClass>): Boolean {
                 for (classAndMethod in classMethods) {
-                    if (resolve(context, classAndMethod.method, classAndMethod.classDef)) {
+                    if (resolve(context, classAndMethod.method, classAndMethod.enclosingClass)) {
                         return true
                     }
                 }
