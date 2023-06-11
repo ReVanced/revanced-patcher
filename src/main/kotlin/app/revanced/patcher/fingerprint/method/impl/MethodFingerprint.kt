@@ -75,8 +75,14 @@ abstract class MethodFingerprint(
          */
         private fun StringBuilder.appendSignatureKeyParameters(parameters: Iterable<CharSequence>) {
             // Maximum parameters to use in the signature key.
-            // Used to reduce the map size by grouping together uncommon methods with a large number of parameters.
+            // Some apps have methods with an incredible number of parameters (over 100 parameters has been seen).
+            // To keep the signature map from becoming needlessly bloated,
+            // group together in the same map entry all methods with the same access/return and 5 or more parameters.
+            // The value of 5 was chosen based on local performance testing and is not set in stone.
             val maxSignatureParameters = 5
+            // Must append a unique value before the parameters to distinguish this key includes the parameters.
+            // If this is not appended, then methods with no parameters
+            // will collide with the keys that specify only the access and return type.
             append("p:")
             parameters.forEachIndexed { index, parameter ->
                 if (index >= maxSignatureParameters) return
