@@ -4,7 +4,7 @@ import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import org.jf.dexlib2.iface.reference.MethodReference
 import java.util.*
 
-object ImmutableExtensions {
+object InstructionCompareExtensions {
     enum class MethodReferenceMatch {
         DEFINING_CLASS, NAME, PARAMTER_TYPES, RETURN_TYPE;
 
