@@ -19,7 +19,7 @@ import java.util.*
 private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult.StringMatch
 private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
 private typealias MethodClassPair = Pair<Method, ClassDef>
-typealias CustomFingerprint = ((methodDef: Method, classDef: ClassDef) -> Boolean)
+private typealias CustomFingerprint = ((methodDef: Method, classDef: ClassDef) -> Boolean)
 
 inline fun <reified T : Instruction> hasInstruction(
     opcode: Opcode,
