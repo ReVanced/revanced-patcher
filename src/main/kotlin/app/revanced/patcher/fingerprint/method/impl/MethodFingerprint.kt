@@ -82,7 +82,7 @@ abstract class MethodFingerprint(
             val maxSignatureParameters = 5
             // Must append a unique value before the parameters to distinguish this key includes the parameters.
             // If this is not appended, then methods with no parameters
-            // will collide with the keys that specify only the access and return type.
+            // will collide with different keys that specify access/return and no signature.
             append("p:")
             parameters.forEachIndexed { index, parameter ->
                 if (index >= maxSignatureParameters) return
