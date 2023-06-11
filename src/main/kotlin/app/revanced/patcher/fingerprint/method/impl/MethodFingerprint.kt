@@ -2,11 +2,8 @@ package app.revanced.patcher.fingerprint.method.impl
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
-import app.revanced.patcher.extensions.MethodFingerprintExtensions.name
 import app.revanced.patcher.fingerprint.Fingerprint
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
-import app.revanced.patcher.logging.Logger
-import app.revanced.patcher.logging.impl.NopLogger
 import app.revanced.patcher.patch.PatchResultError
 import app.revanced.patcher.util.proxy.ClassProxy
 import org.jf.dexlib2.AccessFlags
@@ -25,13 +22,13 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
 /**
  * A fingerprint to resolve methods.
  *
+ * [MethodFingerprint] resolution is fast, but if many are present, they can consume a noticeable amount of time to resolve because they are resolved in sequence.
+ *
  * To improve patching performance:
- * - Slowest: Specify [opcodes].
+ * - Slowest: Specify [opcodes] and nothing else.
  * - Fast: Specify [accessFlags], [returnType].
  * - Faster: Specify [accessFlags], [returnType] and [parameters].
- * - Fastest: Specify [strings], with the first string being an exact (non-partial) match.
- *
- * [MethodFingerprint] resolution is fast, but if many are present, they can consume a noticeable amount of time to resolve because they are resolved in sequence.
+ * - Fastest: Specify [strings], with at least one being an exact (non-partial) match.
  *
  * @param returnType The return type of the method. Partial matches are allowed, and values are compared using startWith.
  *                   For example: "L" matches any object, while "Landroid/view/View;" matches only to an Android view parameter.
@@ -83,13 +80,15 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * @return all app methods that contain the first string declared in this signature,
+         * @return all app methods that contain the strings of this signature,
          *         or NULL if no strings are declared or no exact matches exist.
          */
         private fun MethodFingerprint.getMethodsWithSameStrings() : List<ClassAndMethod>? {
             if (strings != null && strings.count() > 0) {
-                // Only check the first String declared
-                return stringMap[strings.first()]
+                for (string in strings) {
+                    val methods = stringMap[string]
+                    if (methods != null) return methods
+                }
             }
             return null
         }
@@ -166,17 +165,12 @@ abstract class MethodFingerprint(
 
         /**
          * Resolve using the lookup map built by [createMethodLookupMap].
-         *
-         * @param logger optional logger, to record the time to resolve each fingerprint.
          */
-        internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger) {
+        internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext) {
             if (allMethods.isEmpty()) throw PatchResultError("lookup map not initialized")
 
             for (fingerprint in this) {
-                var time = System.currentTimeMillis()
-                fingerprint.resolveUsingLookupMap(context, logger)
-                time = System.currentTimeMillis() - time
-                if (time > 20) logger.trace("${fingerprint.name} resolved in $time ms")
+                fingerprint.resolveUsingLookupMap(context)
             }
         }
 
@@ -195,9 +189,9 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve using map built in [createMethodLookupMap]
+         * Resolve using map built in [createMethodLookupMap].
          */
-        internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext, logger : Logger = NopLogger): Boolean {
+        internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext): Boolean {
             fun MethodFingerprint.resolveUsingClassMethod(classMethods: Iterable<ClassAndMethod>): Boolean {
                 for (classAndMethod in classMethods) {
                     if (resolve(context, classAndMethod.method, classAndMethod.classDef)) {
@@ -207,10 +201,9 @@ abstract class MethodFingerprint(
                 return false
             }
 
-            var methodsWithStrings = getMethodsWithSameStrings()
+            val methodsWithStrings = getMethodsWithSameStrings()
             if (methodsWithStrings != null) {
                 if (resolveUsingClassMethod(methodsWithStrings)) return true
-                logger.trace("$name: could not quickly resolve using declared strings (verify first string is an exact match)")
             }
 
             // No String declared, or none matched (partial matches are allowed).

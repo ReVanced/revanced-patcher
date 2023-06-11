@@ -323,7 +323,7 @@ class Patcher(private val options: PatcherOptions) {
                 context.resourceContext
             } else {
                 context.bytecodeContext.also { context ->
-                    (patchInstance as BytecodePatch).fingerprints?.resolveUsingLookupMap(context, logger)
+                    (patchInstance as BytecodePatch).fingerprints?.resolveUsingLookupMap(context)
                 }
             }
 
