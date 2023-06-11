@@ -17,20 +17,6 @@ private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanRes
 private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
 typealias CustomFingerprint = ((methodDef: Method, classDef: ClassDef) -> Boolean)
 
-inline fun <reified T : Instruction> hasInstruction(
-    opcode: Opcode,
-    crossinline predicate: (T) -> Boolean
-): CustomFingerprint {
-    return { methodDef, _ ->
-        methodDef.implementation?.instructions?.any {
-            if (it.opcode != opcode) return@any false
-            if (it !is T) return@any false
-
-            predicate(it)
-        } ?: false
-    }
-}
-
 /**
  * Represents the [MethodFingerprint] for a method.
  * @param returnType The return type of the method.
