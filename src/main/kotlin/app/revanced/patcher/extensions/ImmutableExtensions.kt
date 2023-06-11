@@ -7,12 +7,16 @@ import java.util.*
 
 object ImmutableExtensions {
     enum class MethodReferenceMatch {
-        DEFINING_CLASS, NAME, PARAMTER_TYPES, RETURN_TYPE
+        DEFINING_CLASS, NAME, PARAMTER_TYPES, RETURN_TYPE;
+
+        companion object {
+            val all: EnumSet<MethodReferenceMatch> = EnumSet.allOf(MethodReferenceMatch::class.java)
+        }
     }
 
     fun ImmutableMethodReference.matches(
         instruction: ReferenceInstruction,
-        match: EnumSet<MethodReferenceMatch> = EnumSet.allOf(MethodReferenceMatch::class.java)
+        match: EnumSet<MethodReferenceMatch> = MethodReferenceMatch.all
     ): Boolean {
         val ref = (instruction.reference as? MethodReference) ?: return false
 
