@@ -35,8 +35,7 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
  * @param accessFlags The method's exact access flags using values of [AccessFlags].
  * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
  * @param opcodes An opcode pattern of the method's instructions. Wildcard or unknown opcodes can be specified by `null`.
- * @param strings A list of strings which a method contains.
- *                Partial matches are allowed, and are compared using contains. For example, "app" matches "happy".
+ * @param strings A list of the method's strings compared each using [String.contains].
  * @param customFingerprint A custom condition for this fingerprint.
  */
 abstract class MethodFingerprint(
