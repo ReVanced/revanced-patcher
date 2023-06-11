@@ -26,10 +26,10 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
  * A fingerprint to resolve methods.
  *
  * To improve patching performance:
- * - fastest: specify at least [strings], with the first string being an exact (non-partial) match.
- * - faster: specify at least [accessFlags], [returnType], [parameters].
- * - fast: specify at least [accessFlags], [returnType].
- * - slowest: specify only [opcodes] and nothing else.
+ * - Slowest: Specify [opcodes].
+ * - Fast: Specify [accessFlags], [returnType].
+ * - Faster: Specify [accessFlags], [returnType] and [parameters].
+ * - Fastest: Specify [strings], with the first string being an exact (non-partial) match.
  *
  * For target apps with only a few patches, the resolving speed does not matter and even the
  * slowest resolving fingerprints will not be noticed. Only when using dozens of fingerprints
