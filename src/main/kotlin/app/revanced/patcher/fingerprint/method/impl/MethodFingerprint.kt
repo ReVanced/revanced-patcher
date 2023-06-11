@@ -21,20 +21,6 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
 private typealias MethodClassPair = Pair<Method, ClassDef>
 private typealias CustomFingerprint = ((methodDef: Method, classDef: ClassDef) -> Boolean)
 
-inline fun <reified T : Instruction> hasInstruction(
-    opcode: Opcode,
-    crossinline predicate: (T) -> Boolean
-): CustomFingerprint {
-    return { methodDef, _ ->
-        methodDef.implementation?.instructions?.any {
-            if (it.opcode != opcode) return@any false
-            if (it !is T) return@any false
-
-            predicate(it)
-        } ?: false
-    }
-}
-
 /**
  * A fingerprint to resolve methods.
  *
