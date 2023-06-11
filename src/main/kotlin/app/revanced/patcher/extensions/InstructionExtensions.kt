@@ -1,5 +1,6 @@
 package app.revanced.patcher.extensions
 
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patcher.util.smali.toInstruction
@@ -11,7 +12,23 @@ import org.jf.dexlib2.builder.MutableMethodImplementation
 import org.jf.dexlib2.builder.instruction.*
 import org.jf.dexlib2.iface.instruction.Instruction
 
+
+class InstructionInserter(val method: MutableMethod, startIndex: Int) {
+    var index = startIndex
+    fun putInstructions(smaliInstructions: String) {
+        putInstructions(smaliInstructions.toInstructions(method))
+    }
+
+    fun putInstructions(instructions: List<BuilderInstruction>) {
+        method.implementation!!.addInstructions(index, instructions)
+        index += instructions.size
+    }
+}
+
 object InstructionExtensions {
+    fun MutableMethod.insertInstructions(startIndex: Int, fn: InstructionInserter.() -> Unit): Int {
+        return InstructionInserter(this, startIndex).apply(fn).index
+    }
 
     /**
      * Add instructions to a method at the given index.
