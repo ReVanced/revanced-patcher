@@ -171,7 +171,7 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve using map built in [createMethodLookupMap]
+         * Resolve using the lookup map built by [createMethodLookupMap].
          *
          * @param logger optional logger, to record the time to resolve each fingerprint.
          */
