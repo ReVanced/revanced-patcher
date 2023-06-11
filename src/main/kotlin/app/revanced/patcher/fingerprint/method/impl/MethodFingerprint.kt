@@ -31,8 +31,7 @@ private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintS
  * - Faster: Specify [accessFlags], [returnType] and [parameters].
  * - Fastest: Specify [strings], with at least one String being an exact (non-partial) match.
  *
- * @param returnType The return type of the method. Partial matches are allowed, and values are compared using startWith.
- *                   For example: "L" matches any object, while "Landroid/view/View;" matches only to an Android view parameter.
+ * @param returnType The method's return type compared using [String.startsWith].
  * @param accessFlags The access flags of the method using values of [AccessFlags].  Must be an exact match.
  * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
  * @param opcodes The list of opcodes of the method, and a `null` opcode means unknown or wildcard value.
