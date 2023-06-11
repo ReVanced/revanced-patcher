@@ -15,18 +15,19 @@ import org.jf.dexlib2.iface.instruction.Instruction
 
 class InstructionInserter(val method: MutableMethod, startIndex: Int) {
     var index = startIndex
-    fun putInstructions(smaliInstructions: String) {
-        putInstructions(smaliInstructions.toInstructions(method))
+
+    fun addInstructions(smaliInstructions: String) {
+        addInstructions(smaliInstructions.toInstructions(method))
     }
 
-    fun putInstructions(instructions: List<BuilderInstruction>) {
+    fun addInstructions(instructions: List<BuilderInstruction>) {
         method.implementation!!.addInstructions(index, instructions)
         index += instructions.size
     }
 }
 
 object InstructionExtensions {
-    fun MutableMethod.insertInstructions(startIndex: Int, fn: InstructionInserter.() -> Unit): Int {
+    fun MutableMethod.insertInstructions(startIndex: Int = 0, fn: InstructionInserter.() -> Unit): Int {
         return InstructionInserter(this, startIndex).apply(fn).index
     }
 
@@ -204,6 +205,7 @@ object InstructionExtensions {
                                     i.registerB,
                                     label
                                 )
+
                                 is BuilderInstruction30t -> BuilderInstruction30t(i.opcode, label)
                                 is BuilderInstruction31t -> BuilderInstruction31t(i.opcode, i.registerA, label)
                                 else -> throw IllegalStateException(
