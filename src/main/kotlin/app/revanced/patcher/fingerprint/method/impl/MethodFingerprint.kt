@@ -86,7 +86,7 @@ abstract class MethodFingerprint(
          * @return all app methods that contain the first string declared in this signature,
          *         or NULL if no strings are declared or no exact matches exist.
          */
-        private fun MethodFingerprint.appMethodsWithSameStrings() : List<ClassAndMethod>? {
+        private fun MethodFingerprint.getMethodsWithSameStrings() : List<ClassAndMethod>? {
             if (strings != null && strings.count() > 0) {
                 // Only check the first String declared
                 return stringMap[strings.first()]
@@ -97,7 +97,7 @@ abstract class MethodFingerprint(
         /**
          * @return all app methods that could match this signature.
          */
-        private fun MethodFingerprint.appMethodsWithSameSignature() : List<ClassAndMethod> {
+        private fun MethodFingerprint.getMethodsWithSameSignature() : List<ClassAndMethod> {
             if (accessFlags == null) return allMethods
 
             var returnTypeValue = returnType
@@ -207,7 +207,7 @@ abstract class MethodFingerprint(
                 return false
             }
 
-            var methodsWithStrings = appMethodsWithSameStrings()
+            var methodsWithStrings = getMethodsWithSameStrings()
             if (methodsWithStrings != null) {
                 if (resolveUsingClassMethod(methodsWithStrings)) return true
                 logger.trace("$name: could not quickly resolve using declared strings (verify first string is an exact match)")
@@ -215,7 +215,7 @@ abstract class MethodFingerprint(
 
             // No String declared, or none matched (partial matches are allowed).
             // Use signature matching.
-            return resolveUsingClassMethod(appMethodsWithSameSignature())
+            return resolveUsingClassMethod(getMethodsWithSameSignature())
         }
 
         /**
