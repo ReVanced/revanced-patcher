@@ -23,7 +23,7 @@ private typealias StringMatch = MethodFingerprintResult.MethodFingerprintScanRes
 private typealias StringsScanResult = MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
 
 /**
- * A finger print for identifying a method.
+ * A fingerprint to resolve methods.
  *
  * To improve patching performance:
  * - fastest: specify at least [strings], with the first string being an exact (non-partial) match.
