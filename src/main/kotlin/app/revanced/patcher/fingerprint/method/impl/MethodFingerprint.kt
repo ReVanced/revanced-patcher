@@ -70,6 +70,9 @@ abstract class MethodFingerprint(
          */
         private val stringMap = mutableMapOf<String, MutableList<MethodAndClass>>()
 
+        /**
+         * Appends a String based on the parameter reference types of this method.
+         */
         private fun StringBuilder.appendSignatureKeyParameters(parameters: Iterable<CharSequence>) {
             // Maximum parameters to use in the signature key.
             // Used to reduce the map size by grouping together uncommon methods with a large number of parameters.
