@@ -1,3 +1,10 @@
+## [11.0.1](https://github.com/revanced/revanced-patcher/compare/v11.0.0...v11.0.1) (2023-06-12)
+
+
+### Bug Fixes
+
+* revert using `OutputStream.nullOutputStream` ([f02a426](https://github.com/revanced/revanced-patcher/commit/f02a42610b7698fc8cc6bc5183c9ccba2ed96cda))
+
 ## [11.0.1-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.0...v11.0.1-dev.1) (2023-06-12)
 
 
