@@ -247,7 +247,12 @@ class Patcher(private val options: PatcherOptions) {
                     XmlPullStreamDecoder(
                         axmlParser, AndrolibResources().resXmlSerializer
                     ).decodeManifest(
-                        extInputFile.directory.getFileInput("AndroidManifest.xml"), OutputStream.nullOutputStream()
+                        extInputFile.directory.getFileInput("AndroidManifest.xml"),
+                        object : OutputStream() {
+                            override fun write(b: Int) {
+                                // do nothing
+                            }
+                        }
                     )
                 }
             }
