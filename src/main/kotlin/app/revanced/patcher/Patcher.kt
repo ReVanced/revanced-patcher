@@ -364,7 +364,7 @@ class Patcher(private val options: PatcherOptions) {
                     if (stopOnError && patchResult.isError()) return@sequence
                 }
             } finally {
-                executedPatches.values.reversed().forEach { (patch, _) ->
+                executedPatches.values.filter { it.success }.reversed().forEach { (patch, _) ->
                     patch.close()
                 }
             }
