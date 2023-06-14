@@ -12,7 +12,7 @@ import java.io.Closeable
  * If it implements [Closeable], it will be closed after all patches have been executed.
  * Closing will be done in reverse execution order.
  */
-sealed interface Patch<out T : Context> : Closeable {
+sealed interface Patch<out T : Context> {
     /**
      * The main function of the [Patch] which the patcher will call.
      *
@@ -20,13 +20,6 @@ sealed interface Patch<out T : Context> : Closeable {
      * @return The result of executing the patch.
      */
     fun execute(context: @UnsafeVariance T): PatchResult
-
-    /**
-     * The closing function for this patch.
-     *
-     * This can be treated like popping the patch from the current patch stack.
-     */
-    override fun close() {}
 }
 
 /**
