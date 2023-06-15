@@ -95,11 +95,9 @@ abstract class MethodFingerprint(
          *         or NULL if no strings are declared or no exact matches exist.
          */
         private fun MethodFingerprint.getMethodsWithSameStrings() : List<MethodAndClass>? {
-            if (strings != null && strings.count() > 0) {
-                for (string in strings) {
-                    val methods = stringMap[string]
-                    if (methods != null) return methods
-                }
+            strings?.forEach {
+                val methods = stringMap[it]
+                if (methods != null) return methods
             }
             return null
         }
