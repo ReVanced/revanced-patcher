@@ -29,6 +29,7 @@ import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
+import java.io.Closeable
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Files
@@ -253,7 +254,12 @@ class Patcher(private val options: PatcherOptions) {
                     XmlPullStreamDecoder(
                         axmlParser, AndrolibResources().resXmlSerializer
                     ).decodeManifest(
-                        extInputFile.directory.getFileInput("AndroidManifest.xml"), OutputStream.nullOutputStream()
+                        extInputFile.directory.getFileInput("AndroidManifest.xml"),
+                        object : OutputStream() {
+                            override fun write(b: Int) {
+                                // do nothing
+                            }
+                        }
                     )
                 }
             }
@@ -349,26 +355,43 @@ class Patcher(private val options: PatcherOptions) {
 
             val executedPatches = LinkedHashMap<String, ExecutedPatch>() // first is name
 
-            try {
-                MethodFingerprint.initializeFingerprintMapResolver(context.bytecodeContext.classes.classes)
+            MethodFingerprint.initializeFingerprintMapResolver(context.bytecodeContext.classes.classes)
 
-                context.patches.forEach { patch ->
-                    val patchResult = executePatch(patch, executedPatches)
+            context.patches.forEach { patch ->
+                val patchResult = executePatch(patch, executedPatches)
 
-                    val result = if (patchResult.isSuccess()) {
-                        Result.success(patchResult.success()!!)
-                    } else {
-                        Result.failure(patchResult.error()!!)
-                    }
-
-                    yield(patch.patchName to result)
-                    if (stopOnError && patchResult.isError()) return@sequence
+                val result = if (patchResult.isSuccess()) {
+                    Result.success(patchResult.success()!!)
+                } else {
+                    Result.failure(patchResult.error()!!)
                 }
-            } finally {
-                executedPatches.values.reversed().forEach { (patch, _) ->
-                    patch.close()
-                }
+
+                // TODO: This prints before the patch really finishes in case it is a Closeable
+                //  because the Closeable is closed after all patches are executed.
+                yield(patch.patchName to result)
+
+                if (stopOnError && patchResult.isError()) return@sequence
             }
+
+            executedPatches.values
+                .filter(ExecutedPatch::success)
+                .map(ExecutedPatch::patchInstance)
+                .filterIsInstance(Closeable::class.java)
+                .asReversed().forEach {
+                    try {
+                        it.close()
+                    } catch (exception: Exception) {
+                        val patchName = (it as Patch<Context>).javaClass.patchName
+
+                        logger.error("Failed to close '$patchName': ${exception.stackTraceToString()}")
+
+                        yield(patchName to Result.failure(exception))
+
+                        // This is not failsafe. If a patch throws an exception while closing,
+                        // the other patches that depend on it may fail.
+                        if (stopOnError) return@sequence
+                    }
+                }
         }
     }
 

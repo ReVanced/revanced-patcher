@@ -1,3 +1,25 @@
+## [11.0.2-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.1...v11.0.2-dev.1) (2023-06-14)
+
+
+### Bug Fixes
+
+* catch exceptions from closing patches ([d5d6f85](https://github.com/revanced/revanced-patcher/commit/d5d6f85084c03ed9c776632823ca12394a716167))
+* only close succeeded patches ([b8151eb](https://github.com/revanced/revanced-patcher/commit/b8151ebccb5b27dd9e06fa63235cf9baeef1c0ee))
+
+## [11.0.1](https://github.com/revanced/revanced-patcher/compare/v11.0.0...v11.0.1) (2023-06-12)
+
+
+### Bug Fixes
+
+* revert using `OutputStream.nullOutputStream` ([f02a426](https://github.com/revanced/revanced-patcher/commit/f02a42610b7698fc8cc6bc5183c9ccba2ed96cda))
+
+## [11.0.1-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.0...v11.0.1-dev.1) (2023-06-12)
+
+
+### Bug Fixes
+
+* revert using `OutputStream.nullOutputStream` ([f02a426](https://github.com/revanced/revanced-patcher/commit/f02a42610b7698fc8cc6bc5183c9ccba2ed96cda))
+
 # [11.0.0](https://github.com/revanced/revanced-patcher/compare/v10.0.0...v11.0.0) (2023-06-10)
 
 
