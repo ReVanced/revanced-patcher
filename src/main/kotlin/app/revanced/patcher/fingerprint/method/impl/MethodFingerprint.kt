@@ -159,7 +159,7 @@ abstract class MethodFingerprint(
                     }
                     val classAndMethod = MethodAndClass(method, classDef)
 
-                    // For signatures with no access or return type specified.
+                    // For fingerprints with no access or return type specified.
                     allMethods += classAndMethod
                     // Access and return type.
                     addMethodToMapList(signatureMap, accessFlagsReturnKey, classAndMethod)
