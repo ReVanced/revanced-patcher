@@ -6,12 +6,7 @@ import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
-import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.PatchResult
-import app.revanced.patcher.patch.PatchResultError
-import app.revanced.patcher.patch.PatchResultSuccess
-import app.revanced.patcher.patch.ResourcePatch
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
 import brut.androlib.meta.UsesFramework
@@ -271,7 +266,6 @@ class Patcher(private val options: PatcherOptions) {
                 metadata.metaInfo.versionInfo = resourceTable.versionInfo
                 metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
             }
-
         } finally {
             extInputFile.close()
         }
@@ -348,14 +342,16 @@ class Patcher(private val options: PatcherOptions) {
         return sequence {
             if (mergeIntegrations) context.integrations.merge(logger)
 
+            logger.trace("Initialize lookup maps for method MethodFingerprint resolution")
+
+            MethodFingerprint.initializeFingerprintResolutionLookupMaps(context.bytecodeContext)
+
             // prevent from decoding the manifest twice if it is not needed
             if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
 
             logger.trace("Executing all patches")
 
             val executedPatches = LinkedHashMap<String, ExecutedPatch>() // first is name
-
-            MethodFingerprint.initializeFingerprintMapResolver(context.bytecodeContext.classes.classes)
 
             context.patches.forEach { patch ->
                 val patchResult = executePatch(patch, executedPatches)
