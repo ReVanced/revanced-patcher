@@ -249,6 +249,7 @@ class Patcher(private val options: PatcherOptions) {
                         axmlParser, AndrolibResources().resXmlSerializer
                     ).decodeManifest(
                         extInputFile.directory.getFileInput("AndroidManifest.xml"),
+                        // Older Android versions do not support OutputStream.nullOutputStream()
                         object : OutputStream() {
                             override fun write(b: Int) {
                                 // do nothing
@@ -261,7 +262,7 @@ class Patcher(private val options: PatcherOptions) {
             // read of the resourceTable which is created by reading the manifest file
             context.packageMetadata.let { metadata ->
                 metadata.packageName = resourceTable.currentResPackage.name
-                metadata.packageVersion = resourceTable.versionInfo.versionName
+                metadata.packageVersion = resourceTable.versionInfo.versionName ?: resourceTable.versionInfo.versionCode
                 metadata.metaInfo.versionInfo = resourceTable.versionInfo
                 metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
             }
