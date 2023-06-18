@@ -173,18 +173,33 @@ abstract class MethodFingerprint(
             for (index in 0 until instructionLength) {
                 var patternIndex = 0
                 var threshold = fingerprintFuzzyPatternScanThreshold
+                var offset = 0;
 
-                while (index + patternIndex < instructionLength) {
+                scan@ while (index + patternIndex < instructionLength) {
                     val originalOpcode = instructions.elementAt(index + patternIndex).opcode
-                    val patternOpcode = pattern.elementAt(patternIndex)
+                    val patternOpcode = pattern.elementAt(patternIndex + offset)
 
                     if (patternOpcode != null && patternOpcode.ordinal != originalOpcode.ordinal) {
                         // reaching maximum threshold (0) means,
                         // the pattern does not match to the current instructions
                         if (threshold-- == 0) break
+
+                        // look ahead
+                        for (depth in 1 until threshold + 2) {
+                            val lookAheadIndex = patternIndex + offset + depth
+                            if (lookAheadIndex < patternLength && index + lookAheadIndex < instructionLength)
+                            {
+                                val nextPatternOpcode = pattern.elementAt(lookAheadIndex)
+                                if (nextPatternOpcode != null && nextPatternOpcode.ordinal == originalOpcode.ordinal)
+                                {
+                                    offset+=depth;
+                                    continue@scan;
+                                }
+                            }
+                        }
                     }
 
-                    if (patternIndex < patternLength - 1) {
+                    if (patternIndex + offset < patternLength - 1) {
                         // if the entire pattern has not been scanned yet
                         // continue the scan
                         patternIndex++
