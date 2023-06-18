@@ -1,3 +1,10 @@
+## [11.0.2-dev.2](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.1...v11.0.2-dev.2) (2023-06-18)
+
+
+### Bug Fixes
+
+* use `versionCode` if `versionName` is unavailable ([6e1b647](https://github.com/revanced/revanced-patcher/commit/6e1b6479b677657c226693e9cc6b63f4ef2ee060))
+
 ## [11.0.2-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.1...v11.0.2-dev.1) (2023-06-14)
 
 
