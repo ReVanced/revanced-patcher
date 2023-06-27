@@ -23,15 +23,6 @@ private typealias MethodClassPair = Pair<Method, ClassDef>
 /**
  * A fingerprint to resolve methods.
  *
- * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
- * amount of time because they are resolved in sequence.
- *
- * For apps with many fingerprints, resolving performance can be improved by:
- * - Slowest: Specify [opcodes] and nothing else.
- * - Fast: Specify [accessFlags], [returnType].
- * - Faster: Specify [accessFlags], [returnType] and [parameters].
- * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
- *
  * @param returnType The method's return type compared using [String.startsWith].
  * @param accessFlags The method's exact access flags using values of [AccessFlags].
  * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
@@ -148,7 +139,16 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve using the lookup map built by [initializeFingerprintResolutionLookupMaps].
+         * Resolve a list of [MethodFingerprint] using the lookup map built by [initializeFingerprintResolutionLookupMaps].
+         *
+         * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
+         * amount of time because they are resolved in sequence.
+         *
+         * For apps with many fingerprints, resolving performance can be improved by:
+         * - Slowest: Specify [opcodes] and nothing else.
+         * - Fast: Specify [accessFlags], [returnType].
+         * - Faster: Specify [accessFlags], [returnType] and [parameters].
+         * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
          */
         internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext) {
             if (methods.isEmpty()) throw PatchResultError("lookup map not initialized")
@@ -159,7 +159,16 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve a [MethodFingerprint] using lookup maps [initializeFingerprintResolutionLookupMaps].
+         * Resolve a [MethodFingerprint] using the lookup map built by [initializeFingerprintResolutionLookupMaps].
+         *
+         * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
+         * amount of time because they are resolved in sequence.
+         *
+         * For apps with many fingerprints, resolving performance can be improved by:
+         * - Slowest: Specify [opcodes] and nothing else.
+         * - Fast: Specify [accessFlags], [returnType].
+         * - Faster: Specify [accessFlags], [returnType] and [parameters].
+         * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
          */
         internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext): Boolean {
             /**
