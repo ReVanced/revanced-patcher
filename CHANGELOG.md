@@ -1,3 +1,10 @@
+## [11.0.2-dev.4](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.3...v11.0.2-dev.4) (2023-06-27)
+
+
+### Bug Fixes
+
+* do not load annotations as patches ([519359a](https://github.com/revanced/revanced-patcher/commit/519359a9eb0e9dfa390c5016e9fe4a7490b8ab18))
+
 ## [11.0.2-dev.3](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.2...v11.0.2-dev.3) (2023-06-27)
 
 
