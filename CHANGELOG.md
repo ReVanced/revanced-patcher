@@ -1,3 +1,18 @@
+## [11.0.2](https://github.com/revanced/revanced-patcher/compare/v11.0.1...v11.0.2) (2023-06-27)
+
+
+### Bug Fixes
+
+* catch exceptions from closing patches ([d5d6f85](https://github.com/revanced/revanced-patcher/commit/d5d6f85084c03ed9c776632823ca12394a716167))
+* do not load annotations as patches ([519359a](https://github.com/revanced/revanced-patcher/commit/519359a9eb0e9dfa390c5016e9fe4a7490b8ab18))
+* only close succeeded patches ([b8151eb](https://github.com/revanced/revanced-patcher/commit/b8151ebccb5b27dd9e06fa63235cf9baeef1c0ee))
+* use `versionCode` if `versionName` is unavailable ([6e1b647](https://github.com/revanced/revanced-patcher/commit/6e1b6479b677657c226693e9cc6b63f4ef2ee060))
+
+
+### Performance Improvements
+
+* resolve fingerprints using method maps ([#185](https://github.com/revanced/revanced-patcher/issues/185)) ([d718134](https://github.com/revanced/revanced-patcher/commit/d718134ab26423e02708e01eba711737f9260ba0))
+
 ## [11.0.2-dev.4](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.3...v11.0.2-dev.4) (2023-06-27)
 
 
