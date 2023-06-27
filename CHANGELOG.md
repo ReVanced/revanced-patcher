@@ -1,3 +1,10 @@
+## [11.0.2-dev.3](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.2...v11.0.2-dev.3) (2023-06-27)
+
+
+### Performance Improvements
+
+* resolve fingerprints using method maps ([#185](https://github.com/revanced/revanced-patcher/issues/185)) ([d718134](https://github.com/revanced/revanced-patcher/commit/d718134ab26423e02708e01eba711737f9260ba0))
+
 ## [11.0.2-dev.2](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.1...v11.0.2-dev.2) (2023-06-18)
 
 
