@@ -350,7 +350,7 @@ class Patcher(private val options: PatcherOptions) {
             // prevent from decoding the manifest twice if it is not needed
             if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
 
-            logger.trace("Executing all patches")
+            logger.info("Executing patches")
 
             val executedPatches = LinkedHashMap<String, ExecutedPatch>() // first is name
 
