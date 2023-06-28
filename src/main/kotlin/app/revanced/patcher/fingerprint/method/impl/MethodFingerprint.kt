@@ -207,7 +207,7 @@ abstract class MethodFingerprint(
                     append(returnTypeValue.first())
                     if (parameters != null) appendParameters(parameters)
                 }
-                return methodSignatureLookupMap[key]!!
+                return methodSignatureLookupMap[key] ?: return emptyList()
             }
 
             /**
