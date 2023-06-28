@@ -4,7 +4,8 @@ import app.revanced.patcher.data.Context
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
-import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
+import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.VersionReader
 import brut.androlib.Androlib
@@ -23,6 +24,7 @@ import lanchon.multidexlib2.MultiDexIO
 import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.writer.io.MemoryDataStore
+import java.io.Closeable
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Files
@@ -247,7 +249,13 @@ class Patcher(private val options: PatcherOptions) {
                     XmlPullStreamDecoder(
                         axmlParser, AndrolibResources().resXmlSerializer
                     ).decodeManifest(
-                        extInputFile.directory.getFileInput("AndroidManifest.xml"), OutputStream.nullOutputStream()
+                        extInputFile.directory.getFileInput("AndroidManifest.xml"),
+                        // Older Android versions do not support OutputStream.nullOutputStream()
+                        object : OutputStream() {
+                            override fun write(b: Int) {
+                                // do nothing
+                            }
+                        }
                     )
                 }
             }
@@ -255,7 +263,7 @@ class Patcher(private val options: PatcherOptions) {
             // read of the resourceTable which is created by reading the manifest file
             context.packageMetadata.let { metadata ->
                 metadata.packageName = resourceTable.currentResPackage.name
-                metadata.packageVersion = resourceTable.versionInfo.versionName
+                metadata.packageVersion = resourceTable.versionInfo.versionName ?: resourceTable.versionInfo.versionCode
                 metadata.metaInfo.versionInfo = resourceTable.versionInfo
                 metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
             }
@@ -315,10 +323,7 @@ class Patcher(private val options: PatcherOptions) {
                 context.resourceContext
             } else {
                 context.bytecodeContext.also { context ->
-                    (patchInstance as BytecodePatch).fingerprints?.resolve(
-                        context,
-                        context.classes.classes
-                    )
+                    (patchInstance as BytecodePatch).fingerprints?.resolveUsingLookupMap(context)
                 }
             }
 
@@ -338,31 +343,52 @@ class Patcher(private val options: PatcherOptions) {
         return sequence {
             if (mergeIntegrations) context.integrations.merge(logger)
 
+            logger.trace("Initialize lookup maps for method MethodFingerprint resolution")
+
+            MethodFingerprint.initializeFingerprintResolutionLookupMaps(context.bytecodeContext)
+
             // prevent from decoding the manifest twice if it is not needed
             if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
 
-            logger.trace("Executing all patches")
+            logger.info("Executing patches")
 
             val executedPatches = LinkedHashMap<String, ExecutedPatch>() // first is name
 
-            try {
-                context.patches.forEach { patch ->
-                    val patchResult = executePatch(patch, executedPatches)
+            context.patches.forEach { patch ->
+                val patchResult = executePatch(patch, executedPatches)
 
-                    val result = if (patchResult.isSuccess()) {
-                        Result.success(patchResult.success()!!)
-                    } else {
-                        Result.failure(patchResult.error()!!)
-                    }
+                val result = if (patchResult.isSuccess()) {
+                    Result.success(patchResult.success()!!)
+                } else {
+                    Result.failure(patchResult.error()!!)
+                }
 
-                    yield(patch.patchName to result)
-                    if (stopOnError && patchResult.isError()) return@sequence
-                }
-            } finally {
-                executedPatches.values.reversed().forEach { (patch, _) ->
-                    patch.close()
-                }
+                // TODO: This prints before the patch really finishes in case it is a Closeable
+                //  because the Closeable is closed after all patches are executed.
+                yield(patch.patchName to result)
+
+                if (stopOnError && patchResult.isError()) return@sequence
             }
+
+            executedPatches.values
+                .filter(ExecutedPatch::success)
+                .map(ExecutedPatch::patchInstance)
+                .filterIsInstance(Closeable::class.java)
+                .asReversed().forEach {
+                    try {
+                        it.close()
+                    } catch (exception: Exception) {
+                        val patchName = (it as Patch<Context>).javaClass.patchName
+
+                        logger.error("Failed to close '$patchName': ${exception.stackTraceToString()}")
+
+                        yield(patchName to Result.failure(exception))
+
+                        // This is not failsafe. If a patch throws an exception while closing,
+                        // the other patches that depend on it may fail.
+                        if (stopOnError) return@sequence
+                    }
+                }
         }
     }
 

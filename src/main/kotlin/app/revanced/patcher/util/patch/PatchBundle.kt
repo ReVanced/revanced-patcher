@@ -3,6 +3,7 @@
 package app.revanced.patcher.util.patch
 
 import app.revanced.patcher.data.Context
+import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.patch.Patch
 import org.jf.dexlib2.DexFileFactory
@@ -19,7 +20,13 @@ sealed class PatchBundle(path: String) : File(path) {
     internal fun loadPatches(classLoader: ClassLoader, classNames: Iterator<String>) = buildList {
         classNames.forEach { className ->
             val clazz = classLoader.loadClass(className)
-            if (!clazz.isAnnotationPresent(app.revanced.patcher.patch.annotations.Patch::class.java)) return@forEach
+
+            // Annotations can not Patch.
+            if (clazz.isAnnotation) return@forEach
+
+            clazz.findAnnotationRecursively(app.revanced.patcher.patch.annotations.Patch::class)
+                ?: return@forEach
+
             @Suppress("UNCHECKED_CAST") this.add(clazz as Class<out Patch<Context>>)
         }
     }.sortedBy { it.patchName }
@@ -43,11 +50,9 @@ sealed class PatchBundle(path: String) : File(path) {
             ),
             JarFile(this)
                 .stream()
-                .filter {it.name.endsWith(".class") && !it.name.contains("$")}
-                .map({it -> it.realName.replace('/', '.').replace(".class", "")}).iterator()
+                .filter { it.name.endsWith(".class") && !it.name.contains("$") }
+                .map { it.realName.replace('/', '.').replace(".class", "") }.iterator()
             )
-                    
-        
     }
 
     /**
@@ -63,8 +68,9 @@ sealed class PatchBundle(path: String) : File(path) {
          * Patches will be loaded to the provided [dexClassLoader].
          */
         fun loadPatches() = loadPatches(dexClassLoader,
-            DexFileFactory.loadDexFile(path, null).classes.asSequence().map({ classDef ->
+            DexFileFactory.loadDexFile(path, null).classes.asSequence().map { classDef ->
                 classDef.type.substring(1, classDef.length - 1).replace('/', '.')
-            }).iterator())
+            }.iterator()
+        )
     }
 }
