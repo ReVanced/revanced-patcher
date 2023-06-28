@@ -27,10 +27,21 @@ class InstructionInserter(val method: MutableMethod, startIndex: Int) {
 }
 
 object InstructionExtensions {
+    /**
+     * Add instructions to a method at the given index via [InstructionInserter]
+     *
+     * @param startIndex The index to add the instructions at.
+     * @param fn A function using [InstructionInserter] to add instructions
+     */
     fun MutableMethod.insertInstructions(startIndex: Int, fn: InstructionInserter.() -> Unit): Int {
         return InstructionInserter(this, startIndex).apply(fn).index
     }
 
+    /**
+     * Add instructions to a method at the given index via [InstructionInserter]
+     *
+     * @param fn A function using [InstructionInserter] to add instructions
+     */
     fun MutableMethod.insertInstructions(fn: InstructionInserter.() -> Unit): Int {
         return insertInstructions(0, fn)
     }
