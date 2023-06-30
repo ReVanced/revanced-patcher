@@ -1,3 +1,10 @@
+## [11.0.3](https://github.com/revanced/revanced-patcher/compare/v11.0.2...v11.0.3) (2023-06-30)
+
+
+### Bug Fixes
+
+* NPE on method lookup ([#195](https://github.com/revanced/revanced-patcher/issues/195)) ([fcef434](https://github.com/revanced/revanced-patcher/commit/fcef4342e8bde73945e8315aef6337cc8a8d8572))
+
 ## [11.0.3-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.2...v11.0.3-dev.1) (2023-06-28)
 
 
