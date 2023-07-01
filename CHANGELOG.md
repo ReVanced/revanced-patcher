@@ -1,3 +1,10 @@
+## [11.0.4-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.3...v11.0.4-dev.1) (2023-07-01)
+
+
+### Bug Fixes
+
+* clear method lookup maps ([#198](https://github.com/revanced/revanced-patcher/issues/198)) ([9d81baf](https://github.com/revanced/revanced-patcher/commit/9d81baf4b4ca7514f8a1009e72218638609a7c7f))
+
 ## [11.0.3](https://github.com/revanced/revanced-patcher/compare/v11.0.2...v11.0.3) (2023-06-30)
 
 

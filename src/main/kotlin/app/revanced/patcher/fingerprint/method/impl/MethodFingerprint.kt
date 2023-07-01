@@ -139,6 +139,15 @@ abstract class MethodFingerprint(
         }
 
         /**
+         * Clears the internal lookup maps created in [initializeFingerprintResolutionLookupMaps]
+         */
+        internal fun clearFingerprintResolutionLookupMaps() {
+            methods.clear()
+            methodSignatureLookupMap.clear()
+            methodStringsLookupMap.clear()
+        }
+
+        /**
          * Resolve a list of [MethodFingerprint] using the lookup map built by [initializeFingerprintResolutionLookupMaps].
          *
          * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
