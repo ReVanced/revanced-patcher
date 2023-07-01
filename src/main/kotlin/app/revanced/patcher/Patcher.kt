@@ -389,6 +389,8 @@ class Patcher(private val options: PatcherOptions) {
                         if (stopOnError) return@sequence
                     }
                 }
+
+            MethodFingerprint.clearFingerprintResolutionLookupMaps()
         }
     }
 
