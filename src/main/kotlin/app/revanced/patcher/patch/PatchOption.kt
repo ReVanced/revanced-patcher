@@ -229,20 +229,4 @@ sealed class PatchOption<T>(
     ) : ListOption<Int>(
         key, default, options, title, description, required, validator
     )
-
-    /**
-     * A [PatchOption] representing a [Path], backed by a [String].
-     * The validator passes a [String], if you need a [Path] you will have to convert it yourself.
-     * @see PatchOption
-     */
-    class PathOption(
-        key: String,
-        default: Path?,
-        title: String,
-        description: String,
-        required: Boolean = false,
-        validator: (String?) -> Boolean = { true }
-    ) : PatchOption<String>(
-        key, default?.pathString, title, description, required, validator
-    )
 }
