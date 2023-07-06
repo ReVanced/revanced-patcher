@@ -1,3 +1,15 @@
+# [12.0.0-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.4...v12.0.0-dev.1) (2023-07-06)
+
+
+### Features
+
+* remove `Path` option ([#202](https://github.com/revanced/revanced-patcher/issues/202)) ([8749a61](https://github.com/revanced/revanced-patcher/commit/8749a61d3945add2858757f0bbbf32215c8d7914))
+
+
+### BREAKING CHANGES
+
+* This removes the previously available `Path` option
+
 ## [11.0.4](https://github.com/revanced/revanced-patcher/compare/v11.0.3...v11.0.4) (2023-07-01)
 
 
