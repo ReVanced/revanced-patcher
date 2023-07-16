@@ -24,9 +24,9 @@ class Archive(private val module: ApkModule) {
     lateinit var resources: ResourceContainer
 
     /**
-     * The zip archive.
+     * The zip archive for the [ApkModule] this [Archive] is operating on.
      */
-    private val archive = module.apkArchive
+    private val moduleArchive = module.apkArchive
 
     private val lockedFiles = mutableMapOf<String, ResourceFile>()
 
@@ -36,7 +36,9 @@ class Archive(private val module: ApkModule) {
     fun lock(file: ResourceFile) {
         val path = file.handle.archivePath
         if (lockedFiles.contains(path)) {
-            throw ApkResourceException.Decode("${file.handle.virtualPath} is locked. If you are a patch developer, make sure you always close files.")
+            throw ApkResourceException.Decode(
+                "${file.handle.virtualPath} is currently being used. Close it before opening it again."
+            )
         }
         lockedFiles[path] = file
     }
@@ -59,7 +61,7 @@ class Archive(private val module: ApkModule) {
             it.close()
         }
 
-        archive.listInputSources().filterIsInstance<LazyXMLInputSource>()
+        moduleArchive.listInputSources().filterIsInstance<LazyXMLInputSource>()
             .forEach(LazyXMLInputSource::encode)
     }
 
@@ -76,7 +78,7 @@ class Archive(private val module: ApkModule) {
      * @param path The archive path to read from.
      * @return A [ArchiveResource] containing the contents of the entry.
      */
-    fun read(path: String) = archive.getInputSource(path)?.let { inputSource ->
+    fun read(path: String) = moduleArchive.getInputSource(path)?.let { inputSource ->
         when {
             inputSource is LazyXMLInputSource -> ArchiveResource.XmlResource(inputSource.document)
 
@@ -96,7 +98,7 @@ class Archive(private val module: ApkModule) {
      * @return The [AndroidManifestBlock] contained in this archive.
      */
     fun readManifest(): AndroidManifestBlock =
-        archive.getInputSource(AndroidManifestBlock.FILE_NAME).openStream().use { AndroidManifestBlock.load(it) }
+        moduleArchive.getInputSource(AndroidManifestBlock.FILE_NAME).openStream().use { AndroidManifestBlock.load(it) }
 
     /**
      * Reads all dex files from the archive.
@@ -112,7 +114,7 @@ class Archive(private val module: ApkModule) {
      * @param content The content of the file.
      */
     fun writeRaw(path: String, content: ByteArray) =
-        archive.add(ByteInputSource(content, path))
+        moduleArchive.add(ByteInputSource(content, path))
 
     /**
      * Write the XML to the entry associated.
@@ -120,7 +122,7 @@ class Archive(private val module: ApkModule) {
      * @param path The archive path to read from.
      * @param document The XML document to encode.
      */
-    fun writeXml(path: String, document: XMLDocument) = archive.add(
+    fun writeXml(path: String, document: XMLDocument) = moduleArchive.add(
         LazyXMLInputSource(
             path,
             document,
