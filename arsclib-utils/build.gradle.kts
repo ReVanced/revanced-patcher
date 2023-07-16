@@ -16,24 +16,3 @@ java {
 kotlin {
     jvmToolchain(11)
 }
-
-publishing {
-    repositories {
-        if (System.getenv("GITHUB_ACTOR") != null)
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
-                credentials {
-                    username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
-                }
-            }
-        else
-            mavenLocal()
-    }
-    publications {
-        register<MavenPublication>("gpr") {
-            from(components["java"])
-        }
-    }
-}
