@@ -1,6 +1,8 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package app.revanced.patcher.apk
 
-import app.revanced.arsc.ApkException
+import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.resource.ResourceTable
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.PatcherOptions
@@ -13,7 +15,7 @@ import java.io.File
  *
  * @param files A list of apk files to load.
  */
-class ApkBundle(files: List<File>) {
+class ApkBundle(files: List<File>) : Sequence<Apk> {
     /**
      * The [Apk.Base] of this [ApkBundle].
      */
@@ -65,21 +67,16 @@ class ApkBundle(files: List<File>) {
     }
 
     /**
-     * A [Sequence] yielding all [Apk]s in this [ApkBundle].
+     * The [ResourceTable] of this [ApkBundle].
      */
-    val all = sequence {
+    val resources = ResourceTable(base.resources, map { it.resources })
+
+    override fun iterator() = sequence {
         yield(base)
         splits?.values?.let {
             yieldAll(it)
         }
-    }
-
-    /**
-     * Get the [app.revanced.arsc.resource.ResourceContainer] for the specified configuration.
-     *
-     * @param config The config to search for.
-     */
-    fun query(config: String) = splits?.get(config)?.resources ?: base.resources
+    }.iterator()
 
     /**
      * Refresh all updated resources in an [ApkBundle].
@@ -87,11 +84,11 @@ class ApkBundle(files: List<File>) {
      * @param options The [PatcherOptions] of the [Patcher].
      * @return A sequence of the [Apk] files which are being refreshed.
      */
-    internal fun cleanup(options: PatcherOptions) = all.map {
-        var exception: ApkException? = null
+    internal fun cleanup(options: PatcherOptions) = map {
+        var exception: ApkResourceException? = null
         try {
             it.cleanup(options)
-        } catch (e: ApkException) {
+        } catch (e: ApkResourceException) {
             exception = e
         }
 
@@ -99,15 +96,10 @@ class ApkBundle(files: List<File>) {
     }
 
     /**
-     * The [ResourceTable] of this [ApkBundle].
-     */
-    val resources = ResourceTable(base.resources, all.map { it.resources })
-
-    /**
      * The result of writing an [Apk] file.
      *
      * @param apk The corresponding [Apk] file.
-     * @param exception The optional [ApkException] when an exception occurred.
+     * @param exception The optional [ApkResourceException] when an exception occurred.
      */
-    data class SplitApkResult(val apk: Apk, val exception: ApkException? = null)
+    data class SplitApkResult(val apk: Apk, val exception: ApkResourceException? = null)
 }

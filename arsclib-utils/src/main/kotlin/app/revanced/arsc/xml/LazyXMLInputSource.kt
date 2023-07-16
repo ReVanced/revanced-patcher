@@ -1,6 +1,6 @@
 package app.revanced.arsc.xml
 
-import app.revanced.arsc.ApkException
+import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.resource.ResourceContainer
 import app.revanced.arsc.resource.boolean
 import com.reandroid.apk.xmlencoder.EncodeException
@@ -11,7 +11,7 @@ import com.reandroid.xml.XMLElement
 import com.reandroid.xml.source.XMLDocumentSource
 
 /**
- * Archive input source that lazily encodes the [XMLDocument] when you read from it.
+ * Archive input source to lazily encode an [XMLDocument] after it has been modified.
  *
  * @param name The file name of this input source.
  * @param document The [XMLDocument] to encode.
@@ -38,7 +38,7 @@ internal class LazyXMLInputSource(
 
     override fun getResXmlBlock(): ResXmlDocument {
         if (!ready) {
-            throw ApkException.Encode("$name has not been encoded yet")
+            throw ApkResourceException.Encode("$name has not been encoded yet")
         }
 
         return super.getResXmlBlock()

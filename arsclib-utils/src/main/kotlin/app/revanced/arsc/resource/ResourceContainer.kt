@@ -1,17 +1,19 @@
 package app.revanced.arsc.resource
 
-import app.revanced.arsc.ApkException
+import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.archive.Archive
 import com.reandroid.apk.xmlencoder.EncodeUtil
+import com.reandroid.arsc.chunk.PackageBlock
 import com.reandroid.arsc.chunk.TableBlock
 import com.reandroid.arsc.value.Entry
 import com.reandroid.arsc.value.ResConfig
 import java.io.File
 
 /**
- * A high-level API for modifying the resources contained in an Apk.
+ * A high-level API for modifying the resources contained in an APK file.
  *
- * @param tableBlock The resources.arsc file of this Apk.
+ * @param archive The [Archive] containing this resource table.
+ * @param tableBlock The resources file of this APK file. Typically named "resources.arsc".
  */
 class ResourceContainer(private val archive: Archive, internal val tableBlock: TableBlock?) {
     internal val packageBlock = tableBlock?.pickOne() // Pick the main PackageBlock.
@@ -22,10 +24,18 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
         archive.resources = this
     }
 
-    private fun expectPackageBlock() = packageBlock ?: throw ApkException.MissingResourceTable
+    /**
+     * Open a resource file, creating it if the file does not exist.
+     *
+     * @param path The resource file path.
+     * @return The corresponding [ResourceFile],
+     */
+    fun openFile(path: String) = ResourceFile(createHandle(path), archive)
 
-    internal fun getOrCreateTableString(value: String) =
-        tableBlock?.stringPool?.getOrCreate(value) ?: throw ApkException.MissingResourceTable
+    private fun getPackageBlock() = packageBlock ?: throw ApkResourceException.MissingResourceTable
+
+    internal fun getOrCreateString(value: String) =
+        tableBlock?.stringPool?.getOrCreate(value) ?: throw ApkResourceException.MissingResourceTable
 
     /**
      * Set the value of the [Entry] to the one specified.
@@ -54,7 +64,7 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
     private fun getEntry(type: String, name: String, qualifiers: String?): Entry? {
         val resourceId = try {
             resourceTable.resolve("@$type/$name")
-        } catch (_: ApkException.InvalidReference) {
+        } catch (_: ApkResourceException.InvalidReference) {
             return null
         }
 
@@ -69,9 +79,9 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
      * @param resPath The path of the resource.
      */
     private fun createHandle(resPath: String): ResourceFile.Handle {
-        if (resPath.startsWith("res/values")) throw ApkException.Decode("Decoding the resource table as a file is not supported")
+        if (resPath.startsWith("res/values")) throw ApkResourceException.Decode("Decoding the resource table as a file is not supported")
 
-        var callback = {}
+        var onClose = {}
         var archivePath = resPath
 
         if (tableBlock != null && resPath.startsWith("res/") && resPath.count { it == '/' } == 2) {
@@ -89,11 +99,11 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
                 archivePath = resolvedPath
             } else {
                 // An entry for this specific resource file was not found in the resource table, so we have to register it after we save.
-                callback = { set(type, name, StringResource(archivePath), qualifiers) }
+                onClose = { set(type, name, StringResource(archivePath), qualifiers) }
             }
         }
 
-        return ResourceFile.Handle(resPath, archivePath, callback)
+        return ResourceFile.Handle(resPath, archivePath, onClose)
     }
 
     /**
@@ -105,7 +115,7 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
      * @param configuration The resource configuration.
      */
     fun set(type: String, name: String, value: Resource, configuration: String? = null) =
-        expectPackageBlock().getOrCreate(configuration, type, name).also { it.setTo(value) }.resourceId
+        getPackageBlock().getOrCreate(configuration, type, name).also { it.setTo(value) }.resourceId
 
     /**
      * Create or update multiple resources in an ARSC type block.
@@ -115,20 +125,10 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
      * @param configuration The resource configuration.
      */
     fun setGroup(type: String, map: Map<String, Resource>, configuration: String? = null) {
-        expectPackageBlock().getOrCreateSpecTypePair(type).getOrCreateTypeBlock(configuration).apply {
+        getPackageBlock().getOrCreateSpecTypePair(type).getOrCreateTypeBlock(configuration).apply {
             map.forEach { (name, value) -> getOrCreateEntry(name).setTo(value) }
         }
     }
-
-    /**
-     * Open a resource file, creating it if the file does not exist.
-     *
-     * @param path The resource file path.
-     * @return The corresponding [ResourceFile],
-     */
-    fun openFile(path: String) = ResourceFile(
-        createHandle(path), archive
-    )
 
     /**
      * Update the [PackageBlock] name to match the manifest.

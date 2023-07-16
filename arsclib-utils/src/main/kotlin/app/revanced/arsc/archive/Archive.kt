@@ -1,19 +1,19 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package app.revanced.arsc.archive
 
-import app.revanced.arsc.ApkException
+import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.logging.Logger
 import app.revanced.arsc.resource.ResourceContainer
 import app.revanced.arsc.resource.ResourceFile
 import app.revanced.arsc.xml.LazyXMLInputSource
 import com.reandroid.apk.ApkModule
 import com.reandroid.archive.ByteInputSource
-import com.reandroid.archive.InputSource
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock
 import com.reandroid.arsc.chunk.xml.ResXmlDocument
 import com.reandroid.xml.XMLDocument
+import java.io.Closeable
 import java.io.File
-
-private fun isResXml(inputSource: InputSource) = inputSource.openStream().use { ResXmlDocument.isResXmlBlock(it) }
 
 /**
  * A class for reading/writing files in an [ApkModule].
@@ -22,14 +22,6 @@ private fun isResXml(inputSource: InputSource) = inputSource.openStream().use { 
  */
 class Archive(private val module: ApkModule) {
     lateinit var resources: ResourceContainer
-
-    /**
-     * The result of a [read] operation.
-     *
-     * @param xml Whether the contents were decoded from a [ResXmlDocument].
-     * @param data The contents of the file.
-     */
-    class ReadResult(val xml: Boolean, val data: ByteArray)
 
     /**
      * The zip archive.
@@ -44,7 +36,7 @@ class Archive(private val module: ApkModule) {
     fun lock(file: ResourceFile) {
         val path = file.handle.archivePath
         if (lockedFiles.contains(path)) {
-            throw ApkException.Decode("${file.handle.virtualPath} is locked. If you are a patch developer, make sure you always close files.")
+            throw ApkResourceException.Decode("${file.handle.virtualPath} is locked. If you are a patch developer, make sure you always close files.")
         }
         lockedFiles[path] = file
     }
@@ -82,23 +74,21 @@ class Archive(private val module: ApkModule) {
      * Read an entry from the archive.
      *
      * @param path The archive path to read from.
-     * @return A [ReadResult] containing the contents of the entry.
+     * @return A [ArchiveResource] containing the contents of the entry.
      */
-    fun read(path: String) =
-        archive.getInputSource(path)?.let { inputSource ->
-            val xml = when {
-                inputSource is LazyXMLInputSource -> inputSource.document
-                isResXml(inputSource) -> module.loadResXmlDocument(
-                    inputSource
-                ).decodeToXml(resources.resourceTable.entryStore, resources.packageBlock?.id ?: 0)
+    fun read(path: String) = archive.getInputSource(path)?.let { inputSource ->
+        when {
+            inputSource is LazyXMLInputSource -> ArchiveResource.XmlResource(inputSource.document)
 
-                else -> null
-            }
+            ResXmlDocument.isResXmlBlock(inputSource.openStream()) -> ArchiveResource.XmlResource(
+                module
+                    .loadResXmlDocument(inputSource)
+                    .decodeToXml(resources.resourceTable.entryStore, resources.packageBlock?.id ?: 0)
+            )
 
-            ReadResult(
-                xml != null,
-                xml?.toText()?.toByteArray() ?: inputSource.openStream().use { it.readAllBytes() })
+            else -> ArchiveResource.RawResource(inputSource.openStream().use { it.readAllBytes() })
         }
+    }
 
     /**
      * Reads the manifest from the archive as an [AndroidManifestBlock].
@@ -113,7 +103,7 @@ class Archive(private val module: ApkModule) {
      *
      * @return A [Map] containing all the dex files.
      */
-    fun readDexFiles() = module.listDexFiles().associate { file -> file.name to file.openStream().use { it.readAllBytes() } }
+    fun readDexFiles() = module.listDexFiles().associate { file -> file.name to file.openStream() }
 
     /**
      * Write the byte array to the archive entry.
@@ -137,4 +127,36 @@ class Archive(private val module: ApkModule) {
             resources,
         )
     )
+
+    /**
+     * A resource file of an [Archive].
+     */
+    abstract class ArchiveResource() : Closeable {
+        private var pendingWrite = false
+
+        override fun close() {
+            TODO("Not yet implemented")
+        }
+
+        /**
+         * An [ResXmlDocument] resource file.
+         *
+         * @param xmlResource The [XMLDocument] of the file.
+         */
+        class XmlResource(val xmlResource: XMLDocument, archive: Archive) : ArchiveResource()
+
+        /**
+         * A raw resource file.
+         *
+         * @param data The raw data of the file.
+         */
+        class RawResource(val data: ByteArray, archive: Archive) : ArchiveResource()
+
+        /**
+         * @param virtualPath The resource file path. Example: /res/drawable-hdpi/icon.png.
+         * @param archivePath The actual file path in the archive. Example: res/4a.png.
+         * @param onClose An action to perform when the file associated with this handle is closed
+         */
+        data class Handle(val virtualPath: String, val archivePath: String, val onClose: () -> Unit)
+    }
 }

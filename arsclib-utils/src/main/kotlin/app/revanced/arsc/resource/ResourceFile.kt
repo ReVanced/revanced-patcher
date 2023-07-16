@@ -1,39 +1,35 @@
 package app.revanced.arsc.resource
 
-import app.revanced.arsc.ApkException
+import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.archive.Archive
+import app.revanced.arsc.resource.ResourceFile.Handle
 import com.reandroid.xml.XMLDocument
 import com.reandroid.xml.XMLException
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.Closeable
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 
 /**
- * A resource file inside an [Apk].
+ * Instantiate a [ResourceFile] and lock the file which [handle] is associated with.
+ *
+ * @param handle The [Handle] associated with this file.
+ * @param archive The [Archive] that the file resides in.
  */
 class ResourceFile private constructor(
     internal val handle: Handle,
     private val archive: Archive,
-    readResult: Archive.ReadResult?
-) :
-    Closeable {
+    readResult: Archive.ArchiveResource?
+) : Closeable {
+    private var pendingWrite = false
+    private val isXmlResource = readResult is Archive.ArchiveResource.XmlResource
+
+    init {
+        archive.lock(this)
+    }
 
     /**
-     * @param virtualPath The resource file path (res/drawable-hdpi/icon.png)
-     * @param archivePath The actual file path in the archive (res/4a.png)
-     * @param close An action to perform when the file associated with this handle is closed
-     */
-    internal data class Handle(val virtualPath: String, val archivePath: String, val close: () -> Unit)
-
-    private var changed = false
-    private val xml = readResult?.xml ?: handle.virtualPath.endsWith(".xml")
-
-    /**
-     * @param handle The [Handle] associated with this file
-     * @param archive The [Archive] that the file resides in
+     * Instantiate a [ResourceFile].
+     *
+     * @param handle The [Handle] associated with this file.
+     * @param archive The [Archive] that the file resides in.
      */
     internal constructor(handle: Handle, archive: Archive) : this(
         handle,
@@ -41,15 +37,15 @@ class ResourceFile private constructor(
         try {
             archive.read(handle.archivePath)
         } catch (e: XMLException) {
-            throw ApkException.Decode("Failed to decode XML while reading ${handle.virtualPath}", e)
+            throw ApkResourceException.Decode("Failed to decode XML while reading ${handle.virtualPath}", e)
         } catch (e: IOException) {
-            throw ApkException.Decode("Could not read ${handle.virtualPath}", e)
+            throw ApkResourceException.Decode("Could not read ${handle.virtualPath}", e)
         }
     )
 
     var contents = readResult?.data ?: ByteArray(0)
         set(value) {
-            changed = true
+            pendingWrite = true
             field = value
         }
 
@@ -57,36 +53,34 @@ class ResourceFile private constructor(
 
     override fun toString() = handle.virtualPath
 
-    init {
-        archive.lock(this)
-    }
-
     override fun close() {
-        if (changed) {
+        if (pendingWrite) {
             val path = handle.archivePath
-            if (xml) archive.writeXml(
+
+            if (isXmlResource) archive.writeXml(
                 path,
                 try {
-                    XMLDocument.load(String(contents))
+                    XMLDocument.load(inputStream())
                 } catch (e: XMLException) {
-                    throw ApkException.Encode("Failed to parse XML while writing ${handle.virtualPath}", e)
+                    throw ApkResourceException.Encode("Failed to parse XML while writing ${handle.virtualPath}", e)
                 }
+
             ) else archive.writeRaw(path, contents)
         }
-        handle.close()
+
+        handle.onClose()
+
+
         archive.unlock(this)
     }
 
-    companion object {
-        const val DEFAULT_BUFFER_SIZE = 4096
-    }
-
     fun inputStream(): InputStream = ByteArrayInputStream(contents)
-    fun outputStream(bufferSize: Int = DEFAULT_BUFFER_SIZE): OutputStream =
-        object : ByteArrayOutputStream(bufferSize) {
-            override fun close() {
-                this@ResourceFile.contents = if (buf.size > count) buf.copyOf(count) else buf
-                super.close()
-            }
-        }
+
+    /**
+     * @param virtualPath The resource file path. Example: /res/drawable-hdpi/icon.png.
+     * @param archivePath The actual file path in the archive. Example: res/4a.png.
+     * @param onClose An action to perform when the file associated with this handle is closed
+     */
+    internal data class Handle(val virtualPath: String, val archivePath: String, val onClose: () -> Unit)
+
 }
