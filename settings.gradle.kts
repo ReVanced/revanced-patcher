@@ -1,5 +1,3 @@
-rootProject.name = "ReVanced Patcher"
-
 pluginManagement {
     repositories {
         mavenCentral()
@@ -26,4 +24,5 @@ dependencyResolutionManagement {
         }
     }
 }
+
 include("revanced-patcher", "arsclib-utils")
