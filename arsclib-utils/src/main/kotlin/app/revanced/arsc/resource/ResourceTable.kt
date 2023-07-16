@@ -1,6 +1,6 @@
 package app.revanced.arsc.resource
 
-import app.revanced.arsc.ApkException
+import app.revanced.arsc.ApkResourceException
 import com.reandroid.apk.xmlencoder.EncodeException
 import com.reandroid.apk.xmlencoder.EncodeMaterials
 import com.reandroid.arsc.util.FrameworkTable
@@ -8,7 +8,7 @@ import com.reandroid.arsc.value.Entry
 import com.reandroid.common.TableEntryStore
 
 /**
- * A high-level API for resolving resources in the resource table, which spans the entire [ApkBundle].
+ * A high-level API for resolving resources in the resource table, which spans the entire ApkBundle.
  */
 class ResourceTable(base: ResourceContainer, all: Sequence<ResourceContainer>) {
     private val packageName = base.packageBlock!!.name
@@ -31,7 +31,7 @@ class ResourceTable(base: ResourceContainer, all: Sequence<ResourceContainer>) {
     }
 
     /**
-     * The resource mappings which are generated when the [ApkBundle] is created.
+     * The resource mappings which are generated when the ApkBundle is created.
      */
     private val tableIdentifier = encodeMaterials.tableIdentifier
 
@@ -52,7 +52,7 @@ class ResourceTable(base: ResourceContainer, all: Sequence<ResourceContainer>) {
     fun resolveLocal(type: String, name: String) =
         modifiedResources[type]?.get(name)
             ?: tableIdentifier.get(packageName, type, name)?.resourceId
-            ?: throw ApkException.InvalidReference(
+            ?: throw ApkResourceException.InvalidReference(
                 type,
                 name
             )
@@ -66,7 +66,7 @@ class ResourceTable(base: ResourceContainer, all: Sequence<ResourceContainer>) {
     fun resolve(reference: String) = try {
         encodeMaterials.resolveReference(reference)
     } catch (e: EncodeException) {
-        throw ApkException.InvalidReference(reference, e)
+        throw ApkResourceException.InvalidReference(reference, e)
     }
 
     /**

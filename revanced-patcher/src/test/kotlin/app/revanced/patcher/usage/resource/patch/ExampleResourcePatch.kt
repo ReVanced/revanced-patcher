@@ -18,7 +18,7 @@ import org.w3c.dom.Element
 @Version("0.0.1")
 class ExampleResourcePatch : ResourcePatch {
     override suspend fun execute(context: ResourceContext) {
-        context.apkBundle.base.resources.openXmlFile(Apk.manifest).use { editor ->
+        context.apkBundle.base.resources.openXmlFile(Apk.MANIFEST_FILE_NAME).use { editor ->
             val element = editor // regular DomFileEditor
                 .file
                 .getElementsByTagName("application")

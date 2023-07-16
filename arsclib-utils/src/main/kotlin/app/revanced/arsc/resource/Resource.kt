@@ -1,8 +1,8 @@
 package app.revanced.arsc.resource
 
-import app.revanced.arsc.ApkException
-import com.reandroid.arsc.coder.ValueDecoder
+import app.revanced.arsc.ApkResourceException
 import com.reandroid.arsc.coder.EncodeResult
+import com.reandroid.arsc.coder.ValueDecoder
 import com.reandroid.arsc.value.Entry
 import com.reandroid.arsc.value.ValueType
 import com.reandroid.arsc.value.array.ArrayBag
@@ -45,7 +45,7 @@ open class Scalar internal constructor(private val valueType: ValueType, private
 sealed class Complex : Resource()
 
 private fun encoded(encodeResult: EncodeResult?) = encodeResult?.let { Scalar(it.valueType, it.value) }
-    ?: throw ApkException.Encode("Failed to encode value")
+    ?: throw ApkResourceException.Encode("Failed to encode value")
 
 /**
  * Encode a color.
@@ -147,7 +147,7 @@ class Plurals(private val elements: Map<String, String>) : Complex() {
         val plurals = PluralsBag.create(entry)
 
         plurals.putAll(elements.asIterable().associate { (k, v) ->
-            PluralsQuantity.value(k) to PluralsBagItem.string(resources.getOrCreateTableString(v))
+            PluralsQuantity.value(k) to PluralsBagItem.string(resources.getOrCreateString(v))
         })
     }
 }
@@ -158,7 +158,7 @@ class Plurals(private val elements: Map<String, String>) : Complex() {
  * @param value The string value.
  */
 class StringResource(val value: String) : Scalar(ValueType.STRING, 0) {
-    private fun tableString(resources: ResourceContainer) = resources.getOrCreateTableString(value)
+    private fun tableString(resources: ResourceContainer) = resources.getOrCreateString(value)
 
     override fun data(resources: ResourceContainer) = tableString(resources).index
     override fun toArrayItem(resources: ResourceContainer) = ArrayBagItem.string(tableString(resources))

@@ -2,9 +2,9 @@
 
 package app.revanced.patcher.apk
 
-import app.revanced.arsc.ApkException
+import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.archive.Archive
-import app.revanced.arsc.resource.*
+import app.revanced.arsc.resource.ResourceContainer
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.PatcherOptions
 import app.revanced.patcher.logging.asArscLogger
@@ -14,6 +14,7 @@ import com.reandroid.apk.xmlencoder.EncodeException
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock
 import com.reandroid.arsc.value.ResConfig
 import lanchon.multidexlib2.*
+import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.dexbacked.DexBackedDexFile
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.iface.MultiDexContainer
@@ -47,7 +48,7 @@ sealed class Apk private constructor(module: ApkModule) {
         try {
             archive.cleanup(options.logger.asArscLogger())
         } catch (e: EncodeException) {
-            throw ApkException.Encode(e.message!!, e)
+            throw ApkResourceException.Encode(e.message!!, e)
         }
 
         resources.refreshPackageName()
@@ -61,7 +62,7 @@ sealed class Apk private constructor(module: ApkModule) {
     fun write(output: File) = archive.save(output)
 
     companion object {
-        const val manifest = "AndroidManifest.xml"
+        const val MANIFEST_FILE_NAME = "AndroidManifest.xml"
 
         /**
          * Determine the [Module] and [Type] of an [ApkModule].
@@ -78,7 +79,9 @@ sealed class Apk private constructor(module: ApkModule) {
                 ) to Type.Base
 
                 else -> {
-                    val module = manifestElement.searchAttributeByName("configForSplit")?.let { Module.DynamicFeature(it.valueAsString) } ?: Module.Main
+                    val module = manifestElement.searchAttributeByName("configForSplit")
+                    ?.let { Module.DynamicFeature(it.valueAsString) } ?: Module.Main
+
                     // Examples:
                     // config.xhdpi
                     // df_my_feature.config.en
@@ -101,34 +104,37 @@ sealed class Apk private constructor(module: ApkModule) {
     }
 
     internal inner class BytecodeData {
-        private val dexFile = MultiDexContainerBackedDexFile(object : MultiDexContainer<DexBackedDexFile> {
-            // Load all dex files from the apk module and create a dex entry for each of them.
-            private val entries = archive.readDexFiles()
-                .mapValues { (name, data) -> BasicDexEntry(this, name, RawDexIO.readRawDexFile(data, 0, null)) }
-
-            override fun getDexEntryNames() = entries.keys.toList()
-            override fun getEntry(entryName: String) = entries[entryName]
-        })
-        private val opcodes = dexFile.opcodes
+        private val opcodes: Opcodes
 
         /**
          * The classes and proxied classes of the [Base] apk file.
          */
-        val classes = ProxyBackedClassList(dexFile.classes)
+        val classes: ProxyBackedClassList
+
+        init {
+            MultiDexContainerBackedDexFile(object : MultiDexContainer<DexBackedDexFile> {
+                // Load all dex files from the apk module and create a dex entry for each of them.
+                private val entries = archive.readDexFiles()
+                    .mapValues { (name, data) -> BasicDexEntry(this, name, RawDexIO.readRawDexFile(data, 0, null)) }
+
+                override fun getDexEntryNames() = entries.keys.toList()
+                override fun getEntry(entryName: String) = entries[entryName]
+            }).let {
+                opcodes = it.opcodes
+                classes = ProxyBackedClassList(it.classes)
+            }
+        }
 
         /**
          * Write [classes] to the archive.
          */
         internal fun writeDexFiles() {
-            // Make sure to replace all classes with their proxy.
-            val classes = classes.also(ProxyBackedClassList::applyProxies)
-            val opcodes = opcodes
-
             // Create patched dex files.
             mutableMapOf<String, MemoryDataStore>().also {
                 val newDexFile = object : DexFile {
-                    override fun getClasses() = classes.toSet()
-                    override fun getOpcodes() = opcodes
+                    override fun getClasses() =
+                        this@BytecodeData.classes.also(ProxyBackedClassList::applyProxies).toSet()
+                    override fun getOpcodes() = this@BytecodeData.opcodes
                 }
 
                 // Write modified dex files.
@@ -148,9 +154,10 @@ sealed class Apk private constructor(module: ApkModule) {
      * @param packageName The package name of the [Apk] file.
      * @param packageVersion The package version of the [Apk] file.
      */
-    data class PackageMetadata(val packageName: String, val packageVersion: String?) {
+    data class PackageMetadata(val packageName: String?, val packageVersion: String?) {
         internal constructor(manifestBlock: AndroidManifestBlock) : this(
-            manifestBlock.packageName ?: "unnamed split apk file", manifestBlock.versionName
+            manifestBlock.packageName,
+            manifestBlock.versionName
         )
     }
 
@@ -193,7 +200,7 @@ sealed class Apk private constructor(module: ApkModule) {
     }
 
     /**
-     * The base apk file that is to be patched.
+     * The base [Apk] file..
      *
      * @see Apk
      */
