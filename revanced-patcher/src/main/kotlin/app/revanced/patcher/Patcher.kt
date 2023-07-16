@@ -147,6 +147,8 @@ class Patcher(private val options: PatcherOptions, patches: Iterable<PatchClass>
                     exception = patchException
                 }
 
+                // TODO: only emit if the patch is not a closeable.
+                //  If it is a closeable, this should be done when closing the patch.
                 emit(patch.patchName to exception)
 
                 if (stopOnError && exception != null) return@flow

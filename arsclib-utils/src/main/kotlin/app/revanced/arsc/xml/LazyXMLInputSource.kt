@@ -28,7 +28,7 @@ internal class LazyXMLInputSource(
         listAttributes().forEach { attr ->
             if (attr.value.startsWith("@+id/")) {
                 val name = attr.value.split('/').last()
-                resources.set("id", name, boolean(false))
+                resources.getOrCreateResource("id", name, boolean(false))
                 attr.value = "@id/$name"
             }
         }

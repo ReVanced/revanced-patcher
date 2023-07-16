@@ -76,16 +76,16 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
      * Create a [ResourceFile.Handle] that can be used to open a [ResourceFile].
      * This may involve looking it up in the resource table to find the actual location in the archive.
      *
-     * @param resPath The path of the resource.
+     * @param path The path of the resource.
      */
-    private fun createHandle(resPath: String): ResourceFile.Handle {
-        if (resPath.startsWith("res/values")) throw ApkResourceException.Decode("Decoding the resource table as a file is not supported")
+    private fun createHandle(path: String): ResourceFile.Handle {
+        if (path.startsWith("res/values")) throw ApkResourceException.Decode("Decoding the resource table as a file is not supported")
 
         var onClose = {}
-        var archivePath = resPath
+        var archivePath = path
 
-        if (tableBlock != null && resPath.startsWith("res/") && resPath.count { it == '/' } == 2) {
-            val file = File(resPath)
+        if (tableBlock != null && path.startsWith("res/") && path.count { it == '/' } == 2) {
+            val file = File(path)
 
             val qualifiers = EncodeUtil.getQualifiersFromResFile(file)
             val type = EncodeUtil.getTypeNameFromResFile(file)
@@ -93,29 +93,28 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
 
             // The resource file names that the app developers used may have been minified, so we have to resolve it with the resource table.
             // Example: res/drawable-hdpi/icon.png -> res/4a.png
-            val resolvedPath = getEntry(type, name, qualifiers)?.resValue?.valueAsString
-
-            if (resolvedPath != null) {
-                archivePath = resolvedPath
-            } else {
+            getEntry(type, name, qualifiers)?.resValue?.valueAsString?.let {
+                archivePath = it
+            } ?: run {
                 // An entry for this specific resource file was not found in the resource table, so we have to register it after we save.
-                onClose = { set(type, name, StringResource(archivePath), qualifiers) }
+                onClose = { getOrCreateResource(type, name, StringResource(archivePath), qualifiers) }
             }
         }
 
-        return ResourceFile.Handle(resPath, archivePath, onClose)
+        return ResourceFile.Handle(path, archivePath, onClose)
     }
 
     /**
-     * Create or update an Android resource.
+     * Create or update a resource.
      *
      * @param type The resource type.
      * @param name The name of the resource.
-     * @param value The resource data.
-     * @param configuration The resource configuration.
+     * @param resource The resource data.
+     * @param qualifiers The resource configuration.
+     * @return The resource ID for the resource.
      */
-    fun set(type: String, name: String, value: Resource, configuration: String? = null) =
-        getPackageBlock().getOrCreate(configuration, type, name).also { it.setTo(value) }.resourceId
+    fun getOrCreateResource(type: String, name: String, resource: Resource, qualifiers: String? = null) =
+        getPackageBlock().getOrCreate(qualifiers, type, name).also { it.setTo(resource) }.resourceId
 
     /**
      * Create or update multiple resources in an ARSC type block.
