@@ -23,7 +23,7 @@ dependencies {
     implementation("xpp3:xpp3:1.1.4c")
     implementation("app.revanced:smali:2.5.3-a3836654")
     implementation("app.revanced:multidexlib2:2.5.3-a3836654")
-    implementation("app.revanced:apktool-lib:2.7.0")
+    implementation("app.revanced:apktool-lib:2.8.2")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20-RC")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.20-RC")

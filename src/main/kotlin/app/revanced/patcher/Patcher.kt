@@ -7,15 +7,17 @@ import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.util.VersionReader
-import brut.androlib.Androlib
-import brut.androlib.meta.UsesFramework
-import brut.androlib.options.BuildOptions
-import brut.androlib.res.AndrolibResources
-import brut.androlib.res.data.ResPackage
-import brut.androlib.res.decoder.AXmlResourceParser
+import brut.androlib.AaptInvoker
+import brut.androlib.ApkDecoder
+import brut.androlib.Config
+import brut.androlib.Config.DECODE_RESOURCES_FULL
+import brut.androlib.res.Framework
+import brut.androlib.res.ResourcesDecoder
+import brut.androlib.res.decoder.AndroidManifestResourceParser
 import brut.androlib.res.decoder.ResAttrDecoder
 import brut.androlib.res.decoder.XmlPullStreamDecoder
+import brut.androlib.res.util.ExtMXSerializer
+import brut.androlib.res.util.ExtXmlSerializer
 import brut.androlib.res.xml.ResXmlPatcher
 import brut.directory.ExtFile
 import lanchon.multidexlib2.BasicDexFileNamer
@@ -42,14 +44,11 @@ class Patcher(private val options: PatcherOptions) {
     private var mergeIntegrations = false
     val context: PatcherContext
 
-    companion object {
-        @JvmStatic
-        val version = VersionReader.read()
-        private fun BuildOptions.setBuildOptions(options: PatcherOptions) {
-            this.aaptPath = options.aaptPath
-            this.useAapt2 = true
-            this.frameworkFolderLocation = options.frameworkFolderLocation
-        }
+    private val config = Config.getDefaultConfig().apply {
+        aaptPath = options.aaptPath
+        useAapt2 = true
+        frameworkDirectory = options.frameworkDirectory
+        decodeResources = DECODE_RESOURCES_FULL
     }
 
     init {
@@ -86,47 +85,34 @@ class Patcher(private val options: PatcherOptions) {
      * Save the patched dex file.
      */
     fun save(): PatcherResult {
-        val packageMetadata = context.packageMetadata
-        val metaInfo = packageMetadata.metaInfo
         var resourceFile: File? = null
 
         when (resourceDecodingMode) {
             ResourceDecodingMode.FULL -> {
                 val cacheDirectory = ExtFile(options.resourceCacheDirectory)
                 try {
-                    val androlibResources = AndrolibResources().also { resources ->
-                        resources.buildOptions = BuildOptions().also { buildOptions ->
-                            buildOptions.setBuildOptions(options)
-                            buildOptions.isFramework = metaInfo.isFrameworkApk
-                            buildOptions.resourcesAreCompressed = metaInfo.compressionType
-                            buildOptions.doNotCompress = metaInfo.doNotCompress
-                        }
+                    logger.info("Compiling resources")
 
-                        resources.setSdkInfo(metaInfo.sdkInfo)
-                        resources.setVersionInfo(metaInfo.versionInfo)
-                        resources.setSharedLibrary(metaInfo.sharedLibrary)
-                        resources.setSparseResources(metaInfo.sparseResources)
+                    val aaptFile = cacheDirectory.resolve("aapt_temp_file").also {
+                        Files.deleteIfExists(it.toPath())
                     }
 
-                    val manifestFile = cacheDirectory.resolve("AndroidManifest.xml")
-
-                    ResXmlPatcher.fixingPublicAttrsInProviderAttributes(manifestFile)
-
-                    val aaptFile = cacheDirectory.resolve("aapt_temp_file")
-
-                    // delete if it exists
-                    Files.deleteIfExists(aaptFile.toPath())
-
-                    val resDirectory = cacheDirectory.resolve("res")
-                    val includedFiles = metaInfo.usesFramework.ids.map { id ->
-                        androlibResources.getFrameworkApk(
-                            id, metaInfo.usesFramework.tag
-                        )
-                    }.toTypedArray()
-
-                    logger.info("Compiling resources")
-                    androlibResources.aaptPackage(
-                        aaptFile, manifestFile, resDirectory, null, null, includedFiles
+                    AaptInvoker(
+                        config,
+                        context.packageMetadata.apkInfo
+                    ).invokeAapt(
+                        aaptFile,
+                        cacheDirectory.resolve("AndroidManifest.xml").also {
+                            ResXmlPatcher.fixingPublicAttrsInProviderAttributes(it)
+                        },
+                        cacheDirectory.resolve("res"),
+                        null,
+                        null,
+                        context.packageMetadata.apkInfo.usesFramework.let { usesFramework ->
+                            usesFramework.ids.map { id ->
+                                Framework(config).getFrameworkApk(id, usesFramework.tag)
+                            }.toTypedArray()
+                        }
                     )
 
                     resourceFile = aaptFile
@@ -134,7 +120,6 @@ class Patcher(private val options: PatcherOptions) {
                     cacheDirectory.close()
                 }
             }
-
             else -> logger.info("Not compiling resources because resource patching is not required")
         }
 
@@ -156,7 +141,7 @@ class Patcher(private val options: PatcherOptions) {
             dexFiles.map {
                 app.revanced.patcher.util.dex.DexFile(it.key, it.value.readAt(0))
             },
-            metaInfo.doNotCompress?.toList(),
+            context.packageMetadata.apkInfo.doNotCompress?.toList(),
             resourceFile
         )
     }
@@ -200,72 +185,67 @@ class Patcher(private val options: PatcherOptions) {
     private fun decodeResources(mode: ResourceDecodingMode) {
         val extInputFile = ExtFile(options.inputFile)
         try {
-            val androlib = Androlib(BuildOptions().also { it.setBuildOptions(options) })
-            val resourceTable = androlib.getResTable(extInputFile, true)
+            val resourcesDecoder = ResourcesDecoder(config, extInputFile)
+            val resourceTable = resourcesDecoder.resTable
+
             when (mode) {
                 ResourceDecodingMode.FULL -> {
                     val outDir = File(options.resourceCacheDirectory)
                     if (outDir.exists()) {
                         logger.info("Deleting existing resource cache directory")
-                        if (!outDir.deleteRecursively()) {
+                        if (!outDir.deleteRecursively())
                             logger.error("Failed to delete existing resource cache directory")
-                        }
                     }
+
                     outDir.mkdirs()
 
                     logger.info("Decoding resources")
 
-                    // decode resources to cache directory
-                    androlib.decodeManifestWithResources(extInputFile, outDir, resourceTable)
-                    androlib.decodeResourcesFull(extInputFile, outDir, resourceTable)
+                    resourcesDecoder.decodeManifest(outDir)
+                    resourcesDecoder.decodeResources(outDir)
 
-                    // read additional metadata from the resource table
-                    context.packageMetadata.let { metadata ->
-                        metadata.metaInfo.usesFramework = UsesFramework().also { framework ->
-                            framework.ids = resourceTable.listFramePackages().map { it.id }.sorted()
-                        }
-
-                        // read files to not compress
-                        metadata.metaInfo.doNotCompress = buildList {
-                            androlib.recordUncompressedFiles(extInputFile, this)
-                        }
-                    }
-
+                    context.packageMetadata.apkInfo.doNotCompress =
+                        ApkDecoder(config, extInputFile).recordUncompressedFiles(
+                            context.packageMetadata.apkInfo, resourcesDecoder.resFileMapping
+                        )
                 }
-
                 ResourceDecodingMode.MANIFEST_ONLY -> {
                     logger.info("Decoding AndroidManifest.xml only, because resources are not needed")
 
-                    // create decoder for the resource table
-                    val decoder = ResAttrDecoder()
-                    decoder.currentPackage = ResPackage(resourceTable, 0, null)
-
-                    // create xml parser with the decoder
-                    val axmlParser = AXmlResourceParser()
-                    axmlParser.attrDecoder = decoder
-
-                    // parse package information with the decoder and parser which will set required values in the resource table
-                    // instead of decodeManifest another more low level solution can be created to make it faster/better
+                    // Instead of using resourceDecoder.decodeManifest which decodes the whole file
+                    // use the XmlPullStreamDecoder in order to get necessary information from the manifest
+                    // used below.
                     XmlPullStreamDecoder(
-                        axmlParser, AndrolibResources().resXmlSerializer
+                        AndroidManifestResourceParser().apply { attrDecoder = ResAttrDecoder() },
+                        ExtMXSerializer().apply {
+                            setProperty(
+                                ExtXmlSerializer.PROPERTY_SERIALIZER_INDENTATION, "    "
+                            )
+                            setProperty(
+                                ExtXmlSerializer.PROPERTY_SERIALIZER_LINE_SEPARATOR,
+                                System.getProperty("line.separator")
+                            )
+                            setProperty(
+                                ExtXmlSerializer.PROPERTY_DEFAULT_ENCODING,
+                                "utf-8"
+                            )
+                            setDisabledAttrEscape(true)
+                        }
                     ).decodeManifest(
                         extInputFile.directory.getFileInput("AndroidManifest.xml"),
                         // Older Android versions do not support OutputStream.nullOutputStream()
-                        object : OutputStream() {
-                            override fun write(b: Int) {
-                                // do nothing
-                            }
-                        }
+                        object : OutputStream() { override fun write(b: Int) { /* do nothing */ } }
                     )
                 }
             }
 
-            // read of the resourceTable which is created by reading the manifest file
+            // Get the package name and version from the manifest using the XmlPullStreamDecoder.
+            // XmlPullStreamDecoder.decodeManifest() sets metadata.apkInfo.
             context.packageMetadata.let { metadata ->
                 metadata.packageName = resourceTable.currentResPackage.name
-                metadata.packageVersion = resourceTable.versionInfo.versionName ?: resourceTable.versionInfo.versionCode
-                metadata.metaInfo.versionInfo = resourceTable.versionInfo
-                metadata.metaInfo.sdkInfo = resourceTable.sdkInfo
+                metadata.apkInfo.versionInfo.let {
+                    metadata.packageVersion = it.versionName ?: it.versionCode
+                }
             }
         } finally {
             extInputFile.close()
