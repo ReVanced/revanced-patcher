@@ -10,7 +10,6 @@ import app.revanced.patcher.patch.*
 import brut.androlib.AaptInvoker
 import brut.androlib.ApkDecoder
 import brut.androlib.Config
-import brut.androlib.Config.DECODE_RESOURCES_FULL
 import brut.androlib.res.Framework
 import brut.androlib.res.ResourcesDecoder
 import brut.androlib.res.decoder.AndroidManifestResourceParser
@@ -191,8 +190,7 @@ class Patcher(private val options: PatcherOptions) {
                     val outDir = File(options.resourceCacheDirectory)
                     if (outDir.exists()) {
                         logger.info("Deleting existing resource cache directory")
-                        if (!outDir.deleteRecursively())
-                            logger.error("Failed to delete existing resource cache directory")
+                        if (!outDir.deleteRecursively()) logger.error("Failed to delete existing resource cache directory")
                     }
 
                     outDir.mkdirs()
@@ -202,10 +200,11 @@ class Patcher(private val options: PatcherOptions) {
                     resourcesDecoder.decodeManifest(outDir)
                     resourcesDecoder.decodeResources(outDir)
 
-                    context.packageMetadata.apkInfo.doNotCompress =
-                        ApkDecoder(config, extInputFile).recordUncompressedFiles(
-                            context.packageMetadata.apkInfo, resourcesDecoder.resFileMapping
-                        )
+                    context.packageMetadata.also {
+                        it.apkInfo = resourcesDecoder.apkInfo
+                    }.apkInfo.doNotCompress = ApkDecoder(config, extInputFile).recordUncompressedFiles(
+                        context.packageMetadata.apkInfo, resourcesDecoder.resFileMapping
+                    )
                 }
                 ResourceDecodingMode.MANIFEST_ONLY -> {
                     logger.info("Decoding AndroidManifest.xml only, because resources are not needed")
@@ -213,18 +212,18 @@ class Patcher(private val options: PatcherOptions) {
                     // Instead of using resourceDecoder.decodeManifest which decodes the whole file
                     // use the XmlPullStreamDecoder in order to get necessary information from the manifest
                     // used below.
-                    XmlPullStreamDecoder(
-                        AndroidManifestResourceParser().apply { attrDecoder = ResAttrDecoder() },
-                        ExtMXSerializer().apply {
-                            setProperty(
-                                ExtXmlSerializer.PROPERTY_SERIALIZER_INDENTATION, "    "
-                            )
-                            setProperty(
-                                ExtXmlSerializer.PROPERTY_SERIALIZER_LINE_SEPARATOR,
-                                System.getProperty("line.separator")
-                            )
-                            setProperty(
-                                ExtXmlSerializer.PROPERTY_DEFAULT_ENCODING,
+                    XmlPullStreamDecoder(AndroidManifestResourceParser().apply {
+                        attrDecoder = ResAttrDecoder().apply { this.resTable = resourceTable }
+                    }, ExtMXSerializer().apply {
+                        setProperty(
+                            ExtXmlSerializer.PROPERTY_SERIALIZER_INDENTATION, "    "
+                        )
+                        setProperty(
+                            ExtXmlSerializer.PROPERTY_SERIALIZER_LINE_SEPARATOR,
+                            System.getProperty("line.separator")
+                        )
+                        setProperty(
+                            ExtXmlSerializer.PROPERTY_DEFAULT_ENCODING,
                                 "utf-8"
                             )
                             setDisabledAttrEscape(true)
@@ -240,8 +239,10 @@ class Patcher(private val options: PatcherOptions) {
             // Get the package name and version from the manifest using the XmlPullStreamDecoder.
             // XmlPullStreamDecoder.decodeManifest() sets metadata.apkInfo.
             context.packageMetadata.let { metadata ->
+                metadata.apkInfo = resourcesDecoder.apkInfo
+
                 metadata.packageName = resourceTable.currentResPackage.name
-                metadata.apkInfo.versionInfo.let {
+                resourcesDecoder.apkInfo.versionInfo.let {
                     metadata.packageVersion = it.versionName ?: it.versionCode
                 }
             }
