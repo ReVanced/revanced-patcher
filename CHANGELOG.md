@@ -1,3 +1,21 @@
+# [12.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v11.0.4...v12.0.0-dev.1) (2023-07-26)
+
+
+### Bug Fixes
+
+* correct access flags of `PackageMetadata` ([416d691](https://github.com/ReVanced/revanced-patcher/commit/416d69142f50dab49c9ea3f027e9d53e4777f257))
+* set resource table via resource decoder ([e0f8e1b](https://github.com/ReVanced/revanced-patcher/commit/e0f8e1b71a295948b610029c89a48f52762396b6))
+
+
+### Features
+
+* remove `Path` option ([#202](https://github.com/ReVanced/revanced-patcher/issues/202)) ([69e4a49](https://github.com/ReVanced/revanced-patcher/commit/69e4a490659ebc4fb4bf46148634f4b064ef1713))
+
+
+### BREAKING CHANGES
+
+* This removes the previously available `Path` option
+
 ## [11.0.4](https://github.com/revanced/revanced-patcher/compare/v11.0.3...v11.0.4) (2023-07-01)
 
 
