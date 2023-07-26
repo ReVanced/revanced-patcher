@@ -46,9 +46,7 @@ class Patcher(private val options: PatcherOptions) {
 
     private val config = Config.getDefaultConfig().apply {
         aaptPath = options.aaptPath
-        useAapt2 = true
         frameworkDirectory = options.frameworkDirectory
-        decodeResources = DECODE_RESOURCES_FULL
     }
 
     init {
