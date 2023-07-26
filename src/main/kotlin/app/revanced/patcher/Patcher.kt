@@ -86,14 +86,14 @@ class Patcher(private val options: PatcherOptions) {
 
         when (resourceDecodingMode) {
             ResourceDecodingMode.FULL -> {
+                logger.info("Compiling resources")
+
                 val cacheDirectory = ExtFile(options.resourceCacheDirectory)
+                val aaptFile = cacheDirectory.resolve("aapt_temp_file").also {
+                    Files.deleteIfExists(it.toPath())
+                }.also { resourceFile = it }
+
                 try {
-                    logger.info("Compiling resources")
-
-                    val aaptFile = cacheDirectory.resolve("aapt_temp_file").also {
-                        Files.deleteIfExists(it.toPath())
-                    }
-
                     AaptInvoker(
                         config,
                         context.packageMetadata.apkInfo
@@ -111,8 +111,6 @@ class Patcher(private val options: PatcherOptions) {
                             }.toTypedArray()
                         }
                     )
-
-                    resourceFile = aaptFile
                 } finally {
                     cacheDirectory.close()
                 }
@@ -183,7 +181,6 @@ class Patcher(private val options: PatcherOptions) {
         val extInputFile = ExtFile(options.inputFile)
         try {
             val resourcesDecoder = ResourcesDecoder(config, extInputFile)
-            val resourceTable = resourcesDecoder.resTable
 
             when (mode) {
                 ResourceDecodingMode.FULL -> {
@@ -213,7 +210,7 @@ class Patcher(private val options: PatcherOptions) {
                     // use the XmlPullStreamDecoder in order to get necessary information from the manifest
                     // used below.
                     XmlPullStreamDecoder(AndroidManifestResourceParser().apply {
-                        attrDecoder = ResAttrDecoder().apply { this.resTable = resourceTable }
+                        attrDecoder = ResAttrDecoder().apply { this.resTable = resourcesDecoder.resTable }
                     }, ExtMXSerializer().apply {
                         setProperty(
                             ExtXmlSerializer.PROPERTY_SERIALIZER_INDENTATION, "    "
@@ -241,7 +238,7 @@ class Patcher(private val options: PatcherOptions) {
             context.packageMetadata.let { metadata ->
                 metadata.apkInfo = resourcesDecoder.apkInfo
 
-                metadata.packageName = resourceTable.currentResPackage.name
+                metadata.packageName = resourcesDecoder.resTable.currentResPackage.name
                 resourcesDecoder.apkInfo.versionInfo.let {
                     metadata.packageVersion = it.versionName ?: it.versionCode
                 }
