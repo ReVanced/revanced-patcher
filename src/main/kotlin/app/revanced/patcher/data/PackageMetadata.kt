@@ -11,5 +11,5 @@ class PackageMetadata {
     lateinit var packageVersion: String
         internal set
 
-    internal val apkInfo: ApkInfo = ApkInfo()
+    internal lateinit var apkInfo: ApkInfo
 }
