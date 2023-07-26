@@ -7,7 +7,9 @@ import brut.androlib.apk.ApkInfo
  */
 class PackageMetadata {
     lateinit var packageName: String
+        internal set
     lateinit var packageVersion: String
+        internal set
 
     internal val apkInfo: ApkInfo = ApkInfo()
 }
