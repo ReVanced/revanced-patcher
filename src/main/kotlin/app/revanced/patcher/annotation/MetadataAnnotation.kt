@@ -26,6 +26,7 @@ annotation class Description(
  * @param version The version of a [Patch].
  */
 @Target(AnnotationTarget.CLASS)
+@Deprecated("This annotation is deprecated and will be removed in a future release.")
 annotation class Version(
     val version: String,
 )
