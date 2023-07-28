@@ -25,6 +25,7 @@ object PatchExtensions {
     /**
      * The version of a [Patch].
      */
+    @Deprecated("This property is deprecated and will be removed in a future release.")
     val Class<out Patch<Context>>.version
         get() = findAnnotationRecursively(Version::class)?.version
 
