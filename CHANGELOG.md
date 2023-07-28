@@ -1,3 +1,10 @@
+# [12.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0-dev.1...v12.0.0-dev.2) (2023-07-28)
+
+
+### Features
+
+* Deprecate `Version` annotation ([400442f](https://github.com/ReVanced/revanced-patcher/commit/400442f70ee56cafd4493b2ce64a294db9836509))
+
 # [12.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v11.0.4...v12.0.0-dev.1) (2023-07-26)
 
 
