@@ -3,7 +3,6 @@ package app.revanced.patcher.extensions
 import app.revanced.patcher.annotation.Compatibility
 import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
-import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.data.Context
 import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.patch.OptionsContainer
@@ -23,13 +22,7 @@ object PatchExtensions {
         get() = findAnnotationRecursively(Name::class)?.name ?: this.simpleName
 
     /**
-     * The version of a [Patch].
-     */
-    val Class<out Patch<Context>>.version
-        get() = findAnnotationRecursively(Version::class)?.version
-
-    /**
-     * Weather or not a [Patch] should be included.
+     * If a [Patch] should be included.
      */
     val Class<out Patch<Context>>.include
         get() = findAnnotationRecursively(app.revanced.patcher.patch.annotations.Patch::class)!!.include
@@ -53,7 +46,7 @@ object PatchExtensions {
         get() = findAnnotationRecursively(Compatibility::class)?.compatiblePackages
 
     /**
-     * Weather or not a [Patch] requires integrations.
+     * If a [Patch] requires integrations.
      */
     internal val Class<out Patch<Context>>.requiresIntegrations
         get() = findAnnotationRecursively(RequiresIntegrations::class) != null

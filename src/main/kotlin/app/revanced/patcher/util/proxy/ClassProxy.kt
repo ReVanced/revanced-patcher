@@ -14,7 +14,7 @@ class ClassProxy internal constructor(
     val immutableClass: ClassDef,
 ) {
     /**
-     * Weather the proxy was actually used.
+     * If the proxy was actually used.
      */
     internal var resolved = false
 

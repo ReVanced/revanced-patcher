@@ -20,12 +20,3 @@ annotation class Description(
     val description: String,
 )
 
-
-/**
- * Annotation to version a [Patch].
- * @param version The version of a [Patch].
- */
-@Target(AnnotationTarget.CLASS)
-annotation class Version(
-    val version: String,
-)
