@@ -4,13 +4,13 @@ package app.revanced.patcher.apk
 
 import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.archive.Archive
-import app.revanced.arsc.resource.ResourceContainer
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.PatcherOptions
 import app.revanced.patcher.logging.asArscLogger
 import app.revanced.patcher.util.ProxyBackedClassList
 import com.reandroid.apk.ApkModule
 import com.reandroid.apk.xmlencoder.EncodeException
+import com.reandroid.archive.InputSource
 import com.reandroid.arsc.chunk.xml.AndroidManifestBlock
 import com.reandroid.arsc.value.ResConfig
 import lanchon.multidexlib2.*
@@ -37,8 +37,6 @@ sealed class Apk private constructor(module: ApkModule) {
      */
     val packageMetadata = PackageMetadata(module.androidManifestBlock)
 
-    val resources = ResourceContainer(archive, module.tableBlock)
-
     /**
      * Refresh updated resources and close any open files.
      *
@@ -51,7 +49,7 @@ sealed class Apk private constructor(module: ApkModule) {
             throw ApkResourceException.Encode(e.message!!, e)
         }
 
-        resources.refreshPackageName()
+        archive.mainPackageResources.refreshPackageName()
     }
 
     /**
@@ -114,8 +112,14 @@ sealed class Apk private constructor(module: ApkModule) {
         init {
             MultiDexContainerBackedDexFile(object : MultiDexContainer<DexBackedDexFile> {
                 // Load all dex files from the apk module and create a dex entry for each of them.
-                private val entries = archive.readDexFiles()
-                    .mapValues { (name, data) -> BasicDexEntry(this, name, RawDexIO.readRawDexFile(data, 0, null)) }
+                private val entries = archive.readDexFiles().associateBy { it.name }
+                    .mapValues { (name, inputSource) ->
+                        BasicDexEntry(
+                            this,
+                            name,
+                            RawDexIO.readRawDexFile(inputSource.openStream(), inputSource.length, null)
+                        )
+                    }
 
                 override fun getDexEntryNames() = entries.keys.toList()
                 override fun getEntry(entryName: String) = entries[entryName]
@@ -143,7 +147,11 @@ sealed class Apk private constructor(module: ApkModule) {
                     it, Patcher.dexFileNamer, newDexFile, DexIO.DEFAULT_MAX_DEX_POOL_SIZE, null
                 )
             }.forEach { (name, store) ->
-                archive.writeRaw(name, store.data)
+                val dexFileInputSource = object : InputSource(name) {
+                    override fun openStream() = store.readAt(0)
+                }
+
+                archive.write(dexFileInputSource)
             }
         }
     }

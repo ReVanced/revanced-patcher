@@ -3,54 +3,102 @@ package app.revanced.arsc.resource
 import app.revanced.arsc.ApkResourceException
 import app.revanced.arsc.archive.Archive
 import com.reandroid.apk.xmlencoder.EncodeUtil
-import com.reandroid.arsc.chunk.PackageBlock
 import com.reandroid.arsc.chunk.TableBlock
+import com.reandroid.arsc.chunk.xml.ResXmlDocument
 import com.reandroid.arsc.value.Entry
 import com.reandroid.arsc.value.ResConfig
+import java.io.Closeable
 import java.io.File
+import java.io.Flushable
 
-/**
- * A high-level API for modifying the resources contained in an APK file.
- *
- * @param archive The [Archive] containing this resource table.
- * @param tableBlock The resources file of this APK file. Typically named "resources.arsc".
- */
-class ResourceContainer(private val archive: Archive, internal val tableBlock: TableBlock?) {
-    internal val packageBlock = tableBlock?.pickOne() // Pick the main PackageBlock.
+class ResourceContainer(private val archive: Archive, internal val tableBlock: TableBlock) : Flushable {
+    private val packageBlock = tableBlock.pickOne() // Pick the main package block.
+    internal lateinit var resourceTable: ResourceTable // TODO: Set this.
 
-    internal lateinit var resourceTable: ResourceTable
+    private val lockedResourceFileNames = mutableSetOf<String>()
 
-    init {
-        archive.resources = this
+    private fun lock(resourceFile: ResourceFile) {
+        if (resourceFile.name in lockedResourceFileNames) {
+            throw ApkResourceException.Locked("Resource file ${resourceFile.name} is already locked.")
+        }
+
+        lockedResourceFileNames.add(resourceFile.name)
+    }
+
+    private fun unlock(resourceFile: ResourceFile) {
+        lockedResourceFileNames.remove(resourceFile.name)
+    }
+
+
+    fun <T : ResourceFile> openResource(name: String): ResourceFileEditor<T> {
+        val inputSource = archive.read(name)
+            ?: throw ApkResourceException.Read("Resource file $name not found.")
+
+        val resourceFile = when {
+            ResXmlDocument.isResXmlBlock(inputSource.openStream()) -> {
+                val xmlDocument = archive.module
+                    .loadResXmlDocument(inputSource)
+                    .decodeToXml(resourceTable.entryStore, packageBlock.id)
+
+                ResourceFile.XmlResourceFile(name, xmlDocument)
+            }
+
+            else -> {
+                val bytes = inputSource.openStream().use { it.readAllBytes() }
+
+                ResourceFile.BinaryResourceFile(name, bytes)
+            }
+        }
+
+        try {
+            @Suppress("UNCHECKED_CAST")
+            return ResourceFileEditor(resourceFile as T).also {
+                lockedResourceFileNames.add(name)
+            }
+        } catch (e: ClassCastException) {
+            throw ApkResourceException.Decode("Resource file $name is not ${resourceFile::class}.", e)
+        }
+    }
+
+    inner class ResourceFileEditor<T : ResourceFile> internal constructor(
+        private val resourceFile: T,
+    ) : Closeable {
+        fun use(block: (T) -> Unit) = block(resourceFile)
+        override fun close() {
+            lockedResourceFileNames.remove(resourceFile.name)
+        }
+    }
+
+    override fun flush() {
+        TODO("Not yet implemented")
     }
 
     /**
      * Open a resource file, creating it if the file does not exist.
      *
      * @param path The resource file path.
-     * @return The corresponding [ResourceFile],
+     * @return The corresponding [ResourceFiles],
      */
-    fun openFile(path: String) = ResourceFile(createHandle(path), archive)
+    fun openFile(path: String) = ResourceFiles(createHandle(path), archive)
 
     private fun getPackageBlock() = packageBlock ?: throw ApkResourceException.MissingResourceTable
 
     internal fun getOrCreateString(value: String) =
         tableBlock?.stringPool?.getOrCreate(value) ?: throw ApkResourceException.MissingResourceTable
 
-    /**
-     * Set the value of the [Entry] to the one specified.
-     *
-     * @param value The new value.
-     */
-    private fun Entry.setTo(value: Resource) {
-        val savedRef = specReference
-        ensureComplex(value.complex)
-        if (savedRef != 0) {
+    private fun Entry.set(resource: Resource) {
+        val existingEntryNameReference = specReference
+
+        // Sets this.specReference if the entry is not yet initialized.
+        // Sets this.specReference to 0 if the resource type of the existing entry changes.
+        ensureComplex(resource.isComplex)
+
+        if (existingEntryNameReference != 0) {
             // Preserve the entry name by restoring the previous spec block reference (if present).
-            specReference = savedRef
+            specReference = existingEntryNameReference
         }
 
-        value.write(this, this@ResourceContainer)
+        resource.write(this, this@ResourceContainer)
         resourceTable.registerChanged(this)
     }
 
@@ -73,12 +121,12 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
     }
 
     /**
-     * Create a [ResourceFile.Handle] that can be used to open a [ResourceFile].
+     * Create a [ResourceFiles.Handle] that can be used to open a [ResourceFiles].
      * This may involve looking it up in the resource table to find the actual location in the archive.
      *
      * @param path The path of the resource.
      */
-    private fun createHandle(path: String): ResourceFile.Handle {
+    private fun createHandle(path: String): ResourceFiles.Handle {
         if (path.startsWith("res/values")) throw ApkResourceException.Decode("Decoding the resource table as a file is not supported")
 
         var onClose = {}
@@ -97,42 +145,23 @@ class ResourceContainer(private val archive: Archive, internal val tableBlock: T
                 archivePath = it
             } ?: run {
                 // An entry for this specific resource file was not found in the resource table, so we have to register it after we save.
-                onClose = { getOrCreateResource(type, name, StringResource(archivePath), qualifiers) }
+                onClose = { setResource(type, name, StringResource(archivePath), qualifiers) }
             }
         }
 
-        return ResourceFile.Handle(path, archivePath, onClose)
+        return ResourceFiles.Handle(path, archivePath, onClose)
     }
 
-    /**
-     * Create or update a resource.
-     *
-     * @param type The resource type.
-     * @param name The name of the resource.
-     * @param resource The resource data.
-     * @param qualifiers The resource configuration.
-     * @return The resource ID for the resource.
-     */
-    fun getOrCreateResource(type: String, name: String, resource: Resource, qualifiers: String? = null) =
-        getPackageBlock().getOrCreate(qualifiers, type, name).also { it.setTo(resource) }.resourceId
+    fun setResource(type: String, entryName: String, resource: Resource, qualifiers: String? = null) =
+        getPackageBlock().getOrCreate(qualifiers, type, entryName).also { it.set(resource) }.resourceId
 
-    /**
-     * Create or update multiple resources in an ARSC type block.
-     *
-     * @param type The resource type.
-     * @param map A map of resource names to the corresponding value.
-     * @param configuration The resource configuration.
-     */
-    fun setGroup(type: String, map: Map<String, Resource>, configuration: String? = null) {
+    fun setResources(type: String, resources: Map<String, Resource>, configuration: String? = null) {
         getPackageBlock().getOrCreateSpecTypePair(type).getOrCreateTypeBlock(configuration).apply {
-            map.forEach { (name, value) -> getOrCreateEntry(name).setTo(value) }
+            resources.forEach { (entryName, resource) -> getOrCreateEntry(entryName).set(resource) }
         }
     }
 
-    /**
-     * Update the [PackageBlock] name to match the manifest.
-     */
-    fun refreshPackageName() {
-        packageBlock?.name = archive.readManifest().packageName
+    override fun flush() {
+        packageBlock?.name = archive
     }
 }

@@ -11,7 +11,7 @@ import com.reandroid.common.TableEntryStore
  * A high-level API for resolving resources in the resource table, which spans the entire ApkBundle.
  */
 class ResourceTable(base: ResourceContainer, all: Sequence<ResourceContainer>) {
-    private val packageName = base.packageBlock!!.name
+    private val packageName = base.tableBlock!!.name
 
     /**
      * A [TableEntryStore] used to decode XML.
@@ -87,7 +87,7 @@ class ResourceTable(base: ResourceContainer, all: Sequence<ResourceContainer>) {
         }
 
         base.also {
-            encodeMaterials.currentPackage = it.packageBlock
+            encodeMaterials.currentPackage = it.tableBlock
 
             it.tableBlock!!.frameWorks.forEach { fw ->
                 if (fw is FrameworkTable) {

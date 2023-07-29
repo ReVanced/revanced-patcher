@@ -20,7 +20,7 @@ sealed class Resource {
     internal abstract fun write(entry: Entry, resources: ResourceContainer)
 }
 
-internal val Resource.complex get() = when (this) {
+internal val Resource.isComplex get() = when (this) {
     is Scalar -> false
     is Complex -> true
 }

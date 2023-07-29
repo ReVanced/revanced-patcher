@@ -3,7 +3,7 @@ package app.revanced.patcher
 import app.revanced.arsc.resource.ResourceContainer
 import app.revanced.patcher.apk.Apk
 import app.revanced.patcher.apk.ApkBundle
-import app.revanced.arsc.resource.ResourceFile
+import app.revanced.arsc.resource.ResourceFiles
 import app.revanced.patcher.util.method.MethodWalker
 import org.jf.dexlib2.iface.Method
 import org.w3c.dom.Document
@@ -85,7 +85,7 @@ class DomFileEditor internal constructor(
     val file: Document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream)
         .also(Document::normalize)
 
-    internal constructor(file: ResourceFile) : this(
+    internal constructor(file: ResourceFiles) : this(
         file.inputStream(),
         {
             file.contents = it.toByteArray()

@@ -8,6 +8,29 @@ package app.revanced.arsc
  */
 sealed class ApkResourceException(message: String, throwable: Throwable? = null) : Exception(message, throwable) {
     /**
+     * An exception when locking resources.
+     *
+     * @param message The exception message.
+     * @param throwable The corresponding [Throwable].
+     */
+    class Locked(message: String, throwable: Throwable? = null) : ApkResourceException(message, throwable)
+
+    /**
+     * An exception when writing resources.
+     *
+     * @param message The exception message.
+     * @param throwable The corresponding [Throwable].
+     */
+     class Write(message: String, throwable: Throwable? = null) : ApkResourceException(message, throwable)
+
+    /**
+     * An exception when reading resources.
+     *
+     * @param message The exception message.
+     * @param throwable The corresponding [Throwable].
+     */
+    class Read(message: String, throwable: Throwable? = null) : ApkResourceException(message, throwable)
+    /**
      * An exception when decoding resources.
      *
      * @param message The exception message.
@@ -45,5 +68,5 @@ sealed class ApkResourceException(message: String, throwable: Throwable? = null)
     /**
      * An exception thrown when the Apk file not have a resource table, but was expected to have one.
      */
-    object MissingResourceTable : ApkResourceException("Apk does not have a resource table.")
+    class MissingResourceTable : ApkResourceException("Apk does not have a resource table.")
 }
