@@ -5,8 +5,8 @@ import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.annotation.Version
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.or
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
@@ -29,7 +29,6 @@ import org.jf.dexlib2.immutable.reference.ImmutableFieldReference
 import org.jf.dexlib2.immutable.reference.ImmutableStringReference
 import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import org.jf.dexlib2.util.Preconditions
-import kotlin.io.path.Path
 
 @Patch
 @Name("example-bytecode-patch")
@@ -191,11 +190,6 @@ class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
         private var key5 by option(
             PatchOption.StringOption(
                 "key5", null, "title", "description", true
-            )
-        )
-        private var key6 by option(
-            PatchOption.PathOption(
-                "key6", Path("test.txt"), "title", "description", true
             )
         )
     }

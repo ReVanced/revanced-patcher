@@ -9,13 +9,13 @@ import java.io.File
  * @param inputFile The input file (usually an apk file).
  * @param resourceCacheDirectory Directory to cache resources.
  * @param aaptPath Optional path to a custom aapt binary.
- * @param frameworkFolderLocation Optional path to a custom framework folder.
+ * @param frameworkDirectory Optional path to a custom framework directory.
  * @param logger Custom logger implementation for the [Patcher].
  */
 data class PatcherOptions(
     internal val inputFile: File,
     internal val resourceCacheDirectory: String,
     internal val aaptPath: String? = null,
-    internal val frameworkFolderLocation: String? = null,
+    internal val frameworkDirectory: String? = null,
     internal val logger: Logger = NopLogger
 )
