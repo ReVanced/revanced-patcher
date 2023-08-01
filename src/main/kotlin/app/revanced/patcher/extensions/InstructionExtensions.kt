@@ -321,7 +321,6 @@ object InstructionExtensions {
      * @param T The type of instruction to return.
      * @return The instruction.
      */
-    @Suppress("UNCHECKED_CAST")
     fun <T> MutableMethod.getInstruction(index: Int): T = implementation!!.getInstruction<T>(index)
 
     /**
