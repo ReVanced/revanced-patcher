@@ -323,4 +323,10 @@ object InstructionExtensions {
      */
     @Suppress("UNCHECKED_CAST")
     fun <T> MutableMethod.getInstruction(index: Int): T = implementation!!.getInstruction<T>(index)
+
+    /**
+     * Get the instructions of a method.
+     * @return The instructions.
+     */
+    fun MutableMethod.getInstructions(): MutableList<BuilderInstruction> = implementation!!.instructions
 }
