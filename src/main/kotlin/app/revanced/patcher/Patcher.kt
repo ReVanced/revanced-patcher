@@ -78,6 +78,10 @@ class Patcher(private val options: PatcherOptions) {
         }
     }
 
+    fun clearMaps() {
+        MethodFingerprint.clearFingerprintResolutionLookupMaps()
+    }
+    
     /**
      * Save the patched dex file.
      */
