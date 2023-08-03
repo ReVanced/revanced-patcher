@@ -1,3 +1,10 @@
+# [12.1.0](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0...v12.1.0) (2023-08-03)
+
+
+### Features
+
+* add `MutableMethod.getInstructions` extension function ([fae4029](https://github.com/ReVanced/revanced-patcher/commit/fae4029cfccfad7aa3dd8f7fbef1c63ee26b85b3))
+
 # [12.1.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v12.1.0-dev.1...v12.1.0-dev.2) (2023-08-03)
 
 # [12.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0...v12.1.0-dev.1) (2023-08-01)
