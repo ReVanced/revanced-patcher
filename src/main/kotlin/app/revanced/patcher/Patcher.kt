@@ -77,7 +77,6 @@ class Patcher(private val options: PatcherOptions) {
             this@integrations.callback = callback
         }
     }
-    
     /**
      * Save the patched dex file.
      */
