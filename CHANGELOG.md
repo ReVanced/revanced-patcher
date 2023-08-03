@@ -1,3 +1,10 @@
+## [12.1.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.1.0...v12.1.1-dev.1) (2023-08-03)
+
+
+### Bug Fixes
+
+* clear method lookup maps before initializing them ([#210](https://github.com/ReVanced/revanced-patcher/issues/210)) ([746544f](https://github.com/ReVanced/revanced-patcher/commit/746544f9d51d1013bb160075709cd26bffd425b3))
+
 # [12.1.0](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0...v12.1.0) (2023-08-03)
 
 
