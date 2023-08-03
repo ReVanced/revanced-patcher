@@ -1,3 +1,5 @@
+# [12.1.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v12.1.0-dev.1...v12.1.0-dev.2) (2023-08-03)
+
 # [12.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0...v12.1.0-dev.1) (2023-08-01)
 
 
