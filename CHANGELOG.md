@@ -1,3 +1,13 @@
+# [13.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.1.1...v13.0.0-dev.1) (2023-08-11)
+
+
+* build(Needs bump)!: Bump dependencies ([d5f89a9](https://github.com/ReVanced/revanced-patcher/commit/d5f89a903f019c199bdb27a50287124fc4b4978e))
+
+
+### BREAKING CHANGES
+
+* This bump updates smali, a crucial dependency
+
 ## [12.1.1](https://github.com/ReVanced/revanced-patcher/compare/v12.1.0...v12.1.1) (2023-08-03)
 
 
