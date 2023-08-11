@@ -1,8 +1,8 @@
 package app.revanced.patcher.util.proxy.mutableTypes
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
-import org.jf.dexlib2.base.BaseMethodParameter
-import org.jf.dexlib2.iface.MethodParameter
+import com.android.tools.smali.dexlib2.base.BaseMethodParameter
+import com.android.tools.smali.dexlib2.iface.MethodParameter
 
 // TODO: finish overriding all members if necessary
 class MutableMethodParameter(parameter: MethodParameter) : MethodParameter, BaseMethodParameter() {

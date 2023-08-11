@@ -1,6 +1,6 @@
 package app.revanced.patcher.util.smali
 
-import org.jf.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
 /**
  * A class that represents a label for an instruction.

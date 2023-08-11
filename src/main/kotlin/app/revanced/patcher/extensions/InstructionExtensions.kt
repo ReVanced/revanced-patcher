@@ -4,12 +4,12 @@ import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patcher.util.smali.toInstruction
 import app.revanced.patcher.util.smali.toInstructions
-import org.jf.dexlib2.builder.BuilderInstruction
-import org.jf.dexlib2.builder.BuilderOffsetInstruction
-import org.jf.dexlib2.builder.Label
-import org.jf.dexlib2.builder.MutableMethodImplementation
-import org.jf.dexlib2.builder.instruction.*
-import org.jf.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.builder.BuilderInstruction
+import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
+import com.android.tools.smali.dexlib2.builder.Label
+import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
+import com.android.tools.smali.dexlib2.builder.instruction.*
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
 object InstructionExtensions {
 

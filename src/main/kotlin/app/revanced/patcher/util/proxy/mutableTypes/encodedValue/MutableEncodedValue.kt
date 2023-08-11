@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.ValueType
-import org.jf.dexlib2.iface.value.*
+import com.android.tools.smali.dexlib2.ValueType
+import com.android.tools.smali.dexlib2.iface.value.*
 
 interface MutableEncodedValue : EncodedValue {
     companion object {

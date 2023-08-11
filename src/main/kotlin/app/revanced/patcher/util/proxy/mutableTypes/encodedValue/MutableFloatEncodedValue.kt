@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseFloatEncodedValue
-import org.jf.dexlib2.iface.value.FloatEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseFloatEncodedValue
+import com.android.tools.smali.dexlib2.iface.value.FloatEncodedValue
 
 class MutableFloatEncodedValue(floatEncodedValue: FloatEncodedValue) : BaseFloatEncodedValue(), MutableEncodedValue {
     private var value = floatEncodedValue.value

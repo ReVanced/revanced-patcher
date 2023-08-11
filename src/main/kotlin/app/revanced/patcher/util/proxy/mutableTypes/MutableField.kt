@@ -3,9 +3,9 @@ package app.revanced.patcher.util.proxy.mutableTypes
 import app.revanced.patcher.util.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.encodedValue.MutableEncodedValue
 import app.revanced.patcher.util.proxy.mutableTypes.encodedValue.MutableEncodedValue.Companion.toMutable
-import org.jf.dexlib2.HiddenApiRestriction
-import org.jf.dexlib2.base.reference.BaseFieldReference
-import org.jf.dexlib2.iface.Field
+import com.android.tools.smali.dexlib2.HiddenApiRestriction
+import com.android.tools.smali.dexlib2.base.reference.BaseFieldReference
+import com.android.tools.smali.dexlib2.iface.Field
 
 class MutableField(field: Field) : Field, BaseFieldReference() {
     private var definingClass = field.definingClass

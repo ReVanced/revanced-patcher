@@ -18,4 +18,15 @@ data class PatcherOptions(
     internal val aaptPath: String? = null,
     internal val frameworkDirectory: String? = null,
     internal val logger: Logger = NopLogger
-)
+) {
+    fun recreateResourceCacheDirectory() = File(resourceCacheDirectory).also {
+        if (it.exists()) {
+            logger.info("Deleting existing resource cache directory")
+
+            if (!it.deleteRecursively())
+                logger.error("Failed to delete existing resource cache directory")
+        }
+
+        it.mkdirs()
+    }
+}

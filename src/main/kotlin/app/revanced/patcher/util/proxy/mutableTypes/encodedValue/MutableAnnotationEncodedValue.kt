@@ -1,9 +1,9 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableAnnotationElement.Companion.toMutable
-import org.jf.dexlib2.base.value.BaseAnnotationEncodedValue
-import org.jf.dexlib2.iface.AnnotationElement
-import org.jf.dexlib2.iface.value.AnnotationEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseAnnotationEncodedValue
+import com.android.tools.smali.dexlib2.iface.AnnotationElement
+import com.android.tools.smali.dexlib2.iface.value.AnnotationEncodedValue
 
 class MutableAnnotationEncodedValue(annotationEncodedValue: AnnotationEncodedValue) : BaseAnnotationEncodedValue(),
     MutableEncodedValue {

@@ -1,7 +1,7 @@
 package app.revanced.patcher.extensions
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
-import org.jf.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.AccessFlags
 
 /**
  * Create a label for the instruction at given index.

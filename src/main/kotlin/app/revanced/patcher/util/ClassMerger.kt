@@ -15,9 +15,9 @@ import app.revanced.patcher.util.proxy.mutableTypes.MutableField
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
-import org.jf.dexlib2.AccessFlags
-import org.jf.dexlib2.iface.ClassDef
-import org.jf.dexlib2.util.MethodUtil
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.util.MethodUtil
 import kotlin.reflect.KFunction2
 
 /**

@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.proxy
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
-import org.jf.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.ClassDef
 
 /**
  * A proxy class for a [ClassDef].

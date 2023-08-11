@@ -1,8 +1,8 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseStringEncodedValue
-import org.jf.dexlib2.iface.value.ByteEncodedValue
-import org.jf.dexlib2.iface.value.StringEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseStringEncodedValue
+import com.android.tools.smali.dexlib2.iface.value.ByteEncodedValue
+import com.android.tools.smali.dexlib2.iface.value.StringEncodedValue
 
 class MutableStringEncodedValue(stringEncodedValue: StringEncodedValue) : BaseStringEncodedValue(),
     MutableEncodedValue {

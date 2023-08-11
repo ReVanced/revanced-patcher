@@ -1,8 +1,8 @@
 package app.revanced.patcher.util.proxy.mutableTypes
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableAnnotationElement.Companion.toMutable
-import org.jf.dexlib2.base.BaseAnnotation
-import org.jf.dexlib2.iface.Annotation
+import com.android.tools.smali.dexlib2.base.BaseAnnotation
+import com.android.tools.smali.dexlib2.iface.Annotation
 
 class MutableAnnotation(annotation: Annotation) : BaseAnnotation() {
     private val visibility = annotation.visibility

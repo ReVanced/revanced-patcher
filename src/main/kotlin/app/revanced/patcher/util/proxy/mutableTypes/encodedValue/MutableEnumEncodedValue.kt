@@ -1,8 +1,8 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseEnumEncodedValue
-import org.jf.dexlib2.iface.reference.FieldReference
-import org.jf.dexlib2.iface.value.EnumEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseEnumEncodedValue
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.value.EnumEncodedValue
 
 class MutableEnumEncodedValue(enumEncodedValue: EnumEncodedValue) : BaseEnumEncodedValue(), MutableEncodedValue {
     private var value = enumEncodedValue.value

@@ -2,10 +2,10 @@ package app.revanced.patcher.util.proxy.mutableTypes
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethodParameter.Companion.toMutable
-import org.jf.dexlib2.HiddenApiRestriction
-import org.jf.dexlib2.base.reference.BaseMethodReference
-import org.jf.dexlib2.builder.MutableMethodImplementation
-import org.jf.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.HiddenApiRestriction
+import com.android.tools.smali.dexlib2.base.reference.BaseMethodReference
+import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
+import com.android.tools.smali.dexlib2.iface.Method
 
 class MutableMethod(method: Method) : Method, BaseMethodReference() {
     private var definingClass = method.definingClass

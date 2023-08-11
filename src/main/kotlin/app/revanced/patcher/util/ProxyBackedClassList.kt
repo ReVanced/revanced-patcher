@@ -1,7 +1,7 @@
 package app.revanced.patcher.util
 
 import app.revanced.patcher.util.proxy.ClassProxy
-import org.jf.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.ClassDef
 
 /**
  * A class that represents a set of classes and proxies.

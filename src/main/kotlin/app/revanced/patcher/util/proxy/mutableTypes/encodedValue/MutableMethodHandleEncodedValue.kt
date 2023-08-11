@@ -1,8 +1,8 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseMethodHandleEncodedValue
-import org.jf.dexlib2.iface.reference.MethodHandleReference
-import org.jf.dexlib2.iface.value.MethodHandleEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseMethodHandleEncodedValue
+import com.android.tools.smali.dexlib2.iface.reference.MethodHandleReference
+import com.android.tools.smali.dexlib2.iface.value.MethodHandleEncodedValue
 
 class MutableMethodHandleEncodedValue(methodHandleEncodedValue: MethodHandleEncodedValue) :
     BaseMethodHandleEncodedValue(),
