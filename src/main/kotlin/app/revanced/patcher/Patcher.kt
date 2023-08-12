@@ -11,6 +11,7 @@ import brut.androlib.AaptInvoker
 import brut.androlib.ApkDecoder
 import brut.androlib.Config
 import brut.androlib.apk.ApkInfo
+import brut.androlib.apk.UsesFramework
 import brut.androlib.res.Framework
 import brut.androlib.res.ResourcesDecoder
 import brut.androlib.res.decoder.AndroidManifestResourceParser
@@ -195,14 +196,18 @@ class Patcher(private val options: PatcherOptions) {
         try {
             when (mode) {
                 ResourceDecodingMode.FULL -> {
-                    val outDir = options.recreateResourceCacheDirectory()
-
                     logger.info("Decoding resources")
+
+                    val outDir = options.recreateResourceCacheDirectory()
 
                     resourcesDecoder.decodeManifest(outDir)
                     resourcesDecoder.decodeResources(outDir)
 
                     apkDecoder.recordUncompressedFiles(resourcesDecoder.resFileMapping)
+
+                    apkInfo.usesFramework = UsesFramework().apply {
+                        ids = resourcesDecoder.resTable.listFramePackages().map { it.id }
+                    }
                 }
                 ResourceDecodingMode.MANIFEST_ONLY -> {
                     logger.info("Decoding app manifest")
