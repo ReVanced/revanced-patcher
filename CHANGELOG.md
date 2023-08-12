@@ -1,3 +1,12 @@
+# [13.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0-dev.1...v13.0.0-dev.2) (2023-08-12)
+
+
+### Bug Fixes
+
+* disable correct loggers ([c2d89c6](https://github.com/ReVanced/revanced-patcher/commit/c2d89c622e06e58e5042e1a00ef67cee8a246e53))
+* get framework ids to compile resources ([f2cb7ee](https://github.com/ReVanced/revanced-patcher/commit/f2cb7ee7dffa573c31df497cf235a3f5d120f91f))
+* set package metadata correctly ([02d6ff1](https://github.com/ReVanced/revanced-patcher/commit/02d6ff15fe87c2352de29749610e9d72db8ba418))
+
 # [13.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.1.1...v13.0.0-dev.1) (2023-08-11)
 
 
