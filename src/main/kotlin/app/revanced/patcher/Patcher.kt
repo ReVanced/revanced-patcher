@@ -225,15 +225,15 @@ class Patcher(private val options: PatcherOptions) {
                             }
                         }
                     )
-                }
-            }
 
-            // Get the package name and version from the manifest using the XmlPullStreamDecoder.
-            // XmlPullStreamDecoder.decodeManifest() sets metadata.apkInfo.
-            context.packageMetadata.let { metadata ->
-                metadata.packageName = resourcesDecoder.resTable.currentResPackage.name
-                apkInfo.versionInfo.let {
-                    metadata.packageVersion = it.versionName ?: it.versionCode
+                    // Get the package name and version from the manifest using the XmlPullStreamDecoder.
+                    // XmlPullStreamDecoder.decodeManifest() sets metadata.apkInfo.
+                    context.packageMetadata.let { metadata ->
+                        metadata.packageName = resourcesDecoder.resTable.packageRenamed
+                        apkInfo.versionInfo.let {
+                            metadata.packageVersion = it.versionName ?: it.versionCode
+                        }
+                    }
                 }
             }
         } finally {
