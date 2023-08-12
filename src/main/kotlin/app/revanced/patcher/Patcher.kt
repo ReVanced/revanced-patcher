@@ -54,13 +54,21 @@ class Patcher(private val options: PatcherOptions) {
     }
 
     init {
-        LogManager.getLogManager().getLogger("brut.*").useParentHandlers = false
+        // Disable unwanted logging.
+        LogManager.getLogManager().let {
+            listOf("app.revanced.apktool-lib", "app.revanced.brut.*").forEach { loggerName ->
+                it.getLogger(loggerName)?.useParentHandlers = false
+            }
+        }
 
         logger.info("Reading dex files")
+
         // read dex files
         val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
+
         // get the opcodes
         opcodes = dexFile.opcodes
+
         // finally create patcher context
         context = PatcherContext(dexFile.classes.toMutableList(), File(options.resourceCacheDirectory))
 
