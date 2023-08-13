@@ -11,7 +11,7 @@ val githubPassword: String = project.findProperty("gpr.key") as? String ?: Syste
 repositories {
     mavenCentral()
     google()
-    if (System.getenv("local")?.equals("false", ignoreCase = true) ?: false) {
+    if (System.getenv("local")?.equals("true", ignoreCase = true) ?: false) {
         println("Fetching from mavenLocal, unset your `local` variable if you want to use GitHub packages")
         mavenLocal()
     } else {
