@@ -11,7 +11,10 @@ val githubPassword: String = project.findProperty("gpr.key") as? String ?: Syste
 repositories {
     mavenCentral()
     google()
-    if (System.getenv("local")) {
+    if (System.getenv("local")?.equals("false", ignoreCase = true) ?: false) {
+        println("Fetching from mavenLocal, unset your `local` variable if you want to use GitHub packages")
+        mavenLocal()
+    } else {
         listOf("multidexlib2", "apktool").forEach { repo ->
             maven {
                 url = uri("https://maven.pkg.github.com/revanced/$repo")
@@ -21,9 +24,6 @@ repositories {
                 }
             }
         }
-    } else {
-        println("Fetching from mavenLocal, unset your `local` variable if you want to use GitHub packages")
-        mavenLocal()
     }
 }
 
