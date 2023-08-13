@@ -11,13 +11,14 @@ val githubPassword: String = project.findProperty("gpr.key") as? String ?: Syste
 repositories {
     mavenCentral()
     google()
-    listOf("multidexlib2", "apktool").forEach { repo ->
     if (System.getenv("local")) {
-        maven {
-            url = uri("https://maven.pkg.github.com/revanced/$repo")
-            credentials {
-                username = githubUsername
-                password = githubPassword
+        listOf("multidexlib2", "apktool").forEach { repo ->
+            maven {
+                url = uri("https://maven.pkg.github.com/revanced/$repo")
+                credentials {
+                    username = project.findProperty("gpr.user") as? String ?: System.getenv("GITHUB_ACTOR")
+                    password = project.findProperty("gpr.key") as? String ?: System.getenv("GITHUB_TOKEN")
+                }
             }
         }
     } else {
