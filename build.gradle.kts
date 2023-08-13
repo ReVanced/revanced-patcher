@@ -24,6 +24,7 @@ repositories {
         println("Fetching from mavenLocal, unset your `local` variable if you want to use GitHub packages")
         mavenLocal()
     }
+}
 
 dependencies {
     implementation("xpp3:xpp3:1.1.4c")
