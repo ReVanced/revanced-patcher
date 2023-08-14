@@ -4,14 +4,14 @@ import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import org.antlr.runtime.CommonTokenStream
 import org.antlr.runtime.TokenSource
 import org.antlr.runtime.tree.CommonTreeNodeStream
-import org.jf.dexlib2.AccessFlags
-import org.jf.dexlib2.Opcodes
-import org.jf.dexlib2.builder.BuilderInstruction
-import org.jf.dexlib2.writer.builder.DexBuilder
-import org.jf.smali.LexerErrorInterface
-import org.jf.smali.smaliFlexLexer
-import org.jf.smali.smaliParser
-import org.jf.smali.smaliTreeWalker
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcodes
+import com.android.tools.smali.dexlib2.builder.BuilderInstruction
+import com.android.tools.smali.dexlib2.writer.builder.DexBuilder
+import com.android.tools.smali.smali.LexerErrorInterface
+import com.android.tools.smali.smali.smaliFlexLexer
+import com.android.tools.smali.smali.smaliParser
+import com.android.tools.smali.smali.smaliTreeWalker
 import java.io.InputStreamReader
 
 private const val METHOD_TEMPLATE = """

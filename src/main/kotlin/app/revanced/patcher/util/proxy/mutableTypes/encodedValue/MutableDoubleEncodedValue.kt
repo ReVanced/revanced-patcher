@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseDoubleEncodedValue
-import org.jf.dexlib2.iface.value.DoubleEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseDoubleEncodedValue
+import com.android.tools.smali.dexlib2.iface.value.DoubleEncodedValue
 
 class MutableDoubleEncodedValue(doubleEncodedValue: DoubleEncodedValue) : BaseDoubleEncodedValue(),
     MutableEncodedValue {

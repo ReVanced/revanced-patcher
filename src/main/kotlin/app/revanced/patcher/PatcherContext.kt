@@ -4,7 +4,7 @@ import app.revanced.patcher.data.*
 import app.revanced.patcher.logging.Logger
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.util.ClassMerger.merge
-import org.jf.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import java.io.File
 
 data class PatcherContext(

@@ -2,8 +2,8 @@ package app.revanced.patcher.data
 
 import app.revanced.patcher.util.ProxyBackedClassList
 import app.revanced.patcher.util.method.MethodWalker
-import org.jf.dexlib2.iface.ClassDef
-import org.jf.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
 import org.w3c.dom.Document
 import java.io.Closeable
 import java.io.File

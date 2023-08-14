@@ -15,20 +15,20 @@ import app.revanced.patcher.usage.resource.patch.ExampleResourcePatch
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import com.google.common.collect.ImmutableList
-import org.jf.dexlib2.AccessFlags
-import org.jf.dexlib2.Format
-import org.jf.dexlib2.Opcode
-import org.jf.dexlib2.builder.MutableMethodImplementation
-import org.jf.dexlib2.builder.instruction.BuilderInstruction11x
-import org.jf.dexlib2.builder.instruction.BuilderInstruction21c
-import org.jf.dexlib2.iface.instruction.formats.Instruction21c
-import org.jf.dexlib2.immutable.ImmutableField
-import org.jf.dexlib2.immutable.ImmutableMethod
-import org.jf.dexlib2.immutable.ImmutableMethodImplementation
-import org.jf.dexlib2.immutable.reference.ImmutableFieldReference
-import org.jf.dexlib2.immutable.reference.ImmutableStringReference
-import org.jf.dexlib2.immutable.value.ImmutableFieldEncodedValue
-import org.jf.dexlib2.util.Preconditions
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Format
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x
+import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
+import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction21c
+import com.android.tools.smali.dexlib2.immutable.ImmutableField
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
+import com.android.tools.smali.dexlib2.immutable.value.ImmutableFieldEncodedValue
+import com.android.tools.smali.dexlib2.util.Preconditions
 
 @Patch
 @Name("example-bytecode-patch")

@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseShortEncodedValue
-import org.jf.dexlib2.iface.value.ShortEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseShortEncodedValue
+import com.android.tools.smali.dexlib2.iface.value.ShortEncodedValue
 
 class MutableShortEncodedValue(shortEncodedValue: ShortEncodedValue) : BaseShortEncodedValue(), MutableEncodedValue {
     private var value = shortEncodedValue.value

@@ -6,7 +6,7 @@ import app.revanced.patcher.data.Context
 import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.patch.Patch
-import org.jf.dexlib2.DexFileFactory
+import com.android.tools.smali.dexlib2.DexFileFactory
 import java.io.File
 import java.net.URLClassLoader
 import java.util.jar.JarFile

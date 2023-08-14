@@ -79,10 +79,10 @@ class PatchOptions(vararg options: PatchOption<*>) : Iterable<PatchOption<*>> {
 
 /**
  * A [Patch] option.
- * @param key Unique identifier of the option. Example: _`settings.microg.enabled`_
+ * @param key Unique identifier of the option. Example: _`settings`_
  * @param default The default value of the option.
- * @param title A human-readable title of the option. Example: _MicroG Settings_
- * @param description A human-readable description of the option. Example: _Settings integration for MicroG._
+ * @param title A human-readable title of the option. Example: _Patch Settings_
+ * @param description A human-readable description of the option. Example: _Settings for the patches._
  * @param required Whether the option is required.
  */
 @Suppress("MemberVisibilityCanBePrivate")

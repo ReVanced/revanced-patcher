@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseLongEncodedValue
-import org.jf.dexlib2.iface.value.LongEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseLongEncodedValue
+import com.android.tools.smali.dexlib2.iface.value.LongEncodedValue
 
 class MutableLongEncodedValue(longEncodedValue: LongEncodedValue) : BaseLongEncodedValue(), MutableEncodedValue {
     private var value = longEncodedValue.value

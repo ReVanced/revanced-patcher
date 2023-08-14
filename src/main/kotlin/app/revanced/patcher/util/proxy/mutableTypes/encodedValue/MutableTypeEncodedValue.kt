@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.proxy.mutableTypes.encodedValue
 
-import org.jf.dexlib2.base.value.BaseTypeEncodedValue
-import org.jf.dexlib2.iface.value.TypeEncodedValue
+import com.android.tools.smali.dexlib2.base.value.BaseTypeEncodedValue
+import com.android.tools.smali.dexlib2.iface.value.TypeEncodedValue
 
 class MutableTypeEncodedValue(typeEncodedValue: TypeEncodedValue) : BaseTypeEncodedValue(), MutableEncodedValue {
     private var value = typeEncodedValue.value

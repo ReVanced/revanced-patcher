@@ -2,10 +2,10 @@ package app.revanced.patcher.util.method
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
-import org.jf.dexlib2.iface.Method
-import org.jf.dexlib2.iface.instruction.ReferenceInstruction
-import org.jf.dexlib2.iface.reference.MethodReference
-import org.jf.dexlib2.util.MethodUtil
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.util.MethodUtil
 
 /**
  * Find a method from another method via instruction offsets.
