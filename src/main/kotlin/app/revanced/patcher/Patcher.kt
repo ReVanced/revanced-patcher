@@ -208,8 +208,8 @@ class Patcher(private val options: PatcherOptions) {
 
                     val outDir = options.recreateResourceCacheDirectory()
 
-                    resourcesDecoder.decodeManifest(outDir)
                     resourcesDecoder.decodeResources(outDir)
+                    resourcesDecoder.decodeManifest(outDir)
 
                     apkDecoder.recordUncompressedFiles(resourcesDecoder.resFileMapping)
 
