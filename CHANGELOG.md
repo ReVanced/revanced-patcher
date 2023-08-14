@@ -1,3 +1,11 @@
+# [13.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0-dev.2...v13.0.0-dev.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* decode in correct order ([8fb2f2d](https://github.com/ReVanced/revanced-patcher/commit/8fb2f2dc1d3b9b1e9fd13b39485985d2886d52ae))
+* only enable logging for ReVanced ([783ccf8](https://github.com/ReVanced/revanced-patcher/commit/783ccf8529f5d16aa463982da6977328306232bb))
+
 # [13.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0-dev.1...v13.0.0-dev.2) (2023-08-12)
 
 
