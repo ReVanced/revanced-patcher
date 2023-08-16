@@ -209,9 +209,9 @@ class Patcher(private val options: PatcherOptions) {
         try {
             when (mode) {
                 ResourceDecodingMode.FULL -> {
-                    logger.info("Decoding resources")
-
                     val outDir = options.recreateResourceCacheDirectory()
+
+                    logger.info("Decoding resources")
 
                     resourcesDecoder.decodeResources(outDir)
                     resourcesDecoder.decodeManifest(outDir)
