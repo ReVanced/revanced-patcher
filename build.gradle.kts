@@ -11,6 +11,7 @@ val githubPassword: String = project.findProperty("gpr.key") as? String ?: Syste
 repositories {
     mavenCentral()
     google()
+    mavenLocal()
     listOf("multidexlib2", "apktool").forEach { repo ->
         maven {
             url = uri("https://maven.pkg.github.com/revanced/$repo")
