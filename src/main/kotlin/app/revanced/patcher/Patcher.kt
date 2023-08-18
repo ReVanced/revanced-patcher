@@ -28,6 +28,7 @@ import java.io.Closeable
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Files
+import java.util.logging.Level
 import java.util.logging.LogManager
 
 internal val NAMER = BasicDexFileNamer()
@@ -55,10 +56,14 @@ class Patcher(private val options: PatcherOptions) {
 
     init {
         // Disable unwanted logging.
-        LogManager.getLogManager().let {
-            listOf("app.revanced.apktool-lib", "app.revanced.brut.*").forEach { loggerName ->
-                it.getLogger(loggerName)?.useParentHandlers = false
-            }
+        LogManager.getLogManager().let { manager ->
+            manager.getLogger("").level = Level.OFF // Disable root logger.
+            // Enable only ReVanced logging.
+            manager.loggerNames
+                .toList()
+                .filter { it.startsWith("app.revanced") }
+                .map { manager.getLogger(it) }
+                .forEach { it.level = Level.INFO }
         }
 
         logger.info("Reading dex files")
@@ -208,8 +213,8 @@ class Patcher(private val options: PatcherOptions) {
 
                     val outDir = options.recreateResourceCacheDirectory()
 
-                    resourcesDecoder.decodeManifest(outDir)
                     resourcesDecoder.decodeResources(outDir)
+                    resourcesDecoder.decodeManifest(outDir)
 
                     apkDecoder.recordUncompressedFiles(resourcesDecoder.resFileMapping)
 
