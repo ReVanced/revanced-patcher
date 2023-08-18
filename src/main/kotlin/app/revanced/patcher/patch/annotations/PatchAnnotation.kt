@@ -16,12 +16,12 @@ annotation class Patch(val include: Boolean = true)
  */
 @Target(AnnotationTarget.CLASS)
 annotation class DependsOn(
-    val dependencies: Array<KClass<out Patch<Context>>> = []
+    val dependencies: Array<KClass<out Patch<Context<*>>>> = []
 )
 
-
+// TODO: Remove this annotation, once integrations are coupled with patches.
 /**
  * Annotation to mark [Patch]es which depend on integrations.
  */
 @Target(AnnotationTarget.CLASS)
-annotation class RequiresIntegrations // required because integrations are decoupled from patches
+annotation class RequiresIntegrations

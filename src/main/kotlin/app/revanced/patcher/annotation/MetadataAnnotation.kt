@@ -19,14 +19,3 @@ annotation class Name(
 annotation class Description(
     val description: String,
 )
-
-
-/**
- * Annotation to version a [Patch].
- * @param version The version of a [Patch].
- */
-@Target(AnnotationTarget.CLASS)
-@Deprecated("This annotation is deprecated and will be removed in a future release.")
-annotation class Version(
-    val version: String,
-)

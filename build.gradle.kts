@@ -24,12 +24,15 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     implementation("xpp3:xpp3:1.1.4c")
     implementation("com.android.tools.smali:smali:3.0.3")
     implementation("app.revanced:multidexlib2:3.0.3.r2")
     implementation("app.revanced:apktool-lib:2.8.2-3")
-
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.22")
+
+    compileOnly("com.google.android:android:4.1.1.4")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.20-RC")
 }
 
