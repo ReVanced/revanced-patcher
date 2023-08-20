@@ -5,7 +5,7 @@ package app.revanced.patcher
 import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchClass
-import dalvik.system.PathClassLoader
+import dalvik.system.DexClassLoader
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.MultiDexIO
 import java.io.File
@@ -36,43 +36,36 @@ sealed class PatchBundleLoader private constructor(
      *
      * @param patchBundles The path to patch bundles of JAR format.
      */
-    class Jar(private vararg val patchBundles: File) : PatchBundleLoader(
-        with(URLClassLoader(patchBundles.map { it.toURI().toURL() }.toTypedArray())) {
+    class Jar(vararg patchBundles: File) :
+        PatchBundleLoader(with(URLClassLoader(patchBundles.map { it.toURI().toURL() }.toTypedArray())) {
             patchBundles.flatMap { patchBundle ->
                 // Get the names of all classes in the DEX file.
 
                 JarFile(patchBundle).entries().asSequence()
                     .filter { it.name.endsWith(".class") }
-                    .map {
-                        loadClass(it.name.replace('/', '.').replace(".class", ""))
-                    }
+                    .map { it.name.replace('/', '.').replace(".class", "") }
+                    .map { loadClass(it) }
             }
-        }
-    )
+        })
 
     /**
      * A [PatchBundleLoader] for [Dex] files.
      *
-     * @param patchBundlesPath The path to or a path to a directory containing patch bundles of DEX format.
+     * @param patchBundles The path to patch bundles of DEX format.
      */
-    class Dex(private val patchBundlesPath: File) : PatchBundleLoader(
-        with(PathClassLoader(patchBundlesPath.absolutePath, null)) {
-            fun readDexFile(file: File) = MultiDexIO.readDexFile(
-                true,
-                file,
-                BasicDexFileNamer(),
-                null,
-                null
-            )
-
-            // Get the names of all classes in the DEX file.
-
-            val dexFiles = if (patchBundlesPath.isFile) listOf(readDexFile(patchBundlesPath))
-            else patchBundlesPath.listFiles { it -> it.isFile }?.map { readDexFile(it) } ?: emptyList()
-
-            dexFiles.flatMap { it.classes }.map { classDef ->
-                classDef.type.substring(1, classDef.length - 1).replace('/', '.')
-            }.map { loadClass(it) }
-        }
-    )
+    class Dex(vararg patchBundles: File) : PatchBundleLoader(with(
+        DexClassLoader(
+            patchBundles.joinToString(File.pathSeparator) { it.absolutePath },
+            null,
+            null,
+            PatchBundleLoader::class.java.classLoader
+        )
+    ) {
+        patchBundles
+            .flatMap {
+                MultiDexIO.readDexFile(true, it, BasicDexFileNamer(), null, null).classes
+            }
+            .map { classDef -> classDef.type.substring(1, classDef.length - 1) }
+            .map { loadClass(it) }
+    })
 }
