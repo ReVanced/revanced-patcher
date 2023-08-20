@@ -30,8 +30,6 @@ class Patcher(
     val context = PatcherContext(options)
 
     init {
-        options.logger.info("Instantiating ReVanced Patcher")
-
         LogManager.getLogManager().let { manager ->
             // Disable root logger.
             manager.getLogger("").level = Level.OFF
