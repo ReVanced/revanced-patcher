@@ -1,3 +1,15 @@
+# [14.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.2...v14.0.0-dev.3) (2023-08-20)
+
+
+### Bug Fixes
+
+* supply the parent classloader to `DexClassLoader` ([0f15077](https://github.com/ReVanced/revanced-patcher/commit/0f15077225600b65200022c1a318e504deb472b9))
+
+
+### Features
+
+* do not log instantiation of ReVanced Patcher ([273dd8d](https://github.com/ReVanced/revanced-patcher/commit/273dd8d388f8e9b7436c6d6145a94c12c1fabe55))
+
 # [14.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.1...v14.0.0-dev.2) (2023-08-19)
 
 # [14.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0...v14.0.0-dev.1) (2023-08-18)
