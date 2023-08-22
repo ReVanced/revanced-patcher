@@ -1,3 +1,27 @@
+# [14.0.0](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0...v14.0.0) (2023-08-22)
+
+
+### Bug Fixes
+
+* log decoding resources after logging deleting resource cache directory ([db62a16](https://github.com/ReVanced/revanced-patcher/commit/db62a1607b4a9d6256b5f5153decb088d9680553))
+* only emit closed patches that did not throw an exception with the `@Patch` annotation ([5938f6b](https://github.com/ReVanced/revanced-patcher/commit/5938f6b7ea25103a0a1b56ceebe49139bc80c6f5))
+* supply the parent classloader to `DexClassLoader` ([0f15077](https://github.com/ReVanced/revanced-patcher/commit/0f15077225600b65200022c1a318e504deb472b9))
+
+
+### Code Refactoring
+
+* improve structure and public API ([6b8977f](https://github.com/ReVanced/revanced-patcher/commit/6b8977f17854ef0344d868e6391cb18134eceadc))
+
+
+### Features
+
+* do not log instantiation of ReVanced Patcher ([273dd8d](https://github.com/ReVanced/revanced-patcher/commit/273dd8d388f8e9b7436c6d6145a94c12c1fabe55))
+
+
+### BREAKING CHANGES
+
+* Various public APIs have been changed. The `Version` annotation has been removed. Patches do not return anything anymore and instead throw `PatchException`. Multiple patch bundles can now be loaded in a single ClassLoader to bypass class loader isolation.
+
 # [14.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.3...v14.0.0-dev.4) (2023-08-22)
 
 
