@@ -1,3 +1,10 @@
+# [14.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.3...v14.0.0-dev.4) (2023-08-22)
+
+
+### Bug Fixes
+
+* only emit closed patches that did not throw an exception with the `@Patch` annotation ([5938f6b](https://github.com/ReVanced/revanced-patcher/commit/5938f6b7ea25103a0a1b56ceebe49139bc80c6f5))
+
 # [14.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.2...v14.0.0-dev.3) (2023-08-20)
 
 
