@@ -2,6 +2,7 @@ package app.revanced.patcher
 
 import app.revanced.patcher.data.Context
 import app.revanced.patcher.data.ResourceContext
+import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
@@ -202,7 +203,15 @@ class Patcher(
                     )
 
                     if (returnOnError) return@flow
-                } ?: emit(result)
+                } ?: run {
+                    executedPatch
+                        .patchInstance::class
+                        .java
+                        .findAnnotationRecursively(app.revanced.patcher.patch.annotations.Patch::class)
+                        ?: return@run
+
+                    emit(result)
+                }
             }
     }
 
