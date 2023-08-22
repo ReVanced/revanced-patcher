@@ -4,7 +4,7 @@ import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.Fingerprint
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
-import app.revanced.patcher.patch.PatchResultError
+import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -99,9 +99,9 @@ abstract class MethodFingerprint(
                 methodClassPairs!!.add(methodClassPair)
             }
 
-            if (methods.isNotEmpty()) MethodFingerprint.clearFingerprintResolutionLookupMaps()
+            if (methods.isNotEmpty()) clearFingerprintResolutionLookupMaps()
 
-            context.classes.classes.forEach { classDef ->
+            context.classes.forEach { classDef ->
                 classDef.methods.forEach { method ->
                     val methodClassPair = method to classDef
 
@@ -160,7 +160,7 @@ abstract class MethodFingerprint(
          * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
          */
         internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext) {
-            if (methods.isEmpty()) throw PatchResultError("lookup map not initialized")
+            if (methods.isEmpty()) throw PatchException("lookup map not initialized")
 
             for (fingerprint in this) {
                 fingerprint.resolveUsingLookupMap(context)

@@ -1,64 +1,41 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.data.Context
+import app.revanced.patcher.data.ResourceContext
+import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.extensions.PatchExtensions.dependencies
 import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.extensions.PatchExtensions.requiresIntegrations
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
-import brut.androlib.AaptInvoker
-import brut.androlib.ApkDecoder
-import brut.androlib.Config
-import brut.androlib.apk.ApkInfo
-import brut.androlib.apk.UsesFramework
-import brut.androlib.res.Framework
-import brut.androlib.res.ResourcesDecoder
-import brut.androlib.res.decoder.AndroidManifestResourceParser
-import brut.androlib.res.decoder.XmlPullStreamDecoder
-import brut.androlib.res.xml.ResXmlPatcher
-import brut.directory.ExtFile
-import com.android.tools.smali.dexlib2.Opcodes
-import com.android.tools.smali.dexlib2.iface.DexFile
-import com.android.tools.smali.dexlib2.writer.io.MemoryDataStore
-import lanchon.multidexlib2.BasicDexFileNamer
-import lanchon.multidexlib2.DexIO
-import lanchon.multidexlib2.MultiDexIO
+import kotlinx.coroutines.flow.flow
 import java.io.Closeable
 import java.io.File
-import java.io.OutputStream
-import java.nio.file.Files
+import java.util.function.Supplier
 import java.util.logging.Level
 import java.util.logging.LogManager
 
-internal val NAMER = BasicDexFileNamer()
-
 /**
- * The ReVanced Patcher.
+ * ReVanced Patcher.
+ *
  * @param options The options for the patcher.
  */
-class Patcher(private val options: PatcherOptions) {
-    val context: PatcherContext
-
-    private val logger = options.logger
-
-    private val opcodes: Opcodes
-
-    private var resourceDecodingMode = ResourceDecodingMode.MANIFEST_ONLY
-
-    private var mergeIntegrations = false
-
-    private val config = Config.getDefaultConfig().apply {
-        useAapt2 = true
-        aaptPath = options.aaptPath
-        frameworkDirectory = options.frameworkDirectory
-    }
+class Patcher(
+    private val options: PatcherOptions
+) : PatchExecutorFunction, PatchesConsumer, IntegrationsConsumer, Supplier<PatcherResult>, Closeable {
+    /**
+     * The context of ReVanced [Patcher].
+     * This holds the current state of the patcher.
+     */
+    val context = PatcherContext(options)
 
     init {
-        // Disable unwanted logging.
         LogManager.getLogManager().let { manager ->
-            manager.getLogger("").level = Level.OFF // Disable root logger.
-            // Enable only ReVanced logging.
+            // Disable root logger.
+            manager.getLogger("").level = Level.OFF
+
+            // Enable ReVanced logging only.
             manager.loggerNames
                 .toList()
                 .filter { it.startsWith("app.revanced") }
@@ -66,117 +43,22 @@ class Patcher(private val options: PatcherOptions) {
                 .forEach { it.level = Level.INFO }
         }
 
-        logger.info("Reading dex files")
-
-        // read dex files
-        val dexFile = MultiDexIO.readDexFile(true, options.inputFile, NAMER, null, null)
-
-        // get the opcodes
-        opcodes = dexFile.opcodes
-
-        // finally create patcher context
-        context = PatcherContext(dexFile.classes.toMutableList(), File(options.resourceCacheDirectory))
-
-        // decode manifest file
-        decodeResources(ResourceDecodingMode.MANIFEST_ONLY)
+        context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.MANIFEST_ONLY)
     }
 
-    /**
-     * Add integrations to be merged by the patcher.
-     * The integrations will only be merged, if necessary.
-     *
-     * @param integrations The integrations, must be dex files or dex file container such as ZIP, APK or DEX files.
-     * @param callback The callback for [integrations] which are being added.
-     */
-    fun addIntegrations(
-        integrations: List<File>,
-        callback: (File) -> Unit
-    ) {
-        context.integrations.apply integrations@{
-            add(integrations)
-            this@integrations.callback = callback
-        }
-    }
-
-    /**
-     * Save the patched dex file.
-     */
-    fun save(): PatcherResult {
-        var resourceFile: File? = null
-
-        if (resourceDecodingMode == ResourceDecodingMode.FULL) {
-            logger.info("Compiling resources")
-
-            val cacheDirectory = ExtFile(options.resourceCacheDirectory)
-            val aaptFile = cacheDirectory.resolve("aapt_temp_file").also {
-                Files.deleteIfExists(it.toPath())
-            }.also { resourceFile = it }
-
-            try {
-                AaptInvoker(
-                    config,
-                    context.packageMetadata.apkInfo
-                ).invokeAapt(
-                    aaptFile,
-                    cacheDirectory.resolve("AndroidManifest.xml").also {
-                        ResXmlPatcher.fixingPublicAttrsInProviderAttributes(it)
-                    },
-                    cacheDirectory.resolve("res"),
-                    null,
-                    null,
-                    context.packageMetadata.apkInfo.usesFramework.let { usesFramework ->
-                        usesFramework.ids.map { id ->
-                            Framework(config).getFrameworkApk(id, usesFramework.tag)
-                        }.toTypedArray()
-                    }
-                )
-            } finally {
-                cacheDirectory.close()
-            }
-        }
-
-        logger.info("Writing modified dex files")
-
-        return mutableMapOf<String, MemoryDataStore>().apply {
-            MultiDexIO.writeDexFile(
-                true,
-                -1, // Defaults to amount of available cores.
-                this,
-                NAMER,
-                object : DexFile {
-                    override fun getClasses() = context.bytecodeContext.classes.also { it.replaceClasses() }
-                    override fun getOpcodes() = this@Patcher.opcodes
-                },
-                DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
-                null
-            )
-        }.let { dexFiles ->
-            PatcherResult(
-                dexFiles.map {
-                    app.revanced.patcher.util.dex.DexFile(it.key, it.value.readAt(0))
-                },
-                context.packageMetadata.apkInfo.doNotCompress?.toList(),
-                resourceFile
-            )
-        }
-    }
-
-    /**
-     * Add [Patch]es to the patcher.
-     * @param patches [Patch]es The patches to add.
-     */
-    fun addPatches(patches: Iterable<Class<out Patch<Context>>>) {
+    override fun acceptPatches(patches: List<PatchClass>) {
         /**
          * Returns true if at least one patches or its dependencies matches the given predicate.
          */
-        fun Class<out Patch<Context>>.anyRecursively(predicate: (Class<out Patch<Context>>) -> Boolean): Boolean =
-            predicate(this) || dependencies?.any { it.java.anyRecursively(predicate) } == true
-
+        fun PatchClass.anyRecursively(predicate: (PatchClass) -> Boolean): Boolean =
+            predicate(this) || dependencies?.any { dependency ->
+                dependency.java.anyRecursively(predicate)
+            } ?: false
 
         // Determine if resource patching is required.
         for (patch in patches) {
             if (patch.anyRecursively { ResourcePatch::class.java.isAssignableFrom(it) }) {
-                resourceDecodingMode = ResourceDecodingMode.FULL
+                options.resourceDecodingMode = ResourceContext.ResourceDecodingMode.FULL
                 break
             }
         }
@@ -184,7 +66,7 @@ class Patcher(private val options: PatcherOptions) {
         // Determine if merging integrations is required.
         for (patch in patches) {
             if (patch.anyRecursively { it.requiresIntegrations }) {
-                mergeIntegrations = true
+                context.bytecodeContext.integrations.merge = true
                 break
             }
         }
@@ -193,209 +75,159 @@ class Patcher(private val options: PatcherOptions) {
     }
 
     /**
-     * Decode resources for the patcher.
+     * Add integrations to the [Patcher].
      *
-     * @param mode The [ResourceDecodingMode] to use when decoding.
+     * @param integrations The integrations to add. Must be a DEX file or container of DEX files.
      */
-    private fun decodeResources(mode: ResourceDecodingMode) {
-        val apkInfo = ApkInfo(ExtFile(options.inputFile)).also { context.packageMetadata.apkInfo = it }
-
-        // Needed to record uncompressed files.
-        val apkDecoder = ApkDecoder(config, apkInfo)
-
-        // Needed to decode resources.
-        val resourcesDecoder = ResourcesDecoder(config, apkInfo)
-
-        try {
-            when (mode) {
-                ResourceDecodingMode.FULL -> {
-                    logger.info("Decoding resources")
-
-                    val outDir = options.recreateResourceCacheDirectory()
-
-                    resourcesDecoder.decodeResources(outDir)
-                    resourcesDecoder.decodeManifest(outDir)
-
-                    apkDecoder.recordUncompressedFiles(resourcesDecoder.resFileMapping)
-
-                    apkInfo.usesFramework = UsesFramework().apply {
-                        ids = resourcesDecoder.resTable.listFramePackages().map { it.id }
-                    }
-                }
-                ResourceDecodingMode.MANIFEST_ONLY -> {
-                    logger.info("Decoding app manifest")
-
-                    // Decode manually instead of using resourceDecoder.decodeManifest
-                    // because it does not support decoding to an OutputStream.
-                    XmlPullStreamDecoder(
-                        AndroidManifestResourceParser(resourcesDecoder.resTable),
-                        resourcesDecoder.resXmlSerializer
-                    ).decodeManifest(
-                        apkInfo.apkFile.directory.getFileInput("AndroidManifest.xml"),
-                        // Older Android versions do not support OutputStream.nullOutputStream()
-                        object : OutputStream() {
-                            override fun write(b: Int) { /* do nothing */
-                            }
-                        }
-                    )
-
-                    // Get the package name and version from the manifest using the XmlPullStreamDecoder.
-                    // XmlPullStreamDecoder.decodeManifest() sets metadata.apkInfo.
-                    context.packageMetadata.let { metadata ->
-                        metadata.packageName = resourcesDecoder.resTable.packageRenamed
-                        apkInfo.versionInfo.let {
-                            metadata.packageVersion = it.versionName ?: it.versionCode
-                        }
-                    }
-                }
-            }
-        } finally {
-            apkInfo.apkFile.close()
-        }
+    override fun acceptIntegrations(integrations: List<File>) {
+        context.bytecodeContext.integrations.addAll(integrations)
     }
 
     /**
-     * Execute patches added the patcher.
+     * Execute [Patch]es that were added to ReVanced [Patcher].
      *
-     * @param stopOnError If true, the patches will stop on the first error.
+     * @param returnOnError If true, ReVanced [Patcher] will return immediately if a [Patch] fails.
      * @return A pair of the name of the [Patch] and its [PatchResult].
      */
-    fun executePatches(stopOnError: Boolean = false): Sequence<Pair<String, Result<PatchResultSuccess>>> {
+    override fun apply(returnOnError: Boolean) = flow {
+        class ExecutedPatch(val patchInstance: Patch<Context<*>>, val patchResult: PatchResult)
+
         /**
          * Execute a [Patch] and its dependencies recursively.
          *
          * @param patchClass The [Patch] to execute.
-         * @param executedPatches A map of [Patch]es paired to a boolean indicating their success, to prevent infinite recursion.
+         * @param executedPatches A map to prevent [Patch]es from being executed twice due to dependencies.
          * @return The result of executing the [Patch].
          */
         fun executePatch(
-            patchClass: Class<out Patch<Context>>,
+            patchClass: PatchClass,
             executedPatches: LinkedHashMap<String, ExecutedPatch>
         ): PatchResult {
             val patchName = patchClass.patchName
 
-            // if the patch has already applied silently skip it
-            if (executedPatches.contains(patchName)) {
-                if (!executedPatches[patchName]!!.success)
-                    return PatchResultError("'$patchName' did not succeed previously")
+            executedPatches[patchName]?.let { executedPatch ->
+                executedPatch.patchResult.exception ?: return executedPatch.patchResult
 
-                logger.trace("Skipping '$patchName' because it has already been applied")
-
-                return PatchResultSuccess()
+                // Return a new result with an exception indicating that the patch was not executed previously,
+                // because it is a dependency of another patch that failed.
+                return PatchResult(patchName, PatchException("'$patchName' did not succeed previously"))
             }
 
-            // recursively execute all dependency patches
+            // Recursively execute all dependency patches.
             patchClass.dependencies?.forEach { dependencyClass ->
                 val dependency = dependencyClass.java
 
                 val result = executePatch(dependency, executedPatches)
-                if (result.isSuccess()) return@forEach
 
-                return PatchResultError(
-                    "'$patchName' depends on '${dependency.patchName}' but the following error was raised: " +
-                            result.error()!!.let { it.cause?.stackTraceToString() ?: it.message }
-                )
+                result.exception?.let {
+                    return PatchResult(
+                        patchName,
+                        PatchException(
+                            "'$patchName' depends on '${dependency.patchName}' that raised an exception: $it"
+                        )
+                    )
+                }
             }
 
-            val isResourcePatch = ResourcePatch::class.java.isAssignableFrom(patchClass)
+            // TODO: Implement this in a more polymorphic way.
             val patchInstance = patchClass.getDeclaredConstructor().newInstance()
 
-            // TODO: implement this in a more polymorphic way
-            val patchContext = if (isResourcePatch) {
-                context.resourceContext
-            } else {
-                context.bytecodeContext.also { context ->
-                    (patchInstance as BytecodePatch).fingerprints?.resolveUsingLookupMap(context)
-                }
-            }
+            val patchContext = if (patchInstance is BytecodePatch) {
+                patchInstance.fingerprints?.resolveUsingLookupMap(context.bytecodeContext)
 
-            logger.trace("Executing '$patchName' of type: ${if (isResourcePatch) "resource" else "bytecode"}")
+                context.bytecodeContext
+            } else {
+                context.resourceContext
+            }
 
             return try {
-                patchInstance.execute(patchContext).also {
-                    executedPatches[patchName] = ExecutedPatch(patchInstance, it.isSuccess())
-                }
-            } catch (e: Exception) {
-                PatchResultError(e).also {
-                    executedPatches[patchName] = ExecutedPatch(patchInstance, false)
-                }
+                patchInstance.execute(patchContext)
+
+                PatchResult(patchName)
+            } catch (exception: PatchException) {
+                PatchResult(patchName, exception)
+            } catch (exception: Exception) {
+                PatchResult(patchName, PatchException(exception))
+            }.also { executedPatches[patchName] = ExecutedPatch(patchInstance, it) }
+        }
+
+        if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
+
+        MethodFingerprint.initializeFingerprintResolutionLookupMaps(context.bytecodeContext)
+
+        // Prevent from decoding the app manifest twice if it is not needed.
+        if (options.resourceDecodingMode == ResourceContext.ResourceDecodingMode.FULL)
+            context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.FULL)
+
+        options.logger.info("Executing patches")
+
+        val executedPatches = LinkedHashMap<String, ExecutedPatch>() // Key is name.
+
+        context.patches.forEach { patch ->
+            val result = executePatch(patch, executedPatches)
+
+            // If the patch failed, or if the patch is not closeable, emit the result.
+            // Results of patches that are closeable will be emitted later.
+            result.exception?.let {
+                emit(result)
+
+                if (returnOnError) return@flow
+            } ?: run {
+                if (executedPatches[result.patchName]!!.patchInstance is Closeable) return@run
+
+                emit(result)
             }
         }
 
-        return sequence {
-            if (mergeIntegrations) context.integrations.merge(logger)
+        executedPatches.values
+            .filter { it.patchResult.exception == null }
+            .filter { it.patchInstance is Closeable }.asReversed().forEach { executedPatch ->
+                val patchName = executedPatch.patchResult.patchName
 
-            logger.trace("Initialize lookup maps for method MethodFingerprint resolution")
+                val result = try {
+                    (executedPatch.patchInstance as Closeable).close()
 
-            MethodFingerprint.initializeFingerprintResolutionLookupMaps(context.bytecodeContext)
-
-            // prevent from decoding the manifest twice if it is not needed
-            if (resourceDecodingMode == ResourceDecodingMode.FULL) decodeResources(ResourceDecodingMode.FULL)
-
-            logger.info("Executing patches")
-
-            val executedPatches = LinkedHashMap<String, ExecutedPatch>() // first is name
-
-            context.patches.forEach { patch ->
-                val patchResult = executePatch(patch, executedPatches)
-
-                val result = if (patchResult.isSuccess()) {
-                    Result.success(patchResult.success()!!)
-                } else {
-                    Result.failure(patchResult.error()!!)
+                    executedPatch.patchResult
+                } catch (exception: PatchException) {
+                    PatchResult(patchName, exception)
+                } catch (exception: Exception) {
+                    PatchResult(patchName, PatchException(exception))
                 }
 
-                // TODO: This prints before the patch really finishes in case it is a Closeable
-                //  because the Closeable is closed after all patches are executed.
-                yield(patch.patchName to result)
+                result.exception?.let {
+                    emit(
+                        PatchResult(
+                            patchName,
+                            PatchException("'$patchName' raised an exception while being closed: $it")
+                        )
+                    )
 
-                if (stopOnError && patchResult.isError()) return@sequence
+                    if (returnOnError) return@flow
+                } ?: run {
+                    executedPatch
+                        .patchInstance::class
+                        .java
+                        .findAnnotationRecursively(app.revanced.patcher.patch.annotations.Patch::class)
+                        ?: return@run
+
+                    emit(result)
+                }
             }
+    }
 
-            executedPatches.values
-                .filter(ExecutedPatch::success)
-                .map(ExecutedPatch::patchInstance)
-                .filterIsInstance(Closeable::class.java)
-                .asReversed().forEach {
-                    try {
-                        it.close()
-                    } catch (exception: Exception) {
-                        val patchName = (it as Patch<Context>).javaClass.patchName
-
-                        logger.error("Failed to close '$patchName': ${exception.stackTraceToString()}")
-
-                        yield(patchName to Result.failure(exception))
-
-                        // This is not failsafe. If a patch throws an exception while closing,
-                        // the other patches that depend on it may fail.
-                        if (stopOnError) return@sequence
-                    }
-                }
-
-            MethodFingerprint.clearFingerprintResolutionLookupMaps()
-        }
+    override fun close() {
+        MethodFingerprint.clearFingerprintResolutionLookupMaps()
     }
 
     /**
-     * The type of decoding the resources.
+     * Compile and save the patched APK file.
+     *
+     * @return The [PatcherResult] containing the patched input files.
      */
-    private enum class ResourceDecodingMode {
-        /**
-         * Decode all resources.
-         */
-        FULL,
-
-        /**
-         * Decode the manifest file only.
-         */
-        MANIFEST_ONLY,
-    }
+    override fun get() = PatcherResult(
+        context.bytecodeContext.get(),
+        context.resourceContext.get(),
+        context.packageMetadata.apkInfo.doNotCompress?.toList()
+    )
 }
 
-/**
- * A result of executing a [Patch].
- *
- * @param patchInstance The instance of the [Patch] that was applied.
- * @param success The result of the [Patch].
- */
-internal data class ExecutedPatch(val patchInstance: Patch<Context>, val success: Boolean)

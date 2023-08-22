@@ -1,6 +1,6 @@
 package app.revanced.patcher.util
 
-import app.revanced.patcher.PatcherContext
+import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.logging.Logger
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
@@ -8,7 +8,7 @@ import app.revanced.patcher.util.ClassMerger.Utils.filterAny
 import app.revanced.patcher.util.ClassMerger.Utils.filterNotAny
 import app.revanced.patcher.util.ClassMerger.Utils.isPublic
 import app.revanced.patcher.util.ClassMerger.Utils.toPublic
-import app.revanced.patcher.util.TypeUtil.traverseClassHierarchy
+import app.revanced.patcher.util.ClassMerger.Utils.traverseClassHierarchy
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField
@@ -31,8 +31,9 @@ internal object ClassMerger {
      * @param otherClass The class to merge with
      * @param context The context to traverse the class hierarchy in.
      * @param logger A logger.
+     * @return The merged class or the original class if no merge was needed.
      */
-    fun ClassDef.merge(otherClass: ClassDef, context: PatcherContext, logger: Logger? = null) = this
+    fun ClassDef.merge(otherClass: ClassDef, context: BytecodeContext, logger: Logger? = null) = this
         //.fixFieldAccess(otherClass, logger)
         //.fixMethodAccess(otherClass, logger)
         .addMissingFields(otherClass, logger)
@@ -89,10 +90,10 @@ internal object ClassMerger {
      * @param context The context to traverse the class hierarchy in.
      * @param logger A logger.
      */
-    private fun ClassDef.publicize(reference: ClassDef, context: PatcherContext, logger: Logger? = null) =
+    private fun ClassDef.publicize(reference: ClassDef, context: BytecodeContext, logger: Logger? = null) =
         if (reference.accessFlags.isPublic() && !accessFlags.isPublic())
             this.asMutableClass().apply {
-                context.bytecodeContext.traverseClassHierarchy(this) {
+                context.traverseClassHierarchy(this) {
                     if (accessFlags.isPublic()) return@traverseClassHierarchy
 
                     logger?.trace("Publicizing ${this.type}")
@@ -161,6 +162,19 @@ internal object ClassMerger {
     }
 
     private object Utils {
+        /**
+         * traverse the class hierarchy starting from the given root class
+         *
+         * @param targetClass the class to start traversing the class hierarchy from
+         * @param callback function that is called for every class in the hierarchy
+         */
+        fun BytecodeContext.traverseClassHierarchy(targetClass: MutableClass, callback: MutableClass.() -> Unit) {
+            callback(targetClass)
+            this.findClass(targetClass.superclass ?: return)?.mutableClass?.let {
+                traverseClassHierarchy(it, callback)
+            }
+        }
+
         fun ClassDef.asMutableClass() = if (this is MutableClass) this else this.toMutable()
 
         /**

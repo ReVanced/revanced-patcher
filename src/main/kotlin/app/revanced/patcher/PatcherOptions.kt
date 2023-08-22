@@ -1,25 +1,42 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.logging.Logger
 import app.revanced.patcher.logging.impl.NopLogger
+import brut.androlib.Config
 import java.io.File
 
 /**
- * Options for the [Patcher].
- * @param inputFile The input file (usually an apk file).
- * @param resourceCacheDirectory Directory to cache resources.
- * @param aaptPath Optional path to a custom aapt binary.
- * @param frameworkDirectory Optional path to a custom framework directory.
- * @param logger Custom logger implementation for the [Patcher].
+ * Options for ReVanced [Patcher].
+ * @param inputFile The input file to patch.
+ * @param resourceCachePath The path to the directory to use for caching resources.
+ * @param aaptBinaryPath The path to a custom aapt binary.
+ * @param frameworkFileDirectory The path to the directory to cache the framework file in.
+ * @param logger A [Logger].
  */
 data class PatcherOptions(
     internal val inputFile: File,
-    internal val resourceCacheDirectory: String,
-    internal val aaptPath: String? = null,
-    internal val frameworkDirectory: String? = null,
+    internal val resourceCachePath: File = File("revanced-resource-cache"),
+    internal val aaptBinaryPath: String? = null,
+    internal val frameworkFileDirectory: String? = null,
     internal val logger: Logger = NopLogger
 ) {
-    fun recreateResourceCacheDirectory() = File(resourceCacheDirectory).also {
+    /**
+     * The mode to use for resource decoding.
+     * @see ResourceContext.ResourceDecodingMode
+     */
+    internal var resourceDecodingMode = ResourceContext.ResourceDecodingMode.MANIFEST_ONLY
+
+    /**
+     * The configuration to use for resource decoding and compiling.
+     */
+    internal val resourceConfig = Config.getDefaultConfig().apply {
+        useAapt2 = true
+        aaptPath = aaptBinaryPath ?: ""
+        frameworkDirectory = frameworkFileDirectory
+    }
+
+    fun recreateResourceCacheDirectory() = resourceCachePath.also {
         if (it.exists()) {
             logger.info("Deleting existing resource cache directory")
 

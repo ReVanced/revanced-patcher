@@ -22,8 +22,7 @@ object InstructionExtensions {
     fun MutableMethodImplementation.addInstructions(
         index: Int,
         instructions: List<BuilderInstruction>
-    ) =
-        instructions.asReversed().forEach { addInstruction(index, it) }
+    ) = instructions.asReversed().forEach { addInstruction(index, it) }
 
     /**
      * Add instructions to a method.
