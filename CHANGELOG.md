@@ -1,3 +1,10 @@
+# [14.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.0.1-dev.1...v14.1.0-dev.1) (2023-08-24)
+
+
+### Features
+
+* properly make use of logging facade ([ba56a6a](https://github.com/ReVanced/revanced-patcher/commit/ba56a6a2eef503c0d6cdd846ddce2e1474d8ed1a))
+
 ## [14.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0...v14.0.1-dev.1) (2023-08-23)
 
 
