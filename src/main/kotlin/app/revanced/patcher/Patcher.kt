@@ -15,6 +15,7 @@ import java.io.File
 import java.util.function.Supplier
 import java.util.logging.Level
 import java.util.logging.LogManager
+import java.util.logging.Logger
 
 /**
  * ReVanced Patcher.
@@ -24,6 +25,8 @@ import java.util.logging.LogManager
 class Patcher(
     private val options: PatcherOptions
 ) : PatchExecutorFunction, PatchesConsumer, IntegrationsConsumer, Supplier<PatcherResult>, Closeable {
+    private val logger = Logger.getLogger(Patcher::class.java.name)
+
     /**
      * The context of ReVanced [Patcher].
      * This holds the current state of the patcher.
@@ -159,7 +162,7 @@ class Patcher(
         if (options.resourceDecodingMode == ResourceContext.ResourceDecodingMode.FULL)
             context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.FULL)
 
-        options.logger.info("Executing patches")
+        logger.info("Executing patches")
 
         val executedPatches = LinkedHashMap<String, ExecutedPatch>() // Key is name.
 
