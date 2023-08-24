@@ -1,8 +1,10 @@
 package app.revanced.patcher.data
 
+import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.PatcherOptions
 import app.revanced.patcher.PatcherResult
-import app.revanced.patcher.logging.Logger
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.annotations.RequiresIntegrations
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.ProxyClassList
 import app.revanced.patcher.util.method.MethodWalker
@@ -17,6 +19,7 @@ import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import java.io.File
 import java.io.Flushable
+import java.util.logging.Logger
 
 /**
  * A context for bytecode.
@@ -26,6 +29,8 @@ import java.io.Flushable
  */
 class BytecodeContext internal constructor(private val options: PatcherOptions) :
     Context<List<PatcherResult.PatchedDexFile>> {
+    private val logger = Logger.getLogger(BytecodeContext::class.java.name)
+
     /**
      * [Opcodes] of the supplied [PatcherOptions.inputFile].
      */
@@ -45,7 +50,7 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
     /**
      * The [Integrations] of this [PatcherContext].
      */
-    internal val integrations = Integrations(options.logger)
+    internal val integrations = Integrations()
 
     /**
      * Find a class by a given class name.
@@ -88,10 +93,8 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
 
     /**
      * The integrations of a [PatcherContext].
-     *
-     * @param logger The logger to use.
      */
-    internal inner class Integrations(private val logger: Logger) : MutableList<File> by mutableListOf(), Flushable {
+    internal inner class Integrations : MutableList<File> by mutableListOf(), Flushable {
         /**
          * Whether to merge integrations.
          * True when any supplied [Patch] is annotated with [RequiresIntegrations].
@@ -112,14 +115,14 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
                     null
                 ).classes.forEach classDef@{ classDef ->
                     val existingClass = classes.find { it == classDef } ?: run {
-                        logger.trace("Merging $classDef")
+                        logger.fine("Merging $classDef")
                         classes.add(classDef)
                         return@classDef
                     }
 
-                    logger.trace("$classDef exists. Adding missing methods and fields.")
+                    logger.fine("$classDef exists. Adding missing methods and fields.")
 
-                    existingClass.merge(classDef, this@BytecodeContext, logger).let { mergedClass ->
+                    existingClass.merge(classDef, this@BytecodeContext).let { mergedClass ->
                         // If the class was merged, replace the original class with the merged class.
                         if (mergedClass === existingClass) return@let
                         classes.apply { remove(existingClass); add(mergedClass) }
@@ -137,7 +140,7 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
      * @return The compiled bytecode.
      */
     override fun get(): List<PatcherResult.PatchedDexFile> {
-        options.logger.info("Compiling modified dex files")
+        logger.info("Compiling modified dex files")
 
         return mutableMapOf<String, MemoryDataStore>().apply {
             MultiDexIO.writeDexFile(

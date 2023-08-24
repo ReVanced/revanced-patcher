@@ -2,7 +2,6 @@ package app.revanced.patcher.util
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.or
-import app.revanced.patcher.logging.Logger
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
 import app.revanced.patcher.util.ClassMerger.Utils.filterAny
 import app.revanced.patcher.util.ClassMerger.Utils.filterNotAny
@@ -18,6 +17,7 @@ import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMu
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import java.util.logging.Logger
 import kotlin.reflect.KFunction2
 
 /**
@@ -25,28 +25,28 @@ import kotlin.reflect.KFunction2
  * Note: This will not consider method implementations or if the class is missing a superclass or interfaces.
  */
 internal object ClassMerger {
+    private val logger = Logger.getLogger(ClassMerger::class.java.name)
+
     /**
      * Merge a class with [otherClass].
      *
      * @param otherClass The class to merge with
      * @param context The context to traverse the class hierarchy in.
-     * @param logger A logger.
      * @return The merged class or the original class if no merge was needed.
      */
-    fun ClassDef.merge(otherClass: ClassDef, context: BytecodeContext, logger: Logger? = null) = this
-        //.fixFieldAccess(otherClass, logger)
-        //.fixMethodAccess(otherClass, logger)
-        .addMissingFields(otherClass, logger)
-        .addMissingMethods(otherClass, logger)
-        .publicize(otherClass, context, logger)
+    fun ClassDef.merge(otherClass: ClassDef, context: BytecodeContext) = this
+        //.fixFieldAccess(otherClass)
+        //.fixMethodAccess(otherClass)
+        .addMissingFields(otherClass)
+        .addMissingMethods(otherClass)
+        .publicize(otherClass, context)
 
     /**
      * Add methods which are missing but existing in [fromClass].
      *
      * @param fromClass The class to add missing methods from.
-     * @param logger A logger.
      */
-    private fun ClassDef.addMissingMethods(fromClass: ClassDef, logger: Logger? = null): ClassDef {
+    private fun ClassDef.addMissingMethods(fromClass: ClassDef): ClassDef {
         val missingMethods = fromClass.methods.let { fromMethods ->
             methods.filterNot { method ->
                 fromMethods.any { fromMethod ->
@@ -57,7 +57,7 @@ internal object ClassMerger {
 
         if (missingMethods.isEmpty()) return this
 
-        logger?.trace("Found ${missingMethods.size} missing methods")
+        logger.fine("Found ${missingMethods.size} missing methods")
 
         return asMutableClass().apply {
             methods.addAll(missingMethods.map { it.toMutable() })
@@ -68,16 +68,15 @@ internal object ClassMerger {
      * Add fields which are missing but existing in [fromClass].
      *
      * @param fromClass The class to add missing fields from.
-     * @param logger A logger.
      */
-    private fun ClassDef.addMissingFields(fromClass: ClassDef, logger: Logger? = null): ClassDef {
+    private fun ClassDef.addMissingFields(fromClass: ClassDef): ClassDef {
         val missingFields = fields.filterNotAny(fromClass.fields) { field, fromField ->
             fromField.name == field.name
         }
 
         if (missingFields.isEmpty()) return this
 
-        logger?.trace("Found ${missingFields.size} missing fields")
+        logger.fine("Found ${missingFields.size} missing fields")
 
         return asMutableClass().apply {
             fields.addAll(missingFields.map { it.toMutable() })
@@ -88,15 +87,14 @@ internal object ClassMerger {
      * Make a class and its super class public recursively.
      * @param reference The class to check the [AccessFlags] of.
      * @param context The context to traverse the class hierarchy in.
-     * @param logger A logger.
      */
-    private fun ClassDef.publicize(reference: ClassDef, context: BytecodeContext, logger: Logger? = null) =
+    private fun ClassDef.publicize(reference: ClassDef, context: BytecodeContext) =
         if (reference.accessFlags.isPublic() && !accessFlags.isPublic())
             this.asMutableClass().apply {
                 context.traverseClassHierarchy(this) {
                     if (accessFlags.isPublic()) return@traverseClassHierarchy
 
-                    logger?.trace("Publicizing ${this.type}")
+                    logger.fine("Publicizing ${this.type}")
 
                     accessFlags = accessFlags.toPublic()
                 }
@@ -107,9 +105,8 @@ internal object ClassMerger {
      * Publicize fields if they are public in [reference].
      *
      * @param reference The class to check the [AccessFlags] of the fields in.
-     * @param logger A logger.
      */
-    private fun ClassDef.fixFieldAccess(reference: ClassDef, logger: Logger? = null): ClassDef {
+    private fun ClassDef.fixFieldAccess(reference: ClassDef): ClassDef {
         val brokenFields = fields.filterAny(reference.fields) { field, referenceField ->
             if (field.name != referenceField.name) return@filterAny false
 
@@ -118,7 +115,7 @@ internal object ClassMerger {
 
         if (brokenFields.isEmpty()) return this
 
-        logger?.trace("Found ${brokenFields.size} broken fields")
+        logger.fine("Found ${brokenFields.size} broken fields")
 
         /**
          * Make a field public.
@@ -136,9 +133,8 @@ internal object ClassMerger {
      * Publicize methods if they are public in [reference].
      *
      * @param reference The class to check the [AccessFlags] of the methods in.
-     * @param logger A logger.
      */
-    private fun ClassDef.fixMethodAccess(reference: ClassDef, logger: Logger? = null): ClassDef {
+    private fun ClassDef.fixMethodAccess(reference: ClassDef): ClassDef {
         val brokenMethods = methods.filterAny(reference.methods) { method, referenceMethod ->
             if (!MethodUtil.methodSignaturesMatch(method, referenceMethod)) return@filterAny false
 
@@ -147,7 +143,7 @@ internal object ClassMerger {
 
         if (brokenMethods.isEmpty()) return this
 
-        logger?.trace("Found ${brokenMethods.size} methods")
+        logger.fine("Found ${brokenMethods.size} methods")
 
         /**
          * Make a method public.
@@ -194,7 +190,6 @@ internal object ClassMerger {
         /**
          * Filter [this] on [needles] matching the given [predicate].
          *
-         * @param this The hay to filter for [needles].
          * @param needles The needles to filter [this] with.
          * @param predicate The filter.
          * @return The [this] filtered on [needles] matching the given [predicate].
@@ -206,7 +201,6 @@ internal object ClassMerger {
         /**
          * Filter [this] on [needles] not matching the given [predicate].
          *
-         * @param this The hay to filter for [needles].
          * @param needles The needles to filter [this] with.
          * @param predicate The filter.
          * @return The [this] filtered on [needles] not matching the given [predicate].

@@ -16,6 +16,7 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
+import java.util.logging.Logger
 
 /**
  * A context for resources.
@@ -27,6 +28,8 @@ class ResourceContext internal constructor(
     private val context: PatcherContext,
     private val options: PatcherOptions
 ) : Context<File?>, Iterable<File> {
+    private val logger = Logger.getLogger(ResourceContext::class.java.name)
+
     val xmlEditor = XmlFileHolder()
 
     /**
@@ -42,7 +45,7 @@ class ResourceContext internal constructor(
             ResourceDecodingMode.FULL -> {
                 val outDir = options.recreateResourceCacheDirectory()
 
-                options.logger.info("Decoding resources")
+                logger.info("Decoding resources")
 
                 resourcesDecoder.decodeResources(outDir)
                 resourcesDecoder.decodeManifest(outDir)
@@ -57,7 +60,7 @@ class ResourceContext internal constructor(
             }
 
             ResourceDecodingMode.MANIFEST_ONLY -> {
-                options.logger.info("Decoding app manifest")
+                logger.info("Decoding app manifest")
 
                 // Decode manually instead of using resourceDecoder.decodeManifest
                 // because it does not support decoding to an OutputStream.
@@ -100,7 +103,7 @@ class ResourceContext internal constructor(
         var resourceFile: File? = null
 
         if (options.resourceDecodingMode == ResourceDecodingMode.FULL) {
-            options.logger.info("Compiling modified resources")
+            logger.info("Compiling modified resources")
 
             val cacheDirectory = ExtFile(options.resourceCachePath)
             val aaptFile = cacheDirectory.resolve("aapt_temp_file").also {

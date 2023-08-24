@@ -5,35 +5,17 @@ plugins {
 
 group = "app.revanced"
 
-val githubUsername: String = project.findProperty("gpr.user") as? String ?: System.getenv("GITHUB_ACTOR")
-val githubPassword: String = project.findProperty("gpr.key") as? String ?: System.getenv("GITHUB_TOKEN")
-
-repositories {
-    mavenCentral()
-    google()
-    mavenLocal()
-    listOf("multidexlib2", "apktool").forEach { repo ->
-        maven {
-            url = uri("https://maven.pkg.github.com/revanced/$repo")
-            credentials {
-                username = githubUsername
-                password = githubPassword
-            }
-        }
-    }
-}
-
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    implementation("xpp3:xpp3:1.1.4c")
-    implementation("com.android.tools.smali:smali:3.0.3")
-    implementation("app.revanced:multidexlib2:3.0.3.r2")
-    implementation("app.revanced:apktool-lib:2.8.2-5")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.22")
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.xpp3)
+    implementation(libs.smali)
+    implementation(libs.multidexlib2)
+    implementation(libs.apktool.lib)
+    implementation(libs.kotlin.reflect)
 
-    compileOnly("com.google.android:android:4.1.1.4")
+    compileOnly(libs.android)
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.20-RC")
+    testImplementation(libs.kotlin.test)
 }
 
 tasks {
@@ -43,35 +25,28 @@ tasks {
             events("PASSED", "SKIPPED", "FAILED")
         }
     }
+
     processResources {
         expand("projectVersion" to project.version)
     }
 }
 
-java {
-    withSourcesJar()
-}
-
-kotlin {
-    jvmToolchain(11)
-}
+kotlin { jvmToolchain(11) }
 
 publishing {
     repositories {
-        if (System.getenv("GITHUB_ACTOR") != null)
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
-                credentials {
-                    username = System.getenv("GITHUB_ACTOR")
-                    password = System.getenv("GITHUB_TOKEN")
-                }
+        mavenLocal()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
-        else
-            mavenLocal()
+        }
     }
     publications {
-        register<MavenPublication>("gpr") {
+        create<MavenPublication>("gpr") {
             from(components["java"])
         }
     }
