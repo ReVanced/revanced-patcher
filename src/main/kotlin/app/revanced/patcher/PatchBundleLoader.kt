@@ -3,6 +3,7 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
+import app.revanced.patcher.extensions.PatchExtensions.patchName
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchClass
 import dalvik.system.DexClassLoader
@@ -28,6 +29,8 @@ sealed class PatchBundleLoader private constructor(
         }.map {
             @Suppress("UNCHECKED_CAST")
             it as PatchClass
+        }.sortedBy {
+            it.patchName
         }.let { addAll(it) }
     }
 
