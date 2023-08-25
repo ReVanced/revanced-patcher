@@ -1,3 +1,10 @@
+# [14.2.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.1.0...v14.2.0-dev.1) (2023-08-25)
+
+
+### Features
+
+* load patches in lexicographical order ([e8f2087](https://github.com/ReVanced/revanced-patcher/commit/e8f2087a6ffa6077fb3a6a69e29f3aec72e2fc1b))
+
 # [14.1.0](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0...v14.1.0) (2023-08-24)
 
 
