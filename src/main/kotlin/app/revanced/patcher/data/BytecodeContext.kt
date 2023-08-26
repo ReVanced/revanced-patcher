@@ -109,6 +109,7 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
 
             logger.info("Merging integrations")
 
+            // TODO: Multi-thread this.
             this@Integrations.forEach { integrations ->
                 MultiDexIO.readDexFile(
                     true,
