@@ -1,3 +1,10 @@
+# [14.2.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0-dev.2...v14.2.0-dev.3) (2023-08-26)
+
+
+### Performance Improvements
+
+* compare types of classes ([55d6945](https://github.com/ReVanced/revanced-patcher/commit/55d694579ac2718b9e2c61ca5f38419c3775ef87))
+
 # [14.2.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0-dev.1...v14.2.0-dev.2) (2023-08-26)
 
 
