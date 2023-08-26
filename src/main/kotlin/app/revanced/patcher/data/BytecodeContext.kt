@@ -107,6 +107,8 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
         override fun flush() {
             if (!merge) return
 
+            logger.info("Merging integrations")
+
             this@Integrations.forEach { integrations ->
                 MultiDexIO.readDexFile(
                     true,
