@@ -1,3 +1,10 @@
+# [14.2.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0-dev.1...v14.2.0-dev.2) (2023-08-26)
+
+
+### Features
+
+* log when merging integrations ([983563e](https://github.com/ReVanced/revanced-patcher/commit/983563efb6d7c8d289464b8bf71a016b8a735630))
+
 # [14.2.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.1.0...v14.2.0-dev.1) (2023-08-25)
 
 
