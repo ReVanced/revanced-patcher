@@ -33,6 +33,10 @@ tasks {
 
 kotlin { jvmToolchain(11) }
 
+java {
+    withSourcesJar()
+}
+
 publishing {
     repositories {
         mavenLocal()
