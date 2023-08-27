@@ -1,7 +1,3 @@
-plugins {
-    kotlin("jvm") version "1.9.0"
-}
-
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.xpp3)
@@ -17,41 +13,15 @@ dependencies {
 }
 
 tasks {
-    test {
-        useJUnitPlatform()
-        testLogging {
-            events("PASSED", "SKIPPED", "FAILED")
-        }
-    }
-
     processResources {
         expand("projectVersion" to project.version)
     }
 }
 
-kotlin { jvmToolchain(11) }
-
-java {
-    withSourcesJar()
-}
-
 publishing {
-    repositories {
-        mavenLocal()
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
     publications {
-        create<MavenPublication>("gpr") {
+        create<MavenPublication>("revanced-patcher-publication") {
             from(components["java"])
-
-            version = project.version.toString()
 
             pom {
                 name = "ReVanced Patcher"
