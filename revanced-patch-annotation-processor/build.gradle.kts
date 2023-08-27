@@ -1,5 +1,4 @@
 plugins {
-    kotlin("jvm") version "1.9.0"
     alias(libs.plugins.ksp)
 }
 
@@ -12,38 +11,12 @@ dependencies {
     testImplementation(libs.kotlin.compile.testing)
 }
 
-tasks {
-    test {
-        useJUnitPlatform()
-        testLogging {
-            events("PASSED", "SKIPPED", "FAILED")
-        }
-    }
-}
-
-kotlin { jvmToolchain(11) }
-
-java {
-    withSourcesJar()
-}
-
 publishing {
-    repositories {
-        mavenLocal()
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
     publications {
-        create<MavenPublication>("gpr") {
+        create<MavenPublication>("revanced-patch-annotation-processor-publication") {
             from(components["java"])
 
-            version = project.version.toString()
+            version = extra["version"].toString()
 
             pom {
                 name = "ReVanced patch annotation processor"
