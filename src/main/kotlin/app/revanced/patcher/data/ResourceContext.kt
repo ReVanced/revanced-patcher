@@ -83,6 +83,16 @@ class ResourceContext internal constructor(
                     versionInfo.let {
                         metadata.packageVersion = it.versionName ?: it.versionCode
                     }
+
+                    /*
+                     The ResTable if flagged as sparse if the main package is not loaded, which is the case here,
+                     because ResourcesDecoder.decodeResources loads the main package
+                     and not XmlPullStreamDecoder.decodeManifest.
+                     See ARSCDecoder.readTableType for more info.
+
+                     Set this to false again to prevent the ResTable from being flagged as sparse falsely.
+                     */
+                    metadata.apkInfo.sparseResources = false
                 }
             }
         }
