@@ -1,3 +1,10 @@
+## [14.2.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0...v14.2.1) (2023-08-27)
+
+
+### Bug Fixes
+
+* do not flag resource table as sparse when main package is not loaded ([b832812](https://github.com/ReVanced/revanced-patcher/commit/b832812767a06ec6ec232291e6d14c8c2f14118c))
+
 ## [14.2.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0...v14.2.1-dev.1) (2023-08-27)
 
 
