@@ -1,7 +1,7 @@
 [versions]
 android = "4.1.1.4"
 kotlin-reflect = "1.9.0"
-apktool-lib = "2.8.2-5"
+apktool-lib = "2.8.2-6"
 kotlin-test = "1.8.20-RC"
 kotlinx-coroutines-core = "1.7.1"
 multidexlib2 = "3.0.3.r2"
