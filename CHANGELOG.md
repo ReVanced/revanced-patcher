@@ -1,3 +1,10 @@
+## [14.2.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.1...v14.2.2-dev.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* allow setting `DexClassLoader.optimizedDirectory` ([11a3378](https://github.com/ReVanced/revanced-patcher/commit/11a337865947a6ac74a63ebb3f3f9bc2610f7771))
+
 ## [14.2.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0...v14.2.1) (2023-08-27)
 
 
