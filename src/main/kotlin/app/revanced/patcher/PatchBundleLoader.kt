@@ -16,6 +16,7 @@ import java.util.jar.JarFile
 /**
  * A patch bundle.
  *
+ *
  * @param fromClasses The classes to get [Patch]es from.
  */
 sealed class PatchBundleLoader private constructor(
@@ -74,5 +75,8 @@ sealed class PatchBundleLoader private constructor(
             }
             .map { classDef -> classDef.type.substring(1, classDef.length - 1) }
             .map { loadClass(it) }
-    })
+        }) {
+        @Deprecated("This constructor is deprecated. Use the constructor with the second parameter instead.")
+        constructor(vararg patchBundles: File) : this(*patchBundles, optimizedDexDirectory = null)
+    }
 }
