@@ -3,7 +3,9 @@ package app.revanced.patcher.patch
 import app.revanced.patcher.usage.bytecode.ExampleBytecodePatch
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 
 internal class PatchOptionsTest {
     private val options = ExampleBytecodePatch.options
@@ -23,14 +25,14 @@ internal class PatchOptionsTest {
                 is PatchOption.StringListOption -> {
                     option.value = option.options.first()
                     for (choice in option.options) {
-                        println(choice)
+                        assertNotNull(choice)
                     }
                 }
 
                 is PatchOption.IntListOption -> {
                     option.value = option.options.first()
                     for (choice in option.options) {
-                        println(choice)
+                        assertNotNull(choice)
                     }
                 }
             }
@@ -38,9 +40,9 @@ internal class PatchOptionsTest {
         val option = options.get<String>("key1")
         // or: val option: String? by options["key1"]
         // then you won't need `.value` every time
-        println(option.value)
+        assertEquals("Hello World", option.value)
         options["key1"] = "Hello, world!"
-        println(option.value)
+        assertEquals("Hello, world!", option.value)
     }
 
     @Test
@@ -101,7 +103,7 @@ internal class PatchOptionsTest {
     @Test
     fun `should fail because getting a non-initialized option is illegal`() {
         assertThrows<RequirementNotMetException> {
-            println(options["key5"].value)
+            options["key5"].value
         }
     }
 }
