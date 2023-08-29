@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.8.20"
     `maven-publish`
+    alias(libs.plugins.binary.compatibility.validator)
 }
 
 group = "app.revanced"
