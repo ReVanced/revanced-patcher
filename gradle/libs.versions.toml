@@ -5,10 +5,9 @@ apktool-lib = "2.8.2-6"
 kotlin-test = "1.8.20-RC"
 kotlinx-coroutines-core = "1.7.1"
 multidexlib2 = "3.0.3.r2"
-shadow = "8.1.1"
 smali = "3.0.3"
 xpp3 = "1.1.4c"
-
+binary-compatibility-validator = "0.13.2"
 
 [libraries]
 android = { module = "com.google.android:android", version.ref = "android" }
@@ -19,3 +18,6 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 multidexlib2 = { module = "app.revanced:multidexlib2", version.ref = "multidexlib2" }
 smali = { module = "com.android.tools.smali:smali", version.ref = "smali" }
 xpp3 = { module = "xpp3:xpp3", version.ref = "xpp3" }
+
+[plugins]
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }

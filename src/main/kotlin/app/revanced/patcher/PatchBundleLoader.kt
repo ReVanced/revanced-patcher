@@ -16,6 +16,7 @@ import java.util.jar.JarFile
 /**
  * A patch bundle.
  *
+ *
  * @param fromClasses The classes to get [Patch]es from.
  */
 sealed class PatchBundleLoader private constructor(
@@ -39,8 +40,10 @@ sealed class PatchBundleLoader private constructor(
      *
      * @param patchBundles The path to patch bundles of JAR format.
      */
-    class Jar(vararg patchBundles: File) :
-        PatchBundleLoader(with(URLClassLoader(patchBundles.map { it.toURI().toURL() }.toTypedArray())) {
+    class Jar(vararg patchBundles: File) : PatchBundleLoader(
+        with(
+            URLClassLoader(patchBundles.map { it.toURI().toURL() }.toTypedArray())
+        ) {
             patchBundles.flatMap { patchBundle ->
                 // Get the names of all classes in the DEX file.
 
@@ -55,20 +58,25 @@ sealed class PatchBundleLoader private constructor(
      * A [PatchBundleLoader] for [Dex] files.
      *
      * @param patchBundles The path to patch bundles of DEX format.
+     * @param optimizedDexDirectory The directory to store optimized DEX files in.
+     * This parameter is deprecated and has no effect since API level 26.
      */
-    class Dex(vararg patchBundles: File) : PatchBundleLoader(with(
-        DexClassLoader(
-            patchBundles.joinToString(File.pathSeparator) { it.absolutePath },
-            null,
+    class Dex(vararg patchBundles: File, optimizedDexDirectory: File? = null) : PatchBundleLoader(
+        with(
+            DexClassLoader(
+            patchBundles.joinToString(File.pathSeparator) { it.absolutePath }, optimizedDexDirectory?.absolutePath,
             null,
             PatchBundleLoader::class.java.classLoader
-        )
-    ) {
+            )
+        ) {
         patchBundles
             .flatMap {
                 MultiDexIO.readDexFile(true, it, BasicDexFileNamer(), null, null).classes
             }
             .map { classDef -> classDef.type.substring(1, classDef.length - 1) }
             .map { loadClass(it) }
-    })
+        }) {
+        @Deprecated("This constructor is deprecated. Use the constructor with the second parameter instead.")
+        constructor(vararg patchBundles: File) : this(*patchBundles, optimizedDexDirectory = null)
+    }
 }
