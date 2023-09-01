@@ -4,7 +4,6 @@ import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.PatcherOptions
 import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.annotations.RequiresIntegrations
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.ProxyClassList
 import app.revanced.patcher.util.method.MethodWalker

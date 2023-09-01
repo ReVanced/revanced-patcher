@@ -7,54 +7,56 @@ public final class app/revanced/patcher/PackageMetadata {
 	public final fun getPackageVersion ()Ljava/lang/String;
 }
 
-public abstract class app/revanced/patcher/PatchBundleLoader : java/util/List, kotlin/jvm/internal/markers/KMutableList {
-	public synthetic fun <init> (Ljava/lang/Iterable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun add (ILjava/lang/Class;)V
-	public synthetic fun add (ILjava/lang/Object;)V
-	public fun add (Ljava/lang/Class;)Z
-	public synthetic fun add (Ljava/lang/Object;)Z
-	public fun addAll (ILjava/util/Collection;)Z
-	public fun addAll (Ljava/util/Collection;)Z
+public abstract class app/revanced/patcher/PatchBundleLoader : java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
+	public synthetic fun <init> (Ljava/lang/ClassLoader;[Ljava/io/File;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun clear ()V
-	public fun contains (Ljava/lang/Class;)Z
-	public final fun contains (Ljava/lang/Object;)Z
-	public fun containsAll (Ljava/util/Collection;)Z
-	public fun get (I)Ljava/lang/Class;
-	public synthetic fun get (I)Ljava/lang/Object;
+	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
+	public fun compute (Ljava/lang/String;Ljava/util/function/BiFunction;)Lapp/revanced/patcher/patch/Patch;
+	public synthetic fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+	public fun computeIfAbsent (Ljava/lang/String;Ljava/util/function/Function;)Lapp/revanced/patcher/patch/Patch;
+	public synthetic fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
+	public fun computeIfPresent (Ljava/lang/String;Ljava/util/function/BiFunction;)Lapp/revanced/patcher/patch/Patch;
+	public final fun containsKey (Ljava/lang/Object;)Z
+	public fun containsKey (Ljava/lang/String;)Z
+	public fun containsValue (Lapp/revanced/patcher/patch/Patch;)Z
+	public final fun containsValue (Ljava/lang/Object;)Z
+	public final fun entrySet ()Ljava/util/Set;
+	public final fun get (Ljava/lang/Object;)Lapp/revanced/patcher/patch/Patch;
+	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun get (Ljava/lang/String;)Lapp/revanced/patcher/patch/Patch;
+	public fun getEntries ()Ljava/util/Set;
+	public fun getKeys ()Ljava/util/Set;
 	public fun getSize ()I
-	public fun indexOf (Ljava/lang/Class;)I
-	public final fun indexOf (Ljava/lang/Object;)I
+	public fun getValues ()Ljava/util/Collection;
 	public fun isEmpty ()Z
-	public fun iterator ()Ljava/util/Iterator;
-	public fun lastIndexOf (Ljava/lang/Class;)I
-	public final fun lastIndexOf (Ljava/lang/Object;)I
-	public fun listIterator ()Ljava/util/ListIterator;
-	public fun listIterator (I)Ljava/util/ListIterator;
-	public final fun remove (I)Ljava/lang/Class;
-	public synthetic fun remove (I)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Class;)Z
-	public final fun remove (Ljava/lang/Object;)Z
-	public fun removeAll (Ljava/util/Collection;)Z
-	public fun removeAt (I)Ljava/lang/Class;
-	public fun retainAll (Ljava/util/Collection;)Z
-	public fun set (ILjava/lang/Class;)Ljava/lang/Class;
-	public synthetic fun set (ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun keySet ()Ljava/util/Set;
+	public synthetic fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
+	public fun merge (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;Ljava/util/function/BiFunction;)Lapp/revanced/patcher/patch/Patch;
+	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun put (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;)Lapp/revanced/patcher/patch/Patch;
+	public fun putAll (Ljava/util/Map;)V
+	public synthetic fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public fun putIfAbsent (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;)Lapp/revanced/patcher/patch/Patch;
+	public fun remove (Ljava/lang/Object;)Lapp/revanced/patcher/patch/Patch;
+	public synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
+	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
+	public fun replace (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;)Lapp/revanced/patcher/patch/Patch;
+	public fun replace (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;Lapp/revanced/patcher/patch/Patch;)Z
+	public fun replaceAll (Ljava/util/function/BiFunction;)V
 	public final fun size ()I
-	public fun subList (II)Ljava/util/List;
-	public fun toArray ()[Ljava/lang/Object;
-	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
+	public final fun values ()Ljava/util/Collection;
 }
 
 public final class app/revanced/patcher/PatchBundleLoader$Dex : app/revanced/patcher/PatchBundleLoader {
 	public fun <init> ([Ljava/io/File;)V
 	public fun <init> ([Ljava/io/File;Ljava/io/File;)V
 	public synthetic fun <init> ([Ljava/io/File;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun remove (I)Ljava/lang/Object;
 }
 
 public final class app/revanced/patcher/PatchBundleLoader$Jar : app/revanced/patcher/PatchBundleLoader {
 	public fun <init> ([Ljava/io/File;)V
-	public synthetic fun remove (I)Ljava/lang/Object;
 }
 
 public abstract interface class app/revanced/patcher/PatchExecutorFunction : java/util/function/Function {
@@ -74,6 +76,14 @@ public final class app/revanced/patcher/Patcher : app/revanced/patcher/Integrati
 
 public final class app/revanced/patcher/PatcherContext {
 	public final fun getPackageMetadata ()Lapp/revanced/patcher/PackageMetadata;
+}
+
+public abstract class app/revanced/patcher/PatcherException : java/lang/Exception {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class app/revanced/patcher/PatcherException$CircularDependencyException : app/revanced/patcher/PatcherException {
 }
 
 public final class app/revanced/patcher/PatcherOptions {
@@ -113,23 +123,6 @@ public final class app/revanced/patcher/PatcherResult$PatchedDexFile {
 
 public abstract interface class app/revanced/patcher/PatchesConsumer {
 	public abstract fun acceptPatches (Ljava/util/List;)V
-}
-
-public abstract interface annotation class app/revanced/patcher/annotation/Compatibility : java/lang/annotation/Annotation {
-	public abstract fun compatiblePackages ()[Lapp/revanced/patcher/annotation/Package;
-}
-
-public abstract interface annotation class app/revanced/patcher/annotation/Description : java/lang/annotation/Annotation {
-	public abstract fun description ()Ljava/lang/String;
-}
-
-public abstract interface annotation class app/revanced/patcher/annotation/Name : java/lang/annotation/Annotation {
-	public abstract fun name ()Ljava/lang/String;
-}
-
-public abstract interface annotation class app/revanced/patcher/annotation/Package : java/lang/annotation/Annotation {
-	public abstract fun name ()Ljava/lang/String;
-	public abstract fun versions ()[Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/data/BytecodeContext : app/revanced/patcher/data/Context {
@@ -199,17 +192,6 @@ public final class app/revanced/patcher/extensions/InstructionExtensions {
 public final class app/revanced/patcher/extensions/MethodFingerprintExtensions {
 	public static final field INSTANCE Lapp/revanced/patcher/extensions/MethodFingerprintExtensions;
 	public final fun getFuzzyPatternScanMethod (Lapp/revanced/patcher/fingerprint/method/impl/MethodFingerprint;)Lapp/revanced/patcher/fingerprint/method/annotation/FuzzyPatternScanMethod;
-	public final fun getName (Lapp/revanced/patcher/fingerprint/method/impl/MethodFingerprint;)Ljava/lang/String;
-}
-
-public final class app/revanced/patcher/extensions/PatchExtensions {
-	public static final field INSTANCE Lapp/revanced/patcher/extensions/PatchExtensions;
-	public final fun getCompatiblePackages (Ljava/lang/Class;)[Lapp/revanced/patcher/annotation/Package;
-	public final fun getDependencies (Ljava/lang/Class;)[Lkotlin/reflect/KClass;
-	public final fun getDescription (Ljava/lang/Class;)Ljava/lang/String;
-	public final fun getInclude (Ljava/lang/Class;)Z
-	public final fun getOptions (Ljava/lang/Class;)Lapp/revanced/patcher/patch/PatchOptions;
-	public final fun getPatchName (Ljava/lang/Class;)Ljava/lang/String;
 }
 
 public abstract interface class app/revanced/patcher/fingerprint/Fingerprint {
@@ -345,9 +327,7 @@ public final class app/revanced/patcher/logging/impl/NopLogger : app/revanced/pa
 }
 
 public abstract class app/revanced/patcher/patch/BytecodePatch : app/revanced/patcher/patch/Patch {
-	public fun <init> ()V
-	public fun <init> (Ljava/lang/Iterable;)V
-	public synthetic fun <init> (Ljava/lang/Iterable;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lapp/revanced/patcher/patch/Patch$Manifest;[Lapp/revanced/patcher/fingerprint/method/impl/MethodFingerprint;)V
 }
 
 public final class app/revanced/patcher/patch/IllegalValueException : java/lang/Exception {
@@ -372,8 +352,34 @@ public abstract class app/revanced/patcher/patch/OptionsContainer {
 	protected final fun option (Lapp/revanced/patcher/patch/PatchOption;)Lapp/revanced/patcher/patch/PatchOption;
 }
 
-public abstract interface class app/revanced/patcher/patch/Patch {
+public abstract class app/revanced/patcher/patch/Patch {
+	public synthetic fun <init> (Lapp/revanced/patcher/patch/Patch$Manifest;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
 	public abstract fun execute (Lapp/revanced/patcher/data/Context;)V
+	public final fun getManifest ()Lapp/revanced/patcher/patch/Patch$Manifest;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class app/revanced/patcher/patch/Patch$Manifest {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/util/Set;Ljava/util/Set;ZLapp/revanced/patcher/patch/PatchOptions;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/util/Set;Ljava/util/Set;ZLapp/revanced/patcher/patch/PatchOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCompatiblePackages ()Ljava/util/Set;
+	public final fun getDependencies ()Ljava/util/Set;
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getOptions ()Lapp/revanced/patcher/patch/PatchOptions;
+	public final fun getRequiresIntegrations ()Z
+	public final fun getUse ()Z
+	public fun hashCode ()I
+}
+
+public final class app/revanced/patcher/patch/Patch$Manifest$CompatiblePackage {
+	public fun <init> (Ljava/lang/String;Ljava/util/Set;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getName ()Ljava/lang/String;
+	public final fun getVersions ()Ljava/util/Set;
 }
 
 public final class app/revanced/patcher/patch/PatchException : java/lang/Exception {
@@ -429,26 +435,21 @@ public final class app/revanced/patcher/patch/PatchOptions : java/lang/Iterable,
 }
 
 public final class app/revanced/patcher/patch/PatchResult {
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun getException ()Lapp/revanced/patcher/patch/PatchException;
-	public final fun getPatchName ()Ljava/lang/String;
+	public final fun getPatch ()Lapp/revanced/patcher/patch/Patch;
+	public fun hashCode ()I
 }
 
 public final class app/revanced/patcher/patch/RequirementNotMetException : java/lang/Exception {
 	public static final field INSTANCE Lapp/revanced/patcher/patch/RequirementNotMetException;
 }
 
-public abstract interface class app/revanced/patcher/patch/ResourcePatch : app/revanced/patcher/patch/Patch {
-}
-
-public abstract interface annotation class app/revanced/patcher/patch/annotations/DependsOn : java/lang/annotation/Annotation {
-	public abstract fun dependencies ()[Ljava/lang/Class;
+public abstract class app/revanced/patcher/patch/ResourcePatch : app/revanced/patcher/patch/Patch {
+	public fun <init> (Lapp/revanced/patcher/patch/Patch$Manifest;)V
 }
 
 public abstract interface annotation class app/revanced/patcher/patch/annotations/Patch : java/lang/annotation/Annotation {
-	public abstract fun include ()Z
-}
-
-public abstract interface annotation class app/revanced/patcher/patch/annotations/RequiresIntegrations : java/lang/annotation/Annotation {
 }
 
 public final class app/revanced/patcher/util/DomFileEditor : java/io/Closeable {

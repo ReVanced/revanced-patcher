@@ -5,13 +5,7 @@ import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 
 object MethodFingerprintExtensions {
-
-    /**
-     * The name of a [MethodFingerprint].
-     */
-    val MethodFingerprint.name: String
-        get() = this.javaClass.simpleName
-
+    // TODO: Make this a property.
     /**
      * The [FuzzyPatternScanMethod] annotation of a [MethodFingerprint].
      */

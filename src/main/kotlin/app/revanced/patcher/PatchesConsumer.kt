@@ -1,8 +1,8 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.patch.PatchClass
+import app.revanced.patcher.patch.Patch
 
 @FunctionalInterface
 interface PatchesConsumer {
-    fun acceptPatches(patches: List<PatchClass>)
+    fun acceptPatches(patches: List<Patch<*>>)
 }

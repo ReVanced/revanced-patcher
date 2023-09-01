@@ -159,7 +159,7 @@ abstract class MethodFingerprint(
          * - Faster: Specify [accessFlags], [returnType] and [parameters].
          * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
          */
-        internal fun Iterable<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext) {
+        internal fun List<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext) {
             if (methods.isEmpty()) throw PatchException("lookup map not initialized")
 
             for (fingerprint in this) {
