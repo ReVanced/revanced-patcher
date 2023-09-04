@@ -1,4 +1,4 @@
-package app.revanced.patcher.usage.bytecode
+package app.revanced.patcher.usage
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint

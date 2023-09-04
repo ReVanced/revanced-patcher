@@ -2,8 +2,6 @@
 
 package app.revanced.patcher.patch
 
-import java.nio.file.Path
-import kotlin.io.path.pathString
 import kotlin.reflect.KProperty
 
 class NoSuchOptionException(val option: String) : Exception("No such option: $option")

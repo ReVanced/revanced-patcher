@@ -1,8 +1,8 @@
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.usage.bytecode.ExampleBytecodePatch
-import org.junit.jupiter.api.Test
+import app.revanced.patcher.usage.ExampleBytecodePatch
 import org.junit.jupiter.api.assertThrows
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull

@@ -327,7 +327,9 @@ public final class app/revanced/patcher/logging/impl/NopLogger : app/revanced/pa
 }
 
 public abstract class app/revanced/patcher/patch/BytecodePatch : app/revanced/patcher/patch/Patch {
-	public fun <init> (Lapp/revanced/patcher/patch/Patch$Manifest;[Lapp/revanced/patcher/fingerprint/method/impl/MethodFingerprint;)V
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZ)V
+	public synthetic fun <init> (Ljava/util/Set;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class app/revanced/patcher/patch/IllegalValueException : java/lang/Exception {
@@ -348,38 +350,29 @@ public final class app/revanced/patcher/patch/NoSuchOptionException : java/lang/
 
 public abstract class app/revanced/patcher/patch/OptionsContainer {
 	public fun <init> ()V
-	public final fun getOptions ()Lapp/revanced/patcher/patch/PatchOptions;
+	public fun getOptions ()Lapp/revanced/patcher/patch/PatchOptions;
 	protected final fun option (Lapp/revanced/patcher/patch/PatchOption;)Lapp/revanced/patcher/patch/PatchOption;
 }
 
-public abstract class app/revanced/patcher/patch/Patch {
-	public synthetic fun <init> (Lapp/revanced/patcher/patch/Patch$Manifest;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+public abstract class app/revanced/patcher/patch/Patch : app/revanced/patcher/patch/OptionsContainer {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public abstract fun execute (Lapp/revanced/patcher/data/Context;)V
-	public final fun getManifest ()Lapp/revanced/patcher/patch/Patch$Manifest;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class app/revanced/patcher/patch/Patch$Manifest {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/util/Set;Ljava/util/Set;ZLapp/revanced/patcher/patch/PatchOptions;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/util/Set;Ljava/util/Set;ZLapp/revanced/patcher/patch/PatchOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCompatiblePackages ()Ljava/util/Set;
 	public final fun getDependencies ()Ljava/util/Set;
 	public final fun getDescription ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
-	public final fun getOptions ()Lapp/revanced/patcher/patch/PatchOptions;
 	public final fun getRequiresIntegrations ()Z
 	public final fun getUse ()Z
 	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/revanced/patcher/patch/Patch$Manifest$CompatiblePackage {
+public final class app/revanced/patcher/patch/Patch$CompatiblePackage {
 	public fun <init> (Ljava/lang/String;Ljava/util/Set;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getName ()Ljava/lang/String;
-	public final fun getVersions ()Ljava/util/Set;
 }
 
 public final class app/revanced/patcher/patch/PatchException : java/lang/Exception {
@@ -446,10 +439,9 @@ public final class app/revanced/patcher/patch/RequirementNotMetException : java/
 }
 
 public abstract class app/revanced/patcher/patch/ResourcePatch : app/revanced/patcher/patch/Patch {
-	public fun <init> (Lapp/revanced/patcher/patch/Patch$Manifest;)V
-}
-
-public abstract interface annotation class app/revanced/patcher/patch/annotations/Patch : java/lang/annotation/Annotation {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class app/revanced/patcher/util/DomFileEditor : java/io/Closeable {

@@ -9,8 +9,13 @@ abstract class OptionsContainer {
      * @see PatchOptions
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    val options = PatchOptions()
+    open val options = PatchOptions()
 
+    /**
+     * Registers a [PatchOption].
+     * @param opt The [PatchOption] to register.
+     * @return The registered [PatchOption].
+     */
     protected fun <T> option(opt: PatchOption<T>): PatchOption<T> {
         options.register(opt)
         return opt

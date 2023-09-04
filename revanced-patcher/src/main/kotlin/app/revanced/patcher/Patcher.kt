@@ -2,7 +2,6 @@ package app.revanced.patcher
 
 import app.revanced.patcher.PatchBundleLoader.Utils.getInstance
 import app.revanced.patcher.data.ResourceContext
-import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
@@ -46,13 +45,19 @@ class Patcher(
         context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.MANIFEST_ONLY)
     }
 
+    // TODO: Fix circular dependency detection.
+    // /**
+    //  * Add [Patch]es to ReVanced [Patcher].
+    //  * It is not guaranteed that all supplied [Patch]es will be accepted, if an exception is thrown.
+    //  *
+    //  * @param patches The [Patch]es to add.
+    //  * @throws PatcherException.CircularDependencyException If a circular dependency is detected.
+    // */
     /**
      * Add [Patch]es to ReVanced [Patcher].
-     * It is not guaranteed that all supplied [Patch]es will be accepted, if an exception is thrown.
      *
      * @param patches The [Patch]es to add.
-     * @throws PatcherException.CircularDependencyException If a circular dependency is detected.
-     */
+    */
     @Suppress("NAME_SHADOWING")
     override fun acceptPatches(patches: List<Patch<*>>) {
         /**
@@ -65,14 +70,14 @@ class Patcher(
             val dependency = this.java.getInstance(logger)!!
             context.allPatches[this] = dependency
 
-            dependency.manifest.dependencies?.forEach { it.putDependenciesRecursively() }
+            dependency.dependencies?.forEach { it.putDependenciesRecursively() }
         }
 
         // Add all patches and their dependencies to the context.
         for (patch in patches) context.executablePatches.putIfAbsent(patch::class, patch) ?: {
             context.allPatches[patch::class] = patch
 
-            patch.manifest.dependencies?.forEach { it.putDependenciesRecursively() }
+            patch.dependencies?.forEach { it.putDependenciesRecursively() }
         }
 
         /* TODO: Fix circular dependency detection.
@@ -99,7 +104,7 @@ class Patcher(
          * @param predicate The predicate to match.
          */
         fun Patch<*>.anyRecursively(predicate: (Patch<*>) -> Boolean): Boolean =
-            predicate(this) || manifest.dependencies?.any { dependency ->
+            predicate(this) || dependencies?.any { dependency ->
                 context.allPatches[dependency]!!.anyRecursively(predicate)
             } ?: false
 
@@ -113,7 +118,7 @@ class Patcher(
 
             // Determine, if merging integrations is required.
             for (patch in patches)
-                if (!patch.anyRecursively { it.manifest.requiresIntegrations }) {
+                if (!patch.anyRecursively { it.requiresIntegrations }) {
                     context.bytecodeContext.integrations.merge = true
                     break
                 }
@@ -148,7 +153,7 @@ class Patcher(
             patch: Patch<*>,
             executedPatches: LinkedHashMap<Patch<*>, PatchResult>
         ): PatchResult {
-            val patchName = patch.manifest.name
+            val patchName = patch.name
 
             executedPatches[patch]?.let { patchResult ->
                 patchResult.exception ?: return patchResult
@@ -159,7 +164,7 @@ class Patcher(
             }
 
             // Recursively execute all dependency patches.
-            patch.manifest.dependencies?.forEach { dependencyName ->
+            patch.dependencies?.forEach { dependencyName ->
                 val dependency = context.executablePatches[dependencyName]!!
                 val result = executePatch(dependency, executedPatches)
 
@@ -171,17 +176,17 @@ class Patcher(
                 }
             }
 
-            // TODO: Implement this in a more polymorphic way.
-            val patchContext = if (patch is BytecodePatch) {
-                patch.fingerprints.asList().resolveUsingLookupMap(context.bytecodeContext)
-
-                context.bytecodeContext
-            } else {
-                context.resourceContext
-            }
-
             return try {
-                patch.execute(patchContext)
+                // TODO: Implement this in a more polymorphic way.
+                when (patch) {
+                    is BytecodePatch -> {
+                        patch.fingerprints.toList().resolveUsingLookupMap(context.bytecodeContext)
+                        patch.execute(context.bytecodeContext)
+                    }
+                    is ResourcePatch -> {
+                        patch.execute(context.resourceContext)
+                    }
+                }
 
                 PatchResult(patch)
             } catch (exception: PatchException) {
@@ -203,11 +208,11 @@ class Patcher(
 
         val executedPatches = LinkedHashMap<Patch<*>, PatchResult>() // Key is name.
 
-        context.executablePatches.map { it.value }.sortedBy { it.manifest.name }.forEach { patch ->
+        context.executablePatches.map { it.value }.sortedBy { it.name }.forEach { patch ->
             val patchResult = executePatch(patch, executedPatches)
 
             // If the patch failed, emit the result, even if it is closeable.
-            // Results of successfully executed patches that are closeable will be emitted later.
+            // Results of executed patches that are closeable will be emitted later.
             patchResult.exception?.let {
                 // Propagate exception to caller instead of wrapping it in a new exception.
                 emit(patchResult)
@@ -240,7 +245,7 @@ class Patcher(
                         PatchResult(
                             patch,
                             PatchException(
-                                "'${patch.manifest.name}' raised an exception while being closed: $it",
+                                "'${patch.name}' raised an exception while being closed: $it",
                                 result.exception
                             )
                         )
@@ -248,10 +253,7 @@ class Patcher(
 
                     if (returnOnError) return@flow
                 } ?: run {
-                    patch::class
-                        .java
-                        .findAnnotationRecursively(app.revanced.patcher.patch.annotations.Patch::class)
-                        ?: return@run
+                    patch.name ?: return@run
 
                     emit(result)
                 }

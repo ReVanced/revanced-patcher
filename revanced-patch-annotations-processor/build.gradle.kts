@@ -1,22 +1,18 @@
 plugins {
     kotlin("jvm") version "1.9.0"
     `maven-publish`
+    alias(libs.plugins.ksp)
 }
 
 group = "app.revanced"
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.xpp3)
-    implementation(libs.smali)
-    implementation(libs.multidexlib2)
-    implementation(libs.apktool.lib)
-    implementation(libs.kotlin.reflect)
+    implementation(libs.symbol.processing.api)
+    implementation(libs.kotlinpoet.ksp)
+    implementation(project(":revanced-patcher"))
 
-    compileOnly(libs.android)
-
-    testImplementation(project(":revanced-patch-annotations-processor"))
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.compile.testing)
 }
 
 tasks {
@@ -25,10 +21,6 @@ tasks {
         testLogging {
             events("PASSED", "SKIPPED", "FAILED")
         }
-    }
-
-    processResources {
-        expand("projectVersion" to project.version)
     }
 }
 
@@ -43,7 +35,7 @@ publishing {
         mavenLocal()
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
+            url = uri("https://maven.pkg.github.com/revanced/revanced-patch-annotations-processor")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")

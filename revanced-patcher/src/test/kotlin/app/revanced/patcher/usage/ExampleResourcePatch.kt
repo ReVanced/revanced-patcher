@@ -1,10 +1,11 @@
-package app.revanced.patcher.usage.resource.patch
+package app.revanced.patcher.usage
 
 import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.patch.ResourcePatch
 import org.w3c.dom.Element
 
-class ExampleResourcePatch : ResourcePatch(Manifest("Example name", "Example description")) {
+
+class ExampleResourcePatch : ResourcePatch() {
     override fun execute(context: ResourceContext) {
         context.xmlEditor["AndroidManifest.xml"].use { editor ->
             val element = editor // regular DomFileEditor

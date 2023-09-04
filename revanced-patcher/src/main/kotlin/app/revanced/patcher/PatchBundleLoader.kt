@@ -2,7 +2,6 @@
 
 package app.revanced.patcher
 
-import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.patch.Patch
 import dalvik.system.DexClassLoader
 import lanchon.multidexlib2.BasicDexFileNamer
@@ -25,7 +24,7 @@ typealias PatchClass = KClass<out Patch<*>>
 
 /**
  * A loader of [Patch]es from patch bundles.
- * This will load all [Patch]es from the given patch bundles.
+ * This will load all [Patch]es from the given patch bundles that have a name.
  *
  * @param getBinaryClassNames A function that returns the binary names of all classes in a patch bundle.
  * @param classLoader The [ClassLoader] to use for loading the classes.
@@ -38,21 +37,21 @@ sealed class PatchBundleLoader private constructor(
     private val logger = Logger.getLogger(PatchBundleLoader::class.java.name)
 
     init {
-        patchBundles.flatMap(getBinaryClassNames).map {
+        patchBundles.flatMap(getBinaryClassNames).asSequence().map {
             classLoader.loadClass(it)
         }.filter {
-            if (it.isAnnotation) return@filter false
-
-            it.findAnnotationRecursively(app.revanced.patcher.patch.annotations.Patch::class) != null
+            it.isInstance(Patch::class.java)
         }.mapNotNull { patchClass ->
             patchClass.getInstance(logger)
-        }.associateBy { it.manifest.name }
-        let { patches ->
+        }.filter {
+            it.name != null
+        }.associateBy {
+            it.name!!
+        }.let { patches ->
             @Suppress("UNCHECKED_CAST")
             (this as MutableMap<String, Patch<*>>).putAll(patches)
         }
     }
-
 
     internal companion object Utils {
         /**

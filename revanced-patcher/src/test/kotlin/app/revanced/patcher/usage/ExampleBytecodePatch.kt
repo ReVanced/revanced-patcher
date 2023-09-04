@@ -1,14 +1,13 @@
-package app.revanced.patcher.usage.bytecode
+package app.revanced.patcher.usage
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.OptionsContainer
 import app.revanced.patcher.patch.PatchOption
+import app.revanced.patcher.patch.annotations.CompatiblePackage
 import app.revanced.patcher.patch.annotations.Patch
-import app.revanced.patcher.usage.resource.patch.ExampleResourcePatch
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -26,19 +25,19 @@ import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringRefere
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableFieldEncodedValue
 import com.android.tools.smali.dexlib2.util.Preconditions
 import com.google.common.collect.ImmutableList
+import kotlin.test.assertNotNull
 
-@Patch
-class ExampleBytecodePatch : BytecodePatch(
-    Manifest(
-        "Example patch",
-        "Example demonstration of a bytecode patch.",
-        dependencies = setOf(ExampleResourcePatch::class),
-        compatiblePackages = setOf(
-            Manifest.CompatiblePackage("com.example.examplePackage", setOf("0.0.1", "0.0.2"))
-        )
-    ),
-    ExampleFingerprint
+@Suppress("unused")
+@Patch(
+    name = "Example bytecode patch",
+    description = "Example demonstration of a bytecode patch.",
+    dependencies = [ExampleResourcePatch::class],
+    compatiblePackages = [CompatiblePackage("com.example.examplePackage", arrayOf("0.0.1", "0.0.2"))]
+)
+object ExampleBytecodePatch : BytecodePatch(
+    setOf(ExampleFingerprint)
 ) {
+
     // This function will be executed by the patcher.
     // You can treat it as a constructor
     override fun execute(context: BytecodeContext) {
@@ -46,7 +45,7 @@ class ExampleBytecodePatch : BytecodePatch(
         val result = ExampleFingerprint.result!!
 
         // Patch options
-        println(key1)
+        assertNotNull(key1)
         key2 = false
 
         // Get the implementation for the resolved method
@@ -161,32 +160,34 @@ class ExampleBytecodePatch : BytecodePatch(
         )
     }
 
-    @Suppress("unused")
-    companion object : OptionsContainer() {
-        private var key1 by option(
-            PatchOption.StringOption(
-                "key1", "default", "title", "description", true
-            )
+    private var key1 by option(
+        PatchOption.StringOption(
+            "key1", "default", "title", "description", true
         )
-        private var key2 by option(
-            PatchOption.BooleanOption(
-                "key2", true, "title", "description" // required defaults to false
-            )
+    )
+
+    private var key2 by option(
+        PatchOption.BooleanOption(
+            "key2", true, "title", "description" // required defaults to false
         )
-        private var key3 by option(
-            PatchOption.StringListOption(
-                "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
-            )
+    )
+
+    private var key3 by option(
+        PatchOption.StringListOption(
+            "key3", "TEST", listOf("TEST", "TEST1", "TEST2"), "title", "description"
         )
-        private var key4 by option(
-            PatchOption.IntListOption(
-                "key4", 1, listOf(1, 2, 3), "title", "description"
-            )
+    )
+
+    private var key4 by option(
+        PatchOption.IntListOption(
+            "key4", 1, listOf(1, 2, 3), "title", "description"
         )
-        private var key5 by option(
-            PatchOption.StringOption(
-                "key5", null, "title", "description", true
-            )
+    )
+
+    private var key5 by option(
+        PatchOption.StringOption(
+            "key5", null, "title", "description", true
         )
-    }
+    )
 }
+
