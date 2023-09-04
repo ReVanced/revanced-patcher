@@ -1,7 +1,5 @@
 package app.revanced.patcher.usage.bytecode
 
-import app.revanced.patcher.annotation.Description
-import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
@@ -9,9 +7,7 @@ import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.BytecodePatch
 import app.revanced.patcher.patch.OptionsContainer
 import app.revanced.patcher.patch.PatchOption
-import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
-import app.revanced.patcher.usage.resource.annotation.ExampleResourceCompatibility
 import app.revanced.patcher.usage.resource.patch.ExampleResourcePatch
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -32,11 +28,17 @@ import com.android.tools.smali.dexlib2.util.Preconditions
 import com.google.common.collect.ImmutableList
 
 @Patch
-@Name("example-bytecode-patch")
-@Description("Example demonstration of a bytecode patch.")
-@ExampleResourceCompatibility
-@DependsOn([ExampleResourcePatch::class])
-class ExampleBytecodePatch : BytecodePatch(listOf(ExampleFingerprint)) {
+class ExampleBytecodePatch : BytecodePatch(
+    Manifest(
+        "Example patch",
+        "Example demonstration of a bytecode patch.",
+        dependencies = setOf(ExampleResourcePatch::class),
+        compatiblePackages = setOf(
+            Manifest.CompatiblePackage("com.example.examplePackage", setOf("0.0.1", "0.0.2"))
+        )
+    ),
+    ExampleFingerprint
+) {
     // This function will be executed by the patcher.
     // You can treat it as a constructor
     override fun execute(context: BytecodeContext) {
