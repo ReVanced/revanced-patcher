@@ -1,3 +1,5 @@
+# [15.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.1...v15.0.0-dev.2) (2023-09-06)
+
 # [15.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.2...v15.0.0-dev.1) (2023-09-04)
 
 
