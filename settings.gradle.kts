@@ -19,4 +19,4 @@ dependencyResolutionManagement {
     }
 }
 
-include("revanced-patch-annotations-processor", "revanced-patcher")
+include("revanced-patch-annotation-processor", "revanced-patcher")

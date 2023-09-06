@@ -1,19 +1,15 @@
 plugins {
     kotlin("jvm") version "1.9.0"
+    alias(libs.plugins.ksp)
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.xpp3)
-    implementation(libs.smali)
-    implementation(libs.multidexlib2)
-    implementation(libs.apktool.lib)
-    implementation(libs.kotlin.reflect)
+    implementation(libs.symbol.processing.api)
+    implementation(libs.kotlinpoet.ksp)
+    implementation(project(":revanced-patcher"))
 
-    compileOnly(libs.android)
-
-    testImplementation(project(":revanced-patch-annotation-processor"))
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.compile.testing)
 }
 
 tasks {
@@ -22,10 +18,6 @@ tasks {
         testLogging {
             events("PASSED", "SKIPPED", "FAILED")
         }
-    }
-
-    processResources {
-        expand("projectVersion" to project.version)
     }
 }
 
@@ -54,8 +46,8 @@ publishing {
             version = project.version.toString()
 
             pom {
-                name = "ReVanced Patcher"
-                description = "Patcher used by ReVanced."
+                name = "ReVanced patch annotation processor"
+                description = "Annotation processor for patches."
                 url = "https://revanced.app"
 
                 licenses {

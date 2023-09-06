@@ -1,0 +1,25 @@
+public abstract interface annotation class app/revanced/patcher/patch/annotation/CompatiblePackage : java/lang/annotation/Annotation {
+	public abstract fun name ()Ljava/lang/String;
+	public abstract fun versions ()[Ljava/lang/String;
+}
+
+public abstract interface annotation class app/revanced/patcher/patch/annotation/Patch : java/lang/annotation/Annotation {
+	public abstract fun compatiblePackages ()[Lapp/revanced/patcher/patch/annotation/CompatiblePackage;
+	public abstract fun dependencies ()[Ljava/lang/Class;
+	public abstract fun description ()Ljava/lang/String;
+	public abstract fun name ()Ljava/lang/String;
+	public abstract fun requiresIntegrations ()Z
+	public abstract fun use ()Z
+}
+
+public final class app/revanced/patcher/patch/annotation/processor/PatchProcessor : com/google/devtools/ksp/processing/SymbolProcessor {
+	public fun <init> (Lcom/google/devtools/ksp/processing/CodeGenerator;Lcom/google/devtools/ksp/processing/KSPLogger;)V
+	public fun process (Lcom/google/devtools/ksp/processing/Resolver;)Ljava/util/List;
+}
+
+public final class app/revanced/patcher/patch/annotation/processor/PatchProcessorProvider : com/google/devtools/ksp/processing/SymbolProcessorProvider {
+	public fun <init> ()V
+	public fun create (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;)Lapp/revanced/patcher/patch/annotation/processor/PatchProcessor;
+	public synthetic fun create (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;)Lcom/google/devtools/ksp/processing/SymbolProcessor;
+}
+
