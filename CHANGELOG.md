@@ -1,3 +1,20 @@
+# [15.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.2...v15.0.0-dev.3) (2023-09-06)
+
+
+### Bug Fixes
+
+* Make `CompatiblePackage.versions` a property ([67b7dff](https://github.com/ReVanced/revanced-patcher/commit/67b7dff67a212b4fc30eb4f0cbe58f0ba09fb09a))
+* Use correct module name ([080fbe9](https://github.com/ReVanced/revanced-patcher/commit/080fbe9feb9d4ea9ec4e599ecef296eacd803b05))
+
+
+* feat Use `Set` as super type for `PatchBundleLoader` ([4b76d19](https://github.com/ReVanced/revanced-patcher/commit/4b76d1959691babf8c99d3d5235df4a4388956f0))
+
+
+### BREAKING CHANGES
+
+* `PatchBundleLoader` is not a map anymore
+* This renames packages and the Maven package.
+
 # [15.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.1...v15.0.0-dev.2) (2023-09-06)
 
 # [15.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.2...v15.0.0-dev.1) (2023-09-04)
