@@ -65,7 +65,7 @@ sealed class Patch<out T : Context<*>>(
      */
     class CompatiblePackage(
         val name: String,
-        versions: Set<String>? = null,
+        val versions: Set<String>? = null,
     )
 }
 
