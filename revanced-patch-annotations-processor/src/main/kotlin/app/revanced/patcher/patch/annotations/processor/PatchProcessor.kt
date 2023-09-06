@@ -3,7 +3,6 @@ package app.revanced.patcher.patch.annotations.processor
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.PatchOptions
 import app.revanced.patcher.patch.ResourcePatch
 import app.revanced.patcher.patch.annotations.Patch
 import com.google.devtools.ksp.processing.*
@@ -114,7 +113,6 @@ class PatchProcessor(
             }
         }
 
-        // kotlin poet generate a class for each patch
         executablePatches.forEach { (patchDeclaration, patchAnnotation) ->
             val isBytecodePatch = patchDeclaration.isSubclassOf(BytecodePatch::class)
 
@@ -159,7 +157,7 @@ class PatchProcessor(
                                     "dependencies = setOf(%L)",
                                     buildList {
                                         addAll(dependencies)
-                                        // Also add the source class of the generated class so that it is also executed
+                                        // Also add the source class of the generated class so that it is also executed.
                                         add(patchDeclaration.toClassName())
                                     }.joinToString(", ") { dependency ->
                                         "${(dependencyResolutionMap[dependency] ?: dependency)}::class"
@@ -181,9 +179,18 @@ class PatchProcessor(
                                 .addParameter("context", contextClass)
                                 .build()
                         )
-                        .addProperty(
-                            PropertySpec.builder("options", PatchOptions::class, KModifier.OVERRIDE)
-                                .initializer("%T.options", patchDeclaration.toClassName())
+                        .addInitializerBlock(
+                            CodeBlock.builder()
+                                .add(
+                                    "%T.options.forEach { (key, option) ->",
+                                    patchDeclaration.toClassName()
+                                )
+                                .addStatement(
+                                    "options.register(option)"
+                                )
+                                .add(
+                                    "}"
+                                )
                                 .build()
                         )
                         .build()

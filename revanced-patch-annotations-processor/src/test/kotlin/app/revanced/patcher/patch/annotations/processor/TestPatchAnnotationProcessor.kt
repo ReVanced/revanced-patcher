@@ -7,7 +7,6 @@ import com.tschuchort.compiletesting.kspWithCompilation
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class TestPatchAnnotationProcessor {
@@ -64,7 +63,7 @@ class TestPatchAnnotationProcessor {
             )
         ).loadPatch("$SAMPLE_PACKAGE.options.OptionsPatchGenerated")
 
-        assertNotNull(patch.options)
+        assert(patch.options.isNotEmpty())
         assertEquals(patch.options["print"].title, "Print message")
     }
 

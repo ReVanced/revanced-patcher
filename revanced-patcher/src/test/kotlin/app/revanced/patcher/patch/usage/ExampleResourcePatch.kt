@@ -1,4 +1,4 @@
-package app.revanced.patcher.usage
+package app.revanced.patcher.patch.usage
 
 import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.patch.ResourcePatch
