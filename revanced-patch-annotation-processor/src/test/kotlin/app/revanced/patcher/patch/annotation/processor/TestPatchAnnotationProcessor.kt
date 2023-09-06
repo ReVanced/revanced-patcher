@@ -93,11 +93,16 @@ class TestPatchAnnotationProcessor {
          * @param className The name of the class to get the source file from.
          * @return The source file.
          */
-        fun getSourceFile(sample: String, className: String) = SourceFile.kotlin(
-            "$className.kt", TestPatchAnnotationProcessor::class.java.classLoader.getResourceAsStream(
-                "app/revanced/patcher/patch/annotations/processor/samples/$sample/$className.kt"
-            )?.readAllBytes()?.toString(Charsets.UTF_8) ?: error("Could not find resource $className")
-        )
+        fun getSourceFile(sample: String, className: String): SourceFile {
+            val resourceName = "app/revanced/patcher/patch/annotations/processor/samples/$sample/$className.kt"
+            return SourceFile.kotlin(
+                "$className.kt",
+                TestPatchAnnotationProcessor::class.java.classLoader.getResourceAsStream(resourceName)
+                    ?.readAllBytes()
+                    ?.toString(Charsets.UTF_8)
+                    ?: error("Could not find resource $resourceName")
+            )
+        }
 
         /**
          * Compile the given source files and return the result.
