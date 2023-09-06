@@ -7,46 +7,24 @@ public final class app/revanced/patcher/PackageMetadata {
 	public final fun getPackageVersion ()Ljava/lang/String;
 }
 
-public abstract class app/revanced/patcher/PatchBundleLoader : java/util/Map, kotlin/jvm/internal/markers/KMappedMarker {
+public abstract class app/revanced/patcher/PatchBundleLoader : java/util/Set, kotlin/jvm/internal/markers/KMappedMarker {
 	public synthetic fun <init> (Ljava/lang/ClassLoader;[Ljava/io/File;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun add (Lapp/revanced/patcher/patch/Patch;)Z
+	public synthetic fun add (Ljava/lang/Object;)Z
+	public fun addAll (Ljava/util/Collection;)Z
 	public fun clear ()V
-	public synthetic fun compute (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun compute (Ljava/lang/String;Ljava/util/function/BiFunction;)Lapp/revanced/patcher/patch/Patch;
-	public synthetic fun computeIfAbsent (Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
-	public fun computeIfAbsent (Ljava/lang/String;Ljava/util/function/Function;)Lapp/revanced/patcher/patch/Patch;
-	public synthetic fun computeIfPresent (Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun computeIfPresent (Ljava/lang/String;Ljava/util/function/BiFunction;)Lapp/revanced/patcher/patch/Patch;
-	public final fun containsKey (Ljava/lang/Object;)Z
-	public fun containsKey (Ljava/lang/String;)Z
-	public fun containsValue (Lapp/revanced/patcher/patch/Patch;)Z
-	public final fun containsValue (Ljava/lang/Object;)Z
-	public final fun entrySet ()Ljava/util/Set;
-	public final fun get (Ljava/lang/Object;)Lapp/revanced/patcher/patch/Patch;
-	public final synthetic fun get (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun get (Ljava/lang/String;)Lapp/revanced/patcher/patch/Patch;
-	public fun getEntries ()Ljava/util/Set;
-	public fun getKeys ()Ljava/util/Set;
+	public fun contains (Lapp/revanced/patcher/patch/Patch;)Z
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun containsAll (Ljava/util/Collection;)Z
 	public fun getSize ()I
-	public fun getValues ()Ljava/util/Collection;
 	public fun isEmpty ()Z
-	public final fun keySet ()Ljava/util/Set;
-	public synthetic fun merge (Ljava/lang/Object;Ljava/lang/Object;Ljava/util/function/BiFunction;)Ljava/lang/Object;
-	public fun merge (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;Ljava/util/function/BiFunction;)Lapp/revanced/patcher/patch/Patch;
-	public synthetic fun put (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun put (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;)Lapp/revanced/patcher/patch/Patch;
-	public fun putAll (Ljava/util/Map;)V
-	public synthetic fun putIfAbsent (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public fun putIfAbsent (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;)Lapp/revanced/patcher/patch/Patch;
-	public fun remove (Ljava/lang/Object;)Lapp/revanced/patcher/patch/Patch;
-	public synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun remove (Ljava/lang/Object;Ljava/lang/Object;)Z
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-	public synthetic fun replace (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
-	public fun replace (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;)Lapp/revanced/patcher/patch/Patch;
-	public fun replace (Ljava/lang/String;Lapp/revanced/patcher/patch/Patch;Lapp/revanced/patcher/patch/Patch;)Z
-	public fun replaceAll (Ljava/util/function/BiFunction;)V
+	public fun iterator ()Ljava/util/Iterator;
+	public fun remove (Ljava/lang/Object;)Z
+	public fun removeAll (Ljava/util/Collection;)Z
+	public fun retainAll (Ljava/util/Collection;)Z
 	public final fun size ()I
-	public final fun values ()Ljava/util/Collection;
+	public fun toArray ()[Ljava/lang/Object;
+	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
 }
 
 public final class app/revanced/patcher/PatchBundleLoader$Dex : app/revanced/patcher/PatchBundleLoader {
@@ -352,6 +330,7 @@ public final class app/revanced/patcher/patch/Patch$CompatiblePackage {
 	public fun <init> (Ljava/lang/String;Ljava/util/Set;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getName ()Ljava/lang/String;
+	public final fun getVersions ()Ljava/util/Set;
 }
 
 public final class app/revanced/patcher/patch/PatchException : java/lang/Exception {

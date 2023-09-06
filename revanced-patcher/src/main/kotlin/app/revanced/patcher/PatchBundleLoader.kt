@@ -13,9 +13,9 @@ import java.util.logging.Logger
 import kotlin.reflect.KClass
 
 /**
- * [Patch]es mapped by their name.
+ * A set of [Patch]es.
  */
-typealias PatchMap = Map<String, Patch<*>>
+typealias PatchSet = Set<Patch<*>>
 
 /**
  * A [Patch] class.
@@ -33,7 +33,7 @@ sealed class PatchBundleLoader private constructor(
     classLoader: ClassLoader,
     patchBundles: Array<out File>,
     getBinaryClassNames: (patchBundle: File) -> List<String>,
-) : PatchMap by mutableMapOf() {
+) : PatchSet by mutableSetOf() {
     private val logger = Logger.getLogger(PatchBundleLoader::class.java.name)
 
     init {
@@ -45,11 +45,9 @@ sealed class PatchBundleLoader private constructor(
             patchClass.getInstance(logger)
         }.filter {
             it.name != null
-        }.associateBy {
-            it.name!!
         }.let { patches ->
             @Suppress("UNCHECKED_CAST")
-            (this as MutableMap<String, Patch<*>>).putAll(patches)
+            (this as MutableSet<Patch<*>>).addAll(patches)
         }
     }
 
