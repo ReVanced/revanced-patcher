@@ -84,7 +84,7 @@ class TestPatchAnnotationProcessor {
     // endregion
 
     private companion object Utils {
-        const val SAMPLE_PACKAGE = "app.revanced.patcher.patch.annotations.processor.samples"
+        const val SAMPLE_PACKAGE = "app.revanced.patcher.patch.annotation.processor.samples"
 
         /**
          * Get a source file from the given sample and class name.
@@ -94,7 +94,7 @@ class TestPatchAnnotationProcessor {
          * @return The source file.
          */
         fun getSourceFile(sample: String, className: String): SourceFile {
-            val resourceName = "app/revanced/patcher/patch/annotations/processor/samples/$sample/$className.kt"
+            val resourceName = "app/revanced/patcher/patch/annotation/processor/samples/$sample/$className.kt"
             return SourceFile.kotlin(
                 "$className.kt",
                 TestPatchAnnotationProcessor::class.java.classLoader.getResourceAsStream(resourceName)
