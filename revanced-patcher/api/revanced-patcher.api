@@ -407,6 +407,7 @@ public final class app/revanced/patcher/patch/options/PatchOptions : java/util/M
 	public final fun remove (Ljava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
 	public final synthetic fun remove (Ljava/lang/Object;)Ljava/lang/Object;
 	public fun remove (Ljava/lang/String;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun set (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun size ()I
 	public final fun values ()Ljava/util/Collection;
 }

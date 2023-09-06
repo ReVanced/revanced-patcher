@@ -23,16 +23,18 @@ class PatchOptions internal constructor(
      * @param value The value.
      * @throws PatchOptionException.PatchOptionNotFoundException If the option does not exist.
      */
-    inline operator fun <reified T: Any> set(key: String, value: T?) {
+    operator fun <T : Any> set(key: String, value: T?) {
         val option = this[key]
 
-        if (option.value !is T) throw PatchOptionException.InvalidValueTypeException(
-            T::class.java.name,
-            option.value?.let { it::class.java.name } ?: "null",
-        )
-
-        @Suppress("UNCHECKED_CAST")
-        (option as PatchOption<T>).value = value
+        try {
+            @Suppress("UNCHECKED_CAST")
+            (option as PatchOption<T>).value = value
+        } catch (e: ClassCastException) {
+            throw PatchOptionException.InvalidValueTypeException(
+                value?.let { it::class.java.name } ?: "null",
+                option.value?.let { it::class.java.name } ?: "null",
+            )
+        }
     }
 
     /**
