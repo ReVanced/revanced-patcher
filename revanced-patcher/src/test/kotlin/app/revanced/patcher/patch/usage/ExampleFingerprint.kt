@@ -1,4 +1,4 @@
-package app.revanced.patcher.usage
+package app.revanced.patcher.patch.usage
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
@@ -12,8 +12,8 @@ object ExampleFingerprint : MethodFingerprint(
     listOf("[L"),
     listOf(
         Opcode.SGET_OBJECT,
-        null,                 // Testing unknown opcodes.
-        Opcode.INVOKE_STATIC, // This is intentionally wrong to test the Fuzzy resolver.
+        null,                 // Matching unknown opcodes.
+        Opcode.INVOKE_STATIC, // This is intentionally wrong to test fuzzy matching.
         Opcode.RETURN_VOID
     ),
     null
