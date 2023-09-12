@@ -28,12 +28,17 @@ typealias PatchClass = KClass<out Patch<*>>
  *
  * @param getBinaryClassNames A function that returns the binary names of all classes in a patch bundle.
  * @param classLoader The [ClassLoader] to use for loading the classes.
+ * @param patchBundles A set of patches to initialize this instance with.
  */
 sealed class PatchBundleLoader private constructor(
     classLoader: ClassLoader,
     patchBundles: Array<out File>,
     getBinaryClassNames: (patchBundle: File) -> List<String>,
-) : PatchSet by mutableSetOf() {
+    // This constructor parameter is unfortunately necessary,
+    // so that a reference to the mutable set is present in the constructor to be able to add patches to it.
+    // because the instance itself is a PatchSet, which is immutable, that is delegated by the parameter.
+    private val patchSet: MutableSet<Patch<*>> = mutableSetOf()
+) : PatchSet by patchSet {
     private val logger = Logger.getLogger(PatchBundleLoader::class.java.name)
 
     init {
@@ -46,8 +51,7 @@ sealed class PatchBundleLoader private constructor(
         }.filter {
             it.name != null
         }.let { patches ->
-            @Suppress("UNCHECKED_CAST")
-            (this as MutableSet<Patch<*>>).addAll(patches)
+            patchSet.addAll(patches)
         }
     }
 
