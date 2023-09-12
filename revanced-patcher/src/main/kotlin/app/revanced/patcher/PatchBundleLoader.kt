@@ -65,7 +65,7 @@ sealed class PatchBundleLoader private constructor(
         internal fun Class<*>.getInstance(logger: Logger): Patch<*>? {
             return try {
                 getField("INSTANCE").get(null)
-            } catch (exception: NoSuchFileException) {
+            } catch (exception: NoSuchFieldException) {
                 logger.fine(
                     "Patch class '${name}' has no INSTANCE field, therefor not a singleton. " +
                             "Will try to instantiate it."
