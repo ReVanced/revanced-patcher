@@ -5,5 +5,5 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 class PatchProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment) =
-        PatchProcessor(environment.codeGenerator, environment.logger)
+        PatchProcessor(environment.codeGenerator)
 }

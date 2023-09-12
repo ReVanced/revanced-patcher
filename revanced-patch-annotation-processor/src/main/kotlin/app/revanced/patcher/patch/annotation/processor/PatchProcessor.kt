@@ -5,7 +5,10 @@ import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.patch.BytecodePatch
 import app.revanced.patcher.patch.ResourcePatch
 import app.revanced.patcher.patch.annotation.Patch
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -18,7 +21,6 @@ import kotlin.reflect.KClass
 
 class PatchProcessor(
     private val codeGenerator: CodeGenerator,
-    private val logger: KSPLogger
 ) : SymbolProcessor {
 
     private fun KSAnnotated.isSubclassOf(cls: KClass<*>): Boolean {
