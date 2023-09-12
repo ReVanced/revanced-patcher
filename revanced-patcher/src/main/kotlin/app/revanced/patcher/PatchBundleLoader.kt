@@ -45,7 +45,7 @@ sealed class PatchBundleLoader private constructor(
         patchBundles.flatMap(getBinaryClassNames).asSequence().map {
             classLoader.loadClass(it)
         }.filter {
-            it.isInstance(Patch::class.java)
+            Patch::class.java.isAssignableFrom(it)
         }.mapNotNull { patchClass ->
             patchClass.getInstance(logger)
         }.filter {
