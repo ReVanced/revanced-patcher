@@ -1,3 +1,32 @@
+# [15.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.3...v15.0.0-dev.4) (2023-09-13)
+
+
+### Bug Fixes
+
+* Account for source patch dependency for tests ([6918418](https://github.com/ReVanced/revanced-patcher/commit/69184187d90f126478d2f49415c1e3381217557f))
+* Always make the generated patch depend on the source patch ([8de3063](https://github.com/ReVanced/revanced-patcher/commit/8de30633ae6eb7acf7f0a351e26d4a6c2fdbdfec))
+* Catch correct exception ([637d487](https://github.com/ReVanced/revanced-patcher/commit/637d48746ff8694e01c5aead1c75a9a1efeb5ac8))
+* Delegate `PatchBundleLoader` by mutable set of patches ([9a109c1](https://github.com/ReVanced/revanced-patcher/commit/9a109c129b135a634be1aad4130a06d9e8e96ecd))
+* Do not resolve the proxied patch to the proxy in the dependency list ([e112837](https://github.com/ReVanced/revanced-patcher/commit/e11283744a21fe2d09435e99d6924462b6aac3b8))
+* Do not set `CompatiblePackage.versions` if `@CompatiblePackage.versions` is empty ([6b1e0a1](https://github.com/ReVanced/revanced-patcher/commit/6b1e0a16568124e9f82fb5740353360fa8ec614a))
+* Filter for patches correctly ([4bc4b0d](https://github.com/ReVanced/revanced-patcher/commit/4bc4b0dc0104073b62528d02a88383cecd7a50e7))
+* Find dependency in `context.allPatches` ([670f015](https://github.com/ReVanced/revanced-patcher/commit/670f0153de10c6f0db25b08df1c01a2905037f84))
+* Log the correct patch names ([9fdb8f0](https://github.com/ReVanced/revanced-patcher/commit/9fdb8f087f62babf6081879db65c80db639aa0a7))
+* Print patch name instead of class name ([4e7811e](https://github.com/ReVanced/revanced-patcher/commit/4e7811ea07762667a1f22526dc176022038f60eb))
+* Print stack trace of exception ([aa71146](https://github.com/ReVanced/revanced-patcher/commit/aa71146b1bf4ffebcc81a1663e15abae89e97ff0))
+* Run code-block if `executablePatches` does not yet contain `patch` ([1d7aeca](https://github.com/ReVanced/revanced-patcher/commit/1d7aeca696be873dfaf88eaa6d312949a3b8572b))
+* Suppress logger when loading patches in `PatchBundleLoader` ([72c9eb2](https://github.com/ReVanced/revanced-patcher/commit/72c9eb212985f99f3390cf1faa10ab547d2dbe7e))
+
+
+### Code Refactoring
+
+* Internalize processor constructor ([a802d0d](https://github.com/ReVanced/revanced-patcher/commit/a802d0df463695976e85d8391762942eb977920b))
+
+
+### BREAKING CHANGES
+
+* This gets rid of the public constructor.
+
 # [15.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.2...v15.0.0-dev.3) (2023-09-06)
 
 
