@@ -13,7 +13,6 @@ public abstract interface annotation class app/revanced/patcher/patch/annotation
 }
 
 public final class app/revanced/patcher/patch/annotation/processor/PatchProcessor : com/google/devtools/ksp/processing/SymbolProcessor {
-	public fun <init> (Lcom/google/devtools/ksp/processing/CodeGenerator;Lcom/google/devtools/ksp/processing/KSPLogger;)V
 	public fun process (Lcom/google/devtools/ksp/processing/Resolver;)Ljava/util/List;
 }
 

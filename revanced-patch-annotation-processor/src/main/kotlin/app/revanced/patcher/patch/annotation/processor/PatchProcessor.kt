@@ -19,7 +19,7 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 import kotlin.reflect.KClass
 
-class PatchProcessor(
+class PatchProcessor internal constructor(
     private val codeGenerator: CodeGenerator,
 ) : SymbolProcessor {
 

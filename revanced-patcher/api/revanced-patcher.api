@@ -8,7 +8,7 @@ public final class app/revanced/patcher/PackageMetadata {
 }
 
 public abstract class app/revanced/patcher/PatchBundleLoader : java/util/Set, kotlin/jvm/internal/markers/KMappedMarker {
-	public synthetic fun <init> (Ljava/lang/ClassLoader;[Ljava/io/File;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/ClassLoader;[Ljava/io/File;Lkotlin/jvm/functions/Function1;Ljava/util/Set;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun add (Lapp/revanced/patcher/patch/Patch;)Z
 	public synthetic fun add (Ljava/lang/Object;)Z
 	public fun addAll (Ljava/util/Collection;)Z
