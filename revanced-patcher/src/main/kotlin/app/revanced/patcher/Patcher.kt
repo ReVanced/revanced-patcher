@@ -153,7 +153,7 @@ class Patcher(
             patch: Patch<*>,
             executedPatches: LinkedHashMap<Patch<*>, PatchResult>
         ): PatchResult {
-            val patchName = patch.name
+            val patchName = patch.name ?: patch.toString()
 
             executedPatches[patch]?.let { patchResult ->
                 patchResult.exception ?: return patchResult
@@ -171,7 +171,7 @@ class Patcher(
                 result.exception?.let {
                     return PatchResult(
                         patch,
-                        PatchException("'$patchName' depends on '${dependency.name}' that raised an exception: $it")
+                        PatchException("'$patchName' depends on '${dependency.name ?: dependency}' that raised an exception:\n$it")
                     )
                 }
             }
