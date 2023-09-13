@@ -208,7 +208,7 @@ class Patcher(
 
         val executedPatches = LinkedHashMap<Patch<*>, PatchResult>() // Key is name.
 
-        context.executablePatches.map { it.value }.sortedBy { it.name }.forEach { patch ->
+        context.executablePatches.values.sortedBy { it.name }.forEach { patch ->
             val patchResult = executePatch(patch, executedPatches)
 
             // If the patch failed, emit the result, even if it is closeable.
