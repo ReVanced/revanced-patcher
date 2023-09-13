@@ -154,18 +154,18 @@ class PatchProcessor(
                                 )
                             }
 
-                            patchAnnotation.dependencies?.let { dependencies ->
-                                addSuperclassConstructorParameter(
-                                    "dependencies = setOf(%L, %L)",
-                                    buildList {
-                                        addAll(dependencies)
-                                    }.joinToString(", ") { dependency ->
-                                        "${(dependencyResolutionMap[dependency] ?: dependency)}::class"
-                                    },
-                                    // Also add the source class of the generated class so that it is also executed.
-                                    "${patchDeclaration.toClassName()}::class"
-                                )
-                            }
+                            // The generated patch always depends on the source patch.
+                            addSuperclassConstructorParameter(
+                                "dependencies = setOf(%L)",
+                                buildList {
+                                    patchAnnotation.dependencies?.forEach { dependency ->
+                                        add("${(dependencyResolutionMap[dependency] ?: dependency)}::class")
+                                    }
+
+                                    add("${patchDeclaration.toClassName()}::class")
+                                }.joinToString(", "),
+                            )
+
                             addSuperclassConstructorParameter(
                                 "use = %L", patchAnnotation.use
                             )
