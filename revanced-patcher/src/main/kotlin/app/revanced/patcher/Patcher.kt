@@ -164,14 +164,17 @@ class Patcher(
             }
 
             // Recursively execute all dependency patches.
-            patch.dependencies?.forEach { dependencyName ->
-                val dependency = context.allPatches[dependencyName]!!
+            patch.dependencies?.forEach { dependencyClass ->
+                val dependency = context.allPatches[dependencyClass]!!
                 val result = executePatch(dependency, executedPatches)
 
                 result.exception?.let {
                     return PatchResult(
                         patch,
-                        PatchException("'$patchName' depends on '${dependency.name ?: dependency}' that raised an exception:\n$it")
+                        PatchException(
+                            "'$patchName' depends on '${dependency.name ?: dependency}' " +
+                                    "that raised an exception:\n${it.stackTraceToString()}"
+                        )
                     )
                 }
             }
@@ -245,7 +248,7 @@ class Patcher(
                         PatchResult(
                             patch,
                             PatchException(
-                                "'${patch.name}' raised an exception while being closed: $it",
+                                "'${patch.name}' raised an exception while being closed: ${it.stackTraceToString()}",
                                 result.exception
                             )
                         )
