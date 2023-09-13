@@ -184,7 +184,7 @@ class PatchProcessor(
                         .addInitializerBlock(
                             CodeBlock.builder()
                                 .add(
-                                    "%T.options.forEach { (key, option) ->",
+                                    "%T.options.forEach { (_, option) ->",
                                     patchDeclaration.toClassName()
                                 )
                                 .addStatement(
