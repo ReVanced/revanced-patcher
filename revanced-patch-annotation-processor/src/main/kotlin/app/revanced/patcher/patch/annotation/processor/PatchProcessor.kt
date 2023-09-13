@@ -33,7 +33,7 @@ class PatchProcessor(
 
     @Suppress("UNCHECKED_CAST")
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val executablePatches = buildMap {
+        val patches = buildMap {
             resolver.getSymbolsWithAnnotation(Patch::class.qualifiedName!!).filter {
                 // Do not check here if Patch is super of the class, because it is expensive.
                 // Check it later when processing.
@@ -99,13 +99,13 @@ class PatchProcessor(
         }
 
         // If a patch depends on another, that is annotated, the dependency should be replaced with the generated patch,
-        // because the generated patch has all the necessary properties to invoke the super constructor,
+        // because the generated patch has all the necessary properties to invoke the super constructor with,
         // unlike the annotated patch.
         val dependencyResolutionMap = buildMap {
-            executablePatches.values.filter { it.dependencies != null }.flatMap {
+            patches.values.filter { it.dependencies != null }.flatMap {
                 it.dependencies!!
             }.distinct().forEach { dependency ->
-                executablePatches.keys.find { it.qualifiedName?.asString() == dependency.toString() }
+                patches.keys.find { it.qualifiedName?.asString() == dependency.toString() }
                     ?.let { patch ->
                         this[dependency] = ClassName(
                             patch.packageName.asString(),
@@ -115,7 +115,7 @@ class PatchProcessor(
             }
         }
 
-        executablePatches.forEach { (patchDeclaration, patchAnnotation) ->
+        patches.forEach { (patchDeclaration, patchAnnotation) ->
             val isBytecodePatch = patchDeclaration.isSubclassOf(BytecodePatch::class)
 
             val superClass = if (isBytecodePatch) {
@@ -156,14 +156,14 @@ class PatchProcessor(
 
                             patchAnnotation.dependencies?.let { dependencies ->
                                 addSuperclassConstructorParameter(
-                                    "dependencies = setOf(%L)",
+                                    "dependencies = setOf(%L, %L)",
                                     buildList {
                                         addAll(dependencies)
-                                        // Also add the source class of the generated class so that it is also executed.
-                                        add(patchDeclaration.toClassName())
                                     }.joinToString(", ") { dependency ->
                                         "${(dependencyResolutionMap[dependency] ?: dependency)}::class"
-                                    }
+                                    },
+                                    // Also add the source class of the generated class so that it is also executed.
+                                    "${patchDeclaration.toClassName()}::class"
                                 )
                             }
                             addSuperclassConstructorParameter(
