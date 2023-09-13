@@ -21,6 +21,16 @@ class TestPatchAnnotationProcessor {
         ).loadPatch("$SAMPLE_PACKAGE.processing.ProcessablePatchGenerated").name
     )
 
+    @Test
+    fun generateNullProperties() = compile(
+        getSourceFile(
+            "null", "NullPropertiesPatch"
+        )
+    ).loadPatch("$SAMPLE_PACKAGE.null.NullPropertiesPatchGenerated").let {
+        assertNull(it.description) // Because no description was provided.
+        assertNull(it.compatiblePackages!!.first().versions) // Because no versions were provided.
+    }
+
     // endregion
 
     // region Dependencies

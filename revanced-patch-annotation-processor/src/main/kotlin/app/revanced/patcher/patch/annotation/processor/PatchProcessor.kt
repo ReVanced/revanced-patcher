@@ -81,14 +81,14 @@ class PatchProcessor(
                         dependencies?.map { dependency -> dependency.toClassName() },
                         compatiblePackages?.map {
                             val packageName = it.property("name")
-                            val packageVersions = (it.property("versions") as List<String>)
-                                .joinToString(", ") { version -> "\"$version\"" }
+                            val packageVersions = (it.property("versions") as List<String>).ifEmpty { null }
+                                ?.joinToString(", ") { version -> "\"$version\"" }
 
                             CodeBlock.of(
-                                "%T(%S, setOf(%L))",
+                                "%T(%S, %L)",
                                 app.revanced.patcher.patch.Patch.CompatiblePackage::class,
                                 packageName,
-                                packageVersions
+                                packageVersions?.let { "setOf($packageVersions)" },
                             )
                         },
                         use,
