@@ -165,7 +165,7 @@ class Patcher(
 
             // Recursively execute all dependency patches.
             patch.dependencies?.forEach { dependencyName ->
-                val dependency = context.executablePatches[dependencyName]!!
+                val dependency = context.allPatches[dependencyName]!!
                 val result = executePatch(dependency, executedPatches)
 
                 result.exception?.let {
