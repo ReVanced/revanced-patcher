@@ -80,15 +80,17 @@ class TestPatchAnnotationProcessor {
     // endregion
 
     // region Limitations
+
     @Test
-    fun failingManualDependency() = assertNull(
+    fun failingManualDependency() = assertEquals(
+        1, // Generated patch is always dependent on source class.
         compile(
             getSourceFile(
                 "limitations/manualdependency", "DependentPatch"
             ), getSourceFile(
                 "limitations/manualdependency", "DependencyPatch"
             )
-        ).loadPatch("$SAMPLE_PACKAGE.limitations.manualdependency.DependentPatchGenerated").dependencies
+        ).loadPatch("$SAMPLE_PACKAGE.limitations.manualdependency.DependentPatchGenerated").dependencies!!.size
     )
 
     // endregion
