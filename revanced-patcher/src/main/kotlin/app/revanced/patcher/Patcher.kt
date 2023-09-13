@@ -183,7 +183,7 @@ class Patcher(
                 // TODO: Implement this in a more polymorphic way.
                 when (patch) {
                     is BytecodePatch -> {
-                        patch.fingerprints.toList().resolveUsingLookupMap(context.bytecodeContext)
+                        patch.fingerprints.resolveUsingLookupMap(context.bytecodeContext)
                         patch.execute(context.bytecodeContext)
                     }
                     is ResourcePatch -> {
