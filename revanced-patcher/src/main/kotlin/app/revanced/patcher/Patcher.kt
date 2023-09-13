@@ -74,7 +74,7 @@ class Patcher(
         }
 
         // Add all patches and their dependencies to the context.
-        for (patch in patches) context.executablePatches.putIfAbsent(patch::class, patch) ?: {
+        for (patch in patches) context.executablePatches.putIfAbsent(patch::class, patch) ?: run {
             context.allPatches[patch::class] = patch
 
             patch.dependencies?.forEach { it.putDependenciesRecursively() }
