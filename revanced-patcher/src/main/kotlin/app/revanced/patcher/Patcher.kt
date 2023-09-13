@@ -171,7 +171,7 @@ class Patcher(
                 result.exception?.let {
                     return PatchResult(
                         patch,
-                        PatchException("'$patchName' depends on '${dependency}' that raised an exception: $it")
+                        PatchException("'$patchName' depends on '${dependency.name}' that raised an exception: $it")
                     )
                 }
             }
