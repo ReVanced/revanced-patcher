@@ -47,7 +47,7 @@ sealed class PatchBundleLoader private constructor(
         }.filter {
             Patch::class.java.isAssignableFrom(it)
         }.mapNotNull { patchClass ->
-            patchClass.getInstance(logger)
+            patchClass.getInstance(logger, silent = true)
         }.filter {
             it.name != null
         }.let { patches ->
@@ -60,13 +60,14 @@ sealed class PatchBundleLoader private constructor(
          * Instantiates a [Patch]. If the class is a singleton, the INSTANCE field will be used.
          *
          * @param logger The [Logger] to use for logging.
+         * @param silent Whether to suppress logging.
          * @return The instantiated [Patch] or `null` if the [Patch] could not be instantiated.
          */
-        internal fun Class<*>.getInstance(logger: Logger): Patch<*>? {
+        internal fun Class<*>.getInstance(logger: Logger, silent: Boolean = false): Patch<*>? {
             return try {
                 getField("INSTANCE").get(null)
             } catch (exception: NoSuchFieldException) {
-                logger.fine(
+                if (!silent) logger.fine(
                     "Patch class '${name}' has no INSTANCE field, therefor not a singleton. " +
                             "Will try to instantiate it."
                 )
@@ -74,7 +75,7 @@ sealed class PatchBundleLoader private constructor(
                 try {
                     getDeclaredConstructor().newInstance()
                 } catch (exception: Exception) {
-                    logger.severe(
+                    if (!silent) logger.severe(
                         "Patch class '${name}' is not singleton and has no suitable constructor, " +
                                 "therefor cannot be instantiated and will be ignored."
                     )
