@@ -1,58 +1,10 @@
 plugins {
-    kotlin("jvm") version "1.8.20"
-    `maven-publish`
+    kotlin("jvm") version "1.9.0" apply false
     alias(libs.plugins.binary.compatibility.validator)
 }
 
-group = "app.revanced"
+allprojects {
+    apply(plugin = "maven-publish")
 
-dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.xpp3)
-    implementation(libs.smali)
-    implementation(libs.multidexlib2)
-    implementation(libs.apktool.lib)
-    implementation(libs.kotlin.reflect)
-
-    compileOnly(libs.android)
-
-    testImplementation(libs.kotlin.test)
-}
-
-tasks {
-    test {
-        useJUnitPlatform()
-        testLogging {
-            events("PASSED", "SKIPPED", "FAILED")
-        }
-    }
-
-    processResources {
-        expand("projectVersion" to project.version)
-    }
-}
-
-kotlin { jvmToolchain(11) }
-
-java {
-    withSourcesJar()
-}
-
-publishing {
-    repositories {
-        mavenLocal()
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-    publications {
-        create<MavenPublication>("gpr") {
-            from(components["java"])
-        }
-    }
+    group = "app.revanced"
 }

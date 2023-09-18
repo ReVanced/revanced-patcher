@@ -19,4 +19,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "revanced-patcher"
+include("revanced-patch-annotation-processor", "revanced-patcher")
