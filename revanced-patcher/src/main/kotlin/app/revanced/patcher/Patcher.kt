@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.flow
 import java.io.Closeable
 import java.io.File
 import java.util.function.Supplier
-import java.util.logging.Level
-import java.util.logging.LogManager
 import java.util.logging.Logger
 
 /**
@@ -30,18 +28,6 @@ class Patcher(
     val context = PatcherContext(options)
 
     init {
-        LogManager.getLogManager().let { manager ->
-            // Disable root logger.
-            manager.getLogger("").level = Level.OFF
-
-            // Enable ReVanced logging only.
-            manager.loggerNames
-                .toList()
-                .filter { it.startsWith("app.revanced") }
-                .map { manager.getLogger(it) }
-                .forEach { it.level = Level.INFO }
-        }
-
         context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.MANIFEST_ONLY)
     }
 
