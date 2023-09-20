@@ -96,7 +96,7 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
     internal inner class Integrations : MutableList<File> by mutableListOf(), Flushable {
         /**
          * Whether to merge integrations.
-         * True when any supplied [Patch] is annotated with [RequiresIntegrations].
+         * Set to true, if the field requiresIntegrations of any supplied [Patch] is true.
          */
         var merge = false
 
