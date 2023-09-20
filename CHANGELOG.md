@@ -1,3 +1,10 @@
+## [15.0.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0...v15.0.1) (2023-09-20)
+
+
+### Bug Fixes
+
+* Remove log management ([d51bc32](https://github.com/ReVanced/revanced-patcher/commit/d51bc32e37a865194c3825471085b3ccf8c78421))
+
 ## [15.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0...v15.0.1-dev.1) (2023-09-20)
 
 
