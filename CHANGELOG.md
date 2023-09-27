@@ -1,3 +1,456 @@
+## [15.0.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.1...v15.0.2-dev.1) (2023-09-26)
+
+
+### Performance Improvements
+
+* Do not unnecessary resolve fingeprints twice ([#241](https://github.com/ReVanced/revanced-patcher/issues/241)) ([4d6e08a](https://github.com/ReVanced/revanced-patcher/commit/4d6e08a650dde6ec2e18611c5db1ab92b9a61dd1))
+
+## [15.0.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0...v15.0.1) (2023-09-20)
+
+
+### Bug Fixes
+
+* Remove log management ([d51bc32](https://github.com/ReVanced/revanced-patcher/commit/d51bc32e37a865194c3825471085b3ccf8c78421))
+
+## [15.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0...v15.0.1-dev.1) (2023-09-20)
+
+
+### Bug Fixes
+
+* Remove log management ([d51bc32](https://github.com/ReVanced/revanced-patcher/commit/d51bc32e37a865194c3825471085b3ccf8c78421))
+
+# [15.0.0](https://github.com/ReVanced/revanced-patcher/compare/v14.2.2...v15.0.0) (2023-09-18)
+
+
+### Bug Fixes
+
+* Account for source patch dependency for tests ([6918418](https://github.com/ReVanced/revanced-patcher/commit/69184187d90f126478d2f49415c1e3381217557f))
+* Always make the generated patch depend on the source patch ([8de3063](https://github.com/ReVanced/revanced-patcher/commit/8de30633ae6eb7acf7f0a351e26d4a6c2fdbdfec))
+* Catch correct exception ([637d487](https://github.com/ReVanced/revanced-patcher/commit/637d48746ff8694e01c5aead1c75a9a1efeb5ac8))
+* Delegate `PatchBundleLoader` by mutable set of patches ([9a109c1](https://github.com/ReVanced/revanced-patcher/commit/9a109c129b135a634be1aad4130a06d9e8e96ecd))
+* Do not resolve the proxied patch to the proxy in the dependency list ([e112837](https://github.com/ReVanced/revanced-patcher/commit/e11283744a21fe2d09435e99d6924462b6aac3b8))
+* Do not set `CompatiblePackage.versions` if `@CompatiblePackage.versions` is empty ([6b1e0a1](https://github.com/ReVanced/revanced-patcher/commit/6b1e0a16568124e9f82fb5740353360fa8ec614a))
+* Filter for patches correctly ([4bc4b0d](https://github.com/ReVanced/revanced-patcher/commit/4bc4b0dc0104073b62528d02a88383cecd7a50e7))
+* Find dependency in `context.allPatches` ([670f015](https://github.com/ReVanced/revanced-patcher/commit/670f0153de10c6f0db25b08df1c01a2905037f84))
+* Log the correct patch names ([9fdb8f0](https://github.com/ReVanced/revanced-patcher/commit/9fdb8f087f62babf6081879db65c80db639aa0a7))
+* Make `CompatiblePackage.versions` a property ([67b7dff](https://github.com/ReVanced/revanced-patcher/commit/67b7dff67a212b4fc30eb4f0cbe58f0ba09fb09a))
+* Print patch name instead of class name ([4e7811e](https://github.com/ReVanced/revanced-patcher/commit/4e7811ea07762667a1f22526dc176022038f60eb))
+* Print stack trace of exception ([aa71146](https://github.com/ReVanced/revanced-patcher/commit/aa71146b1bf4ffebcc81a1663e15abae89e97ff0))
+* Run code-block if `executablePatches` does not yet contain `patch` ([1d7aeca](https://github.com/ReVanced/revanced-patcher/commit/1d7aeca696be873dfaf88eaa6d312949a3b8572b))
+* Suppress logger when loading patches in `PatchBundleLoader` ([72c9eb2](https://github.com/ReVanced/revanced-patcher/commit/72c9eb212985f99f3390cf1faa10ab547d2dbe7e))
+* Use correct module name ([080fbe9](https://github.com/ReVanced/revanced-patcher/commit/080fbe9feb9d4ea9ec4e599ecef296eacd803b05))
+
+
+### Code Refactoring
+
+* Internalize processor constructor ([a802d0d](https://github.com/ReVanced/revanced-patcher/commit/a802d0df463695976e85d8391762942eb977920b))
+
+
+* feat Use `Set` as super type for `PatchBundleLoader` ([4b76d19](https://github.com/ReVanced/revanced-patcher/commit/4b76d1959691babf8c99d3d5235df4a4388956f0))
+* feat!: Add patch annotation processor ([3fc6a13](https://github.com/ReVanced/revanced-patcher/commit/3fc6a139eef67237c116fb4e3e29bf9542d3a981))
+* feat!: Remove patch annotations ([3b4db3d](https://github.com/ReVanced/revanced-patcher/commit/3b4db3ddb72cdcee8af2f787eadf58eeb37543de))
+
+
+### Features
+
+* Add patch annotation processor ([#231](https://github.com/ReVanced/revanced-patcher/issues/231)) ([a29931f](https://github.com/ReVanced/revanced-patcher/commit/a29931f2ec0a666dba209b54855425d9dc2f4462))
+
+
+### BREAKING CHANGES
+
+* This gets rid of the public constructor.
+* `PatchBundleLoader` is not a map anymore
+* This renames packages and the Maven package.
+* The manifest for patches has been removed, and the properties have been added to patches. Patches are now `OptionsContainer`. The `@Patch` annotation has been removed in favour of the `@Patch` annotation from the annotation processor.
+* Patch annotations have been removed. PatcherException is now thrown in various places. PatchBundleLoader is now a map of patches associated by their name. Patches are now instances.
+
+# [15.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.3...v15.0.0-dev.4) (2023-09-13)
+
+
+### Bug Fixes
+
+* Account for source patch dependency for tests ([6918418](https://github.com/ReVanced/revanced-patcher/commit/69184187d90f126478d2f49415c1e3381217557f))
+* Always make the generated patch depend on the source patch ([8de3063](https://github.com/ReVanced/revanced-patcher/commit/8de30633ae6eb7acf7f0a351e26d4a6c2fdbdfec))
+* Catch correct exception ([637d487](https://github.com/ReVanced/revanced-patcher/commit/637d48746ff8694e01c5aead1c75a9a1efeb5ac8))
+* Delegate `PatchBundleLoader` by mutable set of patches ([9a109c1](https://github.com/ReVanced/revanced-patcher/commit/9a109c129b135a634be1aad4130a06d9e8e96ecd))
+* Do not resolve the proxied patch to the proxy in the dependency list ([e112837](https://github.com/ReVanced/revanced-patcher/commit/e11283744a21fe2d09435e99d6924462b6aac3b8))
+* Do not set `CompatiblePackage.versions` if `@CompatiblePackage.versions` is empty ([6b1e0a1](https://github.com/ReVanced/revanced-patcher/commit/6b1e0a16568124e9f82fb5740353360fa8ec614a))
+* Filter for patches correctly ([4bc4b0d](https://github.com/ReVanced/revanced-patcher/commit/4bc4b0dc0104073b62528d02a88383cecd7a50e7))
+* Find dependency in `context.allPatches` ([670f015](https://github.com/ReVanced/revanced-patcher/commit/670f0153de10c6f0db25b08df1c01a2905037f84))
+* Log the correct patch names ([9fdb8f0](https://github.com/ReVanced/revanced-patcher/commit/9fdb8f087f62babf6081879db65c80db639aa0a7))
+* Print patch name instead of class name ([4e7811e](https://github.com/ReVanced/revanced-patcher/commit/4e7811ea07762667a1f22526dc176022038f60eb))
+* Print stack trace of exception ([aa71146](https://github.com/ReVanced/revanced-patcher/commit/aa71146b1bf4ffebcc81a1663e15abae89e97ff0))
+* Run code-block if `executablePatches` does not yet contain `patch` ([1d7aeca](https://github.com/ReVanced/revanced-patcher/commit/1d7aeca696be873dfaf88eaa6d312949a3b8572b))
+* Suppress logger when loading patches in `PatchBundleLoader` ([72c9eb2](https://github.com/ReVanced/revanced-patcher/commit/72c9eb212985f99f3390cf1faa10ab547d2dbe7e))
+
+
+### Code Refactoring
+
+* Internalize processor constructor ([a802d0d](https://github.com/ReVanced/revanced-patcher/commit/a802d0df463695976e85d8391762942eb977920b))
+
+
+### BREAKING CHANGES
+
+* This gets rid of the public constructor.
+
+# [15.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.2...v15.0.0-dev.3) (2023-09-06)
+
+
+### Bug Fixes
+
+* Make `CompatiblePackage.versions` a property ([67b7dff](https://github.com/ReVanced/revanced-patcher/commit/67b7dff67a212b4fc30eb4f0cbe58f0ba09fb09a))
+* Use correct module name ([080fbe9](https://github.com/ReVanced/revanced-patcher/commit/080fbe9feb9d4ea9ec4e599ecef296eacd803b05))
+
+
+* feat Use `Set` as super type for `PatchBundleLoader` ([4b76d19](https://github.com/ReVanced/revanced-patcher/commit/4b76d1959691babf8c99d3d5235df4a4388956f0))
+
+
+### BREAKING CHANGES
+
+* `PatchBundleLoader` is not a map anymore
+* This renames packages and the Maven package.
+
+# [15.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0-dev.1...v15.0.0-dev.2) (2023-09-06)
+
+# [15.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.2...v15.0.0-dev.1) (2023-09-04)
+
+
+* feat!: Add patch annotation processor ([3fc6a13](https://github.com/ReVanced/revanced-patcher/commit/3fc6a139eef67237c116fb4e3e29bf9542d3a981))
+* feat!: Remove patch annotations ([3b4db3d](https://github.com/ReVanced/revanced-patcher/commit/3b4db3ddb72cdcee8af2f787eadf58eeb37543de))
+
+
+### Features
+
+* Add patch annotation processor ([#231](https://github.com/ReVanced/revanced-patcher/issues/231)) ([a29931f](https://github.com/ReVanced/revanced-patcher/commit/a29931f2ec0a666dba209b54855425d9dc2f4462))
+
+
+### BREAKING CHANGES
+
+* The manifest for patches has been removed, and the properties have been added to patches. Patches are now `OptionsContainer`. The `@Patch` annotation has been removed in favour of the `@Patch` annotation from the annotation processor.
+* Patch annotations have been removed. PatcherException is now thrown in various places. PatchBundleLoader is now a map of patches associated by their name. Patches are now instances.
+
+## [14.2.2](https://github.com/ReVanced/revanced-patcher/compare/v14.2.1...v14.2.2) (2023-08-30)
+
+
+### Bug Fixes
+
+* allow setting `DexClassLoader.optimizedDirectory` ([11a3378](https://github.com/ReVanced/revanced-patcher/commit/11a337865947a6ac74a63ebb3f3f9bc2610f7771))
+
+## [14.2.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.1...v14.2.2-dev.1) (2023-08-29)
+
+
+### Bug Fixes
+
+* allow setting `DexClassLoader.optimizedDirectory` ([11a3378](https://github.com/ReVanced/revanced-patcher/commit/11a337865947a6ac74a63ebb3f3f9bc2610f7771))
+
+## [14.2.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0...v14.2.1) (2023-08-27)
+
+
+### Bug Fixes
+
+* do not flag resource table as sparse when main package is not loaded ([b832812](https://github.com/ReVanced/revanced-patcher/commit/b832812767a06ec6ec232291e6d14c8c2f14118c))
+
+## [14.2.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0...v14.2.1-dev.1) (2023-08-27)
+
+
+### Bug Fixes
+
+* do not flag resource table as sparse when main package is not loaded ([b832812](https://github.com/ReVanced/revanced-patcher/commit/b832812767a06ec6ec232291e6d14c8c2f14118c))
+
+# [14.2.0](https://github.com/ReVanced/revanced-patcher/compare/v14.1.0...v14.2.0) (2023-08-27)
+
+
+### Features
+
+* load patches in lexicographical order ([e8f2087](https://github.com/ReVanced/revanced-patcher/commit/e8f2087a6ffa6077fb3a6a69e29f3aec72e2fc1b))
+* log when merging integrations ([983563e](https://github.com/ReVanced/revanced-patcher/commit/983563efb6d7c8d289464b8bf71a016b8a735630))
+
+
+### Performance Improvements
+
+* compare types of classes ([55d6945](https://github.com/ReVanced/revanced-patcher/commit/55d694579ac2718b9e2c61ca5f38419c3775ef87))
+
+# [14.2.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0-dev.2...v14.2.0-dev.3) (2023-08-26)
+
+
+### Performance Improvements
+
+* compare types of classes ([55d6945](https://github.com/ReVanced/revanced-patcher/commit/55d694579ac2718b9e2c61ca5f38419c3775ef87))
+
+# [14.2.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v14.2.0-dev.1...v14.2.0-dev.2) (2023-08-26)
+
+
+### Features
+
+* log when merging integrations ([983563e](https://github.com/ReVanced/revanced-patcher/commit/983563efb6d7c8d289464b8bf71a016b8a735630))
+
+# [14.2.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.1.0...v14.2.0-dev.1) (2023-08-25)
+
+
+### Features
+
+* load patches in lexicographical order ([e8f2087](https://github.com/ReVanced/revanced-patcher/commit/e8f2087a6ffa6077fb3a6a69e29f3aec72e2fc1b))
+
+# [14.1.0](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0...v14.1.0) (2023-08-24)
+
+
+### Bug Fixes
+
+* move version properties file to correct package ([e985676](https://github.com/ReVanced/revanced-patcher/commit/e985676c2d8e5d6cb907d371de30428caaa6da43))
+
+
+### Features
+
+* properly make use of logging facade ([ba56a6a](https://github.com/ReVanced/revanced-patcher/commit/ba56a6a2eef503c0d6cdd846ddce2e1474d8ed1a))
+
+# [14.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.0.1-dev.1...v14.1.0-dev.1) (2023-08-24)
+
+
+### Features
+
+* properly make use of logging facade ([ba56a6a](https://github.com/ReVanced/revanced-patcher/commit/ba56a6a2eef503c0d6cdd846ddce2e1474d8ed1a))
+
+## [14.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0...v14.0.1-dev.1) (2023-08-23)
+
+
+### Bug Fixes
+
+* move version properties file to correct package ([e985676](https://github.com/ReVanced/revanced-patcher/commit/e985676c2d8e5d6cb907d371de30428caaa6da43))
+
+# [14.0.0](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0...v14.0.0) (2023-08-22)
+
+
+### Bug Fixes
+
+* log decoding resources after logging deleting resource cache directory ([db62a16](https://github.com/ReVanced/revanced-patcher/commit/db62a1607b4a9d6256b5f5153decb088d9680553))
+* only emit closed patches that did not throw an exception with the `@Patch` annotation ([5938f6b](https://github.com/ReVanced/revanced-patcher/commit/5938f6b7ea25103a0a1b56ceebe49139bc80c6f5))
+* supply the parent classloader to `DexClassLoader` ([0f15077](https://github.com/ReVanced/revanced-patcher/commit/0f15077225600b65200022c1a318e504deb472b9))
+
+
+### Code Refactoring
+
+* improve structure and public API ([6b8977f](https://github.com/ReVanced/revanced-patcher/commit/6b8977f17854ef0344d868e6391cb18134eceadc))
+
+
+### Features
+
+* do not log instantiation of ReVanced Patcher ([273dd8d](https://github.com/ReVanced/revanced-patcher/commit/273dd8d388f8e9b7436c6d6145a94c12c1fabe55))
+
+
+### BREAKING CHANGES
+
+* Various public APIs have been changed. The `Version` annotation has been removed. Patches do not return anything anymore and instead throw `PatchException`. Multiple patch bundles can now be loaded in a single ClassLoader to bypass class loader isolation.
+
+# [14.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.3...v14.0.0-dev.4) (2023-08-22)
+
+
+### Bug Fixes
+
+* only emit closed patches that did not throw an exception with the `@Patch` annotation ([5938f6b](https://github.com/ReVanced/revanced-patcher/commit/5938f6b7ea25103a0a1b56ceebe49139bc80c6f5))
+
+# [14.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.2...v14.0.0-dev.3) (2023-08-20)
+
+
+### Bug Fixes
+
+* supply the parent classloader to `DexClassLoader` ([0f15077](https://github.com/ReVanced/revanced-patcher/commit/0f15077225600b65200022c1a318e504deb472b9))
+
+
+### Features
+
+* do not log instantiation of ReVanced Patcher ([273dd8d](https://github.com/ReVanced/revanced-patcher/commit/273dd8d388f8e9b7436c6d6145a94c12c1fabe55))
+
+# [14.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v14.0.0-dev.1...v14.0.0-dev.2) (2023-08-19)
+
+# [14.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0...v14.0.0-dev.1) (2023-08-18)
+
+
+### Bug Fixes
+
+* log decoding resources after logging deleting resource cache directory ([db62a16](https://github.com/ReVanced/revanced-patcher/commit/db62a1607b4a9d6256b5f5153decb088d9680553))
+
+
+### Code Refactoring
+
+* improve structure and public API ([6b8977f](https://github.com/ReVanced/revanced-patcher/commit/6b8977f17854ef0344d868e6391cb18134eceadc))
+
+
+### BREAKING CHANGES
+
+* Various public APIs have been changed. The `Version` annotation has been removed. Patches do not return anything anymore and instead throw `PatchException`. Multiple patch bundles can now be loaded in a single ClassLoader to bypass class loader isolation.
+
+# [13.0.0](https://github.com/ReVanced/revanced-patcher/compare/v12.1.1...v13.0.0) (2023-08-14)
+
+
+### Bug Fixes
+
+* decode in correct order ([8fb2f2d](https://github.com/ReVanced/revanced-patcher/commit/8fb2f2dc1d3b9b1e9fd13b39485985d2886d52ae))
+* disable correct loggers ([c2d89c6](https://github.com/ReVanced/revanced-patcher/commit/c2d89c622e06e58e5042e1a00ef67cee8a246e53))
+* get framework ids to compile resources ([f2cb7ee](https://github.com/ReVanced/revanced-patcher/commit/f2cb7ee7dffa573c31df497cf235a3f5d120f91f))
+* only enable logging for ReVanced ([783ccf8](https://github.com/ReVanced/revanced-patcher/commit/783ccf8529f5d16aa463982da6977328306232bb))
+* set package metadata correctly ([02d6ff1](https://github.com/ReVanced/revanced-patcher/commit/02d6ff15fe87c2352de29749610e9d72db8ba418))
+
+
+* build(Needs bump)!: Bump dependencies ([d5f89a9](https://github.com/ReVanced/revanced-patcher/commit/d5f89a903f019c199bdb27a50287124fc4b4978e))
+
+
+### BREAKING CHANGES
+
+* This bump updates smali, a crucial dependency
+
+# [13.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0-dev.2...v13.0.0-dev.3) (2023-08-14)
+
+
+### Bug Fixes
+
+* decode in correct order ([8fb2f2d](https://github.com/ReVanced/revanced-patcher/commit/8fb2f2dc1d3b9b1e9fd13b39485985d2886d52ae))
+* only enable logging for ReVanced ([783ccf8](https://github.com/ReVanced/revanced-patcher/commit/783ccf8529f5d16aa463982da6977328306232bb))
+
+# [13.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v13.0.0-dev.1...v13.0.0-dev.2) (2023-08-12)
+
+
+### Bug Fixes
+
+* disable correct loggers ([c2d89c6](https://github.com/ReVanced/revanced-patcher/commit/c2d89c622e06e58e5042e1a00ef67cee8a246e53))
+* get framework ids to compile resources ([f2cb7ee](https://github.com/ReVanced/revanced-patcher/commit/f2cb7ee7dffa573c31df497cf235a3f5d120f91f))
+* set package metadata correctly ([02d6ff1](https://github.com/ReVanced/revanced-patcher/commit/02d6ff15fe87c2352de29749610e9d72db8ba418))
+
+# [13.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.1.1...v13.0.0-dev.1) (2023-08-11)
+
+
+* build(Needs bump)!: Bump dependencies ([d5f89a9](https://github.com/ReVanced/revanced-patcher/commit/d5f89a903f019c199bdb27a50287124fc4b4978e))
+
+
+### BREAKING CHANGES
+
+* This bump updates smali, a crucial dependency
+
+## [12.1.1](https://github.com/ReVanced/revanced-patcher/compare/v12.1.0...v12.1.1) (2023-08-03)
+
+
+### Bug Fixes
+
+* clear method lookup maps before initializing them ([#210](https://github.com/ReVanced/revanced-patcher/issues/210)) ([746544f](https://github.com/ReVanced/revanced-patcher/commit/746544f9d51d1013bb160075709cd26bffd425b3))
+
+## [12.1.1-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v12.1.1-dev.1...v12.1.1-dev.2) (2023-08-03)
+
+## [12.1.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.1.0...v12.1.1-dev.1) (2023-08-03)
+
+
+### Bug Fixes
+
+* clear method lookup maps before initializing them ([#210](https://github.com/ReVanced/revanced-patcher/issues/210)) ([746544f](https://github.com/ReVanced/revanced-patcher/commit/746544f9d51d1013bb160075709cd26bffd425b3))
+
+# [12.1.0](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0...v12.1.0) (2023-08-03)
+
+
+### Features
+
+* add `MutableMethod.getInstructions` extension function ([fae4029](https://github.com/ReVanced/revanced-patcher/commit/fae4029cfccfad7aa3dd8f7fbef1c63ee26b85b3))
+
+# [12.1.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v12.1.0-dev.1...v12.1.0-dev.2) (2023-08-03)
+
+# [12.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0...v12.1.0-dev.1) (2023-08-01)
+
+
+### Features
+
+* add `MutableMethod.getInstructions` extension function ([fae4029](https://github.com/ReVanced/revanced-patcher/commit/fae4029cfccfad7aa3dd8f7fbef1c63ee26b85b3))
+
+# [12.0.0](https://github.com/ReVanced/revanced-patcher/compare/v11.0.4...v12.0.0) (2023-07-30)
+
+
+### Bug Fixes
+
+* correct access flags of `PackageMetadata` ([416d691](https://github.com/ReVanced/revanced-patcher/commit/416d69142f50dab49c9ea3f027e9d53e4777f257))
+* set resource table via resource decoder ([e0f8e1b](https://github.com/ReVanced/revanced-patcher/commit/e0f8e1b71a295948b610029c89a48f52762396b6))
+
+
+### Features
+
+* Deprecate `Version` annotation ([c9bbcf2](https://github.com/ReVanced/revanced-patcher/commit/c9bbcf2bf2b0f50ab9100380a3a66c6346ad42ac))
+* remove `Path` option ([#202](https://github.com/ReVanced/revanced-patcher/issues/202)) ([69e4a49](https://github.com/ReVanced/revanced-patcher/commit/69e4a490659ebc4fb4bf46148634f4b064ef1713))
+
+
+### BREAKING CHANGES
+
+* This removes the previously available `Path` option
+
+# [12.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v12.0.0-dev.1...v12.0.0-dev.2) (2023-07-28)
+
+
+### Features
+
+* Deprecate `Version` annotation ([400442f](https://github.com/ReVanced/revanced-patcher/commit/400442f70ee56cafd4493b2ce64a294db9836509))
+
+# [12.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v11.0.4...v12.0.0-dev.1) (2023-07-26)
+
+
+### Bug Fixes
+
+* correct access flags of `PackageMetadata` ([416d691](https://github.com/ReVanced/revanced-patcher/commit/416d69142f50dab49c9ea3f027e9d53e4777f257))
+* set resource table via resource decoder ([e0f8e1b](https://github.com/ReVanced/revanced-patcher/commit/e0f8e1b71a295948b610029c89a48f52762396b6))
+
+
+### Features
+
+* remove `Path` option ([#202](https://github.com/ReVanced/revanced-patcher/issues/202)) ([69e4a49](https://github.com/ReVanced/revanced-patcher/commit/69e4a490659ebc4fb4bf46148634f4b064ef1713))
+
+
+### BREAKING CHANGES
+
+* This removes the previously available `Path` option
+
+## [11.0.4](https://github.com/revanced/revanced-patcher/compare/v11.0.3...v11.0.4) (2023-07-01)
+
+
+### Bug Fixes
+
+* clear method lookup maps ([#198](https://github.com/revanced/revanced-patcher/issues/198)) ([9d81baf](https://github.com/revanced/revanced-patcher/commit/9d81baf4b4ca7514f8a1009e72218638609a7c7f))
+
+## [11.0.4-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.3...v11.0.4-dev.1) (2023-07-01)
+
+
+### Bug Fixes
+
+* clear method lookup maps ([#198](https://github.com/revanced/revanced-patcher/issues/198)) ([9d81baf](https://github.com/revanced/revanced-patcher/commit/9d81baf4b4ca7514f8a1009e72218638609a7c7f))
+
+## [11.0.3](https://github.com/revanced/revanced-patcher/compare/v11.0.2...v11.0.3) (2023-06-30)
+
+
+### Bug Fixes
+
+* NPE on method lookup ([#195](https://github.com/revanced/revanced-patcher/issues/195)) ([fcef434](https://github.com/revanced/revanced-patcher/commit/fcef4342e8bde73945e8315aef6337cc8a8d8572))
+
+## [11.0.3-dev.1](https://github.com/revanced/revanced-patcher/compare/v11.0.2...v11.0.3-dev.1) (2023-06-28)
+
+
+### Bug Fixes
+
+* NPE on method lookup ([#195](https://github.com/revanced/revanced-patcher/issues/195)) ([fcef434](https://github.com/revanced/revanced-patcher/commit/fcef4342e8bde73945e8315aef6337cc8a8d8572))
+
+## [11.0.2](https://github.com/revanced/revanced-patcher/compare/v11.0.1...v11.0.2) (2023-06-27)
+
+
+### Bug Fixes
+
+* catch exceptions from closing patches ([d5d6f85](https://github.com/revanced/revanced-patcher/commit/d5d6f85084c03ed9c776632823ca12394a716167))
+* do not load annotations as patches ([519359a](https://github.com/revanced/revanced-patcher/commit/519359a9eb0e9dfa390c5016e9fe4a7490b8ab18))
+* only close succeeded patches ([b8151eb](https://github.com/revanced/revanced-patcher/commit/b8151ebccb5b27dd9e06fa63235cf9baeef1c0ee))
+* use `versionCode` if `versionName` is unavailable ([6e1b647](https://github.com/revanced/revanced-patcher/commit/6e1b6479b677657c226693e9cc6b63f4ef2ee060))
+
+
+### Performance Improvements
+
+* resolve fingerprints using method maps ([#185](https://github.com/revanced/revanced-patcher/issues/185)) ([d718134](https://github.com/revanced/revanced-patcher/commit/d718134ab26423e02708e01eba711737f9260ba0))
+
+## [11.0.2-dev.4](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.3...v11.0.2-dev.4) (2023-06-27)
+
+
+### Bug Fixes
+
+* do not load annotations as patches ([519359a](https://github.com/revanced/revanced-patcher/commit/519359a9eb0e9dfa390c5016e9fe4a7490b8ab18))
+
 ## [11.0.2-dev.3](https://github.com/revanced/revanced-patcher/compare/v11.0.2-dev.2...v11.0.2-dev.3) (2023-06-27)
 
 

@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Make sure the release step uses its own credentials:
           # https://github.com/cycjimmy/semantic-release-action#private-packages
@@ -36,7 +36,7 @@ jobs:
       - name: Build with Gradle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew clean --no-daemon
+        run: ./gradlew build clean --no-daemon
       - name: Setup semantic-release
         run: npm install
       - name: Release
