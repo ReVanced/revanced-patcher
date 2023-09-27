@@ -150,7 +150,7 @@ class ResourceContext internal constructor(
     /**
      * The type of decoding the resources.
      */
-    internal enum class ResourceDecodingMode {
+    enum class ResourceDecodingMode {
         /**
          * Decode all resources.
          */

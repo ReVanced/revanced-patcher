@@ -20,6 +20,7 @@ data class PatcherOptions(
     internal val aaptBinaryPath: String? = null,
     internal val frameworkFileDirectory: String? = null,
     internal val multithreadingDexFileWriter: Boolean = false,
+    internal val shortenResourcePaths: Boolean = false,
 ) {
     private val logger = Logger.getLogger(PatcherOptions::class.java.name)
 
@@ -27,7 +28,8 @@ data class PatcherOptions(
      * The mode to use for resource decoding.
      * @see ResourceContext.ResourceDecodingMode
      */
-    internal var resourceDecodingMode = ResourceContext.ResourceDecodingMode.MANIFEST_ONLY
+    var resourceDecodingMode = ResourceContext.ResourceDecodingMode.MANIFEST_ONLY
+        internal set
 
     /**
      * The configuration to use for resource decoding and compiling.
@@ -37,6 +39,7 @@ data class PatcherOptions(
             useAapt2 = true
             aaptPath = aaptBinaryPath ?: ""
             frameworkDirectory = frameworkFileDirectory
+            shortenResourcePaths = this@PatcherOptions.shortenResourcePaths
         }
 
     fun recreateResourceCacheDirectory() =
