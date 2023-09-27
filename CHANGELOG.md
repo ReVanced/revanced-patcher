@@ -1,3 +1,10 @@
+## [15.0.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.1...v15.0.2-dev.1) (2023-09-26)
+
+
+### Performance Improvements
+
+* Do not unnecessary resolve fingeprints twice ([#241](https://github.com/ReVanced/revanced-patcher/issues/241)) ([4d6e08a](https://github.com/ReVanced/revanced-patcher/commit/4d6e08a650dde6ec2e18611c5db1ab92b9a61dd1))
+
 ## [15.0.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.0...v15.0.1) (2023-09-20)
 
 
