@@ -1,3 +1,10 @@
+## [15.0.3-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.2...v15.0.3-dev.1) (2023-09-29)
+
+
+### Bug Fixes
+
+* Fix SMALI compilation on devices with RTL language ([#242](https://github.com/ReVanced/revanced-patcher/issues/242)) ([356f1f1](https://github.com/ReVanced/revanced-patcher/commit/356f1f155348347a8f318a2e024716ebf4fec99b))
+
 ## [15.0.2](https://github.com/ReVanced/revanced-patcher/compare/v15.0.1...v15.0.2) (2023-09-27)
 
 
