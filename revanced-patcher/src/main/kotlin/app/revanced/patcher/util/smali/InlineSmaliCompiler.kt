@@ -13,6 +13,7 @@ import com.android.tools.smali.smali.smaliFlexLexer
 import com.android.tools.smali.smali.smaliParser
 import com.android.tools.smali.smali.smaliTreeWalker
 import java.io.InputStreamReader
+import java.util.Locale
 
 private const val METHOD_TEMPLATE = """
     .class LInlineCompiler;
@@ -33,7 +34,7 @@ class InlineSmaliCompiler {
         fun compile(
             instructions: String, parameters: String, registers: Int, forStaticMethod: Boolean
         ): List<BuilderInstruction> {
-            val input = METHOD_TEMPLATE.format(
+            val input = METHOD_TEMPLATE.format(Locale.ENGLISH,
                 if (forStaticMethod) {
                     "static"
                 } else {
