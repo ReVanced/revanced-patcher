@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "UNUSED_PARAMETER")
+@file:Suppress("MemberVisibilityCanBePrivate")
 
 package app.revanced.patcher.patch
 
