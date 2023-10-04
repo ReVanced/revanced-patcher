@@ -1,3 +1,15 @@
+# [16.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v15.0.3...v16.0.0-dev.1) (2023-10-04)
+
+
+### Bug Fixes
+
+* Use correct super class type ([f590436](https://github.com/ReVanced/revanced-patcher/commit/f590436399f6385c51cea54618251b5d823c31f9))
+
+
+### BREAKING CHANGES
+
+* This changes the super classes of some `PatchOptionException` classes
+
 ## [15.0.3](https://github.com/ReVanced/revanced-patcher/compare/v15.0.2...v15.0.3) (2023-10-01)
 
 
