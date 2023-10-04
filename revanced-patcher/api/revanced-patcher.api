@@ -371,15 +371,15 @@ public final class app/revanced/patcher/patch/options/PatchOptionException$Inval
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
 }
 
-public final class app/revanced/patcher/patch/options/PatchOptionException$PatchOptionNotFoundException : java/lang/Exception {
+public final class app/revanced/patcher/patch/options/PatchOptionException$PatchOptionNotFoundException : app/revanced/patcher/patch/options/PatchOptionException {
 	public fun <init> (Ljava/lang/String;)V
 }
 
-public final class app/revanced/patcher/patch/options/PatchOptionException$ValueRequiredException : java/lang/Exception {
+public final class app/revanced/patcher/patch/options/PatchOptionException$ValueRequiredException : app/revanced/patcher/patch/options/PatchOptionException {
 	public fun <init> (Lapp/revanced/patcher/patch/options/PatchOption;)V
 }
 
-public final class app/revanced/patcher/patch/options/PatchOptionException$ValueValidationException : java/lang/Exception {
+public final class app/revanced/patcher/patch/options/PatchOptionException$ValueValidationException : app/revanced/patcher/patch/options/PatchOptionException {
 	public fun <init> (Ljava/lang/Object;Lapp/revanced/patcher/patch/options/PatchOption;)V
 }
 
