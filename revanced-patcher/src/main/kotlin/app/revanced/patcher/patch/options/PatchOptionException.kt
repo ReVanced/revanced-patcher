@@ -21,7 +21,7 @@ sealed class PatchOptionException(errorMessage: String) : Exception(errorMessage
      * @param value The value that failed validation.
      */
     class ValueValidationException(value: Any?, option: PatchOption<*>) :
-        Exception("The option value \"$value\" failed validation for ${option.key}")
+        PatchOptionException("The option value \"$value\" failed validation for ${option.key}")
 
     /**
      * An exception thrown when a value is required but null was passed.
@@ -29,7 +29,7 @@ sealed class PatchOptionException(errorMessage: String) : Exception(errorMessage
      * @param option The [PatchOption] that requires a value.
      */
     class ValueRequiredException(option: PatchOption<*>) :
-        Exception("The option ${option.key} requires a value, but null was passed")
+        PatchOptionException("The option ${option.key} requires a value, but null was passed")
 
     /**
      * An exception thrown when a [PatchOption] is not found.
@@ -37,5 +37,5 @@ sealed class PatchOptionException(errorMessage: String) : Exception(errorMessage
      * @param key The key of the [PatchOption].
      */
     class PatchOptionNotFoundException(key: String)
-        : Exception("No option with key $key")
+        : PatchOptionException("No option with key $key")
 }
