@@ -1,3 +1,10 @@
+## [16.0.1](https://github.com/ReVanced/revanced-patcher/compare/v16.0.0...v16.0.1) (2023-10-05)
+
+
+### Bug Fixes
+
+* Merge integrations when required ([06c2b76](https://github.com/ReVanced/revanced-patcher/commit/06c2b76f11ac1bfe43d51d54d425e7577ecefdf6))
+
 ## [16.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v16.0.0...v16.0.1-dev.1) (2023-10-05)
 
 
