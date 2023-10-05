@@ -104,7 +104,7 @@ class Patcher(
 
             // Determine, if merging integrations is required.
             for (patch in patches)
-                if (!patch.anyRecursively { it.requiresIntegrations }) {
+                if (patch.anyRecursively { it.requiresIntegrations }) {
                     context.bytecodeContext.integrations.merge = true
                     break
                 }
