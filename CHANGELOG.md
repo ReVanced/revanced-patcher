@@ -1,3 +1,10 @@
+## [16.0.2](https://github.com/ReVanced/revanced-patcher/compare/v16.0.1...v16.0.2) (2023-10-06)
+
+
+### Performance Improvements
+
+* Use a map to merge integrations classes ([6059d3c](https://github.com/ReVanced/revanced-patcher/commit/6059d3ca2685cb659023b171b95d4b9d279c6e53))
+
 ## [16.0.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v16.0.1...v16.0.2-dev.1) (2023-10-06)
 
 
