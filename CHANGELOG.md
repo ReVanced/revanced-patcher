@@ -1,3 +1,15 @@
+# [17.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v16.0.2...v17.0.0-dev.1) (2023-10-09)
+
+
+### Features
+
+* Add option to use single threaded writer for dex files ([77dbee3](https://github.com/ReVanced/revanced-patcher/commit/77dbee3d6ae7b8dc77543e036624daa68ae63504))
+
+
+### BREAKING CHANGES
+
+* This commit gets rid of deprecated constructors.
+
 ## [16.0.2](https://github.com/ReVanced/revanced-patcher/compare/v16.0.1...v16.0.2) (2023-10-06)
 
 
