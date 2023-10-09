@@ -12,11 +12,11 @@ import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.writer.io.MemoryDataStore
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import java.io.File
+import java.io.FileFilter
 import java.io.Flushable
 import java.util.logging.Logger
 
@@ -142,16 +142,25 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
      * @return The compiled bytecode.
      */
     override fun get(): List<PatcherResult.PatchedDexFile> {
-        logger.info("Compiling modified dex files")
+        logger.info("Compiling patched dex files")
 
-        return mutableMapOf<String, MemoryDataStore>().apply {
+        val patchedDexFileResults = options.resourceCachePath.resolve("dex").also {
+            it.deleteRecursively() // Make sure the directory is empty.
+            it.mkdirs()
+        }.apply {
             MultiDexIO.writeDexFile(
-                true, -1, // Defaults to amount of available cores.
-                this, BasicDexFileNamer(), object : DexFile {
+                true,
+                if (options.multithreadingDexFileWriter) -1 else 1,
+                this,
+                BasicDexFileNamer(),
+                object : DexFile {
                     override fun getClasses() = this@BytecodeContext.classes.also(ProxyClassList::replaceClasses)
                     override fun getOpcodes() = this@BytecodeContext.opcodes
-                }, DexIO.DEFAULT_MAX_DEX_POOL_SIZE, null
-            )
-        }.map { PatcherResult.PatchedDexFile(it.key, it.value.readAt(0)) }
+                },
+                DexIO.DEFAULT_MAX_DEX_POOL_SIZE
+            ) { _, entryName, _ -> logger.info("Compiled $entryName") }
+        }.listFiles(FileFilter { it.isFile })!!.map { PatcherResult.PatchedDexFile(it.name, it.inputStream()) }
+
+        return patchedDexFileResults
     }
 }
