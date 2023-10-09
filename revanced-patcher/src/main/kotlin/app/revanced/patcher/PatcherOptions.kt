@@ -1,7 +1,6 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.data.ResourceContext
-import app.revanced.patcher.logging.impl.NopLogger
 import brut.androlib.Config
 import java.io.File
 import java.util.logging.Logger
@@ -12,16 +11,15 @@ import java.util.logging.Logger
  * @param resourceCachePath The path to the directory to use for caching resources.
  * @param aaptBinaryPath The path to a custom aapt binary.
  * @param frameworkFileDirectory The path to the directory to cache the framework file in.
- * @param unusedLogger The logger to use for logging.
+ * @param multithreadingDexFileWriter Whether to use multiple threads for writing dex files.
+ * This can impact memory usage.
  */
-data class PatcherOptions
-@Deprecated("Use the constructor without the logger parameter instead")
-constructor(
+data class PatcherOptions(
     internal val inputFile: File,
     internal val resourceCachePath: File = File("revanced-resource-cache"),
     internal val aaptBinaryPath: String? = null,
     internal val frameworkFileDirectory: String? = null,
-    internal val unusedLogger: app.revanced.patcher.logging.Logger = NopLogger
+    internal val multithreadingDexFileWriter: Boolean = false,
 ) {
     private val logger = Logger.getLogger(PatcherOptions::class.java.name)
 
@@ -47,6 +45,7 @@ constructor(
      * @param aaptBinaryPath The path to a custom aapt binary.
      * @param frameworkFileDirectory The path to the directory to cache the framework file in.
      */
+    @Deprecated("Use the constructor with the multithreadingDexFileWriter parameter instead")
     constructor(
         inputFile: File,
         resourceCachePath: File = File("revanced-resource-cache"),
@@ -57,7 +56,7 @@ constructor(
         resourceCachePath,
         aaptBinaryPath,
         frameworkFileDirectory,
-        NopLogger
+        false,
     )
 
     fun recreateResourceCacheDirectory() = resourceCachePath.also {
