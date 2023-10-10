@@ -115,6 +115,8 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
             ) { _, entryName, _ -> logger.info("Compiled $entryName") }
         }.listFiles(FileFilter { it.isFile })!!.map { PatcherResult.PatchedDexFile(it.name, it.inputStream()) }
 
+        System.gc()
+
         return patchedDexFileResults
     }
 
