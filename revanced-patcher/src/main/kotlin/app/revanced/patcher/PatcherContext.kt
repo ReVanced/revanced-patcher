@@ -37,4 +37,5 @@ class PatcherContext internal constructor(options: PatcherOptions) {
      * The [BytecodeContext] of this [PatcherContext].
      * This holds the current state of the bytecode.
      */
-    internal val bytecodeContext = BytecodeContext(options) }
+    internal val bytecodeContext = BytecodeContext(options)
+}

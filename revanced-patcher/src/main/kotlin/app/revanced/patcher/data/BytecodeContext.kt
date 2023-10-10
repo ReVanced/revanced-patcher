@@ -91,6 +91,34 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
     fun toMethodWalker(startMethod: Method) = MethodWalker(this, startMethod)
 
     /**
+     * Compile bytecode from the [BytecodeContext].
+     *
+     * @return The compiled bytecode.
+     */
+    override fun get(): List<PatcherResult.PatchedDexFile> {
+        logger.info("Compiling patched dex files")
+
+        val patchedDexFileResults = options.resourceCachePath.resolve("dex").also {
+            it.deleteRecursively() // Make sure the directory is empty.
+            it.mkdirs()
+        }.apply {
+            MultiDexIO.writeDexFile(
+                true,
+                if (options.multithreadingDexFileWriter) -1 else 1,
+                this,
+                BasicDexFileNamer(),
+                object : DexFile {
+                    override fun getClasses() = this@BytecodeContext.classes.also(ProxyClassList::replaceClasses)
+                    override fun getOpcodes() = this@BytecodeContext.opcodes
+                },
+                DexIO.DEFAULT_MAX_DEX_POOL_SIZE
+            ) { _, entryName, _ -> logger.info("Compiled $entryName") }
+        }.listFiles(FileFilter { it.isFile })!!.map { PatcherResult.PatchedDexFile(it.name, it.inputStream()) }
+
+        return patchedDexFileResults
+    }
+
+    /**
      * The integrations of a [PatcherContext].
      */
     internal inner class Integrations : MutableList<File> by mutableListOf(), Flushable {
@@ -134,33 +162,5 @@ class BytecodeContext internal constructor(private val options: PatcherOptions) 
             }
             clear()
         }
-    }
-
-    /**
-     * Compile bytecode from the [BytecodeContext].
-     *
-     * @return The compiled bytecode.
-     */
-    override fun get(): List<PatcherResult.PatchedDexFile> {
-        logger.info("Compiling patched dex files")
-
-        val patchedDexFileResults = options.resourceCachePath.resolve("dex").also {
-            it.deleteRecursively() // Make sure the directory is empty.
-            it.mkdirs()
-        }.apply {
-            MultiDexIO.writeDexFile(
-                true,
-                if (options.multithreadingDexFileWriter) -1 else 1,
-                this,
-                BasicDexFileNamer(),
-                object : DexFile {
-                    override fun getClasses() = this@BytecodeContext.classes.also(ProxyClassList::replaceClasses)
-                    override fun getOpcodes() = this@BytecodeContext.opcodes
-                },
-                DexIO.DEFAULT_MAX_DEX_POOL_SIZE
-            ) { _, entryName, _ -> logger.info("Compiled $entryName") }
-        }.listFiles(FileFilter { it.isFile })!!.map { PatcherResult.PatchedDexFile(it.name, it.inputStream()) }
-
-        return patchedDexFileResults
     }
 }
