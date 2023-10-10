@@ -1,3 +1,10 @@
+## [17.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v17.0.0...v17.0.1-dev.1) (2023-10-10)
+
+
+### Performance Improvements
+
+* Run the garbage collector after writing dex files ([d9fb241](https://github.com/ReVanced/revanced-patcher/commit/d9fb241d57b0c4340130c0e5900250e66730ea56))
+
 # [17.0.0](https://github.com/ReVanced/revanced-patcher/compare/v16.0.2...v17.0.0) (2023-10-09)
 
 
