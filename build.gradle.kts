@@ -16,8 +16,7 @@ subprojects {
     apply(plugin = "java")
     apply(plugin ="kotlin")
 
-    group = "app.revanced"
-    version = publicationVersion
+    version = pulicationVersion
 
     repositories {
         mavenCentral()

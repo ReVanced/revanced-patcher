@@ -7,34 +7,70 @@ import app.revanced.patcher.Patcher
 import app.revanced.patcher.data.Context
 import app.revanced.patcher.patch.options.PatchOptions
 import java.io.Closeable
+import kotlin.reflect.full.findAnnotation
 
 /**
  * A ReVanced patch.
- *
  * If an implementation of [Patch] also implements [Closeable]
  * it will be closed in reverse execution order of patches executed by ReVanced [Patcher].
  *
- * @param name The name of the patch.
- * @param description The description of the patch.
- * @param compatiblePackages The packages the patch is compatible with.
- * @param dependencies The names of patches this patch depends on.
- * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  * @param T The [Context] type this patch will work on.
  */
-sealed class Patch<out T : Context<*>>(
-    val name: String? = null,
-    val description: String? = null,
-    val compatiblePackages: Set<CompatiblePackage>? = null,
-    val dependencies: Set<PatchClass>? = null,
-    val use: Boolean = true,
+sealed class Patch<out T : Context<*>> {
+    /**
+     * The name of the patch.
+     */
+    var name: String? = null
+        private set
+
+    /**
+     * The description of the patch.
+     */
+    var description: String? = null
+        private set
+
+    /**
+     * The packages the patch is compatible with.
+     */
+    var compatiblePackages: Set<CompatiblePackage>? = null
+        private set
+
+    /**
+     * Other patches this patch depends on.
+     */
+    var dependencies: Set<PatchClass>? = null
+        private set
+
+    /**
+     * Weather or not the patch should be used.
+     */
+    var use = true
+        private set
+
+
     // TODO: Remove this property, once integrations are coupled with patches.
-    val requiresIntegrations: Boolean = false,
-) {
+    /**
+     * Weather or not the patch requires integrations.
+     */
+    var requiresIntegrations = false
+        private set
+
     /**
      * The options of the patch associated by the options key.
      */
     val options = PatchOptions()
+
+    init {
+        this::class.findAnnotation<app.revanced.patcher.patch.annotation.Patch>()?.let { annotation ->
+            name = annotation.name.ifEmpty { null }
+            description = annotation.description.ifEmpty { null }
+            compatiblePackages = annotation.compatiblePackages
+                .map { CompatiblePackage(it.name, it.versions.toSet()) }.toSet()
+            dependencies = annotation.dependencies.toSet().ifEmpty { null }
+            use = annotation.use
+            requiresIntegrations = annotation.requiresIntegrations
+        }
+    }
 
     /**
      * The execution function of the patch.
@@ -68,4 +104,3 @@ sealed class Patch<out T : Context<*>>(
         val versions: Set<String>? = null,
     )
 }
-

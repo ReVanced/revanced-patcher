@@ -1,1 +1,1 @@
-include("revanced-patch-annotation-processor", "revanced-patcher")
+include("revanced-patcher")

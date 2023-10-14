@@ -8,7 +8,6 @@ dependencies {
 
     compileOnly(libs.android)
 
-    testImplementation(project(":revanced-patch-annotation-processor"))
     testImplementation(libs.kotlin.test)
 }
 

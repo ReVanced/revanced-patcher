@@ -13,7 +13,6 @@ import kotlin.reflect.KClass
  * @param use Whether this patch should be used.
  * @param requiresIntegrations Whether this patch requires integrations.
  */
-@Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
 @Inherited
 annotation class Patch(
