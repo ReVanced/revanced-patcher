@@ -1,1 +1,1 @@
-include("revanced-patcher")
+rootProject.name = "revanced-patcher"
