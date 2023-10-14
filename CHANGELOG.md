@@ -1,3 +1,15 @@
+# [18.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v17.0.1-dev.1...v18.0.0-dev.1) (2023-10-14)
+
+
+### Features
+
+* Remove patch annotation processor ([4456031](https://github.com/ReVanced/revanced-patcher/commit/445603145979a6f67823a79f9d6cd140299cff37))
+
+
+### BREAKING CHANGES
+
+* Various patch constructor signatures have changed.
+
 ## [17.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v17.0.0...v17.0.1-dev.1) (2023-10-10)
 
 
