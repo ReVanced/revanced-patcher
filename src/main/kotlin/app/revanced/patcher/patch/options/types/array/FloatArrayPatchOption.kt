@@ -11,7 +11,7 @@ import app.revanced.patcher.patch.options.PatchOption
  * @param title The title.
  * @param description A description.
  * @param required Whether the option is required.
- * @param validate The function to validate values of the option.
+ * @param validator The function to validator values of the option.
  *
  * @see PatchOption
  */
@@ -21,8 +21,8 @@ class FloatArrayPatchOption private constructor(
     title: String?,
     description: String?,
     required: Boolean,
-    validate: (Array<Float>?) -> Boolean
-) : PatchOption<Array<Float>>(key, default, title, description, required, validate) {
+    validator: (Array<Float>?) -> Boolean
+) : PatchOption<Array<Float>>(key, default, title, description, required, validator) {
     companion object {
         /**
          * Create a new [FloatArrayPatchOption] and add it to the current [Patch].
@@ -32,7 +32,7 @@ class FloatArrayPatchOption private constructor(
          * @param title The title.
          * @param description A description.
          * @param required Whether the option is required.
-         * @param validate The function to validate values of the option.
+         * @param validator The function to validator values of the option.
          * 
          * @return The created [FloatArrayPatchOption].
          *
@@ -45,7 +45,7 @@ class FloatArrayPatchOption private constructor(
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
-            validate: (Array<Float>?) -> Boolean = { true }
-        ) = FloatArrayPatchOption(key, default, title, description, required, validate).also  { options.register(it) }
+            validator: (Array<Float>?) -> Boolean = { true }
+        ) = FloatArrayPatchOption(key, default, title, description, required, validator).also  { options.register(it) }
     }
 }

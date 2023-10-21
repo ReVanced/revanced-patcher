@@ -366,7 +366,7 @@ public abstract class app/revanced/patcher/patch/options/PatchOption {
 	public final fun getKey ()Ljava/lang/String;
 	public final fun getRequired ()Z
 	public final fun getTitle ()Ljava/lang/String;
-	public final fun getValidate ()Lkotlin/jvm/functions/Function1;
+	public final fun getValidator ()Lkotlin/jvm/functions/Function1;
 	public final fun getValue ()Ljava/lang/Object;
 	public final fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
 	public final fun setValue (Ljava/lang/Object;)V

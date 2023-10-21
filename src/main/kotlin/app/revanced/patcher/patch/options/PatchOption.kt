@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
  * @param title The title.
  * @param description A description.
  * @param required Whether the option is required.
- * @param validate The function to validate values of the option.
+ * @param validator The function to validator values of the option.
  * @param T The value type of the option.
  */
 abstract class PatchOption<T>(
@@ -19,7 +19,7 @@ abstract class PatchOption<T>(
     val title: String?,
     val description: String?,
     val required: Boolean,
-    val validate: (T?) -> Boolean
+    val validator: (T?) -> Boolean
 ) {
     /**
      * The value of the [PatchOption].
@@ -27,7 +27,7 @@ abstract class PatchOption<T>(
     var value: T? = default
         set(value) {
             if (required && value == null) throw PatchOptionException.ValueRequiredException(this)
-            if (!validate(value)) throw PatchOptionException.ValueValidationException(value, this)
+            if (!validator(value)) throw PatchOptionException.ValueValidationException(value, this)
 
             field = value
         }
