@@ -15,7 +15,7 @@ import kotlin.reflect.KProperty
  */
 abstract class PatchOption<T>(
     val key: String,
-    default: T?,
+    val default: T?,
     val title: String?,
     val description: String?,
     val required: Boolean,
@@ -25,12 +25,42 @@ abstract class PatchOption<T>(
      * The value of the [PatchOption].
      */
     var value: T? = default
+        /**
+         * Set the value of the [PatchOption].
+         *
+         * @param value The value to set.
+         *
+         * @throws PatchOptionException.ValueRequiredException If the value is required but null.
+         * @throws PatchOptionException.ValueValidationException If the value is invalid.
+         */
         set(value) {
-            if (required && value == null) throw PatchOptionException.ValueRequiredException(this)
-            if (!validator(value)) throw PatchOptionException.ValueValidationException(value, this)
+            assertRequiredButNotNull(value)
+            assertValid(value)
 
             field = value
         }
+        /**
+         * Get the value of the [PatchOption].
+         *
+         * @return The value.
+         *
+         * @throws PatchOptionException.ValueRequiredException If the value is required but null.
+         * @throws PatchOptionException.ValueValidationException If the value is invalid.
+         */
+        get() {
+            assertRequiredButNotNull(field)
+            assertValid(field)
+
+            return field
+        }
+
+    private fun assertRequiredButNotNull(value: T?) {
+        if (required && value == null) throw PatchOptionException.ValueRequiredException(this)
+    }
+
+    private fun assertValid(value: T?) {
+        if (!validator(value)) throw PatchOptionException.ValueValidationException(value, this)
+    }
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>) = value
 
