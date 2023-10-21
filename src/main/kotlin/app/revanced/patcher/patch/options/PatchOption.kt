@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
  * @param title The title.
  * @param description A description.
  * @param required Whether the option is required.
- * @param validator The function to validator values of the option.
+ * @param validator The function to validate the option value.
  * @param T The value type of the option.
  */
 abstract class PatchOption<T>(

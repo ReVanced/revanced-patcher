@@ -11,7 +11,7 @@ import app.revanced.patcher.patch.options.PatchOption
  * @param title The title.
  * @param description A description.
  * @param required Whether the option is required.
- * @param validator The function to validator values of the option.
+ * @param validator The function to validate the option value.
  *
  * @see PatchOption
  */
@@ -32,7 +32,7 @@ class BooleanArrayPatchOption private constructor(
          * @param title The title.
          * @param description A description.
          * @param required Whether the option is required.
-         * @param validator The function to validator values of the option.
+         * @param validator The function to validate the option value.
          * 
          * @return The created [BooleanArrayPatchOption].
          *
