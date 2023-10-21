@@ -374,6 +374,7 @@ public class app/revanced/patcher/patch/options/PatchOption {
 	public fun reset ()V
 	public final fun setValue (Ljava/lang/Object;)V
 	public final fun setValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;Ljava/lang/Object;)V
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/patch/options/PatchOption$PatchExtensions {

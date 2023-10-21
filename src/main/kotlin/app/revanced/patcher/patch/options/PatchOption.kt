@@ -75,6 +75,8 @@ open class PatchOption<T>(
         if (!validator(value)) throw PatchOptionException.ValueValidationException(value, this)
     }
 
+    override fun toString() = value.toString()
+
     operator fun getValue(thisRef: Any?, property: KProperty<*>) = value
 
     operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
