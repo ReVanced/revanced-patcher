@@ -11,6 +11,7 @@ import app.revanced.patcher.patch.options.PatchOption
  * @param title The title.
  * @param description A description.
  * @param required Whether the option is required.
+ * @param validate The function to validate values of the option.
  *
  * @see PatchOption
  */
@@ -20,8 +21,8 @@ class StringArrayPatchOption private constructor(
     title: String?,
     description: String?,
     required: Boolean,
-    validator: (Array<String>?) -> Boolean
-) : PatchOption<Array<String>>(key, default, title, description, required, validator) {
+    validate: (Array<String>?) -> Boolean
+) : PatchOption<Array<String>>(key, default, title, description, required, validate) {
     companion object {
         /**
          * Create a new [StringArrayPatchOption] and add it to the current [Patch].
@@ -31,6 +32,8 @@ class StringArrayPatchOption private constructor(
          * @param title The title.
          * @param description A description.
          * @param required Whether the option is required.
+         * @param validate The function to validate values of the option.
+         * 
          * @return The created [StringArrayPatchOption].
          *
          * @see StringArrayPatchOption
@@ -42,7 +45,7 @@ class StringArrayPatchOption private constructor(
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
-            validator: (Array<String>?) -> Boolean = { true }
-        ) = StringArrayPatchOption(key, default, title, description, required, validator).also { options.register(it) }
+            validate: (Array<String>?) -> Boolean = { true }
+        ) = StringArrayPatchOption(key, default, title, description, required, validate).also { options.register(it) }
     }
 }

@@ -11,6 +11,7 @@ import app.revanced.patcher.patch.options.PatchOption
  * @param title The title.
  * @param description A description.
  * @param required Whether the option is required.
+ * @param validate The function to validate values of the option.
  *
  * @see PatchOption
  */
@@ -20,8 +21,8 @@ class LongPatchOption private constructor(
     title: String?,
     description: String?,
     required: Boolean,
-    validator: (Long?) -> Boolean
-) : PatchOption<Long>(key, default, title, description, required, validator) {
+    validate: (Long?) -> Boolean
+) : PatchOption<Long>(key, default, title, description, required, validate) {
     companion object {
         /**
          * Create a new [LongPatchOption] and add it to the current [Patch].
@@ -42,7 +43,7 @@ class LongPatchOption private constructor(
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
-            validator: (Long?) -> Boolean = { true }
-        ) = LongPatchOption(key, default, title, description, required, validator).also { options.register(it) }
+            validate: (Long?) -> Boolean = { true }
+        ) = LongPatchOption(key, default, title, description, required, validate).also { options.register(it) }
     }
 }
