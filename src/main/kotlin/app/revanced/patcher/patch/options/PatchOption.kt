@@ -59,6 +59,7 @@ abstract class PatchOption<T>(
 
     /**
      * Reset the [PatchOption] to its default value.
+     * Override this method if you need to mutate the value instead of replacing it.
      */
     open fun reset() {
         uncheckedValue = default
