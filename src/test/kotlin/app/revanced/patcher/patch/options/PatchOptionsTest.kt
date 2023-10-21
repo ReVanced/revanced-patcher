@@ -2,9 +2,9 @@ package app.revanced.patcher.patch.options
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.options.types.BooleanPatchOption.Companion.booleanPatchOption
-import app.revanced.patcher.patch.options.types.StringPatchOption.Companion.stringPatchOption
-import app.revanced.patcher.patch.options.types.array.StringArrayPatchOption.Companion.stringArrayPatchOption
+import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.booleanPatchOption
+import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.stringArrayPatchOption
+import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.stringPatchOption
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test

@@ -360,7 +360,8 @@ public abstract interface annotation class app/revanced/patcher/patch/annotation
 	public abstract fun use ()Z
 }
 
-public abstract class app/revanced/patcher/patch/options/PatchOption {
+public class app/revanced/patcher/patch/options/PatchOption {
+	public static final field PatchExtensions Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;
 	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)V
 	public final fun getDefault ()Ljava/lang/Object;
 	public final fun getDescription ()Ljava/lang/String;
@@ -373,6 +374,29 @@ public abstract class app/revanced/patcher/patch/options/PatchOption {
 	public fun reset ()V
 	public final fun setValue (Ljava/lang/Object;)V
 	public final fun setValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;Ljava/lang/Object;)V
+}
+
+public final class app/revanced/patcher/patch/options/PatchOption$PatchExtensions {
+	public final fun booleanArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun booleanArrayPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun booleanPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun booleanPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun floatArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun floatArrayPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun floatPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun floatPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun intArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun intArrayPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun intPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun intPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun longArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun longArrayPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun longPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun longPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun stringArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun stringArrayPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public final fun stringPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/PatchOption;
+	public static synthetic fun stringPatchOption$default (Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/PatchOption;
 }
 
 public abstract class app/revanced/patcher/patch/options/PatchOptionException : java/lang/Exception {
@@ -422,106 +446,6 @@ public final class app/revanced/patcher/patch/options/PatchOptions : java/util/M
 	public final fun set (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun size ()I
 	public final fun values ()Ljava/util/Collection;
-}
-
-public final class app/revanced/patcher/patch/options/types/BooleanPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/BooleanPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/BooleanPatchOption$Companion {
-	public final fun booleanPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/BooleanPatchOption;
-	public static synthetic fun booleanPatchOption$default (Lapp/revanced/patcher/patch/options/types/BooleanPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/BooleanPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/FloatPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/FloatPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/FloatPatchOption$Companion {
-	public final fun floatPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/FloatPatchOption;
-	public static synthetic fun floatPatchOption$default (Lapp/revanced/patcher/patch/options/types/FloatPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/FloatPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/IntPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/IntPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/IntPatchOption$Companion {
-	public final fun intPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/IntPatchOption;
-	public static synthetic fun intPatchOption$default (Lapp/revanced/patcher/patch/options/types/IntPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/IntPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/LongPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/LongPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/LongPatchOption$Companion {
-	public final fun longPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/LongPatchOption;
-	public static synthetic fun longPatchOption$default (Lapp/revanced/patcher/patch/options/types/LongPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/LongPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/StringPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/StringPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/StringPatchOption$Companion {
-	public final fun stringPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/StringPatchOption;
-	public static synthetic fun stringPatchOption$default (Lapp/revanced/patcher/patch/options/types/StringPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/StringPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/array/BooleanArrayPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/array/BooleanArrayPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;[Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/array/BooleanArrayPatchOption$Companion {
-	public final fun booleanArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/array/BooleanArrayPatchOption;
-	public static synthetic fun booleanArrayPatchOption$default (Lapp/revanced/patcher/patch/options/types/array/BooleanArrayPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/array/BooleanArrayPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/array/FloatArrayPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/array/FloatArrayPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;[Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/array/FloatArrayPatchOption$Companion {
-	public final fun floatArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/array/FloatArrayPatchOption;
-	public static synthetic fun floatArrayPatchOption$default (Lapp/revanced/patcher/patch/options/types/array/FloatArrayPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Float;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/array/FloatArrayPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/array/IntArrayPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/array/IntArrayPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;[Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/array/IntArrayPatchOption$Companion {
-	public final fun intArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/array/IntArrayPatchOption;
-	public static synthetic fun intArrayPatchOption$default (Lapp/revanced/patcher/patch/options/types/array/IntArrayPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/array/IntArrayPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/array/LongArrayPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/array/LongArrayPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;[Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/array/LongArrayPatchOption$Companion {
-	public final fun longArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/array/LongArrayPatchOption;
-	public static synthetic fun longArrayPatchOption$default (Lapp/revanced/patcher/patch/options/types/array/LongArrayPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/Long;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/array/LongArrayPatchOption;
-}
-
-public final class app/revanced/patcher/patch/options/types/array/StringArrayPatchOption : app/revanced/patcher/patch/options/PatchOption {
-	public static final field Companion Lapp/revanced/patcher/patch/options/types/array/StringArrayPatchOption$Companion;
-	public synthetic fun <init> (Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/patch/options/types/array/StringArrayPatchOption$Companion {
-	public final fun stringArrayPatchOption (Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/options/types/array/StringArrayPatchOption;
-	public static synthetic fun stringArrayPatchOption$default (Lapp/revanced/patcher/patch/options/types/array/StringArrayPatchOption$Companion;Lapp/revanced/patcher/patch/Patch;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/options/types/array/StringArrayPatchOption;
 }
 
 public final class app/revanced/patcher/util/DomFileEditor : java/io/Closeable {
