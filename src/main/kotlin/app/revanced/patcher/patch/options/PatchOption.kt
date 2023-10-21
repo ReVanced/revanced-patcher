@@ -24,7 +24,7 @@ abstract class PatchOption<T>(
     /**
      * The value of the [PatchOption].
      */
-    var value: T? = default
+    var value: T?
         /**
          * Set the value of the [PatchOption].
          *
@@ -37,7 +37,7 @@ abstract class PatchOption<T>(
             assertRequiredButNotNull(value)
             assertValid(value)
 
-            field = value
+            uncheckedValue = value
         }
         /**
          * Get the value of the [PatchOption].
@@ -48,11 +48,21 @@ abstract class PatchOption<T>(
          * @throws PatchOptionException.ValueValidationException If the value is invalid.
          */
         get() {
-            assertRequiredButNotNull(field)
-            assertValid(field)
+            assertRequiredButNotNull(uncheckedValue)
+            assertValid(uncheckedValue)
 
-            return field
+            return uncheckedValue
         }
+
+    // The unchecked value is used to allow setting the value without validation.
+    private var uncheckedValue = default
+
+    /**
+     * Reset the [PatchOption] to its default value.
+     */
+    open fun reset() {
+        uncheckedValue = default
+    }
 
     private fun assertRequiredButNotNull(value: T?) {
         if (required && value == null) throw PatchOptionException.ValueRequiredException(this)
