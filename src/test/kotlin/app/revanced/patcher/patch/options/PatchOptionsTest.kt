@@ -62,7 +62,7 @@ internal class PatchOptionsTest {
     @Test
     fun `should allow setting value from values`() =
         with(OptionsTestPatch.options["choices"] as PatchOption<String>) {
-            value = values!!.last()
+            value = values!!.values.last()
             assertTrue(value == "valid")
         }
 
@@ -90,12 +90,33 @@ internal class PatchOptionsTest {
         assertDoesNotThrow { assertNull(OptionsTestPatch.resettableOption.default) }
 
     private object OptionsTestPatch : BytecodePatch() {
-        var booleanOption by booleanPatchOption("bool", true)
-        var requiredStringOption by stringPatchOption("required", "default", required = true)
-        var stringArrayOption = stringArrayPatchOption("array", arrayOf("1", "2"))
-        var stringOptionWithChoices by stringPatchOption("choices", "value", values = setOf("valid"))
-        var validatedOption by stringPatchOption("validated", "default") { it == "valid" }
-        var resettableOption = stringPatchOption("resettable", null, required = true)
+        var booleanOption by booleanPatchOption(
+            "bool",
+            true
+        )
+        var requiredStringOption by stringPatchOption(
+            "required",
+            "default",
+            required = true
+        )
+        var stringArrayOption = stringArrayPatchOption(
+            "array",
+            arrayOf("1", "2")
+        )
+        var stringOptionWithChoices by stringPatchOption(
+            "choices",
+            "value",
+            values = mapOf("Valid option value" to "valid")
+        )
+        var validatedOption by stringPatchOption(
+
+            "validated",
+            "default"
+        ) { it == "valid" }
+        var resettableOption = stringPatchOption(
+            "resettable", null,
+            required = true
+        )
 
         override fun execute(context: BytecodeContext) {}
     }
