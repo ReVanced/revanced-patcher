@@ -178,7 +178,6 @@ public abstract class app/revanced/patcher/fingerprint/MethodFingerprint {
 	public final fun getResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;
 	public final fun resolve (Lapp/revanced/patcher/data/BytecodeContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
 	public final fun resolve (Lapp/revanced/patcher/data/BytecodeContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
-	public final fun setResult (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;)V
 }
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprint$Companion {

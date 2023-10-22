@@ -40,6 +40,7 @@ abstract class MethodFingerprint(
      * The result of the [MethodFingerprint].
      */
     var result: MethodFingerprintResult? = null
+        private set
 
     /**
      * Resolve a [MethodFingerprint] using the lookup map built by [initializeLookupMaps].
