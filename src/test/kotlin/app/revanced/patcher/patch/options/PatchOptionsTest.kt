@@ -13,21 +13,31 @@ import kotlin.test.assertTrue
 internal class PatchOptionsTest {
     @Test
     fun `should not fail because default value is unvalidated`() {
-        assertDoesNotThrow {
-            OptionsTestPatch.options["required"].value
-        }
+        assertDoesNotThrow { OptionsTestPatch.requiredStringOption }
+    }
+
+    @Test
+    fun `should not allow setting custom value with validation`() {
+        // Getter validation on incorrect value.
+        assertThrows<PatchOptionException.ValueValidationException> { OptionsTestPatch.validatedOption }
+
+        // Setter validation on incorrect value.
+        assertThrows<PatchOptionException.ValueValidationException> { OptionsTestPatch.validatedOption = "invalid" }
+
+        // Setter validation on correct value.
+        assertDoesNotThrow { OptionsTestPatch.validatedOption = "valid" }
     }
 
     @Test
     fun `should throw due to incorrect type`() {
         assertThrows<PatchOptionException.InvalidValueTypeException> {
-            OptionsTestPatch.options["bool"] = 0
+            OptionsTestPatch.options["bool"] = "not a boolean"
         }
     }
 
     @Test
     fun `should be nullable`() {
-        OptionsTestPatch.options["bool"] = null
+        OptionsTestPatch.booleanOption = null
     }
 
     @Test
@@ -56,37 +66,18 @@ internal class PatchOptionsTest {
         }
 
     @Test
-    fun `should allow setting custom value`() {
-        assertDoesNotThrow {
-            OptionsTestPatch.options["choices"] = "unknown"
-        }
-    }
+    fun `should allow setting custom value`() =
+        assertDoesNotThrow { OptionsTestPatch.stringOptionWithChoices = "unknown" }
 
     @Test
-    fun `should not allow setting custom value with validation`() =
-        @Suppress("UNCHECKED_CAST")
-        with(OptionsTestPatch.options["validated"] as PatchOption<String>) {
-            // Getter validation
-            assertThrows<PatchOptionException.ValueValidationException> { value }
+    fun `should allow resetting value`() = assertDoesNotThrow { OptionsTestPatch.stringOptionWithChoices = null }
 
-            // setter validation on incorrect value
-            assertThrows<PatchOptionException.ValueValidationException> { value = "invalid" }
-
-            // Setter validation on correct value
-            assertDoesNotThrow { value = "valid" }
-        }
-
-    @Suppress("unused")
     private object OptionsTestPatch : BytecodePatch() {
-        private var stringOption by stringPatchOption("string", "default")
-        private var booleanOption by booleanPatchOption("bool", true)
-        private var requiredStringOption by stringPatchOption("required", "default", required = true)
-        private var nullDefaultRequiredOption by stringPatchOption("null", null, required = true)
-
-        val stringArrayOption = stringArrayPatchOption("array", arrayOf("1", "2"))
-        val stringOptionWithChoices = stringPatchOption("choices", "value", values = setOf("valid"))
-
-        val validatedOption = stringPatchOption("validated", "default") { it == "valid" }
+        var booleanOption by booleanPatchOption("bool", true)
+        var requiredStringOption by stringPatchOption("required", "default", required = true)
+        var stringArrayOption = stringArrayPatchOption("array", arrayOf("1", "2"))
+        var stringOptionWithChoices by stringPatchOption("choices", "value", values = setOf("valid"))
+        var validatedOption by stringPatchOption("validated", "default") { it == "valid" }
 
         override fun execute(context: BytecodeContext) {}
     }
