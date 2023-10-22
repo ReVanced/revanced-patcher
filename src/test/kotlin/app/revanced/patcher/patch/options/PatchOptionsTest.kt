@@ -8,6 +8,7 @@ import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.stringPatc
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class PatchOptionsTest {
@@ -83,6 +84,10 @@ internal class PatchOptionsTest {
             OptionsTestPatch.resettableOption.value
         }
     }
+
+    @Test
+    fun `getting default value should work`() =
+        assertDoesNotThrow { assertNull(OptionsTestPatch.resettableOption.default) }
 
     private object OptionsTestPatch : BytecodePatch() {
         var booleanOption by booleanPatchOption("bool", true)
