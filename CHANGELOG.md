@@ -1,3 +1,31 @@
+# [18.0.0-dev.6](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.5...v18.0.0-dev.6) (2023-10-22)
+
+
+### Bug Fixes
+
+* Only allow setting `MethodFingerprint#result` privately ([aed1eac](https://github.com/ReVanced/revanced-patcher/commit/aed1eac3157317acf87f522750cf2f41509606c3))
+
+
+### Code Refactoring
+
+* Change data classes to actual classes ([6192089](https://github.com/ReVanced/revanced-patcher/commit/6192089b71bdca15765369f3e607ddd1f8266205))
+* Convert extension functions to member functions ([e2ca507](https://github.com/ReVanced/revanced-patcher/commit/e2ca50729da7085799c0ff6fc4f7afaf82579738))
+* Move files to simplify package structure ([124a2e9](https://github.com/ReVanced/revanced-patcher/commit/124a2e9d3efb88f0f038ae306d941e918ad3ad3c))
+* Remove deprecated classes and members ([a4212f6](https://github.com/ReVanced/revanced-patcher/commit/a4212f6bf952971541c4550e20f6bf57a382e19a))
+
+
+* refactor!: Remove `Fingerprint` interface ([54a2f8f](https://github.com/ReVanced/revanced-patcher/commit/54a2f8f16fddf2b2ed47eb23717ba3734c4a6c5d))
+
+
+### BREAKING CHANGES
+
+* The `MethodFingerprint#result` member can now only be set inside `MethodFingerprint`.
+* The `Fingerprint` interface is no longer present.
+* Some extension functions are now member functions.
+* This gets rid of data class members.
+* Some deprecated classes and members are not present anymore.
+* Classes and members have changed packages.
+
 # [18.0.0-dev.5](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.4...v18.0.0-dev.5) (2023-10-22)
 
 
