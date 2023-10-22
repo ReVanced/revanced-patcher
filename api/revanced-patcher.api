@@ -170,10 +170,7 @@ public final class app/revanced/patcher/extensions/MethodFingerprintExtensions {
 	public final fun getFuzzyPatternScanMethod (Lapp/revanced/patcher/fingerprint/MethodFingerprint;)Lapp/revanced/patcher/fingerprint/annotation/FuzzyPatternScanMethod;
 }
 
-public abstract interface class app/revanced/patcher/fingerprint/Fingerprint {
-}
-
-public abstract class app/revanced/patcher/fingerprint/MethodFingerprint : app/revanced/patcher/fingerprint/Fingerprint {
+public abstract class app/revanced/patcher/fingerprint/MethodFingerprint {
 	public static final field Companion Lapp/revanced/patcher/fingerprint/MethodFingerprint$Companion;
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Iterable;Ljava/lang/Iterable;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)V

@@ -35,7 +35,7 @@ abstract class MethodFingerprint(
     internal val opcodes: Iterable<Opcode?>? = null,
     internal val strings: Iterable<String>? = null,
     internal val customFingerprint: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null
-) : Fingerprint {
+) {
     /**
      * The result of the [MethodFingerprint].
      */
