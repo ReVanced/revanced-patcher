@@ -1,45 +1,85 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
-
 plugins {
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.10"
     alias(libs.plugins.binary.compatibility.validator)
     `maven-publish`
     signing
     java
 }
 
-val publicationVersion = project.version.toString()
+group = "app.revanced"
 
-subprojects {
-    apply(plugin = "maven-publish")
-    apply(plugin = "signing")
-    apply(plugin = "java")
-    apply(plugin ="kotlin")
-
-    group = "app.revanced"
-    version = publicationVersion
-
-    repositories {
-        mavenCentral()
-        mavenLocal()
-        maven { url = uri("https://jitpack.io") }
-        google()
+tasks {
+    processResources {
+        expand("projectVersion" to project.version)
     }
 
-    java {
-        withJavadocJar()
-        withSourcesJar()
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events("PASSED", "SKIPPED", "FAILED")
+        }
     }
+}
 
-    configure<KotlinJvmProjectExtension> {
-        kotlin { jvmToolchain(11) }
-    }
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url = uri("https://jitpack.io") }
+    google()
+}
 
-    tasks {
-        test {
-            useJUnitPlatform()
-            testLogging {
-                events("PASSED", "SKIPPED", "FAILED")
+dependencies {
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.xpp3)
+    implementation(libs.smali)
+    implementation(libs.multidexlib2)
+    implementation(libs.apktool.lib)
+    implementation(libs.kotlin.reflect)
+
+    compileOnly(libs.android)
+
+    testImplementation(libs.kotlin.test)
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+kotlin {
+    jvmToolchain(11)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("revanced-patcher-publication") {
+            from(components["java"])
+
+            version = project.version.toString()
+
+            pom {
+                name = "ReVanced Patcher"
+                description = "Patcher used by ReVanced."
+                url = "https://revanced.app"
+
+                licenses {
+                    license {
+                        name = "GNU General Public License v3.0"
+                        url = "https://www.gnu.org/licenses/gpl-3.0.en.html"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "ReVanced"
+                        name = "ReVanced"
+                        email = "contact@revanced.app"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/revanced/revanced-patcher.git"
+                    developerConnection = "scm:git:git@github.com:revanced/revanced-patcher.git"
+                    url = "https://github.com/revanced/revanced-patcher"
+                }
             }
         }
     }

@@ -1,3 +1,92 @@
+# [18.0.0-dev.6](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.5...v18.0.0-dev.6) (2023-10-22)
+
+
+### Bug Fixes
+
+* Only allow setting `MethodFingerprint#result` privately ([aed1eac](https://github.com/ReVanced/revanced-patcher/commit/aed1eac3157317acf87f522750cf2f41509606c3))
+
+
+### Code Refactoring
+
+* Change data classes to actual classes ([6192089](https://github.com/ReVanced/revanced-patcher/commit/6192089b71bdca15765369f3e607ddd1f8266205))
+* Convert extension functions to member functions ([e2ca507](https://github.com/ReVanced/revanced-patcher/commit/e2ca50729da7085799c0ff6fc4f7afaf82579738))
+* Move files to simplify package structure ([124a2e9](https://github.com/ReVanced/revanced-patcher/commit/124a2e9d3efb88f0f038ae306d941e918ad3ad3c))
+* Remove deprecated classes and members ([a4212f6](https://github.com/ReVanced/revanced-patcher/commit/a4212f6bf952971541c4550e20f6bf57a382e19a))
+
+
+* refactor!: Remove `Fingerprint` interface ([54a2f8f](https://github.com/ReVanced/revanced-patcher/commit/54a2f8f16fddf2b2ed47eb23717ba3734c4a6c5d))
+
+
+### BREAKING CHANGES
+
+* The `MethodFingerprint#result` member can now only be set inside `MethodFingerprint`.
+* The `Fingerprint` interface is no longer present.
+* Some extension functions are now member functions.
+* This gets rid of data class members.
+* Some deprecated classes and members are not present anymore.
+* Classes and members have changed packages.
+
+# [18.0.0-dev.5](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.4...v18.0.0-dev.5) (2023-10-22)
+
+
+### Bug Fixes
+
+* Do not set patch fields if they are empty ([a76ac04](https://github.com/ReVanced/revanced-patcher/commit/a76ac04214a2ab91e3b2f9dddb13ed52816fe723))
+
+# [18.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.3...v18.0.0-dev.4) (2023-10-22)
+
+
+### Features
+
+* Use a map for `PatchOption#values` ([54ac139](https://github.com/ReVanced/revanced-patcher/commit/54ac1394a914d3eed7865ec697e8016834134911))
+
+# [18.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.2...v18.0.0-dev.3) (2023-10-22)
+
+
+### Features
+
+* Make `PatchOption#values` nullable ([56ce9ec](https://github.com/ReVanced/revanced-patcher/commit/56ce9ec2f98ff351c3d42df71b49e5c88f07e665))
+
+# [18.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.1...v18.0.0-dev.2) (2023-10-22)
+
+
+### Code Refactoring
+
+* Change `PatchOption` from abstract to open class ([09cd6aa](https://github.com/ReVanced/revanced-patcher/commit/09cd6aa568988dd5241bfa6a2e12b7926a7b0683))
+
+
+### Features
+
+* Add function to reset options to their default value ([ebbaafb](https://github.com/ReVanced/revanced-patcher/commit/ebbaafb78e88f34faeafe9ff8532afe29231bd79))
+* Add function to reset options to their default value ([e6de90d](https://github.com/ReVanced/revanced-patcher/commit/e6de90d300bc9c82ca1696cb898db04c65a1cd5b))
+* Add getter for default option value ([c7922e9](https://github.com/ReVanced/revanced-patcher/commit/c7922e90d0c6ae83f513611c706ebea33c1a2b63))
+* Name patch option value validator property correctly ([caa634f](https://github.com/ReVanced/revanced-patcher/commit/caa634fac6d7a717f54e3b015827c8858fd637b9))
+
+
+### BREAKING CHANGES
+
+* This gets rid of the existing basic implementations of the `PatchOptions` type and moves extension functions.
+* This changes the getter name of the property.
+
+# [18.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v17.0.1-dev.1...v18.0.0-dev.1) (2023-10-14)
+
+
+### Features
+
+* Remove patch annotation processor ([4456031](https://github.com/ReVanced/revanced-patcher/commit/445603145979a6f67823a79f9d6cd140299cff37))
+
+
+### BREAKING CHANGES
+
+* Various patch constructor signatures have changed.
+
+## [17.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v17.0.0...v17.0.1-dev.1) (2023-10-10)
+
+
+### Performance Improvements
+
+* Run the garbage collector after writing dex files ([d9fb241](https://github.com/ReVanced/revanced-patcher/commit/d9fb241d57b0c4340130c0e5900250e66730ea56))
+
 # [17.0.0](https://github.com/ReVanced/revanced-patcher/compare/v16.0.2...v17.0.0) (2023-10-09)
 
 

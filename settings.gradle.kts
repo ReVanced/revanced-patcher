@@ -1,1 +1,1 @@
-include("revanced-patch-annotation-processor", "revanced-patcher")
+rootProject.name = "revanced-patcher"
