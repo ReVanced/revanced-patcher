@@ -434,7 +434,7 @@ abstract class MethodFingerprint(
  * @param scanResult The result of scanning for the [MethodFingerprint].
  * @param context The [BytecodeContext] this [MethodFingerprintResult] is attached to, to create proxies.
  */
-data class MethodFingerprintResult(
+class MethodFingerprintResult(
     val method: Method,
     val classDef: ClassDef,
     val scanResult: MethodFingerprintScanResult,
@@ -466,7 +466,7 @@ data class MethodFingerprintResult(
      * @param patternScanResult The result of the pattern scan.
      * @param stringsScanResult The result of the string scan.
      */
-    data class MethodFingerprintScanResult(
+    class MethodFingerprintScanResult(
         val patternScanResult: PatternScanResult?,
         val stringsScanResult: StringsScanResult?
     ) {
@@ -474,13 +474,13 @@ data class MethodFingerprintResult(
          * The result of scanning strings on the [MethodFingerprint].
          * @param matches The list of strings that were matched.
          */
-        data class StringsScanResult(val matches: List<StringMatch>) {
+        class StringsScanResult(val matches: List<StringMatch>) {
             /**
              * Represents a match for a string at an index.
              * @param string The string that was matched.
              * @param index The index of the string.
              */
-            data class StringMatch(val string: String, val index: Int)
+            class StringMatch(val string: String, val index: Int)
         }
 
         /**
@@ -489,7 +489,7 @@ data class MethodFingerprintResult(
          * @param endIndex The end index of the instructions where to which this pattern matches.
          * @param warnings A list of warnings considering this [PatternScanResult].
          */
-        data class PatternScanResult(
+        class PatternScanResult(
             val startIndex: Int,
             val endIndex: Int,
             var warnings: List<Warning>? = null
@@ -501,7 +501,7 @@ data class MethodFingerprintResult(
              * @param instructionIndex The index of the opcode relative to the instruction list.
              * @param patternIndex The index of the opcode relative to the pattern list from the signature.
              */
-            data class Warning(
+            class Warning(
                 val correctOpcode: Opcode,
                 val wrongOpcode: Opcode,
                 val instructionIndex: Int,

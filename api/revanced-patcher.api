@@ -190,49 +190,26 @@ public final class app/revanced/patcher/fingerprint/MethodFingerprint$Companion 
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintResult {
 	public fun <init> (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;Lapp/revanced/patcher/data/BytecodeContext;)V
-	public final fun component1 ()Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun component2 ()Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun component3 ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;
-	public final fun copy (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;Lapp/revanced/patcher/data/BytecodeContext;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;
-	public static synthetic fun copy$default (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;Lapp/revanced/patcher/data/BytecodeContext;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getClassDef ()Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun getMethod ()Lcom/android/tools/smali/dexlib2/iface/Method;
 	public final fun getMutableClass ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun getMutableMethod ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
 	public final fun getScanResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult {
 	public fun <init> (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;)V
-	public final fun component1 ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;
-	public final fun component2 ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;
-	public final fun copy (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;
-	public static synthetic fun copy$default (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getPatternScanResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;
 	public final fun getStringsScanResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult {
 	public fun <init> (IILjava/util/List;)V
 	public synthetic fun <init> (IILjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()I
-	public final fun component2 ()I
-	public final fun component3 ()Ljava/util/List;
-	public final fun copy (IILjava/util/List;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;
-	public static synthetic fun copy$default (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;IILjava/util/List;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEndIndex ()I
 	public final fun getStartIndex ()I
 	public final fun getWarnings ()Ljava/util/List;
-	public fun hashCode ()I
 	public final fun setWarnings (Ljava/util/List;)V
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult$Warning {
@@ -245,26 +222,13 @@ public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$Meth
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult {
 	public fun <init> (Ljava/util/List;)V
-	public final fun component1 ()Ljava/util/List;
-	public final fun copy (Ljava/util/List;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;
-	public static synthetic fun copy$default (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;Ljava/util/List;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getMatches ()Ljava/util/List;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult$StringMatch {
 	public fun <init> (Ljava/lang/String;I)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()I
-	public final fun copy (Ljava/lang/String;I)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult$StringMatch;
-	public static synthetic fun copy$default (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult$StringMatch;Ljava/lang/String;IILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult$StringMatch;
-	public fun equals (Ljava/lang/Object;)Z
 	public final fun getIndex ()I
 	public final fun getString ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface annotation class app/revanced/patcher/fingerprint/annotation/FuzzyPatternScanMethod : java/lang/annotation/Annotation {
