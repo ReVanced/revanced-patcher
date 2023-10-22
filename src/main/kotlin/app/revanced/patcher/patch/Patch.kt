@@ -65,7 +65,8 @@ sealed class Patch<out T : Context<*>> {
             name = annotation.name.ifEmpty { null }
             description = annotation.description.ifEmpty { null }
             compatiblePackages = annotation.compatiblePackages
-                .map { CompatiblePackage(it.name, it.versions.toSet()) }.toSet()
+                .map { CompatiblePackage(it.name, it.versions.toSet().ifEmpty { null }) }
+                .toSet().ifEmpty { null }
             dependencies = annotation.dependencies.toSet().ifEmpty { null }
             use = annotation.use
             requiresIntegrations = annotation.requiresIntegrations
