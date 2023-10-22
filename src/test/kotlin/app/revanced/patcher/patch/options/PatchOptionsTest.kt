@@ -62,7 +62,7 @@ internal class PatchOptionsTest {
     @Test
     fun `should allow setting value from values`() =
         with(OptionsTestPatch.options["choices"] as PatchOption<String>) {
-            value = values.last()
+            value = values!!.last()
             assertTrue(value == "valid")
         }
 

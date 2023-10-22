@@ -19,7 +19,7 @@ import kotlin.reflect.KProperty
 open class PatchOption<T>(
     val key: String,
     val default: T?,
-    val values: Set<T>,
+    val values: Set<T>?,
     val title: String?,
     val description: String?,
     val required: Boolean,
@@ -105,7 +105,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.stringPatchOption(
             key: String,
             default: String? = null,
-            values: Set<String> = emptySet(),
+            values: Set<String>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -130,7 +130,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.intPatchOption(
             key: String,
             default: Int? = null,
-            values: Set<Int> = emptySet(),
+            values: Set<Int>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -155,7 +155,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.booleanPatchOption(
             key: String,
             default: Boolean? = null,
-            values: Set<Boolean> = emptySet(),
+            values: Set<Boolean>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -180,7 +180,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.floatPatchOption(
             key: String,
             default: Float? = null,
-            values: Set<Float> = emptySet(),
+            values: Set<Float>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -205,7 +205,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.longPatchOption(
             key: String,
             default: Long? = null,
-            values: Set<Long> = emptySet(),
+            values: Set<Long>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -230,7 +230,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.stringArrayPatchOption(
             key: String,
             default: Array<String>? = null,
-            values: Set<Array<String>> = emptySet(),
+            values: Set<Array<String>>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -255,7 +255,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.intArrayPatchOption(
             key: String,
             default: Array<Int>? = null,
-            values: Set<Array<Int>> = emptySet(),
+            values: Set<Array<Int>>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -280,7 +280,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.booleanArrayPatchOption(
             key: String,
             default: Array<Boolean>? = null,
-            values: Set<Array<Boolean>> = emptySet(),
+            values: Set<Array<Boolean>>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -305,7 +305,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.floatArrayPatchOption(
             key: String,
             default: Array<Float>? = null,
-            values: Set<Array<Float>> = emptySet(),
+            values: Set<Array<Float>>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
@@ -330,7 +330,7 @@ open class PatchOption<T>(
         fun <P : Patch<*>> P.longArrayPatchOption(
             key: String,
             default: Array<Long>? = null,
-            values: Set<Array<Long>> = emptySet(),
+            values: Set<Array<Long>>? = null,
             title: String? = null,
             description: String? = null,
             required: Boolean = false,
