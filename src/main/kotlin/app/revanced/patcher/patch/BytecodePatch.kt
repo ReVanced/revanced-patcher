@@ -1,7 +1,7 @@
 package app.revanced.patcher.patch
 
 import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
+import app.revanced.patcher.fingerprint.MethodFingerprint
 
 /**
  * A ReVanced [Patch] that works on [BytecodeContext].

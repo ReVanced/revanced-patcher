@@ -1,9 +1,8 @@
-package app.revanced.patcher.fingerprint.method.impl
+package app.revanced.patcher.fingerprint
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
-import app.revanced.patcher.fingerprint.Fingerprint
-import app.revanced.patcher.fingerprint.method.annotation.FuzzyPatternScanMethod
+import app.revanced.patcher.fingerprint.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags

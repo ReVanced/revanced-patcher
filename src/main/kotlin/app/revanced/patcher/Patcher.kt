@@ -2,8 +2,8 @@ package app.revanced.patcher
 
 import app.revanced.patcher.PatchBundleLoader.Utils.getInstance
 import app.revanced.patcher.data.ResourceContext
-import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
-import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolveUsingLookupMap
+import app.revanced.patcher.fingerprint.MethodFingerprint
+import app.revanced.patcher.fingerprint.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
 import kotlinx.coroutines.flow.flow
 import java.io.Closeable
