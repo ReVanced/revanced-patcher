@@ -123,7 +123,7 @@ abstract class MethodFingerprint(
      */
     fun resolve(context: BytecodeContext, forClass: ClassDef): Boolean {
         for (method in forClass.methods)
-            if (this.resolve(context, method, forClass))
+            if (resolve(context, method, forClass))
                 return true
         return false
     }
@@ -397,12 +397,12 @@ abstract class MethodFingerprint(
          * @param context The [BytecodeContext] to host proxies.
          * @return True if the resolution was successful, false otherwise.
          */
-        fun Iterable<MethodFingerprint>.resolve(context: BytecodeContext, classes: Iterable<ClassDef>) {
-            for (fingerprint in this) // For each fingerprint...
-                classes@ for (classDef in classes) // ...search through all classes for the MethodFingerprint
-                    if (fingerprint.resolve(context, classDef))
-                        break@classes // ...if the resolution succeeded, continue with the next MethodFingerprint.
-        }
+        fun Iterable<MethodFingerprint>.resolve(context: BytecodeContext, classes: Iterable<ClassDef>) =
+            forEach { fingerprint ->
+                for (classDef in classes) {
+                    if (fingerprint.resolve(context, classDef)) break
+                }
+            }
 
         private fun MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult.createWarnings(
             pattern: Iterable<Opcode?>, instructions: Iterable<Instruction>
