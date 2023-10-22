@@ -42,6 +42,230 @@ abstract class MethodFingerprint(
      */
     var result: MethodFingerprintResult? = null
 
+    /**
+     * Resolve a [MethodFingerprint] using the lookup map built by [initializeFingerprintResolutionLookupMaps].
+     *
+     * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
+     * amount of time because they are resolved in sequence.
+     *
+     * For apps with many fingerprints, resolving performance can be improved by:
+     * - Slowest: Specify [opcodes] and nothing else.
+     * - Fast: Specify [accessFlags], [returnType].
+     * - Faster: Specify [accessFlags], [returnType] and [parameters].
+     * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
+     */
+    internal fun resolveUsingLookupMap(context: BytecodeContext): Boolean {
+        /**
+         * Lookup [MethodClassPair]s that match the methods strings present in a [MethodFingerprint].
+         *
+         * @return A list of [MethodClassPair]s that match the methods strings present in a [MethodFingerprint].
+         */
+        fun MethodFingerprint.methodStringsLookup(): List<MethodClassPair>? {
+            strings?.forEach {
+                val methods = methodStringsLookupMap[it]
+                if (methods != null) return methods
+            }
+            return null
+        }
+
+        /**
+         * Lookup [MethodClassPair]s that match the method signature present in a [MethodFingerprint].
+         *
+         * @return A list of [MethodClassPair]s that match the method signature present in a [MethodFingerprint].
+         */
+        fun MethodFingerprint.methodSignatureLookup(): List<MethodClassPair> {
+            if (accessFlags == null) return methods
+
+            var returnTypeValue = returnType
+            if (returnTypeValue == null) {
+                if (AccessFlags.CONSTRUCTOR.isSet(accessFlags)) {
+                    // Constructors always have void return type
+                    returnTypeValue = "V"
+                } else {
+                    return methods
+                }
+            }
+
+            val key = buildString {
+                append(accessFlags)
+                append(returnTypeValue.first())
+                if (parameters != null) appendParameters(parameters)
+            }
+            return methodSignatureLookupMap[key] ?: return emptyList()
+        }
+
+        /**
+         * Resolve a [MethodFingerprint] using a list of [MethodClassPair].
+         *
+         * @return True if the resolution was successful, false otherwise.
+         */
+        fun MethodFingerprint.resolveUsingMethodClassPair(classMethods: Iterable<MethodClassPair>): Boolean {
+            classMethods.forEach { classAndMethod ->
+                if (resolve(context, classAndMethod.first, classAndMethod.second)) return true
+            }
+            return false
+        }
+
+        val methodsWithSameStrings = methodStringsLookup()
+        if (methodsWithSameStrings != null) if (resolveUsingMethodClassPair(methodsWithSameStrings)) return true
+
+        // No strings declared or none matched (partial matches are allowed).
+        // Use signature matching.
+        return resolveUsingMethodClassPair(methodSignatureLookup())
+    }
+
+    /**
+     * Resolve a [MethodFingerprint] against a [ClassDef].
+     *
+     * @param forClass The class on which to resolve the [MethodFingerprint] in.
+     * @param context The [BytecodeContext] to host proxies.
+     * @return True if the resolution was successful, false otherwise.
+     */
+    fun resolve(context: BytecodeContext, forClass: ClassDef): Boolean {
+        for (method in forClass.methods)
+            if (this.resolve(context, method, forClass))
+                return true
+        return false
+    }
+
+    /**
+     * Resolve a [MethodFingerprint] against a [Method].
+     *
+     * @param method The class on which to resolve the [MethodFingerprint] in.
+     * @param forClass The class on which to resolve the [MethodFingerprint].
+     * @param context The [BytecodeContext] to host proxies.
+     * @return True if the resolution was successful or if the fingerprint is already resolved, false otherwise.
+     */
+    fun resolve(context: BytecodeContext, method: Method, forClass: ClassDef): Boolean {
+        val methodFingerprint = this
+
+        if (methodFingerprint.result != null) return true
+
+        if (methodFingerprint.returnType != null && !method.returnType.startsWith(methodFingerprint.returnType))
+            return false
+
+        if (methodFingerprint.accessFlags != null && methodFingerprint.accessFlags != method.accessFlags)
+            return false
+
+
+        fun parametersEqual(
+            parameters1: Iterable<CharSequence>, parameters2: Iterable<CharSequence>
+        ): Boolean {
+            if (parameters1.count() != parameters2.count()) return false
+            val iterator1 = parameters1.iterator()
+            parameters2.forEach {
+                if (!it.startsWith(iterator1.next())) return false
+            }
+            return true
+        }
+
+        if (methodFingerprint.parameters != null && !parametersEqual(
+                methodFingerprint.parameters, // TODO: parseParameters()
+                method.parameterTypes
+            )
+        ) return false
+
+        @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+        if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(method, forClass))
+            return false
+
+        val stringsScanResult: StringsScanResult? =
+            if (methodFingerprint.strings != null) {
+                StringsScanResult(
+                    buildList {
+                        val implementation = method.implementation ?: return false
+
+                        val stringsList = methodFingerprint.strings.toMutableList()
+
+                        implementation.instructions.forEachIndexed { instructionIndex, instruction ->
+                            if (
+                                instruction.opcode != Opcode.CONST_STRING &&
+                                instruction.opcode != Opcode.CONST_STRING_JUMBO
+                            ) return@forEachIndexed
+
+                            val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+                            val index = stringsList.indexOfFirst(string::contains)
+                            if (index == -1) return@forEachIndexed
+
+                            add(
+                                StringMatch(
+                                    string,
+                                    instructionIndex
+                                )
+                            )
+                            stringsList.removeAt(index)
+                        }
+
+                        if (stringsList.isNotEmpty()) return false
+                    }
+                )
+            } else null
+
+        val patternScanResult = if (methodFingerprint.opcodes != null) {
+            method.implementation?.instructions ?: return false
+
+            fun Method.patternScan(
+                fingerprint: MethodFingerprint
+            ): MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult? {
+                val instructions = this.implementation!!.instructions
+                val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyPatternScanMethod?.threshold ?: 0
+
+                val pattern = fingerprint.opcodes!!
+                val instructionLength = instructions.count()
+                val patternLength = pattern.count()
+
+                for (index in 0 until instructionLength) {
+                    var patternIndex = 0
+                    var threshold = fingerprintFuzzyPatternScanThreshold
+
+                    while (index + patternIndex < instructionLength) {
+                        val originalOpcode = instructions.elementAt(index + patternIndex).opcode
+                        val patternOpcode = pattern.elementAt(patternIndex)
+
+                        if (patternOpcode != null && patternOpcode.ordinal != originalOpcode.ordinal) {
+                            // reaching maximum threshold (0) means,
+                            // the pattern does not match to the current instructions
+                            if (threshold-- == 0) break
+                        }
+
+                        if (patternIndex < patternLength - 1) {
+                            // if the entire pattern has not been scanned yet
+                            // continue the scan
+                            patternIndex++
+                            continue
+                        }
+                        // the pattern is valid, generate warnings if fuzzyPatternScanMethod is FuzzyPatternScanMethod
+                        val result =
+                            MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult(
+                                index,
+                                index + patternIndex
+                            )
+                        if (fingerprint.fuzzyPatternScanMethod !is FuzzyPatternScanMethod) return result
+                        result.warnings = result.createWarnings(pattern, instructions)
+
+                        return result
+                    }
+                }
+
+                return null
+            }
+
+            method.patternScan(methodFingerprint) ?: return false
+        } else null
+
+        methodFingerprint.result = MethodFingerprintResult(
+            method,
+            forClass,
+            MethodFingerprintResult.MethodFingerprintScanResult(
+                patternScanResult,
+                stringsScanResult
+            ),
+            context
+        )
+
+        return true
+    }
+
     companion object {
         /**
          * A list of methods and the class they were found in.
@@ -167,78 +391,6 @@ abstract class MethodFingerprint(
         }
 
         /**
-         * Resolve a [MethodFingerprint] using the lookup map built by [initializeFingerprintResolutionLookupMaps].
-         *
-         * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
-         * amount of time because they are resolved in sequence.
-         *
-         * For apps with many fingerprints, resolving performance can be improved by:
-         * - Slowest: Specify [opcodes] and nothing else.
-         * - Fast: Specify [accessFlags], [returnType].
-         * - Faster: Specify [accessFlags], [returnType] and [parameters].
-         * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
-         */
-        internal fun MethodFingerprint.resolveUsingLookupMap(context: BytecodeContext): Boolean {
-            /**
-             * Lookup [MethodClassPair]s that match the methods strings present in a [MethodFingerprint].
-             *
-             * @return A list of [MethodClassPair]s that match the methods strings present in a [MethodFingerprint].
-             */
-            fun MethodFingerprint.methodStringsLookup(): List<MethodClassPair>? {
-                strings?.forEach {
-                    val methods = methodStringsLookupMap[it]
-                    if (methods != null) return methods
-                }
-                return null
-            }
-
-            /**
-             * Lookup [MethodClassPair]s that match the method signature present in a [MethodFingerprint].
-             *
-             * @return A list of [MethodClassPair]s that match the method signature present in a [MethodFingerprint].
-             */
-            fun MethodFingerprint.methodSignatureLookup(): List<MethodClassPair> {
-                if (accessFlags == null) return methods
-
-                var returnTypeValue = returnType
-                if (returnTypeValue == null) {
-                    if (AccessFlags.CONSTRUCTOR.isSet(accessFlags)) {
-                        // Constructors always have void return type
-                        returnTypeValue = "V"
-                    } else {
-                        return methods
-                    }
-                }
-
-                val key = buildString {
-                    append(accessFlags)
-                    append(returnTypeValue.first())
-                    if (parameters != null) appendParameters(parameters)
-                }
-                return methodSignatureLookupMap[key] ?: return emptyList()
-            }
-
-            /**
-             * Resolve a [MethodFingerprint] using a list of [MethodClassPair].
-             *
-             * @return True if the resolution was successful, false otherwise.
-             */
-            fun MethodFingerprint.resolveUsingMethodClassPair(classMethods: Iterable<MethodClassPair>): Boolean {
-                classMethods.forEach { classAndMethod ->
-                    if (resolve(context, classAndMethod.first, classAndMethod.second)) return true
-                }
-                return false
-            }
-
-            val methodsWithSameStrings = methodStringsLookup()
-            if (methodsWithSameStrings != null) if (resolveUsingMethodClassPair(methodsWithSameStrings)) return true
-
-            // No strings declared or none matched (partial matches are allowed).
-            // Use signature matching.
-            return resolveUsingMethodClassPair(methodSignatureLookup())
-        }
-
-        /**
          * Resolve a list of [MethodFingerprint] against a list of [ClassDef].
          *
          * @param classes The classes on which to resolve the [MethodFingerprint] in.
@@ -250,158 +402,6 @@ abstract class MethodFingerprint(
                 classes@ for (classDef in classes) // ...search through all classes for the MethodFingerprint
                     if (fingerprint.resolve(context, classDef))
                         break@classes // ...if the resolution succeeded, continue with the next MethodFingerprint.
-        }
-
-        /**
-         * Resolve a [MethodFingerprint] against a [ClassDef].
-         *
-         * @param forClass The class on which to resolve the [MethodFingerprint] in.
-         * @param context The [BytecodeContext] to host proxies.
-         * @return True if the resolution was successful, false otherwise.
-         */
-        fun MethodFingerprint.resolve(context: BytecodeContext, forClass: ClassDef): Boolean {
-            for (method in forClass.methods)
-                if (this.resolve(context, method, forClass))
-                    return true
-            return false
-        }
-
-        /**
-         * Resolve a [MethodFingerprint] against a [Method].
-         *
-         * @param method The class on which to resolve the [MethodFingerprint] in.
-         * @param forClass The class on which to resolve the [MethodFingerprint].
-         * @param context The [BytecodeContext] to host proxies.
-         * @return True if the resolution was successful or if the fingerprint is already resolved, false otherwise.
-         */
-        fun MethodFingerprint.resolve(context: BytecodeContext, method: Method, forClass: ClassDef): Boolean {
-            val methodFingerprint = this
-
-            if (methodFingerprint.result != null) return true
-
-            if (methodFingerprint.returnType != null && !method.returnType.startsWith(methodFingerprint.returnType))
-                return false
-
-            if (methodFingerprint.accessFlags != null && methodFingerprint.accessFlags != method.accessFlags)
-                return false
-
-
-            fun parametersEqual(
-                parameters1: Iterable<CharSequence>, parameters2: Iterable<CharSequence>
-            ): Boolean {
-                if (parameters1.count() != parameters2.count()) return false
-                val iterator1 = parameters1.iterator()
-                parameters2.forEach {
-                    if (!it.startsWith(iterator1.next())) return false
-                }
-                return true
-            }
-
-            if (methodFingerprint.parameters != null && !parametersEqual(
-                    methodFingerprint.parameters, // TODO: parseParameters()
-                    method.parameterTypes
-                )
-            ) return false
-
-            @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-            if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(method, forClass))
-                return false
-
-            val stringsScanResult: StringsScanResult? =
-                if (methodFingerprint.strings != null) {
-                    StringsScanResult(
-                        buildList {
-                            val implementation = method.implementation ?: return false
-
-                            val stringsList = methodFingerprint.strings.toMutableList()
-
-                            implementation.instructions.forEachIndexed { instructionIndex, instruction ->
-                                if (
-                                    instruction.opcode != Opcode.CONST_STRING &&
-                                    instruction.opcode != Opcode.CONST_STRING_JUMBO
-                                ) return@forEachIndexed
-
-                                val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                                val index = stringsList.indexOfFirst(string::contains)
-                                if (index == -1) return@forEachIndexed
-
-                                add(
-                                    StringMatch(
-                                        string,
-                                        instructionIndex
-                                    )
-                                )
-                                stringsList.removeAt(index)
-                            }
-
-                            if (stringsList.isNotEmpty()) return false
-                        }
-                    )
-                } else null
-
-            val patternScanResult = if (methodFingerprint.opcodes != null) {
-                method.implementation?.instructions ?: return false
-
-                fun Method.patternScan(
-                    fingerprint: MethodFingerprint
-                ): MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult? {
-                    val instructions = this.implementation!!.instructions
-                    val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyPatternScanMethod?.threshold ?: 0
-
-                    val pattern = fingerprint.opcodes!!
-                    val instructionLength = instructions.count()
-                    val patternLength = pattern.count()
-
-                    for (index in 0 until instructionLength) {
-                        var patternIndex = 0
-                        var threshold = fingerprintFuzzyPatternScanThreshold
-
-                        while (index + patternIndex < instructionLength) {
-                            val originalOpcode = instructions.elementAt(index + patternIndex).opcode
-                            val patternOpcode = pattern.elementAt(patternIndex)
-
-                            if (patternOpcode != null && patternOpcode.ordinal != originalOpcode.ordinal) {
-                                // reaching maximum threshold (0) means,
-                                // the pattern does not match to the current instructions
-                                if (threshold-- == 0) break
-                            }
-
-                            if (patternIndex < patternLength - 1) {
-                                // if the entire pattern has not been scanned yet
-                                // continue the scan
-                                patternIndex++
-                                continue
-                            }
-                            // the pattern is valid, generate warnings if fuzzyPatternScanMethod is FuzzyPatternScanMethod
-                            val result =
-                                MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult(
-                                    index,
-                                    index + patternIndex
-                                )
-                            if (fingerprint.fuzzyPatternScanMethod !is FuzzyPatternScanMethod) return result
-                            result.warnings = result.createWarnings(pattern, instructions)
-
-                            return result
-                        }
-                    }
-
-                    return null
-                }
-
-                method.patternScan(methodFingerprint) ?: return false
-            } else null
-
-            methodFingerprint.result = MethodFingerprintResult(
-                method,
-                forClass,
-                MethodFingerprintResult.MethodFingerprintScanResult(
-                    patternScanResult,
-                    stringsScanResult
-                ),
-                context
-            )
-
-            return true
         }
 
         private fun MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult.createWarnings(
