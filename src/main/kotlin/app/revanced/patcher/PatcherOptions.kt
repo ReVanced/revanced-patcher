@@ -38,27 +38,6 @@ data class PatcherOptions(
         frameworkDirectory = frameworkFileDirectory
     }
 
-    /**
-     * Options for ReVanced [Patcher].
-     * @param inputFile The input file to patch.
-     * @param resourceCachePath The path to the directory to use for caching resources.
-     * @param aaptBinaryPath The path to a custom aapt binary.
-     * @param frameworkFileDirectory The path to the directory to cache the framework file in.
-     */
-    @Deprecated("Use the constructor with the multithreadingDexFileWriter parameter instead")
-    constructor(
-        inputFile: File,
-        resourceCachePath: File = File("revanced-resource-cache"),
-        aaptBinaryPath: String? = null,
-        frameworkFileDirectory: String? = null,
-    ) : this(
-        inputFile,
-        resourceCachePath,
-        aaptBinaryPath,
-        frameworkFileDirectory,
-        false,
-    )
-
     fun recreateResourceCacheDirectory() = resourceCachePath.also {
         if (it.exists()) {
             logger.info("Deleting existing resource cache directory")
