@@ -8,6 +8,7 @@ import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.stringPatc
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 internal class PatchOptionsTest {
     @Test
@@ -46,6 +47,36 @@ internal class PatchOptionsTest {
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
+    @Test
+    fun `should allow setting value from values`() =
+        with(OptionsTestPatch.options["choices"] as PatchOption<String>) {
+            value = values.last()
+            assertTrue(value == "valid")
+        }
+
+    @Test
+    fun `should allow setting custom value`() {
+        assertDoesNotThrow {
+            OptionsTestPatch.options["choices"] = "unknown"
+        }
+    }
+
+    @Test
+    fun `should not allow setting custom value with validation`() =
+        @Suppress("UNCHECKED_CAST")
+        with(OptionsTestPatch.options["validated"] as PatchOption<String>) {
+            // Getter validation
+            assertThrows<PatchOptionException.ValueValidationException> { value }
+
+            // setter validation on incorrect value
+            assertThrows<PatchOptionException.ValueValidationException> { value = "invalid" }
+
+            // Setter validation on correct value
+            assertDoesNotThrow { value = "valid" }
+        }
+
+    @Suppress("unused")
     private object OptionsTestPatch : BytecodePatch() {
         private var stringOption by stringPatchOption("string", "default")
         private var booleanOption by booleanPatchOption("bool", true)
@@ -53,6 +84,9 @@ internal class PatchOptionsTest {
         private var nullDefaultRequiredOption by stringPatchOption("null", null, required = true)
 
         val stringArrayOption = stringArrayPatchOption("array", arrayOf("1", "2"))
+        val stringOptionWithChoices = stringPatchOption("choices", "value", values = setOf("valid"))
+
+        val validatedOption = stringPatchOption("validated", "default") { it == "valid" }
 
         override fun execute(context: BytecodeContext) {}
     }
