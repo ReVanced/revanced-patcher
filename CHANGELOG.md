@@ -1,3 +1,10 @@
+# [18.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.2...v18.0.0-dev.3) (2023-10-22)
+
+
+### Features
+
+* Make `PatchOption#values` nullable ([56ce9ec](https://github.com/ReVanced/revanced-patcher/commit/56ce9ec2f98ff351c3d42df71b49e5c88f07e665))
+
 # [18.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.1...v18.0.0-dev.2) (2023-10-22)
 
 
