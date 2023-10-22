@@ -1,3 +1,10 @@
+# [18.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.3...v18.0.0-dev.4) (2023-10-22)
+
+
+### Features
+
+* Use a map for `PatchOption#values` ([54ac139](https://github.com/ReVanced/revanced-patcher/commit/54ac1394a914d3eed7865ec697e8016834134911))
+
 # [18.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.2...v18.0.0-dev.3) (2023-10-22)
 
 
