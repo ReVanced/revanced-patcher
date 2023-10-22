@@ -2,7 +2,8 @@ package app.revanced.patcher
 
 import app.revanced.patcher.PatchBundleLoader.Utils.getInstance
 import app.revanced.patcher.data.ResourceContext
-import app.revanced.patcher.fingerprint.MethodFingerprint
+import app.revanced.patcher.fingerprint.LookupMap.Maps.clearLookupMaps
+import app.revanced.patcher.fingerprint.LookupMap.Maps.initializeLookupMaps
 import app.revanced.patcher.fingerprint.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
 import kotlinx.coroutines.flow.flow
@@ -187,7 +188,7 @@ class Patcher(
 
         if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
 
-        MethodFingerprint.initializeFingerprintResolutionLookupMaps(context.bytecodeContext)
+        initializeLookupMaps(context.bytecodeContext)
 
         // Prevent from decoding the app manifest twice if it is not needed.
         if (options.resourceDecodingMode == ResourceContext.ResourceDecodingMode.FULL)
@@ -249,7 +250,7 @@ class Patcher(
             }
     }
 
-    override fun close() = MethodFingerprint.clearFingerprintResolutionLookupMaps()
+    override fun close() = clearLookupMaps()
 
     /**
      * Compile and save the patched APK file.

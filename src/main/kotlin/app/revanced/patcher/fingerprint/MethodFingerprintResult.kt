@@ -1,6 +1,7 @@
 package app.revanced.patcher.fingerprint
 
 import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
@@ -14,6 +15,7 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
  * @param scanResult The result of scanning for the [MethodFingerprint].
  * @param context The [BytecodeContext] this [MethodFingerprintResult] is attached to, to create proxies.
  */
+@Suppress("MemberVisibilityCanBePrivate")
 class MethodFingerprintResult(
     val method: Method,
     val classDef: ClassDef,
