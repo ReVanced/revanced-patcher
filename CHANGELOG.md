@@ -1,3 +1,24 @@
+# [18.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.1...v18.0.0-dev.2) (2023-10-22)
+
+
+### Code Refactoring
+
+* Change `PatchOption` from abstract to open class ([09cd6aa](https://github.com/ReVanced/revanced-patcher/commit/09cd6aa568988dd5241bfa6a2e12b7926a7b0683))
+
+
+### Features
+
+* Add function to reset options to their default value ([ebbaafb](https://github.com/ReVanced/revanced-patcher/commit/ebbaafb78e88f34faeafe9ff8532afe29231bd79))
+* Add function to reset options to their default value ([e6de90d](https://github.com/ReVanced/revanced-patcher/commit/e6de90d300bc9c82ca1696cb898db04c65a1cd5b))
+* Add getter for default option value ([c7922e9](https://github.com/ReVanced/revanced-patcher/commit/c7922e90d0c6ae83f513611c706ebea33c1a2b63))
+* Name patch option value validator property correctly ([caa634f](https://github.com/ReVanced/revanced-patcher/commit/caa634fac6d7a717f54e3b015827c8858fd637b9))
+
+
+### BREAKING CHANGES
+
+* This gets rid of the existing basic implementations of the `PatchOptions` type and moves extension functions.
+* This changes the getter name of the property.
+
 # [18.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v17.0.1-dev.1...v18.0.0-dev.1) (2023-10-14)
 
 
