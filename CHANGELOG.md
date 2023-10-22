@@ -1,3 +1,10 @@
+# [18.0.0-dev.5](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.4...v18.0.0-dev.5) (2023-10-22)
+
+
+### Bug Fixes
+
+* Do not set patch fields if they are empty ([a76ac04](https://github.com/ReVanced/revanced-patcher/commit/a76ac04214a2ab91e3b2f9dddb13ed52816fe723))
+
 # [18.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0-dev.3...v18.0.0-dev.4) (2023-10-22)
 
 
