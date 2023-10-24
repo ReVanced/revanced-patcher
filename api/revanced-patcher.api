@@ -289,7 +289,7 @@ public abstract interface annotation class app/revanced/patcher/patch/annotation
 
 public class app/revanced/patcher/patch/options/PatchOption {
 	public static final field PatchExtensions Lapp/revanced/patcher/patch/options/PatchOption$PatchExtensions;
-	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function2;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLjava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public final fun getDefault ()Ljava/lang/Object;
 	public final fun getDescription ()Ljava/lang/String;
 	public final fun getKey ()Ljava/lang/String;
@@ -298,6 +298,7 @@ public class app/revanced/patcher/patch/options/PatchOption {
 	public final fun getValidator ()Lkotlin/jvm/functions/Function2;
 	public final fun getValue ()Ljava/lang/Object;
 	public final fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Ljava/lang/Object;
+	public final fun getValueType ()Ljava/lang/String;
 	public final fun getValues ()Ljava/util/Map;
 	public fun reset ()V
 	public final fun setValue (Ljava/lang/Object;)V
