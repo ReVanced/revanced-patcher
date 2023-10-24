@@ -1,3 +1,15 @@
+# [19.0.0](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0...v19.0.0) (2023-10-24)
+
+
+### Features
+
+* Add `PatchOption#valueType` to handle type erasure ([a46e948](https://github.com/ReVanced/revanced-patcher/commit/a46e948b5a0cf9bc8d31f557e371cd7d7c2f5b1c))
+
+
+### BREAKING CHANGES
+
+* This changes the signature of the `PatchOption` constructor.
+
 # [19.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0...v19.0.0-dev.1) (2023-10-24)
 
 
