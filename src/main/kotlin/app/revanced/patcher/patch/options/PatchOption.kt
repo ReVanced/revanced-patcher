@@ -12,6 +12,7 @@ import kotlin.reflect.KProperty
  * @param title The title.
  * @param description A description.
  * @param required Whether the option is required.
+ * @param valueType The type of the option value (to handle type erasure).
  * @param validator The function to validate the option value.
  * @param T The value type of the option.
  */
@@ -23,6 +24,7 @@ open class PatchOption<T>(
     val title: String?,
     val description: String?,
     val required: Boolean,
+    val valueType: String,
     val validator: PatchOption<T>.(T?) -> Boolean
 ) {
     /**
@@ -110,7 +112,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<String>.(String?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "String", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with an integer value and add it to the current [Patch].
@@ -135,7 +139,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Int?>.(Int?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "Int", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with a boolean value and add it to the current [Patch].
@@ -160,7 +166,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Boolean?>.(Boolean?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(key, default, values, title, description, required, "Boolean", validator).also {
+            registerOption(it)
+        }
 
         /**
          * Create a new [PatchOption] with a float value and add it to the current [Patch].
@@ -185,7 +193,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Float?>.(Float?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "Float", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with a long value and add it to the current [Patch].
@@ -210,7 +220,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Long?>.(Long?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "Long", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with a string array value and add it to the current [Patch].
@@ -235,7 +247,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Array<String>?>.(Array<String>?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "StringArray", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with an integer array value and add it to the current [Patch].
@@ -260,7 +274,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Array<Int>?>.(Array<Int>?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "IntArray", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with a boolean array value and add it to the current [Patch].
@@ -285,7 +301,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Array<Boolean>?>.(Array<Boolean>?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "BooleanArray", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with a float array value and add it to the current [Patch].
@@ -310,7 +328,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Array<Float>?>.(Array<Float>?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "FloatArray", validator
+        ).also { registerOption(it) }
 
         /**
          * Create a new [PatchOption] with a long array value and add it to the current [Patch].
@@ -335,7 +355,9 @@ open class PatchOption<T>(
             description: String? = null,
             required: Boolean = false,
             validator: PatchOption<Array<Long>?>.(Array<Long>?) -> Boolean = { true }
-        ) = PatchOption(key, default, values, title, description, required, validator).also { registerOption(it) }
+        ) = PatchOption(
+            key, default, values, title, description, required, "LongArray", validator
+        ).also { registerOption(it) }
 
         private fun <P : Patch<*>> P.registerOption(option: PatchOption<*>) = option.also { options.register(it) }
     }

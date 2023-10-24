@@ -86,6 +86,10 @@ internal class PatchOptionsTest {
     }
 
     @Test
+    fun `option types should be known`() =
+        assertTrue(OptionsTestPatch.options["array"].valueType == "StringArray")
+
+    @Test
     fun `getting default value should work`() =
         assertDoesNotThrow { assertNull(OptionsTestPatch.resettableOption.default) }
 
