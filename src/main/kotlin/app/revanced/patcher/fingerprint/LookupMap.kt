@@ -93,7 +93,7 @@ internal class LookupMap : MutableMap<String, LookupMap.MethodClassList> by muta
         }
 
         /**
-         * Clears the internal lookup maps created in [initializeLookupMaps]
+         * Clears the internal lookup maps created in [initializeLookupMaps].
          */
         internal fun clearLookupMaps() {
             methods.clear()
