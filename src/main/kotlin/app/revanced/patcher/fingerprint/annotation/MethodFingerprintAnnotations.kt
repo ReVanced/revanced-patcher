@@ -8,5 +8,5 @@ import app.revanced.patcher.fingerprint.MethodFingerprint
  */
 @Target(AnnotationTarget.CLASS)
 annotation class FuzzyPatternScanMethod(
-    val threshold: Int = 1
+    val threshold: Int = 1,
 )

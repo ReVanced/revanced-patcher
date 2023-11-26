@@ -47,7 +47,6 @@ sealed class Patch<out T : Context<*>> {
     var use = true
         private set
 
-
     // TODO: Remove this property, once integrations are coupled with patches.
     /**
      * Weather or not the patch requires integrations.
@@ -64,9 +63,10 @@ sealed class Patch<out T : Context<*>> {
         this::class.findAnnotation<app.revanced.patcher.patch.annotation.Patch>()?.let { annotation ->
             name = annotation.name.ifEmpty { null }
             description = annotation.description.ifEmpty { null }
-            compatiblePackages = annotation.compatiblePackages
-                .map { CompatiblePackage(it.name, it.versions.toSet().ifEmpty { null }) }
-                .toSet().ifEmpty { null }
+            compatiblePackages =
+                annotation.compatiblePackages
+                    .map { CompatiblePackage(it.name, it.versions.toSet().ifEmpty { null }) }
+                    .toSet().ifEmpty { null }
             dependencies = annotation.dependencies.toSet().ifEmpty { null }
             use = annotation.use
             requiresIntegrations = annotation.requiresIntegrations

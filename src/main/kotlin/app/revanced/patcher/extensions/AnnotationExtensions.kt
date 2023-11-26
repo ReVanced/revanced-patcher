@@ -11,11 +11,13 @@ internal object AnnotationExtensions {
      */
     fun <T : Annotation> Class<*>.findAnnotationRecursively(targetAnnotation: KClass<T>): T? {
         fun <T : Annotation> Class<*>.findAnnotationRecursively(
-            targetAnnotation: Class<T>, traversed: MutableSet<Annotation>
+            targetAnnotation: Class<T>,
+            traversed: MutableSet<Annotation>,
         ): T? {
             val found = this.annotations.firstOrNull { it.annotationClass.java.name == targetAnnotation.name }
 
-            @Suppress("UNCHECKED_CAST") if (found != null) return found as T
+            @Suppress("UNCHECKED_CAST")
+            if (found != null) return found as T
 
             for (annotation in this.annotations) {
                 if (traversed.contains(annotation)) continue

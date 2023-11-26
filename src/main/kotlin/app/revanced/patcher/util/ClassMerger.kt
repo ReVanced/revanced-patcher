@@ -34,9 +34,12 @@ internal object ClassMerger {
      * @param context The context to traverse the class hierarchy in.
      * @return The merged class or the original class if no merge was needed.
      */
-    fun ClassDef.merge(otherClass: ClassDef, context: BytecodeContext) = this
-        //.fixFieldAccess(otherClass)
-        //.fixMethodAccess(otherClass)
+    fun ClassDef.merge(
+        otherClass: ClassDef,
+        context: BytecodeContext,
+    ) = this
+        // .fixFieldAccess(otherClass)
+        // .fixMethodAccess(otherClass)
         .addMissingFields(otherClass)
         .addMissingMethods(otherClass)
         .publicize(otherClass, context)
@@ -47,13 +50,14 @@ internal object ClassMerger {
      * @param fromClass The class to add missing methods from.
      */
     private fun ClassDef.addMissingMethods(fromClass: ClassDef): ClassDef {
-        val missingMethods = fromClass.methods.let { fromMethods ->
-            methods.filterNot { method ->
-                fromMethods.any { fromMethod ->
-                    MethodUtil.methodSignaturesMatch(fromMethod, method)
+        val missingMethods =
+            fromClass.methods.let { fromMethods ->
+                methods.filterNot { method ->
+                    fromMethods.any { fromMethod ->
+                        MethodUtil.methodSignaturesMatch(fromMethod, method)
+                    }
                 }
             }
-        }
 
         if (missingMethods.isEmpty()) return this
 
@@ -70,9 +74,10 @@ internal object ClassMerger {
      * @param fromClass The class to add missing fields from.
      */
     private fun ClassDef.addMissingFields(fromClass: ClassDef): ClassDef {
-        val missingFields = fields.filterNotAny(fromClass.fields) { field, fromField ->
-            fromField.name == field.name
-        }
+        val missingFields =
+            fields.filterNotAny(fromClass.fields) { field, fromField ->
+                fromField.name == field.name
+            }
 
         if (missingFields.isEmpty()) return this
 
@@ -88,18 +93,22 @@ internal object ClassMerger {
      * @param reference The class to check the [AccessFlags] of.
      * @param context The context to traverse the class hierarchy in.
      */
-    private fun ClassDef.publicize(reference: ClassDef, context: BytecodeContext) =
-        if (reference.accessFlags.isPublic() && !accessFlags.isPublic())
-            this.asMutableClass().apply {
-                context.traverseClassHierarchy(this) {
-                    if (accessFlags.isPublic()) return@traverseClassHierarchy
+    private fun ClassDef.publicize(
+        reference: ClassDef,
+        context: BytecodeContext,
+    ) = if (reference.accessFlags.isPublic() && !accessFlags.isPublic()) {
+        this.asMutableClass().apply {
+            context.traverseClassHierarchy(this) {
+                if (accessFlags.isPublic()) return@traverseClassHierarchy
 
-                    logger.fine("Publicizing ${this.type}")
+                logger.fine("Publicizing ${this.type}")
 
-                    accessFlags = accessFlags.toPublic()
-                }
+                accessFlags = accessFlags.toPublic()
             }
-        else this
+        }
+    } else {
+        this
+    }
 
     /**
      * Publicize fields if they are public in [reference].
@@ -107,11 +116,12 @@ internal object ClassMerger {
      * @param reference The class to check the [AccessFlags] of the fields in.
      */
     private fun ClassDef.fixFieldAccess(reference: ClassDef): ClassDef {
-        val brokenFields = fields.filterAny(reference.fields) { field, referenceField ->
-            if (field.name != referenceField.name) return@filterAny false
+        val brokenFields =
+            fields.filterAny(reference.fields) { field, referenceField ->
+                if (field.name != referenceField.name) return@filterAny false
 
-            referenceField.accessFlags.isPublic() && !field.accessFlags.isPublic()
-        }
+                referenceField.accessFlags.isPublic() && !field.accessFlags.isPublic()
+            }
 
         if (brokenFields.isEmpty()) return this
 
@@ -135,11 +145,12 @@ internal object ClassMerger {
      * @param reference The class to check the [AccessFlags] of the methods in.
      */
     private fun ClassDef.fixMethodAccess(reference: ClassDef): ClassDef {
-        val brokenMethods = methods.filterAny(reference.methods) { method, referenceMethod ->
-            if (!MethodUtil.methodSignaturesMatch(method, referenceMethod)) return@filterAny false
+        val brokenMethods =
+            methods.filterAny(reference.methods) { method, referenceMethod ->
+                if (!MethodUtil.methodSignaturesMatch(method, referenceMethod)) return@filterAny false
 
-            referenceMethod.accessFlags.isPublic() && !method.accessFlags.isPublic()
-        }
+                referenceMethod.accessFlags.isPublic() && !method.accessFlags.isPublic()
+            }
 
         if (brokenMethods.isEmpty()) return this
 
@@ -164,7 +175,10 @@ internal object ClassMerger {
          * @param targetClass the class to start traversing the class hierarchy from
          * @param callback function that is called for every class in the hierarchy
          */
-        fun BytecodeContext.traverseClassHierarchy(targetClass: MutableClass, callback: MutableClass.() -> Unit) {
+        fun BytecodeContext.traverseClassHierarchy(
+            targetClass: MutableClass,
+            callback: MutableClass.() -> Unit,
+        ) {
             callback(targetClass)
             this.findClass(targetClass.superclass ?: return)?.mutableClass?.let {
                 traverseClassHierarchy(it, callback)
@@ -195,7 +209,8 @@ internal object ClassMerger {
          * @return The [this] filtered on [needles] matching the given [predicate].
          */
         fun <HayType, NeedleType> Iterable<HayType>.filterAny(
-            needles: Iterable<NeedleType>, predicate: (HayType, NeedleType) -> Boolean
+            needles: Iterable<NeedleType>,
+            predicate: (HayType, NeedleType) -> Boolean,
         ) = Iterable<HayType>::filter.any(this, needles, predicate)
 
         /**
@@ -206,13 +221,14 @@ internal object ClassMerger {
          * @return The [this] filtered on [needles] not matching the given [predicate].
          */
         fun <HayType, NeedleType> Iterable<HayType>.filterNotAny(
-            needles: Iterable<NeedleType>, predicate: (HayType, NeedleType) -> Boolean
+            needles: Iterable<NeedleType>,
+            predicate: (HayType, NeedleType) -> Boolean,
         ) = Iterable<HayType>::filterNot.any(this, needles, predicate)
 
         fun <HayType, NeedleType> KFunction2<Iterable<HayType>, (HayType) -> Boolean, List<HayType>>.any(
             haystack: Iterable<HayType>,
             needles: Iterable<NeedleType>,
-            predicate: (HayType, NeedleType) -> Boolean
+            predicate: (HayType, NeedleType) -> Boolean,
         ) = this(haystack) { hay ->
             needles.any { needle ->
                 predicate(hay, needle)

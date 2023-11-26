@@ -4,7 +4,8 @@ import com.android.tools.smali.dexlib2.base.value.BaseMethodTypeEncodedValue
 import com.android.tools.smali.dexlib2.iface.reference.MethodProtoReference
 import com.android.tools.smali.dexlib2.iface.value.MethodTypeEncodedValue
 
-class MutableMethodTypeEncodedValue(methodTypeEncodedValue: MethodTypeEncodedValue) : BaseMethodTypeEncodedValue(),
+class MutableMethodTypeEncodedValue(methodTypeEncodedValue: MethodTypeEncodedValue) :
+    BaseMethodTypeEncodedValue(),
     MutableEncodedValue {
     private var value = methodTypeEncodedValue.value
 
@@ -21,6 +22,4 @@ class MutableMethodTypeEncodedValue(methodTypeEncodedValue: MethodTypeEncodedVal
             return MutableMethodTypeEncodedValue(this)
         }
     }
-
-
 }

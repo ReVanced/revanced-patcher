@@ -20,7 +20,7 @@ class MethodFingerprintResult(
     val method: Method,
     val classDef: ClassDef,
     val scanResult: MethodFingerprintScanResult,
-    internal val context: BytecodeContext
+    internal val context: BytecodeContext,
 ) {
     /**
      * Returns a mutable clone of [classDef]
@@ -50,7 +50,7 @@ class MethodFingerprintResult(
      */
     class MethodFingerprintScanResult(
         val patternScanResult: PatternScanResult?,
-        val stringsScanResult: StringsScanResult?
+        val stringsScanResult: StringsScanResult?,
     ) {
         /**
          * The result of scanning strings on the [MethodFingerprint].
@@ -74,7 +74,7 @@ class MethodFingerprintResult(
         class PatternScanResult(
             val startIndex: Int,
             val endIndex: Int,
-            var warnings: List<Warning>? = null
+            var warnings: List<Warning>? = null,
         ) {
             /**
              * Represents warnings of the pattern scan.

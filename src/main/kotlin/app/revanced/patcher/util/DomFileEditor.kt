@@ -31,9 +31,9 @@ class DomFileEditor internal constructor(
     /**
      * The document of the xml file
      */
-    val file: Document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream)
-        .also(Document::normalize)
-
+    val file: Document =
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream)
+            .also(Document::normalize)
 
     // lazily open an output stream
     // this is required because when constructing a DomFileEditor the output stream is created along with the input stream, which is not allowed
@@ -58,12 +58,13 @@ class DomFileEditor internal constructor(
         outputStream?.let {
             // prevent writing to same file, if it is being locked
             // isLocked will be false if the editor was created through a stream
-            val isLocked = filePath?.let { path ->
-                val isLocked = locks[path]!! > 1
-                // decrease the lock count if the editor was opened for a file
-                locks.merge(path, -1, Integer::sum)
-                isLocked
-            } ?: false
+            val isLocked =
+                filePath?.let { path ->
+                    val isLocked = locks[path]!! > 1
+                    // decrease the lock count if the editor was opened for a file
+                    locks.merge(path, -1, Integer::sum)
+                    isLocked
+                } ?: false
 
             // if unlocked, write back to the file
             if (!isLocked) {

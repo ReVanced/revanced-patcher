@@ -3,11 +3,11 @@ package app.revanced.patcher.util.proxy.mutableTypes
 import app.revanced.patcher.util.proxy.mutableTypes.MutableAnnotation.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
-import com.google.common.collect.Iterables
 import com.android.tools.smali.dexlib2.base.reference.BaseTypeReference
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.util.FieldUtil
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import com.google.common.collect.Iterables
 
 class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
     // Class

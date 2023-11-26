@@ -36,6 +36,6 @@ sealed class PatchOptionException(errorMessage: String) : Exception(errorMessage
      *
      * @param key The key of the [PatchOption].
      */
-    class PatchOptionNotFoundException(key: String)
-        : PatchOptionException("No option with key $key")
+    class PatchOptionNotFoundException(key: String) :
+        PatchOptionException("No option with key $key")
 }

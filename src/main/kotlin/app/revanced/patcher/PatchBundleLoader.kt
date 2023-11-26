@@ -37,7 +37,7 @@ sealed class PatchBundleLoader private constructor(
     // This constructor parameter is unfortunately necessary,
     // so that a reference to the mutable set is present in the constructor to be able to add patches to it.
     // because the instance itself is a PatchSet, which is immutable, that is delegated by the parameter.
-    private val patchSet: MutableSet<Patch<*>> = mutableSetOf()
+    private val patchSet: MutableSet<Patch<*>> = mutableSetOf(),
 ) : PatchSet by patchSet {
     private val logger = Logger.getLogger(PatchBundleLoader::class.java.name)
 
@@ -63,22 +63,29 @@ sealed class PatchBundleLoader private constructor(
          * @param silent Whether to suppress logging.
          * @return The instantiated [Patch] or `null` if the [Patch] could not be instantiated.
          */
-        internal fun Class<*>.getInstance(logger: Logger, silent: Boolean = false): Patch<*>? {
+        internal fun Class<*>.getInstance(
+            logger: Logger,
+            silent: Boolean = false,
+        ): Patch<*>? {
             return try {
                 getField("INSTANCE").get(null)
             } catch (exception: NoSuchFieldException) {
-                if (!silent) logger.fine(
-                    "Patch class '${name}' has no INSTANCE field, therefor not a singleton. " +
-                            "Will try to instantiate it."
-                )
+                if (!silent) {
+                    logger.fine(
+                        "Patch class '$name' has no INSTANCE field, therefor not a singleton. " +
+                            "Will try to instantiate it.",
+                    )
+                }
 
                 try {
                     getDeclaredConstructor().newInstance()
                 } catch (exception: Exception) {
-                    if (!silent) logger.severe(
-                        "Patch class '${name}' is not singleton and has no suitable constructor, " +
-                                "therefor cannot be instantiated and will be ignored."
-                    )
+                    if (!silent) {
+                        logger.severe(
+                            "Patch class '$name' is not singleton and has no suitable constructor, " +
+                                "therefor cannot be instantiated and will be ignored.",
+                        )
+                    }
 
                     return null
                 }
@@ -97,7 +104,7 @@ sealed class PatchBundleLoader private constructor(
         { patchBundle ->
             JarFile(patchBundle).entries().toList().filter { it.name.endsWith(".class") }
                 .map { it.name.replace('/', '.').replace(".class", "") }
-        }
+        },
     )
 
     /**
@@ -109,9 +116,10 @@ sealed class PatchBundleLoader private constructor(
      */
     class Dex(vararg patchBundles: File, optimizedDexDirectory: File? = null) : PatchBundleLoader(
         DexClassLoader(
-            patchBundles.joinToString(File.pathSeparator) { it.absolutePath }, optimizedDexDirectory?.absolutePath,
+            patchBundles.joinToString(File.pathSeparator) { it.absolutePath },
+            optimizedDexDirectory?.absolutePath,
             null,
-            PatchBundleLoader::class.java.classLoader
+            PatchBundleLoader::class.java.classLoader,
         ),
         patchBundles,
         { patchBundle ->
@@ -119,7 +127,7 @@ sealed class PatchBundleLoader private constructor(
                 .map { classDef ->
                     classDef.type.substring(1, classDef.length - 1)
                 }
-        }
+        },
     ) {
         @Deprecated("This constructor is deprecated. Use the constructor with the second parameter instead.")
         constructor(vararg patchBundles: File) : this(*patchBundles, optimizedDexDirectory = null)

@@ -1,9 +1,6 @@
 package app.revanced.patcher.util.smali
 
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
-import org.antlr.runtime.CommonTokenStream
-import org.antlr.runtime.TokenSource
-import org.antlr.runtime.tree.CommonTreeNodeStream
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
@@ -12,6 +9,9 @@ import com.android.tools.smali.smali.LexerErrorInterface
 import com.android.tools.smali.smali.smaliFlexLexer
 import com.android.tools.smali.smali.smaliParser
 import com.android.tools.smali.smali.smaliTreeWalker
+import org.antlr.runtime.CommonTokenStream
+import org.antlr.runtime.TokenSource
+import org.antlr.runtime.tree.CommonTreeNodeStream
 import java.io.InputStreamReader
 import java.util.Locale
 
@@ -32,15 +32,23 @@ class InlineSmaliCompiler {
          * if the parameters and registers of the method are passed.
          */
         fun compile(
-            instructions: String, parameters: String, registers: Int, forStaticMethod: Boolean
+            instructions: String,
+            parameters: String,
+            registers: Int,
+            forStaticMethod: Boolean,
         ): List<BuilderInstruction> {
-            val input = METHOD_TEMPLATE.format(Locale.ENGLISH,
-                if (forStaticMethod) {
-                    "static"
-                } else {
-                    ""
-                }, parameters, registers, instructions
-            )
+            val input =
+                METHOD_TEMPLATE.format(
+                    Locale.ENGLISH,
+                    if (forStaticMethod) {
+                        "static"
+                    } else {
+                        ""
+                    },
+                    parameters,
+                    registers,
+                    instructions,
+                )
             val reader = InputStreamReader(input.byteInputStream())
             val lexer: LexerErrorInterface = smaliFlexLexer(reader, 15)
             val tokens = CommonTokenStream(lexer as TokenSource)
@@ -48,7 +56,7 @@ class InlineSmaliCompiler {
             val result = parser.smali_file()
             if (parser.numberOfSyntaxErrors > 0 || lexer.numberOfSyntaxErrors > 0) {
                 throw IllegalStateException(
-                    "Encountered ${parser.numberOfSyntaxErrors} parser syntax errors and ${lexer.numberOfSyntaxErrors} lexer syntax errors!"
+                    "Encountered ${parser.numberOfSyntaxErrors} parser syntax errors and ${lexer.numberOfSyntaxErrors} lexer syntax errors!",
                 )
             }
             val treeStream = CommonTreeNodeStream(result.tree)
@@ -70,10 +78,11 @@ class InlineSmaliCompiler {
  * @returns A list of instructions.
  */
 fun String.toInstructions(method: MutableMethod? = null): List<BuilderInstruction> {
-    return InlineSmaliCompiler.compile(this,
+    return InlineSmaliCompiler.compile(
+        this,
         method?.parameters?.joinToString("") { it } ?: "",
         method?.implementation?.registerCount ?: 1,
-        method?.let { AccessFlags.STATIC.isSet(it.accessFlags) } ?: true
+        method?.let { AccessFlags.STATIC.isSet(it.accessFlags) } ?: true,
     )
 }
 

@@ -32,20 +32,23 @@ data class PatcherOptions(
     /**
      * The configuration to use for resource decoding and compiling.
      */
-    internal val resourceConfig = Config.getDefaultConfig().apply {
-        useAapt2 = true
-        aaptPath = aaptBinaryPath ?: ""
-        frameworkDirectory = frameworkFileDirectory
-    }
-
-    fun recreateResourceCacheDirectory() = resourceCachePath.also {
-        if (it.exists()) {
-            logger.info("Deleting existing resource cache directory")
-
-            if (!it.deleteRecursively())
-                logger.severe("Failed to delete existing resource cache directory")
+    internal val resourceConfig =
+        Config.getDefaultConfig().apply {
+            useAapt2 = true
+            aaptPath = aaptBinaryPath ?: ""
+            frameworkDirectory = frameworkFileDirectory
         }
 
-        it.mkdirs()
-    }
+    fun recreateResourceCacheDirectory() =
+        resourceCachePath.also {
+            if (it.exists()) {
+                logger.info("Deleting existing resource cache directory")
+
+                if (!it.deleteRecursively()) {
+                    logger.severe("Failed to delete existing resource cache directory")
+                }
+            }
+
+            it.mkdirs()
+        }
 }

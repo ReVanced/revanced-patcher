@@ -32,7 +32,7 @@ import com.google.common.collect.ImmutableList
     name = "Example bytecode patch",
     description = "Example demonstration of a bytecode patch.",
     dependencies = [ExampleResourcePatch::class],
-    compatiblePackages = [CompatiblePackage("com.example.examplePackage", arrayOf("0.0.1", "0.0.2"))]
+    compatiblePackages = [CompatiblePackage("com.example.examplePackage", arrayOf("0.0.1", "0.0.2"))],
 )
 object ExampleBytecodePatch : BytecodePatch(setOf(ExampleFingerprint)) {
     // Entry point of a patch. Supplied fingerprints are resolved at this point.
@@ -60,7 +60,7 @@ object ExampleBytecodePatch : BytecodePatch(setOf(ExampleFingerprint)) {
                         invoke-static { }, LTestClass;->returnHello()Ljava/lang/String;
                         move-result-object v1
                         invoke-virtual { v0, v1 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
-                    """
+                    """,
                 )
             }
 
@@ -82,14 +82,14 @@ object ExampleBytecodePatch : BytecodePatch(setOf(ExampleFingerprint)) {
                                 BuilderInstruction21c(
                                     Opcode.CONST_STRING,
                                     0,
-                                    ImmutableStringReference("Hello, ReVanced! Adding bytecode.")
+                                    ImmutableStringReference("Hello, ReVanced! Adding bytecode."),
                                 ),
-                                BuilderInstruction11x(Opcode.RETURN_OBJECT, 0)
+                                BuilderInstruction11x(Opcode.RETURN_OBJECT, 0),
                             ),
                             null,
-                            null
-                        )
-                    ).toMutable()
+                            null,
+                        ),
+                    ).toMutable(),
                 )
 
                 // Add a field in the main class.
@@ -105,12 +105,12 @@ object ExampleBytecodePatch : BytecodePatch(setOf(ExampleFingerprint)) {
                             ImmutableFieldReference(
                                 "Ljava/lang/System;",
                                 "out",
-                                "Ljava/io/PrintStream;"
-                            )
+                                "Ljava/io/PrintStream;",
+                            ),
                         ),
                         null,
-                        null
-                    ).toMutable()
+                        null,
+                    ).toMutable(),
                 )
             }
         } ?: throw PatchException("Fingerprint failed to resolve.")
@@ -121,7 +121,10 @@ object ExampleBytecodePatch : BytecodePatch(setOf(ExampleFingerprint)) {
      * @param index The index of the instruction to replace.
      * @param string The replacement string.
      */
-    private fun MutableMethod.replaceStringAt(index: Int, string: String) {
+    private fun MutableMethod.replaceStringAt(
+        index: Int,
+        string: String,
+    ) {
         val instruction = getInstruction(index)
 
         // Utility method of dexlib2.
@@ -139,8 +142,7 @@ object ExampleBytecodePatch : BytecodePatch(setOf(ExampleFingerprint)) {
         // At last, use the method replaceInstruction to replace it at the given index startIndex.
         replaceInstruction(
             index,
-            "const-string ${strInstruction.registerA}, ${ImmutableStringReference(string)}"
+            "const-string ${strInstruction.registerA}, ${ImmutableStringReference(string)}",
         )
     }
 }
-

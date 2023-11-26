@@ -4,7 +4,8 @@ import com.android.tools.smali.dexlib2.base.value.BaseMethodEncodedValue
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.value.MethodEncodedValue
 
-class MutableMethodEncodedValue(methodEncodedValue: MethodEncodedValue) : BaseMethodEncodedValue(),
+class MutableMethodEncodedValue(methodEncodedValue: MethodEncodedValue) :
+    BaseMethodEncodedValue(),
     MutableEncodedValue {
     private var value = methodEncodedValue.value
 

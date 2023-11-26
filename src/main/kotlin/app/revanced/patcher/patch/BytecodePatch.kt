@@ -9,5 +9,5 @@ import app.revanced.patcher.fingerprint.MethodFingerprint
  * @param fingerprints A list of [MethodFingerprint]s which will be resolved before the patch is executed.
  */
 abstract class BytecodePatch(
-    internal val fingerprints : Set<MethodFingerprint> = emptySet(),
+    internal val fingerprints: Set<MethodFingerprint> = emptySet(),
 ) : Patch<BytecodeContext>()

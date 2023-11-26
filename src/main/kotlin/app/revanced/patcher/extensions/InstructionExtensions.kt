@@ -12,7 +12,6 @@ import com.android.tools.smali.dexlib2.builder.instruction.*
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
 object InstructionExtensions {
-
     /**
      * Add instructions to a method at the given index.
      *
@@ -21,7 +20,7 @@ object InstructionExtensions {
      */
     fun MutableMethodImplementation.addInstructions(
         index: Int,
-        instructions: List<BuilderInstruction>
+        instructions: List<BuilderInstruction>,
     ) = instructions.asReversed().forEach { addInstruction(index, it) }
 
     /**
@@ -39,7 +38,10 @@ object InstructionExtensions {
      * @param index The index to remove the instructions at.
      * @param count The amount of instructions to remove.
      */
-    fun MutableMethodImplementation.removeInstructions(index: Int, count: Int) = repeat(count) {
+    fun MutableMethodImplementation.removeInstructions(
+        index: Int,
+        count: Int,
+    ) = repeat(count) {
         removeInstruction(index)
     }
 
@@ -57,7 +59,10 @@ object InstructionExtensions {
      * @param index The index to replace the instructions at.
      * @param instructions The instructions to replace the instructions with.
      */
-    fun MutableMethodImplementation.replaceInstructions(index: Int, instructions: List<BuilderInstruction>) {
+    fun MutableMethodImplementation.replaceInstructions(
+        index: Int,
+        instructions: List<BuilderInstruction>,
+    ) {
         // Remove the instructions at the given index.
         removeInstructions(index, instructions.size)
 
@@ -71,16 +76,17 @@ object InstructionExtensions {
      * @param index The index to add the instruction at.
      * @param instruction The instruction to add.
      */
-    fun MutableMethod.addInstruction(index: Int, instruction: BuilderInstruction) =
-        implementation!!.addInstruction(index, instruction)
+    fun MutableMethod.addInstruction(
+        index: Int,
+        instruction: BuilderInstruction,
+    ) = implementation!!.addInstruction(index, instruction)
 
     /**
      * Add an instruction to a method.
      *
      * @param instruction The instructions to add.
      */
-    fun MutableMethod.addInstruction(instruction: BuilderInstruction) =
-        implementation!!.addInstruction(instruction)
+    fun MutableMethod.addInstruction(instruction: BuilderInstruction) = implementation!!.addInstruction(instruction)
 
     /**
      * Add an instruction to a method at the given index.
@@ -88,17 +94,17 @@ object InstructionExtensions {
      * @param index The index to add the instruction at.
      * @param smaliInstructions The instruction to add.
      */
-    fun MutableMethod.addInstruction(index: Int, smaliInstructions: String) =
-        implementation!!.addInstruction(index, smaliInstructions.toInstruction(this))
+    fun MutableMethod.addInstruction(
+        index: Int,
+        smaliInstructions: String,
+    ) = implementation!!.addInstruction(index, smaliInstructions.toInstruction(this))
 
     /**
      * Add an instruction to a method.
      *
      * @param smaliInstructions The instruction to add.
      */
-    fun MutableMethod.addInstruction(smaliInstructions: String) =
-        implementation!!.addInstruction(smaliInstructions.toInstruction(this))
-
+    fun MutableMethod.addInstruction(smaliInstructions: String) = implementation!!.addInstruction(smaliInstructions.toInstruction(this))
 
     /**
      * Add instructions to a method at the given index.
@@ -106,32 +112,34 @@ object InstructionExtensions {
      * @param index The index to add the instructions at.
      * @param instructions The instructions to add.
      */
-    fun MutableMethod.addInstructions(index: Int, instructions: List<BuilderInstruction>) =
-        implementation!!.addInstructions(index, instructions)
+    fun MutableMethod.addInstructions(
+        index: Int,
+        instructions: List<BuilderInstruction>,
+    ) = implementation!!.addInstructions(index, instructions)
 
     /**
      * Add instructions to a method.
      *
      * @param instructions The instructions to add.
      */
-    fun MutableMethod.addInstructions(instructions: List<BuilderInstruction>) =
-        implementation!!.addInstructions(instructions)
+    fun MutableMethod.addInstructions(instructions: List<BuilderInstruction>) = implementation!!.addInstructions(instructions)
 
     /**
      * Add instructions to a method.
      *
      * @param smaliInstructions The instructions to add.
      */
-    fun MutableMethod.addInstructions(index: Int, smaliInstructions: String) =
-        implementation!!.addInstructions(index, smaliInstructions.toInstructions(this))
+    fun MutableMethod.addInstructions(
+        index: Int,
+        smaliInstructions: String,
+    ) = implementation!!.addInstructions(index, smaliInstructions.toInstructions(this))
 
     /**
      * Add instructions to a method.
      *
      * @param smaliInstructions The instructions to add.
      */
-    fun MutableMethod.addInstructions(smaliInstructions: String) =
-        implementation!!.addInstructions(smaliInstructions.toInstructions(this))
+    fun MutableMethod.addInstructions(smaliInstructions: String) = implementation!!.addInstructions(smaliInstructions.toInstructions(this))
 
     /**
      * Add instructions to a method at the given index.
@@ -144,14 +152,15 @@ object InstructionExtensions {
     fun MutableMethod.addInstructionsWithLabels(
         index: Int,
         smaliInstructions: String,
-        vararg externalLabels: ExternalLabel
+        vararg externalLabels: ExternalLabel,
     ) {
         // Create reference dummy instructions for the instructions.
-        val nopSmali = StringBuilder(smaliInstructions).also { builder ->
-            externalLabels.forEach { (name, _) ->
-                builder.append("\n:$name\nnop")
-            }
-        }.toString()
+        val nopSmali =
+            StringBuilder(smaliInstructions).also { builder ->
+                externalLabels.forEach { (name, _) ->
+                    builder.append("\n:$name\nnop")
+                }
+            }.toString()
 
         // Compile the instructions with the dummy labels
         val compiledInstructions = nopSmali.toInstructions(this)
@@ -159,7 +168,7 @@ object InstructionExtensions {
         // Add the compiled list of instructions to the method.
         addInstructions(
             index,
-            compiledInstructions.subList(0, compiledInstructions.size - externalLabels.size)
+            compiledInstructions.subList(0, compiledInstructions.size - externalLabels.size),
         )
 
         implementation!!.apply {
@@ -174,22 +183,24 @@ object InstructionExtensions {
                      */
                     fun Instruction.makeNewLabel() {
                         fun replaceOffset(
-                            i: BuilderOffsetInstruction, label: Label
+                            i: BuilderOffsetInstruction,
+                            label: Label,
                         ): BuilderOffsetInstruction {
                             return when (i) {
                                 is BuilderInstruction10t -> BuilderInstruction10t(i.opcode, label)
                                 is BuilderInstruction20t -> BuilderInstruction20t(i.opcode, label)
                                 is BuilderInstruction21t -> BuilderInstruction21t(i.opcode, i.registerA, label)
-                                is BuilderInstruction22t -> BuilderInstruction22t(
-                                    i.opcode,
-                                    i.registerA,
-                                    i.registerB,
-                                    label
-                                )
+                                is BuilderInstruction22t ->
+                                    BuilderInstruction22t(
+                                        i.opcode,
+                                        i.registerA,
+                                        i.registerB,
+                                        label,
+                                    )
                                 is BuilderInstruction30t -> BuilderInstruction30t(i.opcode, label)
                                 is BuilderInstruction31t -> BuilderInstruction31t(i.opcode, i.registerA, label)
                                 else -> throw IllegalStateException(
-                                    "A non-offset instruction was given, this should never happen!"
+                                    "A non-offset instruction was given, this should never happen!",
                                 )
                             }
                         }
@@ -198,9 +209,11 @@ object InstructionExtensions {
                         val label = newLabelForIndex(this@apply.instructions.indexOf(this))
 
                         // Create the final instruction with the new label.
-                        val newInstruction = replaceOffset(
-                            compiledInstruction, label
-                        )
+                        val newInstruction =
+                            replaceOffset(
+                                compiledInstruction,
+                                label,
+                            )
 
                         // Replace the instruction pointing to the dummy label
                         // with the new instruction pointing to the real instruction.
@@ -233,8 +246,7 @@ object InstructionExtensions {
      *
      * @param index The index to remove the instruction at.
      */
-    fun MutableMethod.removeInstruction(index: Int) =
-        implementation!!.removeInstruction(index)
+    fun MutableMethod.removeInstruction(index: Int) = implementation!!.removeInstruction(index)
 
     /**
      * Remove instructions at the given index.
@@ -242,16 +254,17 @@ object InstructionExtensions {
      * @param index The index to remove the instructions at.
      * @param count The amount of instructions to remove.
      */
-    fun MutableMethod.removeInstructions(index: Int, count: Int) =
-        implementation!!.removeInstructions(index, count)
+    fun MutableMethod.removeInstructions(
+        index: Int,
+        count: Int,
+    ) = implementation!!.removeInstructions(index, count)
 
     /**
      * Remove instructions at the given index.
      *
      * @param count The amount of instructions to remove.
      */
-    fun MutableMethod.removeInstructions(count: Int) =
-        implementation!!.removeInstructions(count)
+    fun MutableMethod.removeInstructions(count: Int) = implementation!!.removeInstructions(count)
 
     /**
      * Replace an instruction at the given index.
@@ -259,8 +272,10 @@ object InstructionExtensions {
      * @param index The index to replace the instruction at.
      * @param instruction The instruction to replace the instruction with.
      */
-    fun MutableMethod.replaceInstruction(index: Int, instruction: BuilderInstruction) =
-        implementation!!.replaceInstruction(index, instruction)
+    fun MutableMethod.replaceInstruction(
+        index: Int,
+        instruction: BuilderInstruction,
+    ) = implementation!!.replaceInstruction(index, instruction)
 
     /**
      * Replace an instruction at the given index.
@@ -268,8 +283,10 @@ object InstructionExtensions {
      * @param index The index to replace the instruction at.
      * @param smaliInstruction The smali instruction to replace the instruction with.
      */
-    fun MutableMethod.replaceInstruction(index: Int, smaliInstruction: String) =
-        implementation!!.replaceInstruction(index, smaliInstruction.toInstruction(this))
+    fun MutableMethod.replaceInstruction(
+        index: Int,
+        smaliInstruction: String,
+    ) = implementation!!.replaceInstruction(index, smaliInstruction.toInstruction(this))
 
     /**
      * Replace instructions at the given index.
@@ -277,8 +294,10 @@ object InstructionExtensions {
      * @param index The index to replace the instructions at.
      * @param instructions The instructions to replace the instructions with.
      */
-    fun MutableMethod.replaceInstructions(index: Int, instructions: List<BuilderInstruction>) =
-        implementation!!.replaceInstructions(index, instructions)
+    fun MutableMethod.replaceInstructions(
+        index: Int,
+        instructions: List<BuilderInstruction>,
+    ) = implementation!!.replaceInstructions(index, instructions)
 
     /**
      * Replace instructions at the given index.
@@ -286,8 +305,10 @@ object InstructionExtensions {
      * @param index The index to replace the instructions at.
      * @param smaliInstructions The smali instructions to replace the instructions with.
      */
-    fun MutableMethod.replaceInstructions(index: Int, smaliInstructions: String) =
-        implementation!!.replaceInstructions(index, smaliInstructions.toInstructions(this))
+    fun MutableMethod.replaceInstructions(
+        index: Int,
+        smaliInstructions: String,
+    ) = implementation!!.replaceInstructions(index, smaliInstructions.toInstructions(this))
 
     /**
      * Get an instruction at the given index.
