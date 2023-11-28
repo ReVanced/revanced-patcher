@@ -1,7 +1,7 @@
 package app.revanced.patcher.fingerprint
 
 import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.extensions.MethodFingerprintExtensions.fuzzyPatternScanMethod
+import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.fingerprint.LookupMap.Maps.appendParameters
 import app.revanced.patcher.fingerprint.LookupMap.Maps.initializeLookupMaps
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methodSignatureLookupMap
@@ -28,6 +28,7 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
  * @param strings A list of the method's strings compared each using [String.contains].
  * @param customFingerprint A custom condition for this fingerprint.
  */
+@Suppress("MemberVisibilityCanBePrivate")
 abstract class MethodFingerprint(
     internal val returnType: String? = null,
     internal val accessFlags: Int? = null,
@@ -41,6 +42,13 @@ abstract class MethodFingerprint(
      */
     var result: MethodFingerprintResult? = null
         private set
+
+    /**
+     *  The [FuzzyPatternScanMethod] annotation of the [MethodFingerprint].
+     *
+     *  If the annotation is not present, this property is null.
+     */
+    val fuzzyPatternScanMethod = javaClass.findAnnotationRecursively(FuzzyPatternScanMethod::class.java)
 
     /**
      * Resolve a [MethodFingerprint] using the lookup map built by [initializeLookupMaps].

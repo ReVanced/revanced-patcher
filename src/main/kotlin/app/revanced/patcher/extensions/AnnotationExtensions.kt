@@ -1,18 +1,16 @@
 package app.revanced.patcher.extensions
 
-import kotlin.reflect.KClass
-
 internal object AnnotationExtensions {
     /**
-     * Recursively find a given annotation on a class.
+     * Search for an annotation recursively.
      *
-     * @param targetAnnotation The annotation to find.
-     * @return The annotation.
+     * @param targetAnnotation The annotation to search for.
+     * @return The annotation if found, otherwise null.
      */
-    fun <T : Annotation> Class<*>.findAnnotationRecursively(targetAnnotation: KClass<T>): T? {
+    fun <T : Annotation> Class<*>.findAnnotationRecursively(targetAnnotation: Class<T>): T? {
         fun <T : Annotation> Class<*>.findAnnotationRecursively(
             targetAnnotation: Class<T>,
-            traversed: MutableSet<Annotation>,
+            searchedAnnotations: MutableSet<Annotation>,
         ): T? {
             val found = this.annotations.firstOrNull { it.annotationClass.java.name == targetAnnotation.name }
 
@@ -20,16 +18,18 @@ internal object AnnotationExtensions {
             if (found != null) return found as T
 
             for (annotation in this.annotations) {
-                if (traversed.contains(annotation)) continue
-                traversed.add(annotation)
+                if (searchedAnnotations.contains(annotation)) continue
+                searchedAnnotations.add(annotation)
 
-                return (annotation.annotationClass.java.findAnnotationRecursively(targetAnnotation, traversed))
-                    ?: continue
+                return annotation.annotationClass.java.findAnnotationRecursively(
+                    targetAnnotation,
+                    searchedAnnotations
+                ) ?: continue
             }
 
             return null
         }
 
-        return this.findAnnotationRecursively(targetAnnotation.java, mutableSetOf())
+        return this.findAnnotationRecursively(targetAnnotation, mutableSetOf())
     }
 }
