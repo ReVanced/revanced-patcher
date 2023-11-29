@@ -90,6 +90,7 @@ internal class PatchOptionsTest {
     @Test
     fun `getting default value should work`() = assertDoesNotThrow { assertNull(OptionsTestPatch.resettableOption.default) }
 
+    @Suppress("DEPRECATION")
     private object OptionsTestPatch : BytecodePatch() {
         var booleanOption by booleanPatchOption(
             "bool",

@@ -12,6 +12,7 @@ import java.util.jar.JarFile
 import java.util.logging.Logger
 import kotlin.reflect.KClass
 
+
 /**
  * A set of [Patch]es.
  */
@@ -73,7 +74,7 @@ sealed class PatchBundleLoader private constructor(
                 if (!silent) {
                     logger.fine(
                         "Patch class '$name' has no INSTANCE field, therefor not a singleton. " +
-                            "Will try to instantiate it.",
+                                "Attempting to instantiate it.",
                     )
                 }
 
@@ -83,7 +84,7 @@ sealed class PatchBundleLoader private constructor(
                     if (!silent) {
                         logger.severe(
                             "Patch class '$name' is not singleton and has no suitable constructor, " +
-                                "therefor cannot be instantiated and will be ignored.",
+                                    "therefor cannot be instantiated and is ignored.",
                         )
                     }
 
