@@ -1,3 +1,16 @@
+# [19.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.0.0...v19.1.0-dev.1) (2023-11-29)
+
+
+### Features
+
+* Add constructor to initialize patches without annotations ([462fbe2](https://github.com/ReVanced/revanced-patcher/commit/462fbe2cadf56d8b0dde33319256021093bd39d5))
+* Retrieve annotations in super and interface classes ([7aeae93](https://github.com/ReVanced/revanced-patcher/commit/7aeae93f3d9a13e294fe1bdb2586f79908af60af))
+
+
+### Performance Improvements
+
+* Use a hash set for fast lookup ([f1de9b3](https://github.com/ReVanced/revanced-patcher/commit/f1de9b39eff1db44c00acd3e41902b3ec6124776))
+
 # [19.0.0](https://github.com/ReVanced/revanced-patcher/compare/v18.0.0...v19.0.0) (2023-10-24)
 
 
