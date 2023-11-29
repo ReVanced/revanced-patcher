@@ -9,7 +9,7 @@ object MethodFingerprintExtensions {
      */
     @Deprecated(
         message = "Use the property instead.",
-        replaceWith = ReplaceWith("this.fuzzyPatternScanMethod")
+        replaceWith = ReplaceWith("this.fuzzyPatternScanMethod"),
     )
     val MethodFingerprint.fuzzyPatternScanMethod
         get() = this.fuzzyPatternScanMethod

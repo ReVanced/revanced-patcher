@@ -5,9 +5,10 @@ package app.revanced.patcher.patch
 import app.revanced.patcher.PatchClass
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.data.Context
+import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.patch.options.PatchOptions
 import java.io.Closeable
-import kotlin.reflect.full.findAnnotation
+import app.revanced.patcher.patch.annotation.Patch as PatchAnnotation
 
 /**
  * A ReVanced patch.
@@ -60,7 +61,7 @@ sealed class Patch<out T : Context<*>> {
     val options = PatchOptions()
 
     init {
-        this::class.findAnnotation<app.revanced.patcher.patch.annotation.Patch>()?.let { annotation ->
+        this::class.findAnnotationRecursively(PatchAnnotation::class)?.let { annotation ->
             name = annotation.name.ifEmpty { null }
             description = annotation.description.ifEmpty { null }
             compatiblePackages =

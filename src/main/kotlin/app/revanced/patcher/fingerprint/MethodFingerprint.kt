@@ -48,7 +48,7 @@ abstract class MethodFingerprint(
      *
      *  If the annotation is not present, this property is null.
      */
-    val fuzzyPatternScanMethod = javaClass.findAnnotationRecursively(FuzzyPatternScanMethod::class.java)
+    val fuzzyPatternScanMethod = this::class.findAnnotationRecursively(FuzzyPatternScanMethod::class)
 
     /**
      * Resolve a [MethodFingerprint] using the lookup map built by [initializeLookupMaps].
