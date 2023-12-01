@@ -44,6 +44,7 @@ public final class app/revanced/patcher/Patcher : app/revanced/patcher/Integrati
 	public fun <init> (Lapp/revanced/patcher/PatcherOptions;)V
 	public fun acceptIntegrations (Ljava/util/List;)V
 	public fun acceptPatches (Ljava/util/List;)V
+	public fun acceptPatches (Ljava/util/Set;)V
 	public synthetic fun apply (Ljava/lang/Object;)Ljava/lang/Object;
 	public fun apply (Z)Lkotlinx/coroutines/flow/Flow;
 	public fun close ()V
@@ -99,6 +100,11 @@ public final class app/revanced/patcher/PatcherResult$PatchedDexFile {
 
 public abstract interface class app/revanced/patcher/PatchesConsumer {
 	public abstract fun acceptPatches (Ljava/util/List;)V
+	public abstract fun acceptPatches (Ljava/util/Set;)V
+}
+
+public final class app/revanced/patcher/PatchesConsumer$DefaultImpls {
+	public static fun acceptPatches (Lapp/revanced/patcher/PatchesConsumer;Ljava/util/List;)V
 }
 
 public final class app/revanced/patcher/data/BytecodeContext : app/revanced/patcher/data/Context {

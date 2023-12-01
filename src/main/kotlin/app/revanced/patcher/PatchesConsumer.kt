@@ -4,5 +4,7 @@ import app.revanced.patcher.patch.Patch
 
 @FunctionalInterface
 interface PatchesConsumer {
-    fun acceptPatches(patches: List<Patch<*>>)
+    @Deprecated("Use acceptPatches(PatchSet) instead.", ReplaceWith("acceptPatches(patches.toSet())"))
+    fun acceptPatches(patches: List<Patch<*>>) = acceptPatches(patches.toSet())
+    fun acceptPatches(patches: PatchSet)
 }
