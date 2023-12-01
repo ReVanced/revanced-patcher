@@ -1,3 +1,10 @@
+## [19.1.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.1.0...v19.1.1-dev.1) (2023-12-01)
+
+
+### Bug Fixes
+
+* Accept `PatchSet` in `PatchesConsumer#acceptPatches` ([716825f](https://github.com/ReVanced/revanced-patcher/commit/716825f232bf1aab3a97723968562aa6dbdb20b1))
+
 # [19.1.0](https://github.com/ReVanced/revanced-patcher/compare/v19.0.0...v19.1.0) (2023-12-01)
 
 
