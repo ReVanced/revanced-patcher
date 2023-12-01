@@ -33,16 +33,18 @@ internal class InlineSmaliCompilerTest {
         val insnIndex = insnAmount - 2
         val targetIndex = insnIndex - 1
 
-        method.addInstructions(arrayOfNulls<String>(insnAmount).also {
-            Arrays.fill(it, "const/4 v0, 0x0")
-        }.joinToString("\n"))
+        method.addInstructions(
+            arrayOfNulls<String>(insnAmount).also {
+                Arrays.fill(it, "const/4 v0, 0x0")
+            }.joinToString("\n"),
+        )
         method.addInstructionsWithLabels(
             targetIndex,
             """
                 :test
                 const/4 v0, 0x1
                 if-eqz v0, :test
-            """
+            """,
         )
 
         val insn = method.getInstruction<BuilderInstruction21t>(insnIndex)
@@ -59,7 +61,7 @@ internal class InlineSmaliCompilerTest {
             """
                 const/4 v0, 0x1
                 const/4 v0, 0x0
-            """
+            """,
         )
 
         assertEquals(labelIndex, method.newLabel(labelIndex).location.index)
@@ -71,7 +73,7 @@ internal class InlineSmaliCompilerTest {
                 if-eqz v0, :test
                 return-void
             """,
-            ExternalLabel("test", method.getInstruction(1))
+            ExternalLabel("test", method.getInstruction(1)),
         )
 
         val insn = method.getInstruction<BuilderInstruction21t>(insnIndex)
@@ -93,10 +95,13 @@ internal class InlineSmaliCompilerTest {
             accessFlags,
             emptySet(),
             emptySet(),
-            MutableMethodImplementation(registerCount)
+            MutableMethodImplementation(registerCount),
         ).toMutable()
 
-        private fun instructionEquals(want: BuilderInstruction, have: BuilderInstruction) {
+        private fun instructionEquals(
+            want: BuilderInstruction,
+            have: BuilderInstruction,
+        ) {
             assertEquals(want.opcode, have.opcode)
             assertEquals(want.format, have.format)
             assertEquals(want.codeUnits, have.codeUnits)

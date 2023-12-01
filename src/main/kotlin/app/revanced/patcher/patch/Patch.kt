@@ -5,12 +5,13 @@ package app.revanced.patcher.patch
 import app.revanced.patcher.PatchClass
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.data.Context
+import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.patch.options.PatchOptions
 import java.io.Closeable
-import kotlin.reflect.full.findAnnotation
 
 /**
  * A ReVanced patch.
+ *
  * If an implementation of [Patch] also implements [Closeable]
  * it will be closed in reverse execution order of patches executed by ReVanced [Patcher].
  *
@@ -47,7 +48,6 @@ sealed class Patch<out T : Context<*>> {
     var use = true
         private set
 
-
     // TODO: Remove this property, once integrations are coupled with patches.
     /**
      * Weather or not the patch requires integrations.
@@ -55,23 +55,40 @@ sealed class Patch<out T : Context<*>> {
     var requiresIntegrations = false
         private set
 
+    constructor(
+        name: String?,
+        description: String?,
+        compatiblePackages: Set<CompatiblePackage>?,
+        dependencies: Set<PatchClass>?,
+        use: Boolean,
+        requiresIntegrations: Boolean,
+    ) {
+        this.name = name
+        this.description = description
+        this.compatiblePackages = compatiblePackages
+        this.dependencies = dependencies
+        this.use = use
+        this.requiresIntegrations = requiresIntegrations
+    }
+
+    constructor() {
+        this::class.findAnnotationRecursively(app.revanced.patcher.patch.annotation.Patch::class)?.let { annotation ->
+            this.name = annotation.name.ifEmpty { null }
+            this.description = annotation.description.ifEmpty { null }
+            this.compatiblePackages =
+                annotation.compatiblePackages
+                    .map { CompatiblePackage(it.name, it.versions.toSet().ifEmpty { null }) }
+                    .toSet().ifEmpty { null }
+            this.dependencies = annotation.dependencies.toSet().ifEmpty { null }
+            this.use = annotation.use
+            this.requiresIntegrations = annotation.requiresIntegrations
+        }
+    }
+
     /**
      * The options of the patch associated by the options key.
      */
     val options = PatchOptions()
-
-    init {
-        this::class.findAnnotation<app.revanced.patcher.patch.annotation.Patch>()?.let { annotation ->
-            name = annotation.name.ifEmpty { null }
-            description = annotation.description.ifEmpty { null }
-            compatiblePackages = annotation.compatiblePackages
-                .map { CompatiblePackage(it.name, it.versions.toSet().ifEmpty { null }) }
-                .toSet().ifEmpty { null }
-            dependencies = annotation.dependencies.toSet().ifEmpty { null }
-            use = annotation.use
-            requiresIntegrations = annotation.requiresIntegrations
-        }
-    }
 
     /**
      * The execution function of the patch.

@@ -9,8 +9,7 @@ package app.revanced.patcher
 sealed class PatcherException(errorMessage: String?, cause: Throwable?) : Exception(errorMessage, cause) {
     constructor(errorMessage: String) : this(errorMessage, null)
 
-
     class CircularDependencyException internal constructor(dependant: String) : PatcherException(
-        "Patch '$dependant' causes a circular dependency"
+        "Patch '$dependant' causes a circular dependency",
     )
 }

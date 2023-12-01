@@ -1,13 +1,12 @@
 package app.revanced.patcher.patch.options
 
-
 /**
  * A map of [PatchOption]s associated by their keys.
  *
  * @param options The [PatchOption]s to initialize with.
  */
 class PatchOptions internal constructor(
-    private val options: MutableMap<String, PatchOption<*>> = mutableMapOf()
+    private val options: MutableMap<String, PatchOption<*>> = mutableMapOf(),
 ) : MutableMap<String, PatchOption<*>> by options {
     /**
      * Register a [PatchOption]. Acts like [MutableMap.put].
@@ -23,7 +22,10 @@ class PatchOptions internal constructor(
      * @param value The value.
      * @throws PatchOptionException.PatchOptionNotFoundException If the option does not exist.
      */
-    operator fun <T : Any> set(key: String, value: T?) {
+    operator fun <T : Any> set(
+        key: String,
+        value: T?,
+    ) {
         val option = this[key]
 
         try {
@@ -40,6 +42,5 @@ class PatchOptions internal constructor(
     /**
      * Get an option.
      */
-    override operator fun get(key: String) =
-        options[key] ?: throw PatchOptionException.PatchOptionNotFoundException(key)
+    override operator fun get(key: String) = options[key] ?: throw PatchOptionException.PatchOptionNotFoundException(key)
 }

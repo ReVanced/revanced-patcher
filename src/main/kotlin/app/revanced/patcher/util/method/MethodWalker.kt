@@ -14,7 +14,7 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
  */
 class MethodWalker internal constructor(
     private val bytecodeContext: BytecodeContext,
-    private var currentMethod: Method
+    private var currentMethod: Method,
 ) {
     /**
      * Get the method which was walked last.
@@ -36,7 +36,10 @@ class MethodWalker internal constructor(
      * @param walkMutable If this is true, the class of the method will be resolved mutably.
      * @return The same [MethodWalker] instance with the method at [offset].
      */
-    fun nextMethod(offset: Int, walkMutable: Boolean = false): MethodWalker {
+    fun nextMethod(
+        offset: Int,
+        walkMutable: Boolean = false,
+    ): MethodWalker {
         currentMethod.implementation?.instructions?.let { instructions ->
             val instruction = instructions.elementAt(offset)
 
@@ -44,9 +47,10 @@ class MethodWalker internal constructor(
             val proxy = bytecodeContext.findClass(newMethod.definingClass)!!
 
             val methods = if (walkMutable) proxy.mutableClass.methods else proxy.immutableClass.methods
-            currentMethod = methods.first {
-                return@first MethodUtil.methodSignaturesMatch(it, newMethod)
-            }
+            currentMethod =
+                methods.first {
+                    return@first MethodUtil.methodSignaturesMatch(it, newMethod)
+                }
             return this
         }
         throw MethodNotFoundException("This method can not be walked at offset $offset inside the method ${currentMethod.name}")

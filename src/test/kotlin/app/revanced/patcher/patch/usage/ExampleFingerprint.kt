@@ -1,7 +1,7 @@
 package app.revanced.patcher.patch.usage
 import app.revanced.patcher.extensions.or
-import app.revanced.patcher.fingerprint.annotation.FuzzyPatternScanMethod
 import app.revanced.patcher.fingerprint.MethodFingerprint
+import app.revanced.patcher.fingerprint.annotation.FuzzyPatternScanMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 
@@ -12,9 +12,9 @@ object ExampleFingerprint : MethodFingerprint(
     listOf("[L"),
     listOf(
         Opcode.SGET_OBJECT,
-        null,                 // Matching unknown opcodes.
+        null, // Matching unknown opcodes.
         Opcode.INVOKE_STATIC, // This is intentionally wrong to test fuzzy matching.
-        Opcode.RETURN_VOID
+        Opcode.RETURN_VOID,
     ),
-    null
+    null,
 )

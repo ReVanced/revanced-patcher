@@ -2,8 +2,7 @@ package app.revanced.patcher
 
 import app.revanced.patcher.PatchBundleLoader.Utils.getInstance
 import app.revanced.patcher.data.ResourceContext
-import app.revanced.patcher.fingerprint.LookupMap.Maps.clearLookupMaps
-import app.revanced.patcher.fingerprint.LookupMap.Maps.initializeLookupMaps
+import app.revanced.patcher.fingerprint.LookupMap
 import app.revanced.patcher.fingerprint.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
 import kotlinx.coroutines.flow.flow
@@ -18,7 +17,7 @@ import java.util.logging.Logger
  * @param options The options for the patcher.
  */
 class Patcher(
-    private val options: PatcherOptions
+    private val options: PatcherOptions,
 ) : PatchExecutorFunction, PatchesConsumer, IntegrationsConsumer, Supplier<PatcherResult>, Closeable {
     private val logger = Logger.getLogger(Patcher::class.java.name)
 
@@ -40,11 +39,12 @@ class Patcher(
     //  * @param patches The [Patch]es to add.
     //  * @throws PatcherException.CircularDependencyException If a circular dependency is detected.
     // */
+
     /**
      * Add [Patch]es to ReVanced [Patcher].
      *
      * @param patches The [Patch]es to add.
-    */
+     */
     @Suppress("NAME_SHADOWING")
     override fun acceptPatches(patches: List<Patch<*>>) {
         /**
@@ -83,7 +83,7 @@ class Patcher(
                 dependency.visit()
             }
         }
-        */
+         */
 
         /**
          * Returns true if at least one patch or its dependencies matches the given predicate.
@@ -127,140 +127,142 @@ class Patcher(
      * @param returnOnError If true, ReVanced [Patcher] will return immediately if a [Patch] fails.
      * @return A pair of the name of the [Patch] and its [PatchResult].
      */
-    override fun apply(returnOnError: Boolean) = flow {
+    override fun apply(returnOnError: Boolean) =
+        flow {
+            /**
+             * Execute a [Patch] and its dependencies recursively.
+             *
+             * @param patch The [Patch] to execute.
+             * @param executedPatches A map to prevent [Patch]es from being executed twice due to dependencies.
+             * @return The result of executing the [Patch].
+             */
+            fun executePatch(
+                patch: Patch<*>,
+                executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
+            ): PatchResult {
+                val patchName = patch.name ?: patch.toString()
 
-        /**
-         * Execute a [Patch] and its dependencies recursively.
-         *
-         * @param patch The [Patch] to execute.
-         * @param executedPatches A map to prevent [Patch]es from being executed twice due to dependencies.
-         * @return The result of executing the [Patch].
-         */
-        fun executePatch(
-            patch: Patch<*>,
-            executedPatches: LinkedHashMap<Patch<*>, PatchResult>
-        ): PatchResult {
-            val patchName = patch.name ?: patch.toString()
+                executedPatches[patch]?.let { patchResult ->
+                    patchResult.exception ?: return patchResult
 
-            executedPatches[patch]?.let { patchResult ->
-                patchResult.exception ?: return patchResult
+                    // Return a new result with an exception indicating that the patch was not executed previously,
+                    // because it is a dependency of another patch that failed.
+                    return PatchResult(patch, PatchException("'$patchName' did not succeed previously"))
+                }
 
-                // Return a new result with an exception indicating that the patch was not executed previously,
-                // because it is a dependency of another patch that failed.
-                return PatchResult(patch, PatchException("'$patchName' did not succeed previously"))
-            }
+                // Recursively execute all dependency patches.
+                patch.dependencies?.forEach { dependencyClass ->
+                    val dependency = context.allPatches[dependencyClass]!!
+                    val result = executePatch(dependency, executedPatches)
 
-            // Recursively execute all dependency patches.
-            patch.dependencies?.forEach { dependencyClass ->
-                val dependency = context.allPatches[dependencyClass]!!
-                val result = executePatch(dependency, executedPatches)
-
-                result.exception?.let {
-                    return PatchResult(
-                        patch,
-                        PatchException(
-                            "'$patchName' depends on '${dependency.name ?: dependency}' " +
-                                    "that raised an exception:\n${it.stackTraceToString()}"
+                    result.exception?.let {
+                        return PatchResult(
+                            patch,
+                            PatchException(
+                                "'$patchName' depends on '${dependency.name ?: dependency}' " +
+                                    "that raised an exception:\n${it.stackTraceToString()}",
+                            ),
                         )
-                    )
-                }
-            }
-
-            return try {
-                // TODO: Implement this in a more polymorphic way.
-                when (patch) {
-                    is BytecodePatch -> {
-                        patch.fingerprints.resolveUsingLookupMap(context.bytecodeContext)
-                        patch.execute(context.bytecodeContext)
-                    }
-                    is ResourcePatch -> {
-                        patch.execute(context.resourceContext)
                     }
                 }
 
-                PatchResult(patch)
-            } catch (exception: PatchException) {
-                PatchResult(patch, exception)
-            } catch (exception: Exception) {
-                PatchResult(patch, PatchException(exception))
-            }.also { executedPatches[patch] = it }
-        }
+                return try {
+                    // TODO: Implement this in a more polymorphic way.
+                    when (patch) {
+                        is BytecodePatch -> {
+                            patch.fingerprints.resolveUsingLookupMap(context.bytecodeContext)
+                            patch.execute(context.bytecodeContext)
+                        }
+                        is ResourcePatch -> {
+                            patch.execute(context.resourceContext)
+                        }
+                    }
 
-        if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
-
-        initializeLookupMaps(context.bytecodeContext)
-
-        // Prevent from decoding the app manifest twice if it is not needed.
-        if (options.resourceDecodingMode == ResourceContext.ResourceDecodingMode.FULL)
-            context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.FULL)
-
-        logger.info("Executing patches")
-
-        val executedPatches = LinkedHashMap<Patch<*>, PatchResult>() // Key is name.
-
-        context.executablePatches.values.sortedBy { it.name }.forEach { patch ->
-            val patchResult = executePatch(patch, executedPatches)
-
-            // If the patch failed, emit the result, even if it is closeable.
-            // Results of executed patches that are closeable will be emitted later.
-            patchResult.exception?.let {
-                // Propagate exception to caller instead of wrapping it in a new exception.
-                emit(patchResult)
-
-                if (returnOnError) return@flow
-            } ?: run {
-                if (patch is Closeable) return@run
-
-                emit(patchResult)
-            }
-        }
-
-        executedPatches.values
-            .filter { it.exception == null }
-            .filter { it.patch is Closeable }.asReversed().forEach { executedPatch ->
-                val patch = executedPatch.patch
-
-                val result = try {
-                    (patch as Closeable).close()
-
-                    executedPatch
+                    PatchResult(patch)
                 } catch (exception: PatchException) {
                     PatchResult(patch, exception)
                 } catch (exception: Exception) {
                     PatchResult(patch, PatchException(exception))
-                }
+                }.also { executedPatches[patch] = it }
+            }
 
-                result.exception?.let {
-                    emit(
-                        PatchResult(
-                            patch,
-                            PatchException(
-                                "'${patch.name}' raised an exception while being closed: ${it.stackTraceToString()}",
-                                result.exception
-                            )
-                        )
-                    )
+            if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
+
+            LookupMap.initializeLookupMaps(context.bytecodeContext)
+
+            // Prevent from decoding the app manifest twice if it is not needed.
+            if (options.resourceDecodingMode == ResourceContext.ResourceDecodingMode.FULL) {
+                context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.FULL)
+            }
+
+            logger.info("Executing patches")
+
+            val executedPatches = LinkedHashMap<Patch<*>, PatchResult>() // Key is name.
+
+            context.executablePatches.values.sortedBy { it.name }.forEach { patch ->
+                val patchResult = executePatch(patch, executedPatches)
+
+                // If the patch failed, emit the result, even if it is closeable.
+                // Results of executed patches that are closeable will be emitted later.
+                patchResult.exception?.let {
+                    // Propagate exception to caller instead of wrapping it in a new exception.
+                    emit(patchResult)
 
                     if (returnOnError) return@flow
                 } ?: run {
-                    patch.name ?: return@run
+                    if (patch is Closeable) return@run
 
-                    emit(result)
+                    emit(patchResult)
                 }
             }
-    }
 
-    override fun close() = clearLookupMaps()
+            executedPatches.values
+                .filter { it.exception == null }
+                .filter { it.patch is Closeable }.asReversed().forEach { executedPatch ->
+                    val patch = executedPatch.patch
+
+                    val result =
+                        try {
+                            (patch as Closeable).close()
+
+                            executedPatch
+                        } catch (exception: PatchException) {
+                            PatchResult(patch, exception)
+                        } catch (exception: Exception) {
+                            PatchResult(patch, PatchException(exception))
+                        }
+
+                    result.exception?.let {
+                        emit(
+                            PatchResult(
+                                patch,
+                                PatchException(
+                                    "'${patch.name}' raised an exception while being closed: ${it.stackTraceToString()}",
+                                    result.exception,
+                                ),
+                            ),
+                        )
+
+                        if (returnOnError) return@flow
+                    } ?: run {
+                        patch.name ?: return@run
+
+                        emit(result)
+                    }
+                }
+        }
+
+    override fun close() = LookupMap.clearLookupMaps()
 
     /**
      * Compile and save the patched APK file.
      *
      * @return The [PatcherResult] containing the patched input files.
      */
-    override fun get() = PatcherResult(
-        context.bytecodeContext.get(),
-        context.resourceContext.get(),
-        context.packageMetadata.apkInfo.doNotCompress?.toList()
-    )
+    override fun get() =
+        PatcherResult(
+            context.bytecodeContext.get(),
+            context.resourceContext.get(),
+            context.packageMetadata.apkInfo.doNotCompress?.toList(),
+        )
 }
-

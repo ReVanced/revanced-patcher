@@ -27,180 +27,202 @@ private object InstructionExtensionsTest {
     private lateinit var testMethodImplementation: MutableMethodImplementation
 
     @BeforeEach
-    fun createTestMethod() = ImmutableMethod(
-        "TestClass;",
-        "testMethod",
-        null,
-        "V",
-        AccessFlags.PUBLIC.value,
-        null,
-        null,
-        MutableMethodImplementation(16).also { testMethodImplementation = it }.apply {
-            repeat(10) { i -> this.addInstruction(TestInstruction(i)) }
-        },
-    ).let { testMethod = it.toMutable() }
+    fun createTestMethod() =
+        ImmutableMethod(
+            "TestClass;",
+            "testMethod",
+            null,
+            "V",
+            AccessFlags.PUBLIC.value,
+            null,
+            null,
+            MutableMethodImplementation(16).also { testMethodImplementation = it }.apply {
+                repeat(10) { i -> this.addInstruction(TestInstruction(i)) }
+            },
+        ).let { testMethod = it.toMutable() }
 
     @Test
-    fun addInstructionsToImplementationIndexed() = applyToImplementation {
-        addInstructions(5, getTestInstructions(5..6)).also {
-            assertRegisterIs(5, 5)
-            assertRegisterIs(6, 6)
+    fun addInstructionsToImplementationIndexed() =
+        applyToImplementation {
+            addInstructions(5, getTestInstructions(5..6)).also {
+                assertRegisterIs(5, 5)
+                assertRegisterIs(6, 6)
 
-            assertRegisterIs(5, 7)
+                assertRegisterIs(5, 7)
+            }
         }
-    }
 
     @Test
-    fun addInstructionsToImplementation() = applyToImplementation {
-        addInstructions(getTestInstructions(10..11)).also {
-            assertRegisterIs(10, 10)
-            assertRegisterIs(11, 11)
+    fun addInstructionsToImplementation() =
+        applyToImplementation {
+            addInstructions(getTestInstructions(10..11)).also {
+                assertRegisterIs(10, 10)
+                assertRegisterIs(11, 11)
+            }
         }
-    }
 
     @Test
-    fun removeInstructionsFromImplementationIndexed() = applyToImplementation {
-        removeInstructions(5, 5).also { assertRegisterIs(4, 4) }
-    }
-
-    @Test
-    fun removeInstructionsFromImplementation() = applyToImplementation {
-        removeInstructions(0).also { assertRegisterIs(9, 9) }
-        removeInstructions(1).also { assertRegisterIs(1, 0) }
-        removeInstructions(2).also { assertRegisterIs(3, 0) }
-    }
-
-    @Test
-    fun replaceInstructionsInImplementationIndexed() = applyToImplementation {
-        replaceInstructions(5, getTestInstructions(0..1)).also {
-            assertRegisterIs(0, 5)
-            assertRegisterIs(1, 6)
-            assertRegisterIs(7, 7)
+    fun removeInstructionsFromImplementationIndexed() =
+        applyToImplementation {
+            removeInstructions(5, 5).also { assertRegisterIs(4, 4) }
         }
-    }
 
     @Test
-    fun addInstructionToMethodIndexed() = applyToMethod {
-        addInstruction(5, TestInstruction(0)).also { assertRegisterIs(0, 5) }
-    }
-
-    @Test
-    fun addInstructionToMethod() = applyToMethod {
-        addInstruction(TestInstruction(0)).also { assertRegisterIs(0, 10) }
-    }
-
-    @Test
-    fun addSmaliInstructionToMethodIndexed() = applyToMethod {
-        addInstruction(5, getTestSmaliInstruction(0)).also { assertRegisterIs(0, 5) }
-    }
-
-    @Test
-    fun addSmaliInstructionToMethod() = applyToMethod {
-        addInstruction(getTestSmaliInstruction(0)).also { assertRegisterIs(0, 10) }
-    }
-
-    @Test
-    fun addInstructionsToMethodIndexed() = applyToMethod {
-        addInstructions(5, getTestInstructions(0..1)).also {
-            assertRegisterIs(0, 5)
-            assertRegisterIs(1, 6)
-
-            assertRegisterIs(5, 7)
+    fun removeInstructionsFromImplementation() =
+        applyToImplementation {
+            removeInstructions(0).also { assertRegisterIs(9, 9) }
+            removeInstructions(1).also { assertRegisterIs(1, 0) }
+            removeInstructions(2).also { assertRegisterIs(3, 0) }
         }
-    }
 
     @Test
-    fun addInstructionsToMethod() = applyToMethod {
-        addInstructions(getTestInstructions(0..1)).also {
-            assertRegisterIs(0, 10)
-            assertRegisterIs(1, 11)
-
-            assertRegisterIs(9, 9)
+    fun replaceInstructionsInImplementationIndexed() =
+        applyToImplementation {
+            replaceInstructions(5, getTestInstructions(0..1)).also {
+                assertRegisterIs(0, 5)
+                assertRegisterIs(1, 6)
+                assertRegisterIs(7, 7)
+            }
         }
-    }
 
     @Test
-    fun addSmaliInstructionsToMethodIndexed() = applyToMethod {
-        addInstructionsWithLabels(5, getTestSmaliInstructions(0..1)).also {
-            assertRegisterIs(0, 5)
-            assertRegisterIs(1, 6)
-
-            assertRegisterIs(5, 7)
+    fun addInstructionToMethodIndexed() =
+        applyToMethod {
+            addInstruction(5, TestInstruction(0)).also { assertRegisterIs(0, 5) }
         }
-    }
 
     @Test
-    fun addSmaliInstructionsToMethod() = applyToMethod {
-        addInstructions(getTestSmaliInstructions(0..1)).also {
-            assertRegisterIs(0, 10)
-            assertRegisterIs(1, 11)
-
-            assertRegisterIs(9, 9)
+    fun addInstructionToMethod() =
+        applyToMethod {
+            addInstruction(TestInstruction(0)).also { assertRegisterIs(0, 10) }
         }
-    }
 
     @Test
-    fun addSmaliInstructionsWithExternalLabelToMethodIndexed() = applyToMethod {
-        val label = ExternalLabel("testLabel", getInstruction(5))
-
-        addInstructionsWithLabels(
-            5,
-            getTestSmaliInstructions(0..1).plus("\n").plus("goto :${label.name}"),
-            label
-        ).also {
-            assertRegisterIs(0, 5)
-            assertRegisterIs(1, 6)
-            assertRegisterIs(5, 8)
-
-            val gotoTarget = getInstruction<BuilderOffsetInstruction>(7)
-                .target.location.instruction as OneRegisterInstruction
-
-            assertEquals(5, gotoTarget.registerA)
+    fun addSmaliInstructionToMethodIndexed() =
+        applyToMethod {
+            addInstruction(5, getTestSmaliInstruction(0)).also { assertRegisterIs(0, 5) }
         }
-    }
 
     @Test
-    fun removeInstructionFromMethodIndexed() = applyToMethod {
-        removeInstruction(5).also {
-            assertRegisterIs(4, 4)
-            assertRegisterIs(6, 5)
+    fun addSmaliInstructionToMethod() =
+        applyToMethod {
+            addInstruction(getTestSmaliInstruction(0)).also { assertRegisterIs(0, 10) }
         }
-    }
 
     @Test
-    fun removeInstructionsFromMethodIndexed() = applyToMethod {
-        removeInstructions(5, 5).also { assertRegisterIs(4, 4) }
-    }
+    fun addInstructionsToMethodIndexed() =
+        applyToMethod {
+            addInstructions(5, getTestInstructions(0..1)).also {
+                assertRegisterIs(0, 5)
+                assertRegisterIs(1, 6)
 
-    @Test
-    fun removeInstructionsFromMethod() = applyToMethod {
-        removeInstructions(0).also { assertRegisterIs(9, 9) }
-        removeInstructions(1).also { assertRegisterIs(1, 0) }
-        removeInstructions(2).also { assertRegisterIs(3, 0) }
-    }
-
-    @Test
-    fun replaceInstructionInMethodIndexed() = applyToMethod {
-        replaceInstruction(5, TestInstruction(0)).also { assertRegisterIs(0, 5) }
-    }
-
-    @Test
-    fun replaceInstructionsInMethodIndexed() = applyToMethod {
-        replaceInstructions(5, getTestInstructions(0..1)).also {
-            assertRegisterIs(0, 5)
-            assertRegisterIs(1, 6)
-            assertRegisterIs(7, 7)
+                assertRegisterIs(5, 7)
+            }
         }
-    }
 
     @Test
-    fun replaceSmaliInstructionsInMethodIndexed() = applyToMethod {
-        replaceInstructions(5, getTestSmaliInstructions(0..1)).also {
-            assertRegisterIs(0, 5)
-            assertRegisterIs(1, 6)
-            assertRegisterIs(7, 7)
+    fun addInstructionsToMethod() =
+        applyToMethod {
+            addInstructions(getTestInstructions(0..1)).also {
+                assertRegisterIs(0, 10)
+                assertRegisterIs(1, 11)
+
+                assertRegisterIs(9, 9)
+            }
         }
-    }
+
+    @Test
+    fun addSmaliInstructionsToMethodIndexed() =
+        applyToMethod {
+            addInstructionsWithLabels(5, getTestSmaliInstructions(0..1)).also {
+                assertRegisterIs(0, 5)
+                assertRegisterIs(1, 6)
+
+                assertRegisterIs(5, 7)
+            }
+        }
+
+    @Test
+    fun addSmaliInstructionsToMethod() =
+        applyToMethod {
+            addInstructions(getTestSmaliInstructions(0..1)).also {
+                assertRegisterIs(0, 10)
+                assertRegisterIs(1, 11)
+
+                assertRegisterIs(9, 9)
+            }
+        }
+
+    @Test
+    fun addSmaliInstructionsWithExternalLabelToMethodIndexed() =
+        applyToMethod {
+            val label = ExternalLabel("testLabel", getInstruction(5))
+
+            addInstructionsWithLabels(
+                5,
+                getTestSmaliInstructions(0..1).plus("\n").plus("goto :${label.name}"),
+                label,
+            ).also {
+                assertRegisterIs(0, 5)
+                assertRegisterIs(1, 6)
+                assertRegisterIs(5, 8)
+
+                val gotoTarget =
+                    getInstruction<BuilderOffsetInstruction>(7)
+                        .target.location.instruction as OneRegisterInstruction
+
+                assertEquals(5, gotoTarget.registerA)
+            }
+        }
+
+    @Test
+    fun removeInstructionFromMethodIndexed() =
+        applyToMethod {
+            removeInstruction(5).also {
+                assertRegisterIs(4, 4)
+                assertRegisterIs(6, 5)
+            }
+        }
+
+    @Test
+    fun removeInstructionsFromMethodIndexed() =
+        applyToMethod {
+            removeInstructions(5, 5).also { assertRegisterIs(4, 4) }
+        }
+
+    @Test
+    fun removeInstructionsFromMethod() =
+        applyToMethod {
+            removeInstructions(0).also { assertRegisterIs(9, 9) }
+            removeInstructions(1).also { assertRegisterIs(1, 0) }
+            removeInstructions(2).also { assertRegisterIs(3, 0) }
+        }
+
+    @Test
+    fun replaceInstructionInMethodIndexed() =
+        applyToMethod {
+            replaceInstruction(5, TestInstruction(0)).also { assertRegisterIs(0, 5) }
+        }
+
+    @Test
+    fun replaceInstructionsInMethodIndexed() =
+        applyToMethod {
+            replaceInstructions(5, getTestInstructions(0..1)).also {
+                assertRegisterIs(0, 5)
+                assertRegisterIs(1, 6)
+                assertRegisterIs(7, 7)
+            }
+        }
+
+    @Test
+    fun replaceSmaliInstructionsInMethodIndexed() =
+        applyToMethod {
+            replaceInstructions(5, getTestSmaliInstructions(0..1)).also {
+                assertRegisterIs(0, 5)
+                assertRegisterIs(1, 6)
+                assertRegisterIs(7, 7)
+            }
+        }
 
     // region Helper methods
 
@@ -212,20 +234,27 @@ private object InstructionExtensionsTest {
         testMethod.apply(block)
     }
 
-    private fun MutableMethodImplementation.assertRegisterIs(register: Int, atIndex: Int) = assertEquals(
-        register, getInstruction<OneRegisterInstruction>(atIndex).registerA
+    private fun MutableMethodImplementation.assertRegisterIs(
+        register: Int,
+        atIndex: Int,
+    ) = assertEquals(
+        register,
+        getInstruction<OneRegisterInstruction>(atIndex).registerA,
     )
 
-    private fun MutableMethod.assertRegisterIs(register: Int, atIndex: Int) =
-        implementation!!.assertRegisterIs(register, atIndex)
+    private fun MutableMethod.assertRegisterIs(
+        register: Int,
+        atIndex: Int,
+    ) = implementation!!.assertRegisterIs(register, atIndex)
 
     private fun getTestInstructions(range: IntRange) = range.map { TestInstruction(it) }
 
     private fun getTestSmaliInstruction(register: Int) = "const/16 v$register, 0"
 
-    private fun getTestSmaliInstructions(range: IntRange) = range.joinToString("\n") {
-        getTestSmaliInstruction(it)
-    }
+    private fun getTestSmaliInstructions(range: IntRange) =
+        range.joinToString("\n") {
+            getTestSmaliInstruction(it)
+        }
 
     // endregion
 

@@ -20,7 +20,7 @@ internal class LookupMap : MutableMap<String, LookupMap.MethodClassList> by muta
      */
     fun add(
         key: String,
-        methodClassPair: MethodClassPair
+        methodClassPair: MethodClassPair,
     ) {
         getOrPut(key) { MethodClassList() }.add(methodClassPair)
     }
@@ -73,13 +73,14 @@ internal class LookupMap : MutableMap<String, LookupMap.MethodClassList> by muta
                             append(accessFlagsReturnKey)
                             appendParameters(method.parameterTypes)
                         },
-                        methodClassPair
+                        methodClassPair,
                     )
 
                     // Add strings contained in the method as the key.
                     method.implementation?.instructions?.forEach instructions@{ instruction ->
-                        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO)
+                        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) {
                             return@instructions
+                        }
 
                         val string = ((instruction as ReferenceInstruction).reference as StringReference).string
 
@@ -93,7 +94,7 @@ internal class LookupMap : MutableMap<String, LookupMap.MethodClassList> by muta
         }
 
         /**
-         * Clears the internal lookup maps created in [initializeLookupMaps]
+         * Clears the internal lookup maps created in [initializeLookupMaps].
          */
         internal fun clearLookupMaps() {
             methods.clear()
@@ -120,6 +121,5 @@ internal class LookupMap : MutableMap<String, LookupMap.MethodClassList> by muta
                 append(parameter.first())
             }
         }
-
     }
 }

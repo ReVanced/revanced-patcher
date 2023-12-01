@@ -22,6 +22,4 @@ class MutableMethodHandleEncodedValue(methodHandleEncodedValue: MethodHandleEnco
             return MutableMethodHandleEncodedValue(this)
         }
     }
-
-
 }

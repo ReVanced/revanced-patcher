@@ -175,6 +175,7 @@ public abstract class app/revanced/patcher/fingerprint/MethodFingerprint {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Iterable;Ljava/lang/Iterable;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Iterable;Ljava/lang/Iterable;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getFuzzyPatternScanMethod ()Lapp/revanced/patcher/fingerprint/annotation/FuzzyPatternScanMethod;
 	public final fun getResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;
 	public final fun resolve (Lapp/revanced/patcher/data/BytecodeContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
 	public final fun resolve (Lapp/revanced/patcher/data/BytecodeContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
@@ -233,11 +234,14 @@ public abstract interface annotation class app/revanced/patcher/fingerprint/anno
 
 public abstract class app/revanced/patcher/patch/BytecodePatch : app/revanced/patcher/patch/Patch {
 	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZLjava/util/Set;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZLjava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/util/Set;)V
 	public synthetic fun <init> (Ljava/util/Set;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public abstract class app/revanced/patcher/patch/Patch {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public abstract fun execute (Lapp/revanced/patcher/data/Context;)V
 	public final fun getCompatiblePackages ()Ljava/util/Set;
@@ -271,6 +275,8 @@ public final class app/revanced/patcher/patch/PatchResult {
 
 public abstract class app/revanced/patcher/patch/ResourcePatch : app/revanced/patcher/patch/Patch {
 	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public abstract interface annotation class app/revanced/patcher/patch/annotation/CompatiblePackage : java/lang/annotation/Annotation {

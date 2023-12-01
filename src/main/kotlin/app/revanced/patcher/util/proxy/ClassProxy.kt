@@ -27,7 +27,8 @@ class ClassProxy internal constructor(
         resolved = true
         if (immutableClass is MutableClass) {
             immutableClass
-        } else
+        } else {
             MutableClass(immutableClass)
+        }
     }
 }

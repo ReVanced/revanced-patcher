@@ -5,7 +5,8 @@ import com.android.tools.smali.dexlib2.base.value.BaseAnnotationEncodedValue
 import com.android.tools.smali.dexlib2.iface.AnnotationElement
 import com.android.tools.smali.dexlib2.iface.value.AnnotationEncodedValue
 
-class MutableAnnotationEncodedValue(annotationEncodedValue: AnnotationEncodedValue) : BaseAnnotationEncodedValue(),
+class MutableAnnotationEncodedValue(annotationEncodedValue: AnnotationEncodedValue) :
+    BaseAnnotationEncodedValue(),
     MutableEncodedValue {
     private var type = annotationEncodedValue.type
 

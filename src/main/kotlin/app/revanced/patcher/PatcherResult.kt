@@ -12,7 +12,7 @@ import java.io.InputStream
 data class PatcherResult(
     val dexFiles: List<PatchedDexFile>,
     val resourceFile: File?,
-    val doNotCompress: List<String>? = null
+    val doNotCompress: List<String>? = null,
 ) {
     /**
      * Wrapper for dex files.

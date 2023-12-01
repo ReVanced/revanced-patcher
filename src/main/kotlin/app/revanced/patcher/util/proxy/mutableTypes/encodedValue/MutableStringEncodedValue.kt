@@ -4,7 +4,8 @@ import com.android.tools.smali.dexlib2.base.value.BaseStringEncodedValue
 import com.android.tools.smali.dexlib2.iface.value.ByteEncodedValue
 import com.android.tools.smali.dexlib2.iface.value.StringEncodedValue
 
-class MutableStringEncodedValue(stringEncodedValue: StringEncodedValue) : BaseStringEncodedValue(),
+class MutableStringEncodedValue(stringEncodedValue: StringEncodedValue) :
+    BaseStringEncodedValue(),
     MutableEncodedValue {
     private var value = stringEncodedValue.value
 
