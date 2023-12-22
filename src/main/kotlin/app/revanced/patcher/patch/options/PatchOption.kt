@@ -454,7 +454,7 @@ open class PatchOption<T>(
          *
          * @see PatchOption
          */
-        private fun <P : Patch<*>, T> P.registerNewPatchOption(
+        fun <P : Patch<*>, T> P.registerNewPatchOption(
             key: String,
             default: T? = null,
             values: Map<String, T?>? = null,
