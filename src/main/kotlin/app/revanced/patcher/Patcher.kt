@@ -46,7 +46,7 @@ class Patcher(
      * @param patches The [Patch]es to add.
      */
     @Suppress("NAME_SHADOWING")
-    override fun acceptPatches(patches: List<Patch<*>>) {
+    override fun acceptPatches(patches: PatchSet) {
         /**
          * Add dependencies of a [Patch] recursively to [PatcherContext.allPatches].
          * If a [Patch] is already in [PatcherContext.allPatches], it will not be added again.
