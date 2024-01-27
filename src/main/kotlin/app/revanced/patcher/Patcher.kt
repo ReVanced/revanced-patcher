@@ -140,7 +140,7 @@ class Patcher(
                 patch: Patch<*>,
                 executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
             ): PatchResult {
-                val patchName = patch.name ?: patch.toString()
+                val patchName = patch.toString()
 
                 executedPatches[patch]?.let { patchResult ->
                     patchResult.exception ?: return patchResult
@@ -237,7 +237,7 @@ class Patcher(
                             PatchResult(
                                 patch,
                                 PatchException(
-                                    "'${patch.name}' raised an exception while being closed: ${it.stackTraceToString()}",
+                                    "'$patch' raised an exception while being closed: ${it.stackTraceToString()}",
                                     result.exception,
                                 ),
                             ),
