@@ -1,3 +1,10 @@
+## [19.2.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.2.0...v19.2.1-dev.1) (2024-01-27)
+
+
+### Bug Fixes
+
+* Use `Patch#toString` to get patch class name, when no name available ([c9a8260](https://github.com/ReVanced/revanced-patcher/commit/c9a82608f7f2d6b3e64c0c949ea5d9f76fa46165))
+
 # [19.2.0](https://github.com/ReVanced/revanced-patcher/compare/v19.1.0...v19.2.0) (2023-12-28)
 
 
