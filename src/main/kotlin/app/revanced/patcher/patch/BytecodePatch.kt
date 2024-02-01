@@ -53,9 +53,5 @@ abstract class BytecodePatch : Patch<BytecodeContext> {
     /**
      * Create a new [BytecodePatch].
      */
-    @Deprecated(
-        "Use the constructor with fingerprints instead.",
-        ReplaceWith("BytecodePatch(emptySet())"),
-    )
     constructor() : this(emptySet())
 }
