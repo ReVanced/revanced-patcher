@@ -11,19 +11,19 @@ import java.io.Closeable
  * If an implementation of [Patch] also implements [Closeable]
  * it will be closed in reverse execution order of patches executed by [Patcher].
  *
- * This type of patch has access to decoded resources.
- * Additionally, you can read and write arbitrary files in an APK file.
+ * This type of patch that does not have access to decoded resources.
+ * Instead, you can read and write arbitrary files in an APK file.
  *
- * If you do not need access to decoded resources, use [RawResourcePatch] instead.
+ * If you want to access decoded resources, use [ResourcePatch] instead.
  */
-abstract class ResourcePatch : Patch<ResourceContext> {
+abstract class RawResourcePatch : Patch<ResourceContext> {
     /**
-     * Create a new [ResourcePatch].
+     * Create a new [RawResourcePatch].
      */
     constructor()
 
     /**
-     * Create a new [ResourcePatch].
+     * Create a new [RawResourcePatch].
      *
      * @param name The name of the patch.
      * @param description The description of the patch.

@@ -7,15 +7,16 @@ import brut.androlib.apk.ApkInfo
 import brut.directory.ExtFile
 
 /**
- * A context for ReVanced [Patcher].
+ * A context for the patcher containing the current state of the patcher.
  *
- * @param options The [PatcherOptions] used to create this context.
+ * @param config The configuration for the patcher.
  */
-class PatcherContext internal constructor(options: PatcherOptions) {
+@Suppress("MemberVisibilityCanBePrivate")
+class PatcherContext internal constructor(config: PatcherConfig) {
     /**
-     * [PackageMetadata] of the supplied [PatcherOptions.inputFile].
+     * [PackageMetadata] of the supplied [PatcherConfig.apkFile].
      */
-    val packageMetadata = PackageMetadata(ApkInfo(ExtFile(options.inputFile)))
+    val packageMetadata = PackageMetadata(ApkInfo(ExtFile(config.apkFile)))
 
     /**
      * The map of [Patch]es associated by their [PatchClass].
@@ -28,14 +29,12 @@ class PatcherContext internal constructor(options: PatcherOptions) {
     internal val allPatches = mutableMapOf<PatchClass, Patch<*>>()
 
     /**
-     * The [ResourceContext] of this [PatcherContext].
-     * This holds the current state of the resources.
+     * A context for the patcher containing the current state of the resources.
      */
-    internal val resourceContext = ResourceContext(this, options)
+    internal val resourceContext = ResourceContext(packageMetadata, config)
 
     /**
-     * The [BytecodeContext] of this [PatcherContext].
-     * This holds the current state of the bytecode.
+     * A context for the patcher containing the current state of the bytecode.
      */
-    internal val bytecodeContext = BytecodeContext(options)
+    internal val bytecodeContext = BytecodeContext(config)
 }
