@@ -10,10 +10,10 @@ import app.revanced.patcher.patch.options.PatchOptions
 import java.io.Closeable
 
 /**
- * A ReVanced patch.
+ * A patch.
  *
  * If an implementation of [Patch] also implements [Closeable]
- * it will be closed in reverse execution order of patches executed by ReVanced [Patcher].
+ * it will be closed in reverse execution order of patches executed by [Patcher].
  *
  * @param T The [Context] type this patch will work on.
  */

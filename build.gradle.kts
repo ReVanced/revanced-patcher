@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.10"
+    alias(libs.plugins.kotlin)
     alias(libs.plugins.binary.compatibility.validator)
     `maven-publish`
     signing
@@ -36,7 +36,11 @@ dependencies {
     implementation(libs.apktool.lib)
     implementation(libs.kotlin.reflect)
 
-    compileOnly(libs.android)
+    // TODO: Convert project to KMP.
+    compileOnly(libs.android) {
+        // Exclude, otherwise the org.w3c.dom API breaks.
+        exclude(group = "xerces", module = "xmlParserAPIs")
+    }
 
     testImplementation(libs.kotlin.test)
 }

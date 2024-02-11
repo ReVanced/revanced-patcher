@@ -1,5 +1,9 @@
 public abstract interface class app/revanced/patcher/IntegrationsConsumer {
 	public abstract fun acceptIntegrations (Ljava/util/List;)V
+	public abstract fun acceptIntegrations (Ljava/util/Set;)V
+}
+
+public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
 }
 
 public final class app/revanced/patcher/PackageMetadata {
@@ -41,8 +45,10 @@ public abstract interface class app/revanced/patcher/PatchExecutorFunction : jav
 }
 
 public final class app/revanced/patcher/Patcher : app/revanced/patcher/IntegrationsConsumer, app/revanced/patcher/PatchExecutorFunction, app/revanced/patcher/PatchesConsumer, java/io/Closeable, java/util/function/Supplier {
+	public fun <init> (Lapp/revanced/patcher/PatcherConfig;)V
 	public fun <init> (Lapp/revanced/patcher/PatcherOptions;)V
 	public fun acceptIntegrations (Ljava/util/List;)V
+	public fun acceptIntegrations (Ljava/util/Set;)V
 	public fun acceptPatches (Ljava/util/List;)V
 	public fun acceptPatches (Ljava/util/Set;)V
 	public synthetic fun apply (Ljava/lang/Object;)Ljava/lang/Object;
@@ -51,6 +57,11 @@ public final class app/revanced/patcher/Patcher : app/revanced/patcher/Integrati
 	public fun get ()Lapp/revanced/patcher/PatcherResult;
 	public synthetic fun get ()Ljava/lang/Object;
 	public final fun getContext ()Lapp/revanced/patcher/PatcherContext;
+}
+
+public final class app/revanced/patcher/PatcherConfig {
+	public fun <init> (Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class app/revanced/patcher/PatcherContext {
@@ -86,8 +97,10 @@ public final class app/revanced/patcher/PatcherResult {
 	public static synthetic fun copy$default (Lapp/revanced/patcher/PatcherResult;Ljava/util/List;Ljava/io/File;Ljava/util/List;ILjava/lang/Object;)Lapp/revanced/patcher/PatcherResult;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDexFiles ()Ljava/util/List;
+	public final fun getDexFiles ()Ljava/util/Set;
 	public final fun getDoNotCompress ()Ljava/util/List;
 	public final fun getResourceFile ()Ljava/io/File;
+	public final fun getResources ()Lapp/revanced/patcher/PatcherResult$PatchedResources;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -96,6 +109,13 @@ public final class app/revanced/patcher/PatcherResult$PatchedDexFile {
 	public fun <init> (Ljava/lang/String;Ljava/io/InputStream;)V
 	public final fun getName ()Ljava/lang/String;
 	public final fun getStream ()Ljava/io/InputStream;
+}
+
+public final class app/revanced/patcher/PatcherResult$PatchedResources {
+	public final fun getDeleteResources ()Ljava/util/Set;
+	public final fun getDoNotCompress ()Ljava/util/Set;
+	public final fun getOtherResources ()Ljava/io/File;
+	public final fun getResourcesApk ()Ljava/io/File;
 }
 
 public abstract interface class app/revanced/patcher/PatchesConsumer {
@@ -111,7 +131,7 @@ public final class app/revanced/patcher/data/BytecodeContext : app/revanced/patc
 	public final fun findClass (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 	public final fun findClass (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 	public synthetic fun get ()Ljava/lang/Object;
-	public fun get ()Ljava/util/List;
+	public fun get ()Ljava/util/Set;
 	public final fun getClasses ()Lapp/revanced/patcher/util/ProxyClassList;
 	public final fun proxy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 	public final fun toMethodWalker (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/method/MethodWalker;
@@ -121,11 +141,21 @@ public abstract interface class app/revanced/patcher/data/Context : java/util/fu
 }
 
 public final class app/revanced/patcher/data/ResourceContext : app/revanced/patcher/data/Context, java/lang/Iterable, kotlin/jvm/internal/markers/KMappedMarker {
-	public fun get ()Ljava/io/File;
+	public fun get ()Lapp/revanced/patcher/PatcherResult$PatchedResources;
 	public synthetic fun get ()Ljava/lang/Object;
 	public final fun get (Ljava/lang/String;)Ljava/io/File;
+	public final fun get (Ljava/lang/String;Z)Ljava/io/File;
+	public static synthetic fun get$default (Lapp/revanced/patcher/data/ResourceContext;Ljava/lang/String;ZILjava/lang/Object;)Ljava/io/File;
+	public final fun getDocument ()Lapp/revanced/patcher/data/ResourceContext$DocumentOperatable;
 	public final fun getXmlEditor ()Lapp/revanced/patcher/data/ResourceContext$XmlFileHolder;
 	public fun iterator ()Ljava/util/Iterator;
+	public final fun stageDelete (Lkotlin/jvm/functions/Function1;)Z
+}
+
+public final class app/revanced/patcher/data/ResourceContext$DocumentOperatable {
+	public fun <init> (Lapp/revanced/patcher/data/ResourceContext;)V
+	public final fun get (Ljava/io/InputStream;)Lapp/revanced/patcher/util/Document;
+	public final fun get (Ljava/lang/String;)Lapp/revanced/patcher/util/Document;
 }
 
 public final class app/revanced/patcher/data/ResourceContext$XmlFileHolder {
@@ -279,6 +309,12 @@ public final class app/revanced/patcher/patch/PatchResult {
 	public final fun getPatch ()Lapp/revanced/patcher/patch/Patch;
 }
 
+public abstract class app/revanced/patcher/patch/RawResourcePatch : app/revanced/patcher/patch/Patch {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
 public abstract class app/revanced/patcher/patch/ResourcePatch : app/revanced/patcher/patch/Patch {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;ZZ)V
@@ -390,6 +426,78 @@ public final class app/revanced/patcher/patch/options/PatchOptions : java/util/M
 	public final fun set (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun size ()I
 	public final fun values ()Ljava/util/Collection;
+}
+
+public final class app/revanced/patcher/util/Document : java/io/Closeable, org/w3c/dom/Document {
+	public fun adoptNode (Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+	public fun appendChild (Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+	public fun cloneNode (Z)Lorg/w3c/dom/Node;
+	public fun close ()V
+	public fun compareDocumentPosition (Lorg/w3c/dom/Node;)S
+	public fun createAttribute (Ljava/lang/String;)Lorg/w3c/dom/Attr;
+	public fun createAttributeNS (Ljava/lang/String;Ljava/lang/String;)Lorg/w3c/dom/Attr;
+	public fun createCDATASection (Ljava/lang/String;)Lorg/w3c/dom/CDATASection;
+	public fun createComment (Ljava/lang/String;)Lorg/w3c/dom/Comment;
+	public fun createDocumentFragment ()Lorg/w3c/dom/DocumentFragment;
+	public fun createElement (Ljava/lang/String;)Lorg/w3c/dom/Element;
+	public fun createElementNS (Ljava/lang/String;Ljava/lang/String;)Lorg/w3c/dom/Element;
+	public fun createEntityReference (Ljava/lang/String;)Lorg/w3c/dom/EntityReference;
+	public fun createProcessingInstruction (Ljava/lang/String;Ljava/lang/String;)Lorg/w3c/dom/ProcessingInstruction;
+	public fun createTextNode (Ljava/lang/String;)Lorg/w3c/dom/Text;
+	public fun getAttributes ()Lorg/w3c/dom/NamedNodeMap;
+	public fun getBaseURI ()Ljava/lang/String;
+	public fun getChildNodes ()Lorg/w3c/dom/NodeList;
+	public fun getDoctype ()Lorg/w3c/dom/DocumentType;
+	public fun getDocumentElement ()Lorg/w3c/dom/Element;
+	public fun getDocumentURI ()Ljava/lang/String;
+	public fun getDomConfig ()Lorg/w3c/dom/DOMConfiguration;
+	public fun getElementById (Ljava/lang/String;)Lorg/w3c/dom/Element;
+	public fun getElementsByTagName (Ljava/lang/String;)Lorg/w3c/dom/NodeList;
+	public fun getElementsByTagNameNS (Ljava/lang/String;Ljava/lang/String;)Lorg/w3c/dom/NodeList;
+	public fun getFeature (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getFirstChild ()Lorg/w3c/dom/Node;
+	public fun getImplementation ()Lorg/w3c/dom/DOMImplementation;
+	public fun getInputEncoding ()Ljava/lang/String;
+	public fun getLastChild ()Lorg/w3c/dom/Node;
+	public fun getLocalName ()Ljava/lang/String;
+	public fun getNamespaceURI ()Ljava/lang/String;
+	public fun getNextSibling ()Lorg/w3c/dom/Node;
+	public fun getNodeName ()Ljava/lang/String;
+	public fun getNodeType ()S
+	public fun getNodeValue ()Ljava/lang/String;
+	public fun getOwnerDocument ()Lorg/w3c/dom/Document;
+	public fun getParentNode ()Lorg/w3c/dom/Node;
+	public fun getPrefix ()Ljava/lang/String;
+	public fun getPreviousSibling ()Lorg/w3c/dom/Node;
+	public fun getStrictErrorChecking ()Z
+	public fun getTextContent ()Ljava/lang/String;
+	public fun getUserData (Ljava/lang/String;)Ljava/lang/Object;
+	public fun getXmlEncoding ()Ljava/lang/String;
+	public fun getXmlStandalone ()Z
+	public fun getXmlVersion ()Ljava/lang/String;
+	public fun hasAttributes ()Z
+	public fun hasChildNodes ()Z
+	public fun importNode (Lorg/w3c/dom/Node;Z)Lorg/w3c/dom/Node;
+	public fun insertBefore (Lorg/w3c/dom/Node;Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+	public fun isDefaultNamespace (Ljava/lang/String;)Z
+	public fun isEqualNode (Lorg/w3c/dom/Node;)Z
+	public fun isSameNode (Lorg/w3c/dom/Node;)Z
+	public fun isSupported (Ljava/lang/String;Ljava/lang/String;)Z
+	public fun lookupNamespaceURI (Ljava/lang/String;)Ljava/lang/String;
+	public fun lookupPrefix (Ljava/lang/String;)Ljava/lang/String;
+	public fun normalize ()V
+	public fun normalizeDocument ()V
+	public fun removeChild (Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+	public fun renameNode (Lorg/w3c/dom/Node;Ljava/lang/String;Ljava/lang/String;)Lorg/w3c/dom/Node;
+	public fun replaceChild (Lorg/w3c/dom/Node;Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+	public fun setDocumentURI (Ljava/lang/String;)V
+	public fun setNodeValue (Ljava/lang/String;)V
+	public fun setPrefix (Ljava/lang/String;)V
+	public fun setStrictErrorChecking (Z)V
+	public fun setTextContent (Ljava/lang/String;)V
+	public fun setUserData (Ljava/lang/String;Ljava/lang/Object;Lorg/w3c/dom/UserDataHandler;)Ljava/lang/Object;
+	public fun setXmlStandalone (Z)V
+	public fun setXmlVersion (Ljava/lang/String;)V
 }
 
 public final class app/revanced/patcher/util/DomFileEditor : java/io/Closeable {
