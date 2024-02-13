@@ -24,6 +24,13 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          fingerprint: ${{ env.GPG_FINGERPRINT }}
+
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v1
 
