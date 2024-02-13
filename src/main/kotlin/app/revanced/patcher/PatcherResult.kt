@@ -65,10 +65,10 @@ class PatcherResult internal constructor(
         return (
             (
                 (result * 31) +
-                    (if (this.resources?.resourcesApk == null) 0 else this.resources?.resourcesApk.hashCode())
+                    (if (this.resources?.resourcesApk == null) 0 else this.resources.resourcesApk.hashCode())
                 ) * 31
             ) +
-            (if (this.resources?.doNotCompress == null) 0 else this.resources?.doNotCompress.hashCode())
+            (if (this.resources?.doNotCompress == null) 0 else this.resources.doNotCompress.hashCode())
     }
 
     @Deprecated("This method is not used anymore")
@@ -85,12 +85,15 @@ class PatcherResult internal constructor(
         return false
     }
 
+    @Suppress("DEPRECATION")
     @Deprecated("This method is not used anymore")
     fun getDexFiles() = component1()
 
+    @Suppress("DEPRECATION")
     @Deprecated("This method is not used anymore")
     fun getResourceFile() = component2()
 
+    @Suppress("DEPRECATION")
     @Deprecated("This method is not used anymore")
     fun getDoNotCompress() = component3()
 

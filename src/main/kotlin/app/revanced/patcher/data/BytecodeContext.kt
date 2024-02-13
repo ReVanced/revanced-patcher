@@ -123,6 +123,7 @@ class BytecodeContext internal constructor(private val config: PatcherConfig) :
                     DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
                 ) { _, entryName, _ -> logger.info("Compiled $entryName") }
             }.listFiles(FileFilter { it.isFile })!!.map {
+                @Suppress("DEPRECATION")
                 PatcherResult.PatchedDexFile(it.name, it.inputStream())
             }.toSet()
 

@@ -7,6 +7,7 @@ object MethodFingerprintExtensions {
     /**
      * The [FuzzyPatternScanMethod] annotation of a [MethodFingerprint].
      */
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
     @Deprecated(
         message = "Use the property instead.",
         replaceWith = ReplaceWith("this.fuzzyPatternScanMethod"),

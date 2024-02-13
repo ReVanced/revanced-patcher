@@ -39,6 +39,7 @@ class ResourceContext internal constructor(
     val document = DocumentOperatable()
 
     @Deprecated("Use document instead.")
+    @Suppress("DEPRECATION")
     val xmlEditor = XmlFileHolder()
 
     /**
@@ -242,13 +243,16 @@ class ResourceContext internal constructor(
     inner class DocumentOperatable {
         operator fun get(inputStream: InputStream) = Document(inputStream)
 
+        @Suppress("DEPRECATION")
         operator fun get(path: String) = Document(this@ResourceContext[path])
     }
 
     @Deprecated("Use DocumentOperatable instead.")
     inner class XmlFileHolder {
+        @Suppress("DEPRECATION")
         operator fun get(inputStream: InputStream) = DomFileEditor(inputStream)
 
+        @Suppress("DEPRECATION")
         operator fun get(path: String): DomFileEditor {
             return DomFileEditor(this@ResourceContext[path])
         }
