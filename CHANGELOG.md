@@ -1,3 +1,5 @@
+# [19.3.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v19.3.0-dev.1...v19.3.0-dev.2) (2024-02-13)
+
 # [19.3.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.2.1-dev.1...v19.3.0-dev.1) (2024-02-13)
 
 
