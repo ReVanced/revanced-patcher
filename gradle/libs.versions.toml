@@ -5,7 +5,7 @@ kotlin = "1.9.22"
 kotlinx-coroutines-core = "1.7.3"
 multidexlib2 = "3.0.3.r3"
 smali = "3.0.4"
-binary-compatibility-validator = "0.13.2"
+binary-compatibility-validator = "0.14.0"
 xpp3 = "1.1.4c"
 
 [libraries]
