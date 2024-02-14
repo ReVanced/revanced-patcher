@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.binary.compatibility.validator)
     `maven-publish`
     signing
-    java
 }
 
 group = "app.revanced"
@@ -50,11 +49,6 @@ dependencies {
     }
 
     testImplementation(libs.kotlin.test)
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
 }
 
 kotlin {
