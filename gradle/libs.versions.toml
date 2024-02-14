@@ -1,6 +1,6 @@
 [versions]
 android = "4.1.1.4"
-apktool-lib = "2.9.1"
+apktool-lib = "2.9.3"
 kotlin = "1.9.22"
 kotlinx-coroutines-core = "1.7.3"
 multidexlib2 = "3.0.3.r3"
@@ -11,7 +11,7 @@ xpp3 = "1.1.4c"
 [libraries]
 android = { module = "com.google.android:android", version.ref = "android" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
-apktool-lib = { module = "app.revanced:apktool", version.ref = "apktool-lib" }
+apktool-lib = { module = "app.revanced:apktool-lib", version.ref = "apktool-lib" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
 multidexlib2 = { module = "app.revanced:multidexlib2", version.ref = "multidexlib2" }
