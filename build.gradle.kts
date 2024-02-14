@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.10"
+    alias(libs.plugins.kotlin)
     alias(libs.plugins.binary.compatibility.validator)
     `maven-publish`
     signing
@@ -24,8 +24,15 @@ tasks {
 repositories {
     mavenCentral()
     mavenLocal()
-    maven { url = uri("https://jitpack.io") }
     google()
+    maven {
+        // A repository must be speficied for some reason. "registry" is a dummy.
+        url = uri("https://maven.pkg.github.com/revanced/registry")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
@@ -36,7 +43,11 @@ dependencies {
     implementation(libs.apktool.lib)
     implementation(libs.kotlin.reflect)
 
-    compileOnly(libs.android)
+    // TODO: Convert project to KMP.
+    compileOnly(libs.android) {
+        // Exclude, otherwise the org.w3c.dom API breaks.
+        exclude(group = "xerces", module = "xmlParserAPIs")
+    }
 
     testImplementation(libs.kotlin.test)
 }
@@ -83,4 +94,9 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    useGpgCmd()
+    sign(publishing.publications["revanced-patcher-publication"])
 }

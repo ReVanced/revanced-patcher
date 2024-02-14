@@ -1,19 +1,18 @@
 [versions]
 android = "4.1.1.4"
-kotlin-reflect = "1.9.10"
-apktool-lib = "2.9.1"
-kotlin-test = "1.9.20"
+apktool-lib = "2.9.3"
+kotlin = "1.9.22"
 kotlinx-coroutines-core = "1.7.3"
 multidexlib2 = "3.0.3.r3"
-smali = "3.0.3"
-xpp3 = "1.1.4c"
+smali = "3.0.4"
 binary-compatibility-validator = "0.13.2"
+xpp3 = "1.1.4c"
 
 [libraries]
 android = { module = "com.google.android:android", version.ref = "android" }
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin-reflect" }
-apktool-lib = { module = "app.revanced:apktool", version.ref = "apktool-lib" }
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin-test" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+apktool-lib = { module = "app.revanced:apktool-lib", version.ref = "apktool-lib" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
 multidexlib2 = { module = "app.revanced:multidexlib2", version.ref = "multidexlib2" }
 smali = { module = "com.android.tools.smali:smali", version.ref = "smali" }
@@ -21,3 +20,4 @@ xpp3 = { module = "xpp3:xpp3", version.ref = "xpp3" }
 
 [plugins]
 binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

@@ -12,33 +12,37 @@ import java.util.function.Supplier
 import java.util.logging.Logger
 
 /**
- * ReVanced Patcher.
+ * A Patcher.
  *
- * @param options The options for the patcher.
+ * @param config The configuration to use for the patcher.
  */
 class Patcher(
-    private val options: PatcherOptions,
+    private val config: PatcherConfig,
 ) : PatchExecutorFunction, PatchesConsumer, IntegrationsConsumer, Supplier<PatcherResult>, Closeable {
     private val logger = Logger.getLogger(Patcher::class.java.name)
 
     /**
-     * The context of ReVanced [Patcher].
-     * This holds the current state of the patcher.
+     * A context for the patcher containing the current state of the patcher.
      */
-    val context = PatcherContext(options)
+    val context = PatcherContext(config)
+
+    @Suppress("DEPRECATION")
+    @Deprecated("Use Patcher(PatcherConfig) instead.")
+    constructor(
+        patcherOptions: PatcherOptions,
+    ) : this(
+        PatcherConfig(
+            patcherOptions.inputFile,
+            patcherOptions.resourceCachePath,
+            patcherOptions.aaptBinaryPath,
+            patcherOptions.frameworkFileDirectory,
+            patcherOptions.multithreadingDexFileWriter,
+        ),
+    )
 
     init {
-        context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.MANIFEST_ONLY)
+        context.resourceContext.decodeResources(ResourceContext.ResourceMode.NONE)
     }
-
-    // TODO: Fix circular dependency detection.
-    // /**
-    //  * Add [Patch]es to ReVanced [Patcher].
-    //  * It is not guaranteed that all supplied [Patch]es will be accepted, if an exception is thrown.
-    //  *
-    //  * @param patches The [Patch]es to add.
-    //  * @throws PatcherException.CircularDependencyException If a circular dependency is detected.
-    // */
 
     /**
      * Add [Patch]es to ReVanced [Patcher].
@@ -61,29 +65,15 @@ class Patcher(
         }
 
         // Add all patches and their dependencies to the context.
-        for (patch in patches) context.executablePatches.putIfAbsent(patch::class, patch) ?: run {
-            context.allPatches[patch::class] = patch
+        patches.forEach { patch ->
+            context.executablePatches.putIfAbsent(patch::class, patch) ?: run {
+                context.allPatches[patch::class] = patch
 
-            patch.dependencies?.forEach { it.putDependenciesRecursively() }
-        }
-
-        /* TODO: Fix circular dependency detection.
-        val graph = mutableMapOf<PatchClass, MutableList<PatchClass>>()
-        fun PatchClass.visit() {
-            if (this in graph) return
-
-            val group = graph.getOrPut(this) { mutableListOf(this) }
-
-            val dependencies = context.allPatches[this]!!.manifest.dependencies ?: return
-            dependencies.forEach { dependency ->
-                if (group == graph[dependency])
-                    throw PatcherException.CircularDependencyException(context.allPatches[this]!!.manifest.name)
-
-                graph[dependency] = group.apply { add(dependency) }
-                dependency.visit()
+                patch.dependencies?.forEach { it.putDependenciesRecursively() }
             }
         }
-         */
+
+        // TODO: Detect circular dependencies.
 
         /**
          * Returns true if at least one patch or its dependencies matches the given predicate.
@@ -96,12 +86,15 @@ class Patcher(
             } ?: false
 
         context.allPatches.values.let { patches ->
-            // Determine, if resource patching is required.
-            for (patch in patches)
-                if (patch.anyRecursively { patch is ResourcePatch }) {
-                    options.resourceDecodingMode = ResourceContext.ResourceDecodingMode.FULL
-                    break
-                }
+            // Determine the resource mode.
+
+            config.resourceMode = if (patches.any { patch -> patch.anyRecursively { it is ResourcePatch } }) {
+                ResourceContext.ResourceMode.FULL
+            } else if (patches.any { patch -> patch.anyRecursively { it is RawResourcePatch } }) {
+                ResourceContext.ResourceMode.RAW_ONLY
+            } else {
+                ResourceContext.ResourceMode.NONE
+            }
 
             // Determine, if merging integrations is required.
             for (patch in patches)
@@ -117,9 +110,15 @@ class Patcher(
      *
      * @param integrations The integrations to add. Must be a DEX file or container of DEX files.
      */
-    override fun acceptIntegrations(integrations: List<File>) {
+    override fun acceptIntegrations(integrations: Set<File>) {
         context.bytecodeContext.integrations.addAll(integrations)
     }
+
+    @Deprecated(
+        "Use acceptIntegrations(Set<File>) instead.",
+        ReplaceWith("acceptIntegrations(integrations.toSet())"),
+    )
+    override fun acceptIntegrations(integrations: List<File>) = acceptIntegrations(integrations.toSet())
 
     /**
      * Execute [Patch]es that were added to ReVanced [Patcher].
@@ -140,7 +139,7 @@ class Patcher(
                 patch: Patch<*>,
                 executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
             ): PatchResult {
-                val patchName = patch.name ?: patch.toString()
+                val patchName = patch.toString()
 
                 executedPatches[patch]?.let { patchResult ->
                     patchResult.exception ?: return patchResult
@@ -173,6 +172,9 @@ class Patcher(
                             patch.fingerprints.resolveUsingLookupMap(context.bytecodeContext)
                             patch.execute(context.bytecodeContext)
                         }
+                        is RawResourcePatch -> {
+                            patch.execute(context.resourceContext)
+                        }
                         is ResourcePatch -> {
                             patch.execute(context.resourceContext)
                         }
@@ -191,8 +193,8 @@ class Patcher(
             LookupMap.initializeLookupMaps(context.bytecodeContext)
 
             // Prevent from decoding the app manifest twice if it is not needed.
-            if (options.resourceDecodingMode == ResourceContext.ResourceDecodingMode.FULL) {
-                context.resourceContext.decodeResources(ResourceContext.ResourceDecodingMode.FULL)
+            if (config.resourceMode != ResourceContext.ResourceMode.NONE) {
+                context.resourceContext.decodeResources(config.resourceMode)
             }
 
             logger.info("Executing patches")
@@ -237,7 +239,7 @@ class Patcher(
                             PatchResult(
                                 patch,
                                 PatchException(
-                                    "'${patch.name}' raised an exception while being closed: ${it.stackTraceToString()}",
+                                    "'$patch' raised an exception while being closed: ${it.stackTraceToString()}",
                                     result.exception,
                                 ),
                             ),
@@ -259,10 +261,10 @@ class Patcher(
      *
      * @return The [PatcherResult] containing the patched input files.
      */
+    @OptIn(InternalApi::class)
     override fun get() =
         PatcherResult(
             context.bytecodeContext.get(),
             context.resourceContext.get(),
-            context.packageMetadata.apkInfo.doNotCompress?.toList(),
         )
 }

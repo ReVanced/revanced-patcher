@@ -7,10 +7,10 @@ import app.revanced.patcher.fingerprint.MethodFingerprint
 import java.io.Closeable
 
 /**
- * A ReVanced [Patch] that accesses a [BytecodeContext].
+ * A [Patch] that accesses a [BytecodeContext].
  *
  * If an implementation of [Patch] also implements [Closeable]
- * it will be closed in reverse execution order of patches executed by ReVanced [Patcher].
+ * it will be closed in reverse execution order of patches executed by [Patcher].
  */
 @Suppress("unused")
 abstract class BytecodePatch : Patch<BytecodeContext> {

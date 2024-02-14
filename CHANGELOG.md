@@ -1,3 +1,19 @@
+# [19.3.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v19.3.0-dev.1...v19.3.0-dev.2) (2024-02-13)
+
+# [19.3.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.2.1-dev.1...v19.3.0-dev.1) (2024-02-13)
+
+
+### Features
+
+* Read and write arbitrary files in APK files ([f1d7217](https://github.com/ReVanced/revanced-patcher/commit/f1d72174956c42234664dce152a27e6854e347e2))
+
+## [19.2.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.2.0...v19.2.1-dev.1) (2024-01-27)
+
+
+### Bug Fixes
+
+* Use `Patch#toString` to get patch class name, when no name available ([c9a8260](https://github.com/ReVanced/revanced-patcher/commit/c9a82608f7f2d6b3e64c0c949ea5d9f76fa46165))
+
 # [19.2.0](https://github.com/ReVanced/revanced-patcher/compare/v19.1.0...v19.2.0) (2023-12-28)
 
 
