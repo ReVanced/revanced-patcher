@@ -26,6 +26,7 @@ repositories {
     mavenLocal()
     google()
     maven {
+        // A repository must be speficied for some reason. "registry" is a dummy.
         url = uri("https://maven.pkg.github.com/revanced/registry")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
