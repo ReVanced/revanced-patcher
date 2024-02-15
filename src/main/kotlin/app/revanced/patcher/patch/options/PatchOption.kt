@@ -80,7 +80,6 @@ open class PatchOption<T>(
         if (!validator(value)) throw PatchOptionException.ValueValidationException(value, this)
     }
 
-
     override fun toString() = value.toString()
 
     operator fun getValue(
@@ -439,7 +438,7 @@ open class PatchOption<T>(
         )
 
         /**
-         * Create a new [PatchOption] with a string set value and add it to the current [Patch].
+         * Create a new [PatchOption] and add it to the current [Patch].
          *
          * @param key The identifier.
          * @param default The default value.
