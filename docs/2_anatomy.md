@@ -133,7 +133,7 @@ The example patch consists of the following parts:
 
     > [!NOTE]
     > This patch uses a fingerprint to find the method and replaces the instructions of the method with new instructions.
-    > The fingerprint is resolved on the classes present in `BytecodeContext` and the method is resolved on the class that the fingerprint is found in.
+    > The fingerprint is resolved on the classes present in `BytecodeContext`..
     > Fingerprints will be explained in more detail on the next page.
 
     > [!TIP]
