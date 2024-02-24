@@ -2,7 +2,7 @@
 
 In the context of ReVanced, fingerprinting is primarily used to resolve methods with a limited amount of known information.
 Methods with obfuscated names that change with each update are primary candidates for fingerprinting.
-The goal of fingerprinting is to uniquely identify a method by capturing various attributes of the method, such as the return type, access flags, an opcode pattern, and more.
+The goal of fingerprinting is to uniquely identify a method by capturing various attributes, such as the return type, access flags, an opcode pattern, strings, and more.
 
 ## ⛳️ Example fingerprint
 
@@ -18,21 +18,15 @@ object ShowAdsFingerprint : MethodFingerprint(
     parameters = listOf("Z"),
     opcodes = listOf(Opcode.RETURN),
     strings = listOf("pro"),
-    customFingerprint = { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/Loader;"}
+    customFingerprint = { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;" }
 )
 ```
 
 ## 🔎 Reconstructing the original code from a fingerprint
 
-To understand how a fingerprint is created, the following code is reconstructed from the fingerprint.
+The following code is reconstructed from the fingerprint to understand how a fingerprint is created.
 
 The fingerprint contains the following information:
-
-- Package and class name:
-
-  ```kt
-  customFingerprint = { it.definingClass == "Lcom/some/app/ads/AdsLoader;"}
-  ```
 
 - Method signature:
 
@@ -45,8 +39,14 @@ The fingerprint contains the following information:
 - Method implementation:
 
   ```kt
-  strings = listOf("pro"),
   opcodes = listOf(Opcode.RETURN)
+  strings = listOf("pro"),
+  ```
+
+- Package and class name:
+
+  ```kt
+  customFingerprint = { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;"}
   ```
 
 With this information, the original code can be reconstructed:
@@ -68,8 +68,8 @@ With this information, the original code can be reconstructed:
 ```
 
 > [!TIP]
-> A fingerprint should contain information about a method that is likely to remain the same across updates.
-> A name of a method is not included in the fingerprint, because it is likely to change with each update in an obfuscated app, whereas the return type, access flags, parameters, patterns of opcodes and strings are likely to remain the same.
+> A fingerprint should contain information about a method likely to remain the same across updates.
+> A method's name is not included in the fingerprint because it is likely to change with each update in an obfuscated app. In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the same.
 
 ## 🔨 How to use fingerprints
 
