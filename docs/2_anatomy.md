@@ -113,7 +113,7 @@ The example patch consists of the following parts:
 3.  🏁 The `execute` function
 
     The `execute` function is declared in the `Patch` interface and, therefore required to be implemented.
-    The `execute` function receives an instancenof a context object that provides access to the APK. The patch can use this context to modify the APK as descriped in [🧩 Introduction to ReVanced Patches](2_introduction_to_patches.md).
+    The `execute` function receives an instance of a context object that provides access to the APK. The patch can use this context to modify the APK as descriped in [🧩 Introduction to ReVanced Patches](2_introduction_to_patches.md).
 
     In the current example, the patch adds instructions at the beginning of a method implementation in the Dalvik VM bytecode. The added instructions return `false` to disable ads in the current example:
 
