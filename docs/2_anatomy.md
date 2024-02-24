@@ -133,7 +133,7 @@ The example patch consists of the following parts:
 
     > [!NOTE]
     > This patch uses a fingerprint to find the method and replaces the instructions of the method with new instructions.
-    > The fingerprint is resolved on the classes present in `BytecodeContext`..
+    > The fingerprint is resolved on the classes present in `BytecodeContext`.
     > Fingerprints will be explained in more detail on the next page.
 
     > [!TIP]
@@ -142,7 +142,7 @@ The example patch consists of the following parts:
     > Any exception raised by a patch will be handled by ReVanced Patcher.
 
 > [!TIP]
-> To see real-world examples of fingerprints, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
+> To see real-world examples of patches, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
 
 ## ⏭️ What's next
 
