@@ -16,7 +16,7 @@ Each patch can declare a set of dependencies on other patches. ReVanced Patcher 
 A patch class can be annotated with `@Patch` to provide metadata about and dependencies of the patch.
 Alternatively, a constructor of the super class can be used. This is useful in the example scenario where you want to create an abstract patch class.
 
-The entry point of a patch is the `execute` method. This method is called by ReVanced Patcher when the patch is executed. The `execute` method receives a context object that provides access to the APK. The patch can use this context to modify the APK.
+The entry point of a patch is the `execute` functions. This function is called by ReVanced Patcher when the patch is executed. The `execute` function receives an instance of the context object that provides access to the APK. The patch can use this context to modify the APK.
 
 Each type of context provides different APIs to modify the APK. For example, the `BytecodeContext` provides APIs to modify the Dalvik VM bytecode, while the `ResourceContext` provides APIs to modify resources.
 
@@ -56,7 +56,7 @@ object MyPatch : RawResourcePatch() {
 ```
 
 > [!TIP]
-> To see real-world examples of fingerprints, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
+> To see real-world examples of patches, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
 
 ## ⏭️ Whats next
 
