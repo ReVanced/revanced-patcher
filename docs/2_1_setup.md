@@ -4,8 +4,8 @@ To get started developing patches with ReVanced Patcher, you need to prepare a d
 
 ## 📝 Prerequisites
 
-- A Java IDE with Kotlin support, such as [IntelliJ](https://www.jetbrains.com/idea/) IDEA](https://www.jetbrains.com/idea/)
-- Knowledge of Java, [Kotlin](https://kotlinlang.org), and [Dalvik bytecode](https://source.android.com/docs/core/runtime/dalvik-bytecode)](https://source.android.com/docs/core/runtime/dalvik-bytecode)
+- A Java IDE with Kotlin support, such as [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+- Knowledge of Java, [Kotlin](https://kotlinlang.org), and [Dalvik bytecode](https://source.android.com/docs/core/runtime/dalvik-bytecode)
 - Android reverse engineering skills and tools such as [jadx](https://github.com/skylot/jadx)
 
 ## 🏃 Prepare the environment
