@@ -110,10 +110,10 @@ The example patch consists of the following parts:
     > This is useful in the example scenario, where the `DisableAdsPatch` depends on the `DisableAdsResourcePatch`.
     > The `DisableAdsResourcePatch` can for example be used to read the decoded resources of the app and provide the `DisableAdsPatch` with the necessary information to disable ads, because the `DisableAdsResourcePatch` is executed before the `DisableAdsPatch` and is a singleton object.
 
-3.  🏁 The `execute` method
+3.  🏁 The `execute` function
 
-    The `execute` method is declared in the `Patch` interface and, therefore required to be implemented.
-    The `execute` method receives a context object that provides access to the APK. The patch can use this context to modify the APK as descriped in [🧩 Introduction to ReVanced Patches](2_introduction_to_patches.md).
+    The `execute` function is declared in the `Patch` interface and, therefore required to be implemented.
+    The `execute` function receives an instancenof a context object that provides access to the APK. The patch can use this context to modify the APK as descriped in [🧩 Introduction to ReVanced Patches](2_introduction_to_patches.md).
 
     In the current example, the patch adds instructions at the beginning of a method implementation in the Dalvik VM bytecode. The added instructions return `false` to disable ads in the current example:
 
