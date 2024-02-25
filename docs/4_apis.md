@@ -15,7 +15,7 @@ A handful of APIs are available to make patch development easier and more effici
 ### 🧰 APIs
 
 > [!WARNING]
-> This section is still under construction and may not be complete.
+> This section is still under construction and may be incomplete.
 
 ## 🎉 Afterword
 
