@@ -60,7 +60,7 @@
 
 # 👶 Setting up a development environment
 
-To get started developing patches with ReVanced Patcher, you need to prepare a development environment.
+To start developing patches with ReVanced Patcher, you must prepare a development environment.
 
 ## 📝 Prerequisites
 
@@ -84,16 +84,16 @@ Throughout the documentation, [ReVanced Patches](https://github.com/revanced/rev
    ./gradlew build
    ```
 
-   > [!NOTE]
-   > If the build fails due to authentication, you may need to authenticate to GitHub Packages.
-   > Create a PAT with the scope `read:packages` [here](https://github.com/settings/tokens/new?scopes=read:packages&description=ReVanced) and add your token to ~/.gradle/gradle.properties.
-   >
-   > Example `gradle.properties` file:
-   >
-   > ```properties
-   > gpr.user = user
-   > gpr.key = key
-   > ```
+> [!NOTE]
+> If the build fails due to authentication, you may need to authenticate to GitHub Packages.
+> Create a PAT with the scope `read:packages` [here](https://github.com/settings/tokens/new?scopes=read:packages&description=ReVanced) and add your token to ~/.gradle/gradle.properties.
+>
+> Example `gradle.properties` file:
+>
+> ```properties
+> gpr.user = user
+> gpr.key = key
+> ```
 
 3. Open the project in your IDE
 
