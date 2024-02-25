@@ -3,18 +3,18 @@
     <source
       width="256px"
       media="(prefers-color-scheme: dark)"
-      srcset="assets/revanced-headline/revanced-headline-vertical-dark.svg"
+      srcset="../assets/revanced-headline/revanced-headline-vertical-dark.svg"
     >
     <img 
       width="256px"
-      src="assets/revanced-headline/revanced-headline-vertical-light.svg"
+      src="../assets/revanced-headline/revanced-headline-vertical-light.svg"
     >
   </picture>
   <br>
   <a href="https://revanced.app/">
      <picture>
-         <source height="24px" media="(prefers-color-scheme: dark)" srcset="assets/revanced-logo/revanced-logo.svg" />
-         <img height="24px" src="assets/revanced-logo/revanced-logo.svg" />
+         <source height="24px" media="(prefers-color-scheme: dark)" srcset="../assets/revanced-logo/revanced-logo.svg" />
+         <img height="24px" src="../assets/revanced-logo/revanced-logo.svg" />
      </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="https://github.com/ReVanced">
@@ -58,42 +58,50 @@
    Continuing the legacy of Vanced
 </p>
 
-# 👋 Contribution guidelines
+# 👶 Setting up a development environment
 
-This document describes how to contribute to ReVanced Patcher.
+To get started developing patches with ReVanced Patcher, you need to prepare a development environment.
 
-## 📖 Resources to help you get started
+## 📝 Prerequisites
 
-- The [documentation](https://github.com/ReVanced/revanced-patcher/tree/docs/docs) contains the fundamentals
-  of ReVanced Patcher and how to use ReVanced Patcher to create patches
-- [Our backlog](https://github.com/orgs/ReVanced/projects/12) is where we keep track of what we're working on
-- [Issues](https://github.com/ReVanced/revanced-patcher/issues) are where we keep track of bugs and feature requests
+- A Java IDE with Kotlin support, such as [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+- Knowledge of Java, [Kotlin](https://kotlinlang.org), and [Dalvik bytecode](https://source.android.com/docs/core/runtime/dalvik-bytecode)
+- Android reverse engineering skills and tools such as [jadx](https://github.com/skylot/jadx)
 
-## 🙏 Submitting a feature request
+## 🏃 Prepare the environment
 
-Features can be requested by opening an issue using the
-[Feature request issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Feature+request&projects=&template=feature-request.yml&title=feat%3A+).
+Throughout the documentation, [ReVanced Patches](https://github.com/revanced/revanced-patches) will be used as an example project.
 
-> **Note**
-> Requests can be accepted or rejected at the discretion of maintainers of ReVanced Patcher.
-> Good motivation has to be provided for a request to be accepted.
+1. Clone the repository
 
-## 🐞 Submitting a bug report
+   ```bash
+   git clone https://github.com/revanced/revanced-patches && cd revanced-patches
+   ```
 
-If you encounter a bug while using ReVanced Patcher, open an issue using the
-[Bug report issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Bug+report&projects=&template=bug-report.yml&title=bug%3A+).
+2. Build the project
 
-## 📝 How to contribute
+   ```bash
+   ./gradlew build
+   ```
 
-1. Before contributing, it is recommended to open an issue to discuss your change
-   with the maintainers of ReVanced Patcher. This will help you determine whether your change is acceptable
-   and whether it is worth your time to implement it
-2. Development happens on the `dev` branch. Fork the repository and create your branch from `dev`
-3. Commit your changes
-4. Submit a pull request to the `dev` branch of the repository and reference issues
-   that your pull request closes in the description of your pull request
-5. Our team will review your pull request and provide feedback. Once your pull request is approved,
-   it will be merged into the `dev` branch and will be included in the next release of ReVanced Patcher
+   > [!NOTE]
+   > If the build fails due to authentication, you may need to authenticate to GitHub Packages.
+   > Create a PAT with the scope `read:packages` [here](https://github.com/settings/tokens/new?scopes=read:packages&description=ReVanced) and add your token to ~/.gradle/gradle.properties.
+   >
+   > Example `gradle.properties` file:
+   >
+   > ```properties
+   > gpr.user = user
+   > gpr.key = key
+   > ```
 
-❤️ Thank you for considering contributing to ReVanced Patcher,  
-ReVanced
+3. Open the project in your IDE
+
+> [!TIP]
+> It is a good idea to set up a complete development environment for ReVanced, so that you can also test your patches by following the [ReVanced documentation](https://github.com/ReVanced/revanced-documentation).
+
+## ⏭️ What's next
+
+The next page will go into details about a ReVanced patch.
+
+Continue: [🧩 Anatomy of a patch](2_2_patch_anatomy.md)

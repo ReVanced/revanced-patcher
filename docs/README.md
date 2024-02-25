@@ -3,18 +3,18 @@
     <source
       width="256px"
       media="(prefers-color-scheme: dark)"
-      srcset="assets/revanced-headline/revanced-headline-vertical-dark.svg"
+      srcset="../assets/revanced-headline/revanced-headline-vertical-dark.svg"
     >
     <img 
       width="256px"
-      src="assets/revanced-headline/revanced-headline-vertical-light.svg"
+      src="../assets/revanced-headline/revanced-headline-vertical-light.svg"
     >
   </picture>
   <br>
   <a href="https://revanced.app/">
      <picture>
-         <source height="24px" media="(prefers-color-scheme: dark)" srcset="assets/revanced-logo/revanced-logo.svg" />
-         <img height="24px" src="assets/revanced-logo/revanced-logo.svg" />
+         <source height="24px" media="(prefers-color-scheme: dark)" srcset="../assets/revanced-logo/revanced-logo.svg" />
+         <img height="24px" src="../assets/revanced-logo/revanced-logo.svg" />
      </picture>
    </a>&nbsp;&nbsp;&nbsp;
    <a href="https://github.com/ReVanced">
@@ -58,42 +58,16 @@
    Continuing the legacy of Vanced
 </p>
 
-# 👋 Contribution guidelines
+# 💉 Documentation of ReVanced Patcher
 
-This document describes how to contribute to ReVanced Patcher.
+This documentation contains the fundamentals of ReVanced Patcher and how to use ReVanced Patcher to create patches
 
-## 📖 Resources to help you get started
+## 📖 Table of content
 
-- The [documentation](https://github.com/ReVanced/revanced-patcher/tree/docs/docs) contains the fundamentals
-  of ReVanced Patcher and how to use ReVanced Patcher to create patches
-- [Our backlog](https://github.com/orgs/ReVanced/projects/12) is where we keep track of what we're working on
-- [Issues](https://github.com/ReVanced/revanced-patcher/issues) are where we keep track of bugs and feature requests
-
-## 🙏 Submitting a feature request
-
-Features can be requested by opening an issue using the
-[Feature request issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Feature+request&projects=&template=feature-request.yml&title=feat%3A+).
-
-> **Note**
-> Requests can be accepted or rejected at the discretion of maintainers of ReVanced Patcher.
-> Good motivation has to be provided for a request to be accepted.
-
-## 🐞 Submitting a bug report
-
-If you encounter a bug while using ReVanced Patcher, open an issue using the
-[Bug report issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Bug+report&projects=&template=bug-report.yml&title=bug%3A+).
-
-## 📝 How to contribute
-
-1. Before contributing, it is recommended to open an issue to discuss your change
-   with the maintainers of ReVanced Patcher. This will help you determine whether your change is acceptable
-   and whether it is worth your time to implement it
-2. Development happens on the `dev` branch. Fork the repository and create your branch from `dev`
-3. Commit your changes
-4. Submit a pull request to the `dev` branch of the repository and reference issues
-   that your pull request closes in the description of your pull request
-5. Our team will review your pull request and provide feedback. Once your pull request is approved,
-   it will be merged into the `dev` branch and will be included in the next release of ReVanced Patcher
-
-❤️ Thank you for considering contributing to ReVanced Patcher,  
-ReVanced
+1. [💉 Introduction to ReVanced Patcher](1_patcher_intro.md)
+2. [🧩 Introduction to ReVanced Patches](2_patches_intro.md)
+   1. [👶 Setting up a development environment](2_1_setup.md)
+   2. [🧩 Anatomy of a ReVanced patch](2_2_patch_anatomy.md)
+      1. [🔎 Fingerprinting](2_2_1_fingerprinting.md)
+   3. [📜 Project structure and conventions](3_structure_and_conventions.md)
+   4. [💪 Advanced APIs](4_apis.md)
