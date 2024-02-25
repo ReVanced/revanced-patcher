@@ -1,7 +1,7 @@
 name: 🐞 Bug report
 description: Report a bug or an issue.
-title: 'bug: '
-labels: ['Bug report']
+title: "bug: "
+labels: ["Bug report"]
 body:
   - type: markdown
     attributes:
@@ -11,18 +11,18 @@ body:
             <source
               width="256px"
               media="(prefers-color-scheme: dark)"
-              srcset="https://raw.githubusercontent.com/revanced/revanced-patcher/main/assets/revanced-headline/revanced-headline-vertical-dark.svg"
+              srcset="../../assets/revanced-headline/revanced-headline-vertical-dark.svg"
             >
             <img 
               width="256px"
-              src="https://raw.githubusercontent.com/revanced/revanced-patcher/main/assets/revanced-headline/revanced-headline-vertical-light.svg"
+              src="../../assets/revanced-headline/revanced-headline-vertical-light.svg"
             >
           </picture>
           <br>
           <a href="https://revanced.app/">
              <picture>
-                 <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/revanced/revanced-patcher/main/assets/revanced-logo/revanced-logo.svg" />
-                 <img height="24px" src="https://raw.githubusercontent.com/revanced/revanced-patcher/main/assets/revanced-logo/revanced-logo.svg" />
+                 <source height="24px" media="(prefers-color-scheme: dark)" srcset="../../assets/revanced-logo/revanced-logo.svg" />
+                 <img height="24px" src="../../assets/revanced-logo/revanced-logo.svg" />
              </picture>
            </a>&nbsp;&nbsp;&nbsp;
            <a href="https://github.com/ReVanced">
@@ -69,7 +69,7 @@ body:
         # ReVanced Patcher bug report
 
         Before creating a new bug report, please keep the following in mind:
-        
+
         - **Do not submit a duplicate bug report**: You can review existing bug reports [here](https://github.com/ReVanced/revanced-patcher/labels/Bug%20report).
         - **Do not use the issue page for support**: If you need help or have questions, check out other platforms on [revanced.app](https://revanced.app).
   - type: textarea
