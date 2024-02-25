@@ -58,68 +58,42 @@
    Continuing the legacy of Vanced
 </p>
 
-# 💉 ReVanced Patcher
+# 👋 Contribution guidelines
 
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ReVanced/revanced-patcher/release.yml)
-![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)
+This document describes how to contribute to ReVanced Patcher.
 
-ReVanced Patcher used to patch Android applications.
+## 📖 Resources to help you get started
 
-## ❓ About
+- The [documentation](https://github.com/ReVanced/revanced-patcher/tree/docs/docs) contains the fundamentals
+  of ReVanced Patcher and how to use ReVanced Patcher to create patches
+- [Our backlog](https://github.com/orgs/ReVanced/projects/12) is where we keep track of what we're working on
+- [Issues](https://github.com/ReVanced/revanced-patcher/issues) are where we keep track of bugs and feature requests
 
-ReVanced Patcher is a library that is used to patch Android applications.  
-It powers [ReVanced Manager](https://github.com/ReVanced/revanced-manager),
-[ReVanced CLI](https://github.com/ReVanced/revanced-cli)
-and [ReVanced Library](https://github.com/ReVanced/revanced-library) and a rich set of patches have been developed
-using ReVanced Patcher in the [ReVanced Patches](https://github.com/ReVanced/revanced-patches) repository.
+## 🙏 Submitting a feature request
 
-## 💪 Features
+Features can be requested by opening an issue using the
+[Feature request issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Feature+request&projects=&template=feature-request.yml&title=feat%3A+).
 
-Some of the features the ReVanced Patcher provides are:
+> **Note**
+> Requests can be accepted or rejected at the discretion of maintainers of ReVanced Patcher.
+> Good motivation has to be provided for a request to be accepted.
 
-- 🔧 **Patch Dalvik VM bytecode**: Disassemble and assemble Dalvik bytecode
-- 📦 **Patch APK resources**: Decode and build Android APK resources
-- 📂 **Patch arbitrary APK files**: Read and write arbitrary files directly from and to APK files
-- 🧩 **Write modular patches**: Extensive API to write modular patches that can patch Dalvik VM bytecode,
-APK resources and arbitrary APK files
+## 🐞 Submitting a bug report
 
-## 🚀 How to get started
+If you encounter a bug while using ReVanced Patcher, open an issue using the
+[Bug report issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Bug+report&projects=&template=bug-report.yml&title=bug%3A+).
 
-To use ReVanced Patcher in your project, follow these steps:
+## 📝 How to contribute
 
-1. [Add the repository](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package)
-to your project
-2. Add the dependency to your project:
+1. Before contributing, it is recommended to open an issue to discuss your change
+   with the maintainers of ReVanced Patcher. This will help you determine whether your change is acceptable
+   and whether it is worth your time to implement it
+2. Development happens on the `dev` branch. Fork the repository and create your branch from `dev`
+3. Commit your changes
+4. Submit a pull request to the `dev` branch of the repository and reference issues
+   that your pull request closes in the description of your pull request
+5. Our team will review your pull request and provide feedback. Once your pull request is approved,
+   it will be merged into the `dev` branch and will be included in the next release of ReVanced Patcher
 
-   ```kt
-    dependencies {
-        implementation("app.revanced:revanced-patcher:{$version}")
-    }
-   ```
-
-For a minimal project configuration, 
-see [ReVanced Patches template](https://github.com/ReVanced/revanced-patches-template).
-
-## 📚 Everything else
-
-### 📙 Contributing
-
-Thank you for considering contributing to ReVanced Patcher.
-You can find the contribution guidelines [here](CONTRIBUTING.md).
-
-### 🛠️ Building
-
-To build ReVanced Patcher,
-you can follow the [ReVanced documentation](https://github.com/ReVanced/revanced-documentation).
-
-### 📃 Documentation
-
-The documentation contains the fundamentals of ReVanced Patcher and how to use ReVanced Patcher to create patches.
-You can find it [here](https://github.com/ReVanced/revanced-patcher/tree/docs/docs).
-
-## 📜 Licence
-
-ReVanced Patcher is licensed under the GPLv3 license. Please see the [licence file](LICENSE) for more information.
-[tl;dr](https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3) you may copy, distribute and modify ReVanced Patcher as long as you track changes/dates in source files.
-Any modifications to ReVanced Patcher must also be made available under the GPL,
-along with build & install instructions.
+❤️ Thank you for considering contributing to ReVanced Patcher,  
+ReVanced
