@@ -2,6 +2,7 @@ package app.revanced.patcher.patch
 
 import app.revanced.patcher.PatchClass
 import app.revanced.patcher.Patcher
+import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.data.ResourceContext
 import java.io.Closeable
 
@@ -40,4 +41,6 @@ abstract class ResourcePatch : Patch<ResourceContext> {
         use: Boolean = true,
         requiresIntegrations: Boolean = false,
     ) : super(name, description, compatiblePackages, dependencies, use, requiresIntegrations)
+
+    override fun execute(context: PatcherContext) = execute(context.resourceContext)
 }
