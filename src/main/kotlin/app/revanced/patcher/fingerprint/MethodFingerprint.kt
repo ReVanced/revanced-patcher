@@ -1,7 +1,6 @@
 package app.revanced.patcher.fingerprint
 
 import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.fingerprint.LookupMap.Maps.appendParameters
 import app.revanced.patcher.fingerprint.LookupMap.Maps.initializeLookupMaps
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methodSignatureLookupMap
@@ -14,9 +13,9 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import kotlin.reflect.full.findAnnotations
 
 /**
  * A fingerprint to resolve methods.
@@ -29,12 +28,12 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
  * @param customFingerprint A custom condition for this fingerprint.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class MethodFingerprint(
+class MethodFingerprint(
     internal val returnType: String? = null,
     internal val accessFlags: Int? = null,
-    internal val parameters: Iterable<String>? = null,
-    internal val opcodes: Iterable<Opcode?>? = null,
-    internal val strings: Iterable<String>? = null,
+    internal val parameters: List<String>? = null,
+    internal val opcodes: List<Opcode?>? = null,
+    internal val strings: List<String>? = null,
     internal val customFingerprint: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null,
 ) {
     /**
@@ -48,7 +47,7 @@ abstract class MethodFingerprint(
      *
      *  If the annotation is not present, this property is null.
      */
-    val fuzzyPatternScanMethod = this::class.findAnnotationRecursively(FuzzyPatternScanMethod::class)
+    val fuzzyPatternScanMethod = this::class.findAnnotations(FuzzyPatternScanMethod::class).singleOrNull()
 
     /**
      * Resolve a [MethodFingerprint] using the lookup map built by [initializeLookupMaps].
@@ -184,7 +183,8 @@ abstract class MethodFingerprint(
 
         if (methodFingerprint.parameters != null &&
             !parametersEqual(
-                methodFingerprint.parameters, // TODO: parseParameters()
+                // TODO: parseParameters()
+                methodFingerprint.parameters,
                 method.parameterTypes,
             )
         ) {
@@ -231,27 +231,6 @@ abstract class MethodFingerprint(
             if (methodFingerprint.opcodes != null) {
                 method.implementation?.instructions ?: return false
 
-                fun MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult.newWarnings(
-                    pattern: Iterable<Opcode?>,
-                    instructions: Iterable<Instruction>,
-                ) = buildList {
-                    for ((patternIndex, instructionIndex) in (this@newWarnings.startIndex until this@newWarnings.endIndex).withIndex()) {
-                        val originalOpcode = instructions.elementAt(instructionIndex).opcode
-                        val patternOpcode = pattern.elementAt(patternIndex)
-
-                        if (patternOpcode == null || patternOpcode.ordinal == originalOpcode.ordinal) continue
-
-                        this.add(
-                            MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult.Warning(
-                                originalOpcode,
-                                patternOpcode,
-                                instructionIndex,
-                                patternIndex,
-                            ),
-                        )
-                    }
-                }
-
                 fun Method.patternScan(
                     fingerprint: MethodFingerprint,
                 ): MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult? {
@@ -271,27 +250,21 @@ abstract class MethodFingerprint(
                             val patternOpcode = pattern.elementAt(patternIndex)
 
                             if (patternOpcode != null && patternOpcode.ordinal != originalOpcode.ordinal) {
-                                // reaching maximum threshold (0) means,
-                                // the pattern does not match to the current instructions
+                                // Reaching maximum threshold (0) means,
+                                // the pattern does not match to the current instructions.
                                 if (threshold-- == 0) break
                             }
 
                             if (patternIndex < patternLength - 1) {
-                                // if the entire pattern has not been scanned yet
-                                // continue the scan
+                                // If the entire pattern has not been scanned yet, continue the scan.
                                 patternIndex++
                                 continue
                             }
-                            // the pattern is valid, generate warnings if fuzzyPatternScanMethod is FuzzyPatternScanMethod
-                            val result =
-                                MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult(
-                                    index,
-                                    index + patternIndex,
-                                )
-                            if (fingerprint.fuzzyPatternScanMethod !is FuzzyPatternScanMethod) return result
-                            result.warnings = result.newWarnings(pattern, instructions)
-
-                            return result
+                            // The pattern is valid.
+                            return MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult(
+                                index,
+                                index + patternIndex,
+                            )
                         }
                     }
 

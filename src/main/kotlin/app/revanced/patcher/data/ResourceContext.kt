@@ -5,7 +5,6 @@ import app.revanced.patcher.PackageMetadata
 import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.util.Document
-import app.revanced.patcher.util.DomFileEditor
 import brut.androlib.AaptInvoker
 import brut.androlib.ApkDecoder
 import brut.androlib.apk.UsesFramework
@@ -15,7 +14,6 @@ import brut.androlib.res.decoder.AndroidManifestResourceParser
 import brut.androlib.res.decoder.XmlPullStreamDecoder
 import brut.androlib.res.xml.ResXmlPatcher
 import brut.directory.ExtFile
-import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
@@ -30,17 +28,13 @@ import java.util.logging.Logger
 class ResourceContext internal constructor(
     private val packageMetadata: PackageMetadata,
     private val config: PatcherConfig,
-) : Context<PatcherResult.PatchedResources?>, Iterable<File> {
+) : Context<PatcherResult.PatchedResources?> {
     private val logger = Logger.getLogger(ResourceContext::class.java.name)
 
     /**
      * Read and write documents in the [PatcherConfig.apkFiles].
      */
     val document = DocumentOperatable()
-
-    @Deprecated("Use document instead.")
-    @Suppress("DEPRECATION")
-    val xmlEditor = XmlFileHolder()
 
     /**
      * Predicate to delete resources from [PatcherConfig.apkFiles].
@@ -213,12 +207,6 @@ class ResourceContext internal constructor(
      */
     fun stageDelete(shouldDelete: (String) -> Boolean) = deleteResources.add(shouldDelete)
 
-    @Deprecated("Use get(String, Boolean) instead.", ReplaceWith("get(path, false)"))
-    operator fun get(path: String) = get(path, false)
-
-    @Deprecated("Use get(String, Boolean) instead.")
-    override fun iterator(): Iterator<File> = config.apkFiles.listFiles()!!.iterator()
-
     /**
      * How to handle resources decoding and compiling.
      */
@@ -243,18 +231,6 @@ class ResourceContext internal constructor(
     inner class DocumentOperatable {
         operator fun get(inputStream: InputStream) = Document(inputStream)
 
-        @Suppress("DEPRECATION")
         operator fun get(path: String) = Document(this@ResourceContext[path])
-    }
-
-    @Deprecated("Use DocumentOperatable instead.")
-    inner class XmlFileHolder {
-        @Suppress("DEPRECATION")
-        operator fun get(inputStream: InputStream) = DomFileEditor(inputStream)
-
-        @Suppress("DEPRECATION")
-        operator fun get(path: String): DomFileEditor {
-            return DomFileEditor(this@ResourceContext[path])
-        }
     }
 }

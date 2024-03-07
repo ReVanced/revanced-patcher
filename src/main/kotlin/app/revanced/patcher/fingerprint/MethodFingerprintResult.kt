@@ -2,7 +2,6 @@ package app.revanced.patcher.fingerprint
 
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.util.proxy.ClassProxy
-import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.util.MethodUtil
@@ -69,26 +68,10 @@ class MethodFingerprintResult(
          * The result of a pattern scan.
          * @param startIndex The start index of the instructions where to which this pattern matches.
          * @param endIndex The end index of the instructions where to which this pattern matches.
-         * @param warnings A list of warnings considering this [PatternScanResult].
          */
         class PatternScanResult(
             val startIndex: Int,
             val endIndex: Int,
-            var warnings: List<Warning>? = null,
-        ) {
-            /**
-             * Represents warnings of the pattern scan.
-             * @param correctOpcode The opcode the instruction list has.
-             * @param wrongOpcode The opcode the pattern list of the signature currently has.
-             * @param instructionIndex The index of the opcode relative to the instruction list.
-             * @param patternIndex The index of the opcode relative to the pattern list from the signature.
-             */
-            class Warning(
-                val correctOpcode: Opcode,
-                val wrongOpcode: Opcode,
-                val instructionIndex: Int,
-                val patternIndex: Int,
-            )
-        }
+        )
     }
 }

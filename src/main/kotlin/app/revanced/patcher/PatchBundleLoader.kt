@@ -10,17 +10,11 @@ import java.io.File
 import java.net.URLClassLoader
 import java.util.jar.JarFile
 import java.util.logging.Logger
-import kotlin.reflect.KClass
 
 /**
  * A set of [Patch]es.
  */
 typealias PatchSet = Set<Patch<*>>
-
-/**
- * A [Patch] class.
- */
-typealias PatchClass = KClass<out Patch<*>>
 
 /**
  * A loader of [Patch]es from patch bundles.
@@ -42,54 +36,16 @@ sealed class PatchBundleLoader private constructor(
     private val logger = Logger.getLogger(PatchBundleLoader::class.java.name)
 
     init {
-        patchBundles.flatMap(getBinaryClassNames).asSequence().map {
+        patchBundles.asSequence().flatMap(getBinaryClassNames).map {
             classLoader.loadClass(it)
-        }.filter {
-            Patch::class.java.isAssignableFrom(it)
-        }.mapNotNull { patchClass ->
-            patchClass.getInstance(logger, silent = true)
+        }.flatMap {
+            it.declaredFields.filter { field ->
+                Patch::class.java.isAssignableFrom(field.type)
+            }.map { field -> field.get(null) as Patch<*> }
         }.filter {
             it.name != null
-        }.let { patches ->
+        }.toList().let { patches ->
             patchSet.addAll(patches)
-        }
-    }
-
-    internal companion object Utils {
-        /**
-         * Instantiates a [Patch]. If the class is a singleton, the INSTANCE field will be used.
-         *
-         * @param logger The [Logger] to use for logging.
-         * @param silent Whether to suppress logging.
-         * @return The instantiated [Patch] or `null` if the [Patch] could not be instantiated.
-         */
-        internal fun Class<*>.getInstance(
-            logger: Logger,
-            silent: Boolean = false,
-        ): Patch<*>? {
-            return try {
-                getField("INSTANCE").get(null)
-            } catch (exception: NoSuchFieldException) {
-                if (!silent) {
-                    logger.fine(
-                        "Patch class '$name' has no INSTANCE field, therefor not a singleton. " +
-                            "Attempting to instantiate it.",
-                    )
-                }
-
-                try {
-                    getDeclaredConstructor().newInstance()
-                } catch (exception: Exception) {
-                    if (!silent) {
-                        logger.severe(
-                            "Patch class '$name' is not singleton and has no suitable constructor, " +
-                                "therefor cannot be instantiated and is ignored.",
-                        )
-                    }
-
-                    return null
-                }
-            } as Patch<*>
         }
     }
 
@@ -128,8 +84,5 @@ sealed class PatchBundleLoader private constructor(
                     classDef.type.substring(1, classDef.length - 1)
                 }
         },
-    ) {
-        @Deprecated("This constructor is deprecated. Use the constructor with the second parameter instead.")
-        constructor(vararg patchBundles: File) : this(*patchBundles, optimizedDexDirectory = null)
-    }
+    )
 }

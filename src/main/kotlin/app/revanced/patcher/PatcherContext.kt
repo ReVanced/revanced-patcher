@@ -19,14 +19,14 @@ class PatcherContext internal constructor(config: PatcherConfig) {
     val packageMetadata = PackageMetadata(ApkInfo(ExtFile(config.apkFile)))
 
     /**
-     * The map of [Patch]es associated by their [PatchClass].
+     * The set of [Patch]es.
      */
-    internal val executablePatches = mutableMapOf<PatchClass, Patch<*>>()
+    internal val executablePatches = mutableSetOf<Patch<*>>()
 
     /**
-     * The map of all [Patch]es and their dependencies associated by their [PatchClass].
+     * The set of all [Patch]es and their dependencies.
      */
-    internal val allPatches = mutableMapOf<PatchClass, Patch<*>>()
+    internal val allPatches = mutableSetOf<Patch<*>>()
 
     /**
      * A context for the patcher containing the current state of the resources.

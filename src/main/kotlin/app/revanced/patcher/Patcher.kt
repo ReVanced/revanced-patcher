@@ -1,6 +1,5 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.PatchBundleLoader.Utils.getInstance
 import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.fingerprint.LookupMap
 import app.revanced.patcher.patch.*
@@ -25,20 +24,6 @@ class Patcher(
      */
     val context = PatcherContext(config)
 
-    @Suppress("DEPRECATION")
-    @Deprecated("Use Patcher(PatcherConfig) instead.")
-    constructor(
-        patcherOptions: PatcherOptions,
-    ) : this(
-        PatcherConfig(
-            patcherOptions.inputFile,
-            patcherOptions.resourceCachePath,
-            patcherOptions.aaptBinaryPath,
-            patcherOptions.frameworkFileDirectory,
-            patcherOptions.multithreadingDexFileWriter,
-        ),
-    )
-
     init {
         context.resourceContext.decodeResources(ResourceContext.ResourceMode.NONE)
     }
@@ -50,26 +35,15 @@ class Patcher(
      */
     @Suppress("NAME_SHADOWING")
     override fun acceptPatches(patches: PatchSet) {
-        /**
-         * Add dependencies of a [Patch] recursively to [PatcherContext.allPatches].
-         * If a [Patch] is already in [PatcherContext.allPatches], it will not be added again.
-         */
-        fun PatchClass.putDependenciesRecursively() {
-            if (context.allPatches.contains(this)) return
+        // Add all patches to the executablePatches set.
+        context.executablePatches.addAll(patches)
 
-            val dependency = this.java.getInstance(logger)!!
-            context.allPatches[this] = dependency
-
-            dependency.dependencies?.forEach { it.putDependenciesRecursively() }
-        }
-
-        // Add all patches and their dependencies to the context.
+        // Add all patches and their dependencies to the allPatches set.
         patches.forEach { patch ->
-            context.executablePatches.putIfAbsent(patch::class, patch) ?: run {
-                context.allPatches[patch::class] = patch
+            fun Patch<*>.addRecursively() =
+                also(context.allPatches::add).dependencies.forEach(Patch<*>::addRecursively)
 
-                patch.dependencies?.forEach { it.putDependenciesRecursively() }
-            }
+            patch.addRecursively()
         }
 
         // TODO: Detect circular dependencies.
@@ -80,13 +54,10 @@ class Patcher(
          * @param predicate The predicate to match.
          */
         fun Patch<*>.anyRecursively(predicate: (Patch<*>) -> Boolean): Boolean =
-            predicate(this) || dependencies?.any { dependency ->
-                context.allPatches[dependency]!!.anyRecursively(predicate)
-            } ?: false
+            predicate(this) || dependencies.any { dependency -> dependency.anyRecursively(predicate) }
 
-        context.allPatches.values.let { patches ->
-            // Determine the resource mode.
-
+        context.allPatches.let { patches ->
+            // Check, if what kind of resource mode is required.
             config.resourceMode = if (patches.any { patch -> patch.anyRecursively { it is ResourcePatch } }) {
                 ResourceContext.ResourceMode.FULL
             } else if (patches.any { patch -> patch.anyRecursively { it is RawResourcePatch } }) {
@@ -95,7 +66,7 @@ class Patcher(
                 ResourceContext.ResourceMode.NONE
             }
 
-            // Determine, if merging integrations is required.
+            // Check, if integrations need to be merged.
             for (patch in patches)
                 if (patch.anyRecursively { it.requiresIntegrations }) {
                     context.bytecodeContext.integrations.merge = true
@@ -113,12 +84,6 @@ class Patcher(
         context.bytecodeContext.integrations.addAll(integrations)
     }
 
-    @Deprecated(
-        "Use acceptIntegrations(Set<File>) instead.",
-        ReplaceWith("acceptIntegrations(integrations.toSet())"),
-    )
-    override fun acceptIntegrations(integrations: List<File>) = acceptIntegrations(integrations.toSet())
-
     /**
      * Execute [Patch]es that were added to ReVanced [Patcher].
      *
@@ -127,52 +92,38 @@ class Patcher(
      */
     override fun apply(returnOnError: Boolean) =
         flow {
-            /**
-             * Execute a [Patch] and its dependencies recursively.
-             *
-             * @param patch The [Patch] to execute.
-             * @param executedPatches A map to prevent [Patch]es from being executed twice due to dependencies.
-             * @return The result of executing the [Patch].
-             */
-            fun executePatch(
-                patch: Patch<*>,
+            fun Patch<*>.execute(
                 executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
             ): PatchResult {
-                val patchName = patch.toString()
-
-                executedPatches[patch]?.let { patchResult ->
+                // If the patch was executed before or failed, return it's the result.
+                executedPatches[this]?.let { patchResult ->
                     patchResult.exception ?: return patchResult
 
-                    // Return a new result with an exception indicating that the patch was not executed previously,
-                    // because it is a dependency of another patch that failed.
-                    return PatchResult(patch, PatchException("'$patchName' did not succeed previously"))
+                    return PatchResult(this, PatchException("'$this' failed previously"))
                 }
 
                 // Recursively execute all dependency patches.
-                patch.dependencies?.forEach { dependencyClass ->
-                    val dependency = context.allPatches[dependencyClass]!!
-                    val result = executePatch(dependency, executedPatches)
-
-                    result.exception?.let {
+                dependencies.forEach { dependency ->
+                    execute(executedPatches).exception?.let {
                         return PatchResult(
-                            patch,
+                            this,
                             PatchException(
-                                "'$patchName' depends on '${dependency.name ?: dependency}' " +
-                                    "that raised an exception:\n${it.stackTraceToString()}",
+                                "'$this' depends on '$dependency' that raised an exception:\n${it.stackTraceToString()}",
                             ),
                         )
                     }
                 }
 
+                // Execute the patch.
                 return try {
-                    patch.execute(context)
+                    execute(context)
 
-                    PatchResult(patch)
+                    PatchResult(this)
                 } catch (exception: PatchException) {
-                    PatchResult(patch, exception)
+                    PatchResult(this, exception)
                 } catch (exception: Exception) {
-                    PatchResult(patch, PatchException(exception))
-                }.also { executedPatches[patch] = it }
+                    PatchResult(this, PatchException(exception))
+                }.also { executedPatches[this] = it }
             }
 
             if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
@@ -186,10 +137,10 @@ class Patcher(
 
             logger.info("Executing patches")
 
-            val executedPatches = LinkedHashMap<Patch<*>, PatchResult>() // Key is name.
+            val executedPatches = LinkedHashMap<Patch<*>, PatchResult>()
 
-            context.executablePatches.values.sortedBy { it.name }.forEach { patch ->
-                val patchResult = executePatch(patch, executedPatches)
+            context.executablePatches.sortedBy { it.name }.forEach { patch ->
+                val patchResult = patch.execute(executedPatches)
 
                 // If the patch failed, emit the result, even if it is closeable.
                 // Results of executed patches that are closeable will be emitted later.
@@ -205,40 +156,38 @@ class Patcher(
                 }
             }
 
-            executedPatches.values
-                .filter { it.exception == null }
-                .filter { it.patch is Closeable }.asReversed().forEach { executedPatch ->
-                    val patch = executedPatch.patch
+            executedPatches.values.filter { it.exception == null }.asReversed().forEach { executedPatch ->
+                val patch = executedPatch.patch
 
-                    val result =
-                        try {
-                            (patch as Closeable).close()
+                val result =
+                    try {
+                        (patch as Closeable).close()
 
-                            executedPatch
-                        } catch (exception: PatchException) {
-                            PatchResult(patch, exception)
-                        } catch (exception: Exception) {
-                            PatchResult(patch, PatchException(exception))
-                        }
-
-                    result.exception?.let {
-                        emit(
-                            PatchResult(
-                                patch,
-                                PatchException(
-                                    "'$patch' raised an exception while being closed: ${it.stackTraceToString()}",
-                                    result.exception,
-                                ),
-                            ),
-                        )
-
-                        if (returnOnError) return@flow
-                    } ?: run {
-                        patch.name ?: return@run
-
-                        emit(result)
+                        executedPatch
+                    } catch (exception: PatchException) {
+                        PatchResult(patch, exception)
+                    } catch (exception: Exception) {
+                        PatchResult(patch, PatchException(exception))
                     }
+
+                result.exception?.let {
+                    emit(
+                        PatchResult(
+                            patch,
+                            PatchException(
+                                "'$patch' raised an exception while being closed: ${it.stackTraceToString()}",
+                                result.exception,
+                            ),
+                        ),
+                    )
+
+                    if (returnOnError) return@flow
+                } ?: run {
+                    patch.name ?: return@run
+
+                    emit(result)
                 }
+            }
         }
 
     override fun close() = LookupMap.clearLookupMaps()

@@ -18,7 +18,7 @@ class PatchOptions internal constructor(
 
     /**
      * Set an option's value.
-     * @param key The identifier.
+     * @param key The key.
      * @param value The value.
      * @throws PatchOptionException.PatchOptionNotFoundException If the option does not exist.
      */

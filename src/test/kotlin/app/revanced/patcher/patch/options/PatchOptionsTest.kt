@@ -1,10 +1,6 @@
 package app.revanced.patcher.patch.options
 
-import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.booleanPatchOption
-import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.stringArrayPatchOption
-import app.revanced.patcher.patch.options.PatchOption.PatchExtensions.stringPatchOption
+import app.revanced.patcher.patch.bytecodePatch
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
@@ -12,116 +8,123 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class PatchOptionsTest {
-    @Test
-    fun `should not fail because default value is unvalidated`() {
-        assertDoesNotThrow { OptionsTestPatch.requiredStringOption }
+    private val optionsTestPatch = bytecodePatch {
+        booleanPatchOption("bool", true)
+
+        stringPatchOption("required", "default", required = true)
+
+        stringArrayPatchOption("array", arrayOf("1", "2"))
+
+        stringPatchOption("choices", "value", values = mapOf("Valid option value" to "valid"))
+
+        stringPatchOption("validated", "default") { it == "valid" }
+
+        stringPatchOption("resettable", null, required = true)
     }
 
     @Test
-    fun `should not allow setting custom value with validation`() {
+    fun `should not fail because default value is unvalidated`() = options {
+        assertDoesNotThrow { get("required") }
+    }
+
+    @Test
+    fun `should not allow setting custom value with validation`() = options {
         // Getter validation on incorrect value.
-        assertThrows<PatchOptionException.ValueValidationException> { OptionsTestPatch.validatedOption }
+        assertThrows<PatchOptionException.ValueValidationException> {
+            set("validated", get("validated"))
+        }
 
         // Setter validation on incorrect value.
-        assertThrows<PatchOptionException.ValueValidationException> { OptionsTestPatch.validatedOption = "invalid" }
+        assertThrows<PatchOptionException.ValueValidationException> {
+            set("validated", "invalid")
+        }
 
         // Setter validation on correct value.
-        assertDoesNotThrow { OptionsTestPatch.validatedOption = "valid" }
-    }
-
-    @Test
-    fun `should throw due to incorrect type`() {
-        assertThrows<PatchOptionException.InvalidValueTypeException> {
-            OptionsTestPatch.options["bool"] = "not a boolean"
+        assertDoesNotThrow {
+            set("validated", "valid")
         }
     }
 
     @Test
-    fun `should be nullable`() {
-        OptionsTestPatch.booleanOption = null
+    fun `should throw due to incorrect type`() = options {
+        assertThrows<PatchOptionException.InvalidValueTypeException> {
+            set("bool", "not a boolean")
+        }
     }
 
     @Test
-    fun `option should not be found`() {
+    fun `should be nullable`() = options {
+        assertDoesNotThrow {
+            set("bool", null)
+        }
+    }
+
+    @Test
+    fun `option should not be found`() = options {
         assertThrows<PatchOptionException.PatchOptionNotFoundException> {
-            OptionsTestPatch.options["this option does not exist"] = 1
+            set("this option does not exist", 1)
         }
     }
 
     @Test
-    fun `should be able to add options manually`() {
+    fun `should be able to add options manually`() = options {
         assertThrows<PatchOptionException.InvalidValueTypeException> {
-            OptionsTestPatch.options["array"] = OptionsTestPatch.stringArrayOption
+            set("array", get("array"))
         }
         assertDoesNotThrow {
-            OptionsTestPatch.options.register(OptionsTestPatch.stringArrayOption)
+            register(get("array"))
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     @Test
-    fun `should allow setting value from values`() =
-        with(OptionsTestPatch.options["choices"] as PatchOption<String>) {
-            value = values!!.values.last()
-            assertTrue(value == "valid")
+    fun `should allow setting value from values`() = options {
+        @Suppress("UNCHECKED_CAST")
+        val option = get("choices") as PatchOption<String>
+
+        option.value = option.values!!.values.last()
+
+        assertTrue(option.value == "valid")
+    }
+
+    @Test
+    fun `should allow setting custom value`() = options {
+        assertDoesNotThrow {
+            set("choices", "unknown")
+        }
+    }
+
+    @Test
+    fun `should allow resetting value`() = options {
+        assertDoesNotThrow {
+            set("choices", null)
         }
 
-    @Test
-    fun `should allow setting custom value`() = assertDoesNotThrow { OptionsTestPatch.stringOptionWithChoices = "unknown" }
+        assert(get("choices").value == null)
+    }
 
     @Test
-    fun `should allow resetting value`() = assertDoesNotThrow { OptionsTestPatch.stringOptionWithChoices = null }
-
-    @Test
-    fun `reset should not fail`() {
+    fun `reset should not fail`() = options {
         assertDoesNotThrow {
-            OptionsTestPatch.resettableOption.value = "test"
-            OptionsTestPatch.resettableOption.reset()
+            set("resettable", "test")
+            get("resettable").reset()
         }
 
         assertThrows<PatchOptionException.ValueRequiredException> {
-            OptionsTestPatch.resettableOption.value
+            get("resettable").value
         }
     }
 
     @Test
-    fun `option types should be known`() = assertTrue(OptionsTestPatch.options["array"].valueType == "StringArray")
+    fun `option types should be known`() = options {
+        assertTrue(get("array").valueType == "StringArray")
+    }
 
     @Test
-    fun `getting default value should work`() = assertDoesNotThrow { assertNull(OptionsTestPatch.resettableOption.default) }
-
-    @Suppress("DEPRECATION")
-    private object OptionsTestPatch : BytecodePatch() {
-        var booleanOption by booleanPatchOption(
-            "bool",
-            true,
-        )
-        var requiredStringOption by stringPatchOption(
-            "required",
-            "default",
-            required = true,
-        )
-        var stringArrayOption =
-            stringArrayPatchOption(
-                "array",
-                arrayOf("1", "2"),
-            )
-        var stringOptionWithChoices by stringPatchOption(
-            "choices",
-            "value",
-            values = mapOf("Valid option value" to "valid"),
-        )
-        var validatedOption by stringPatchOption(
-            "validated",
-            "default",
-        ) { it == "valid" }
-        var resettableOption =
-            stringPatchOption(
-                "resettable",
-                null,
-                required = true,
-            )
-
-        override fun execute(context: BytecodeContext) {}
+    fun `getting default value should work`() = options {
+        assertDoesNotThrow {
+            assertNull(get("resettable").default)
+        }
     }
+
+    private fun options(block: PatchOptions.() -> Unit) = optionsTestPatch.options.let(block)
 }
