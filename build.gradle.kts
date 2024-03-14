@@ -61,6 +61,8 @@ kotlin {
 
 java {
     targetCompatibility = JavaVersion.VERSION_11
+
+    withSourcesJar()
 }
 
 publishing {
