@@ -2,8 +2,10 @@ package app.revanced.patcher.patch
 
 import app.revanced.patcher.PatchClass
 import app.revanced.patcher.Patcher
+import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.fingerprint.MethodFingerprint
+import app.revanced.patcher.fingerprint.MethodFingerprint.Companion.resolveUsingLookupMap
 import java.io.Closeable
 
 /**
@@ -58,4 +60,9 @@ abstract class BytecodePatch : Patch<BytecodeContext> {
         ReplaceWith("BytecodePatch(emptySet())"),
     )
     constructor() : this(emptySet())
+
+    override fun execute(context: PatcherContext) {
+        fingerprints.resolveUsingLookupMap(context.bytecodeContext)
+        execute(context.bytecodeContext)
+    }
 }

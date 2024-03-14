@@ -115,7 +115,7 @@ you can follow the [ReVanced documentation](https://github.com/ReVanced/revanced
 ### 📃 Documentation
 
 The documentation contains the fundamentals of ReVanced Patcher and how to use ReVanced Patcher to create patches.
-You can find it [here](https://github.com/ReVanced/revanced-patcher/tree/docs/docs).
+You can find it [here](https://github.com/ReVanced/revanced-patcher/tree/main/docs).
 
 ## 📜 Licence
 

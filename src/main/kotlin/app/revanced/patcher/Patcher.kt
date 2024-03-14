@@ -3,7 +3,6 @@ package app.revanced.patcher
 import app.revanced.patcher.PatchBundleLoader.Utils.getInstance
 import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.fingerprint.LookupMap
-import app.revanced.patcher.fingerprint.MethodFingerprint.Companion.resolveUsingLookupMap
 import app.revanced.patcher.patch.*
 import kotlinx.coroutines.flow.flow
 import java.io.Closeable
@@ -166,19 +165,7 @@ class Patcher(
                 }
 
                 return try {
-                    // TODO: Implement this in a more polymorphic way.
-                    when (patch) {
-                        is BytecodePatch -> {
-                            patch.fingerprints.resolveUsingLookupMap(context.bytecodeContext)
-                            patch.execute(context.bytecodeContext)
-                        }
-                        is RawResourcePatch -> {
-                            patch.execute(context.resourceContext)
-                        }
-                        is ResourcePatch -> {
-                            patch.execute(context.resourceContext)
-                        }
-                    }
+                    patch.execute(context)
 
                     PatchResult(patch)
                 } catch (exception: PatchException) {

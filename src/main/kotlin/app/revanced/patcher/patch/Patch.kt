@@ -4,6 +4,7 @@ package app.revanced.patcher.patch
 
 import app.revanced.patcher.PatchClass
 import app.revanced.patcher.Patcher
+import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.data.Context
 import app.revanced.patcher.extensions.AnnotationExtensions.findAnnotationRecursively
 import app.revanced.patcher.patch.options.PatchOptions
@@ -89,6 +90,14 @@ sealed class Patch<out T : Context<*>> {
      * The options of the patch associated by the options key.
      */
     val options = PatchOptions()
+
+    /**
+     * The execution function of the patch.
+     * This function is called by [Patcher].
+     *
+     * @param context The [PatcherContext] the patch will work on.
+     */
+    internal abstract fun execute(context: PatcherContext)
 
     /**
      * The execution function of the patch.
