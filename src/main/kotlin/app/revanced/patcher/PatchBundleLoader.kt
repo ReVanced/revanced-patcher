@@ -103,7 +103,7 @@ sealed class PatchBundleLoader private constructor(
         patchBundles,
         { patchBundle ->
             JarFile(patchBundle).entries().toList().filter { it.name.endsWith(".class") }
-                .map { it.name.replace('/', '.').replace(".class", "") }
+                .map { it.name.substringBeforeLast('.').replace('/', '.') }
         },
     )
 
