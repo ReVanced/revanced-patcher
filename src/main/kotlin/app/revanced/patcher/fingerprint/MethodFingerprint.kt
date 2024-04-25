@@ -1,21 +1,30 @@
 package app.revanced.patcher.fingerprint
 
-import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.fingerprint.LookupMap.Maps.appendParameters
 import app.revanced.patcher.fingerprint.LookupMap.Maps.initializeLookupMaps
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methodSignatureLookupMap
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methodStringsLookupMap
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methods
 import app.revanced.patcher.fingerprint.MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
-import app.revanced.patcher.fingerprint.annotation.FuzzyPatternScanMethod
-import app.revanced.patcher.patch.PatchException
+import app.revanced.patcher.patch.*
+import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.util.MethodUtil
 import kotlin.reflect.full.findAnnotations
+
+/**
+ * Annotations to scan a pattern [MethodFingerprint] with fuzzy algorithm.
+ * @param threshold if [threshold] or more of the opcodes do not match, skip.
+ */
+@Target(AnnotationTarget.CLASS)
+annotation class FuzzyPatternScanMethod(
+    val threshold: Int = 1,
+)
 
 /**
  * A fingerprint to resolve methods.
@@ -25,7 +34,7 @@ import kotlin.reflect.full.findAnnotations
  * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
  * @param opcodes An opcode pattern of the method's instructions. Wildcard or unknown opcodes can be specified by `null`.
  * @param strings A list of the method's strings compared each using [String.contains].
- * @param customFingerprint A custom condition for this fingerprint.
+ * @param custom A custom condition for this fingerprint.
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class MethodFingerprint(
@@ -34,7 +43,7 @@ class MethodFingerprint(
     internal val parameters: List<String>? = null,
     internal val opcodes: List<Opcode?>? = null,
     internal val strings: List<String>? = null,
-    internal val customFingerprint: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null,
+    internal val custom: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null,
 ) {
     /**
      * The result of the [MethodFingerprint].
@@ -61,7 +70,7 @@ class MethodFingerprint(
      * - Faster: Specify [accessFlags], [returnType] and [parameters].
      * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
      */
-    internal fun resolveUsingLookupMap(context: BytecodeContext): Boolean {
+    internal fun resolveUsingLookupMap(context: BytecodePatchContext): Boolean {
         /**
          * Lookup [MethodClassPair]s that match the methods strings present in a [MethodFingerprint].
          *
@@ -130,11 +139,11 @@ class MethodFingerprint(
      * Resolve a [MethodFingerprint] against a [ClassDef].
      *
      * @param forClass The class on which to resolve the [MethodFingerprint] in.
-     * @param context The [BytecodeContext] to host proxies.
+     * @param context The [BytecodePatchContext] to host proxies.
      * @return True if the resolution was successful, false otherwise.
      */
     fun resolve(
-        context: BytecodeContext,
+        context: BytecodePatchContext,
         forClass: ClassDef,
     ): Boolean {
         for (method in forClass.methods)
@@ -149,11 +158,11 @@ class MethodFingerprint(
      *
      * @param method The class on which to resolve the [MethodFingerprint] in.
      * @param forClass The class on which to resolve the [MethodFingerprint].
-     * @param context The [BytecodeContext] to host proxies.
+     * @param context The [BytecodePatchContext] to host proxies.
      * @return True if the resolution was successful or if the fingerprint is already resolved, false otherwise.
      */
     fun resolve(
-        context: BytecodeContext,
+        context: BytecodePatchContext,
         method: Method,
         forClass: ClassDef,
     ): Boolean {
@@ -192,7 +201,7 @@ class MethodFingerprint(
         }
 
         @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-        if (methodFingerprint.customFingerprint != null && !methodFingerprint.customFingerprint!!(method, forClass)) {
+        if (methodFingerprint.custom != null && !methodFingerprint.custom!!(method, forClass)) {
             return false
         }
 
@@ -289,42 +298,245 @@ class MethodFingerprint(
 
         return true
     }
+}
 
-    companion object {
-        /**
-         * Resolve a list of [MethodFingerprint] using the lookup map built by [initializeLookupMaps].
-         *
-         * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
-         * amount of time because they are resolved in sequence.
-         *
-         * For apps with many fingerprints, resolving performance can be improved by:
-         * - Slowest: Specify [opcodes] and nothing else.
-         * - Fast: Specify [accessFlags], [returnType].
-         * - Faster: Specify [accessFlags], [returnType] and [parameters].
-         * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
-         */
-        internal fun Set<MethodFingerprint>.resolveUsingLookupMap(context: BytecodeContext) {
-            if (methods.isEmpty()) throw PatchException("lookup map not initialized")
+/**
+ * Resolve a list of [MethodFingerprint] using the lookup map built by [initializeLookupMaps].
+ *
+ * [MethodFingerprint] resolution is fast, but if many are present they can consume a noticeable
+ * amount of time because they are resolved in sequence.
+ *
+ * For apps with many fingerprints, resolving performance can be improved by:
+ * - Slowest: Specify [MethodFingerprint.opcodes] and nothing else.
+ * - Fast: Specify [MethodFingerprint.accessFlags], [MethodFingerprint.returnType].
+ * - Faster: Specify [MethodFingerprint.accessFlags], [MethodFingerprint.returnType] and [MethodFingerprint.parameters].
+ * - Fastest: Specify [MethodFingerprint.strings], with at least one string being an exact (non-partial) match.
+ */
+internal fun Set<MethodFingerprint>.resolveUsingLookupMap(context: BytecodePatchContext) {
+    if (methods.isEmpty()) throw PatchException("lookup map not initialized")
 
-            forEach { fingerprint ->
-                fingerprint.resolveUsingLookupMap(context)
-            }
-        }
-
-        /**
-         * Resolve a list of [MethodFingerprint] against a list of [ClassDef].
-         *
-         * @param classes The classes on which to resolve the [MethodFingerprint] in.
-         * @param context The [BytecodeContext] to host proxies.
-         * @return True if the resolution was successful, false otherwise.
-         */
-        fun Iterable<MethodFingerprint>.resolve(
-            context: BytecodeContext,
-            classes: Iterable<ClassDef>,
-        ) = forEach { fingerprint ->
-            for (classDef in classes) {
-                if (fingerprint.resolve(context, classDef)) break
-            }
-        }
+    forEach { fingerprint ->
+        fingerprint.resolveUsingLookupMap(context)
     }
 }
+
+/**
+ * Resolve a list of [MethodFingerprint] against a list of [ClassDef].
+ *
+ * @param classes The classes on which to resolve the [MethodFingerprint] in.
+ * @param context The [BytecodePatchContext] to host proxies.
+ * @return True if the resolution was successful, false otherwise.
+ */
+fun Iterable<MethodFingerprint>.resolve(
+    context: BytecodePatchContext,
+    classes: Iterable<ClassDef>,
+) = forEach { fingerprint ->
+    for (classDef in classes) {
+        if (fingerprint.resolve(context, classDef)) break
+    }
+}
+
+/**
+ * Represents the result of a [MethodFingerprintResult].
+ *
+ * @param method The matching method.
+ * @param classDef The [ClassDef] that contains the matching [method].
+ * @param scanResult The result of scanning for the [MethodFingerprint].
+ * @param context The [BytecodePatchContext] this [MethodFingerprintResult] is attached to, to create proxies.
+ */
+
+@Suppress("MemberVisibilityCanBePrivate")
+class MethodFingerprintResult(
+    val method: Method,
+    val classDef: ClassDef,
+    val scanResult: MethodFingerprintScanResult,
+    internal val context: BytecodePatchContext,
+) {
+    /**
+     * Returns a mutable clone of [classDef]
+     *
+     * Please note, this method allocates a [ClassProxy].
+     * Use [classDef] where possible.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    val mutableClass by lazy { context.proxy(classDef).mutableClass }
+
+    /**
+     * Returns a mutable clone of [method]
+     *
+     * Please note, this method allocates a [ClassProxy].
+     * Use [method] where possible.
+     */
+    val mutableMethod by lazy {
+        mutableClass.methods.first {
+            MethodUtil.methodSignaturesMatch(it, this.method)
+        }
+    }
+
+    /**
+     * The result of scanning on the [MethodFingerprint].
+     * @param patternScanResult The result of the pattern scan.
+     * @param stringsScanResult The result of the string scan.
+     */
+    class MethodFingerprintScanResult(
+        val patternScanResult: PatternScanResult?,
+        val stringsScanResult: StringsScanResult?,
+    ) {
+        /**
+         * The result of scanning strings on the [MethodFingerprint].
+         * @param matches The list of strings that were matched.
+         */
+        class StringsScanResult(val matches: List<StringMatch>) {
+            /**
+             * Represents a match for a string at an index.
+             * @param string The string that was matched.
+             * @param index The index of the string.
+             */
+            class StringMatch(val string: String, val index: Int)
+        }
+
+        /**
+         * The result of a pattern scan.
+         * @param startIndex The start index of the instructions where to which this pattern matches.
+         * @param endIndex The end index of the instructions where to which this pattern matches.
+         */
+        class PatternScanResult(
+            val startIndex: Int,
+            val endIndex: Int,
+        )
+    }
+}
+
+/**
+ * A builder for [MethodFingerprint].
+ *
+ * @property returnType The method's return type compared using [String.startsWith].
+ * @property accessFlags The method's exact access flags using values of [AccessFlags].
+ * @property parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
+ * @property opcodes An opcode pattern of the method's instructions. Wildcard or unknown opcodes can be specified by `null`.
+ * @property strings A list of the method's strings compared each using [String.contains].
+ * @property customBlock A custom condition for this fingerprint.
+ *
+ * @constructor Creates a new [MethodFingerprintBuilder].
+ */
+class MethodFingerprintBuilder internal constructor() {
+    private var returnType: String? = null
+    private var accessFlags: Int? = null
+    private var parameters: List<String>? = null
+    private var opcodes: List<Opcode?>? = null
+    private var strings: List<String>? = null
+    private var customBlock: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null
+
+    /**
+     * Set the method's return type.
+     *
+     * @param returnType The method's return type compared using [String.startsWith].
+     */
+    fun returns(returnType: String) {
+        this.returnType = returnType
+    }
+
+    /**
+     * Set the method's access flags.
+     *
+     * @param accessFlags The method's exact access flags using values of [AccessFlags].
+     */
+    fun accessFlags(accessFlags: Int) {
+        this.accessFlags = accessFlags
+    }
+
+    /**
+     * Set the method's access flags.
+     *
+     * @param accessFlags The method's exact access flags using values of [AccessFlags].
+     */
+    fun accessFlags(accessFlags: AccessFlags) {
+        this.accessFlags = accessFlags.value
+    }
+
+    /**
+     * Set the method's parameters.
+     *
+     * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
+     */
+    fun parameters(vararg parameters: String) {
+        this.parameters = parameters.toList()
+    }
+
+    /**
+     * Set the method's opcodes.
+     *
+     * @param opcodes An opcode pattern of the method's instructions.
+     * Wildcard or unknown opcodes can be specified by `null`.
+     */
+    fun opcodes(vararg opcodes: Opcode?) {
+        this.opcodes = opcodes.toList()
+    }
+
+    /**
+     * Set the method's opcodes.
+     *
+     * @param instructions A list of the method's instructions or opcode names in SMALI format.
+     * - Wildcard or unknown opcodes can be specified by `null`.
+     * - Empty lines are ignored.
+     * - Each instruction must be on a new line.
+     * - The opcode name is enough, no need to specify the operands.
+     *
+     * @throws Exception If an unknown opcode is used.
+     */
+    fun opcodes(instructions: String) {
+        this.opcodes = instructions.trimIndent().split("\n").filter {
+            it.isNotBlank()
+        }.map {
+            // Remove any operands.
+            val name = it.split(" ", limit = 1).first().trim()
+            if (name == "null") return@map null
+
+            opcodesByName[name] ?: throw Exception("Unknown opcode: $name")
+        }
+    }
+
+    /**
+     * Set the method's strings.
+     *
+     * @param strings A list of the method's strings compared each using [String.contains].
+     */
+    fun strings(vararg strings: String) {
+        this.strings = strings.toList()
+    }
+
+    /**
+     * Set a custom condition for this fingerprint.
+     *
+     * @param customBlock A custom condition for this fingerprint.
+     */
+    fun custom(customBlock: (methodDef: Method, classDef: ClassDef) -> Boolean) {
+        this.customBlock = customBlock
+    }
+
+    internal fun build() = MethodFingerprint(returnType, accessFlags, parameters, opcodes, strings, customBlock)
+
+    private companion object {
+        val opcodesByName = Opcode.entries.associateBy { it.name }
+    }
+}
+
+/**
+ * Create a [MethodFingerprint].
+ *
+ * @param block The block to build the [MethodFingerprint].
+ *
+ * @return The created [MethodFingerprint].
+ */
+fun methodFingerprint(block: MethodFingerprintBuilder.() -> Unit) =
+    MethodFingerprintBuilder().apply(block).build()
+
+/**
+ * Create a [MethodFingerprint] and add it to the set of fingerprints.
+ *
+ * @param block The block to build the [MethodFingerprint].
+ *
+ * @return The created [MethodFingerprint].
+ */
+fun BytecodePatchBuilder.methodFingerprint(block: MethodFingerprintBuilder.() -> Unit) =
+    MethodFingerprintBuilder().apply(block).build()() // Invoke to add to its set of fingerprints.

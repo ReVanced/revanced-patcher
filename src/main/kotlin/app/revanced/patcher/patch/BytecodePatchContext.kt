@@ -1,10 +1,9 @@
-package app.revanced.patcher.data
+package app.revanced.patcher.patch
 
 import app.revanced.patcher.InternalApi
 import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.PatcherResult
-import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.ProxyClassList
 import app.revanced.patcher.util.method.MethodWalker
@@ -22,14 +21,14 @@ import java.io.Flushable
 import java.util.logging.Logger
 
 /**
- * A context for the patcher containing the current state of the bytecode.
+ * A context for patches containing the current state of the bytecode.
  *
  * @param config The [PatcherConfig] used to create this context.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class BytecodeContext internal constructor(private val config: PatcherConfig) :
-    Context<Set<PatcherResult.PatchedDexFile>> {
-    private val logger = Logger.getLogger(BytecodeContext::class.java.name)
+class BytecodePatchContext internal constructor(private val config: PatcherConfig) :
+    PatchContext<Set<PatcherResult.PatchedDexFile>> {
+    private val logger = Logger.getLogger(BytecodePatchContext::class.java.name)
 
     /**
      * [Opcodes] of the supplied [PatcherConfig.apkFile].
@@ -89,7 +88,7 @@ class BytecodeContext internal constructor(private val config: PatcherConfig) :
         }
 
     /**
-     * Create a [MethodWalker] instance for the current [BytecodeContext].
+     * Create a [MethodWalker] instance for the current [BytecodePatchContext].
      *
      * @param startMethod The method to start at.
      * @return A [MethodWalker] instance.
@@ -97,7 +96,7 @@ class BytecodeContext internal constructor(private val config: PatcherConfig) :
     fun toMethodWalker(startMethod: Method) = MethodWalker(this, startMethod)
 
     /**
-     * Compile bytecode from the [BytecodeContext].
+     * Compile bytecode from the [BytecodePatchContext].
      *
      * @return The compiled bytecode.
      */
@@ -116,9 +115,10 @@ class BytecodeContext internal constructor(private val config: PatcherConfig) :
                     this,
                     BasicDexFileNamer(),
                     object : DexFile {
-                        override fun getClasses() = this@BytecodeContext.classes.also(ProxyClassList::replaceClasses)
+                        override fun getClasses() =
+                            this@BytecodePatchContext.classes.also(ProxyClassList::replaceClasses)
 
-                        override fun getOpcodes() = this@BytecodeContext.opcodes
+                        override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },
                     DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
                 ) { _, entryName, _ -> logger.info("Compiled $entryName") }
@@ -142,7 +142,7 @@ class BytecodeContext internal constructor(private val config: PatcherConfig) :
         var merge = false
 
         /**
-         * Merge integrations into the [BytecodeContext] and flush all [Integrations].
+         * Merge integrations into the [BytecodePatchContext] and flush all [Integrations].
          */
         override fun flush() {
             if (!merge) return
@@ -168,7 +168,7 @@ class BytecodeContext internal constructor(private val config: PatcherConfig) :
 
                     logger.fine("$classDef exists. Adding missing methods and fields.")
 
-                    existingClass.merge(classDef, this@BytecodeContext).let { mergedClass ->
+                    existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
                         // If the class was merged, replace the original class with the merged class.
                         if (mergedClass === existingClass) return@let
                         classes.apply {

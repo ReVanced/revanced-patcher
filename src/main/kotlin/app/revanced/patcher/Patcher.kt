@@ -1,13 +1,28 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.data.ResourceContext
 import app.revanced.patcher.fingerprint.LookupMap
 import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.ResourcePatchContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.Closeable
 import java.io.File
+import java.util.function.Function
 import java.util.function.Supplier
 import java.util.logging.Logger
+
+@FunctionalInterface
+interface IntegrationsConsumer {
+    fun acceptIntegrations(integrations: Set<File>)
+}
+
+@FunctionalInterface
+interface PatchesConsumer {
+    fun acceptPatches(patches: PatchSet)
+}
+
+@FunctionalInterface
+interface PatchExecutorFunction : Function<Boolean, Flow<PatchResult>>
 
 /**
  * A Patcher.
@@ -25,11 +40,11 @@ class Patcher(
     val context = PatcherContext(config)
 
     init {
-        context.resourceContext.decodeResources(ResourceContext.ResourceMode.NONE)
+        context.resourceContext.decodeResources(ResourcePatchContext.ResourceMode.NONE)
     }
 
     /**
-     * Add [Patch]es to ReVanced [Patcher].
+     * Add [Patch]es to [Patcher].
      *
      * @param patches The [Patch]es to add.
      */
@@ -59,11 +74,11 @@ class Patcher(
         context.allPatches.let { patches ->
             // Check, if what kind of resource mode is required.
             config.resourceMode = if (patches.any { patch -> patch.anyRecursively { it is ResourcePatch } }) {
-                ResourceContext.ResourceMode.FULL
+                ResourcePatchContext.ResourceMode.FULL
             } else if (patches.any { patch -> patch.anyRecursively { it is RawResourcePatch } }) {
-                ResourceContext.ResourceMode.RAW_ONLY
+                ResourcePatchContext.ResourceMode.RAW_ONLY
             } else {
-                ResourceContext.ResourceMode.NONE
+                ResourcePatchContext.ResourceMode.NONE
             }
 
             // Check, if integrations need to be merged.
@@ -85,9 +100,9 @@ class Patcher(
     }
 
     /**
-     * Execute [Patch]es that were added to ReVanced [Patcher].
+     * Execute [Patch]es that were added to [Patcher].
      *
-     * @param returnOnError If true, ReVanced [Patcher] will return immediately if a [Patch] fails.
+     * @param returnOnError If true, [Patcher] will return immediately if a [Patch] fails.
      * @return A pair of the name of the [Patch] and its [PatchResult].
      */
     override fun apply(returnOnError: Boolean) =
@@ -131,7 +146,7 @@ class Patcher(
             LookupMap.initializeLookupMaps(context.bytecodeContext)
 
             // Prevent from decoding the app manifest twice if it is not needed.
-            if (config.resourceMode != ResourceContext.ResourceMode.NONE) {
+            if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
                 context.resourceContext.decodeResources(config.resourceMode)
             }
 
@@ -203,4 +218,19 @@ class Patcher(
             context.bytecodeContext.get(),
             context.resourceContext.get(),
         )
+}
+
+/**
+ * An exception thrown by [Patcher].
+ *
+ * @param errorMessage The exception message.
+ * @param cause The corresponding [Throwable].
+ */
+sealed class PatcherException(errorMessage: String?, cause: Throwable?) : Exception(errorMessage, cause) {
+    constructor(errorMessage: String) : this(errorMessage, null)
+
+    // TODO: Implement circular dependency detection.
+    class CircularDependencyException internal constructor(dependant: String) : PatcherException(
+        "Patch '$dependant' causes a circular dependency",
+    )
 }

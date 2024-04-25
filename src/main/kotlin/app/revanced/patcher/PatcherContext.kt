@@ -1,8 +1,8 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.data.ResourceContext
+import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.ResourcePatchContext
 import brut.androlib.apk.ApkInfo
 import brut.directory.ExtFile
 
@@ -31,10 +31,10 @@ class PatcherContext internal constructor(config: PatcherConfig) {
     /**
      * A context for the patcher containing the current state of the resources.
      */
-    internal val resourceContext = ResourceContext(packageMetadata, config)
+    internal val resourceContext = ResourcePatchContext(packageMetadata, config)
 
     /**
      * A context for the patcher containing the current state of the bytecode.
      */
-    internal val bytecodeContext = BytecodeContext(config)
+    internal val bytecodeContext = BytecodePatchContext(config)
 }

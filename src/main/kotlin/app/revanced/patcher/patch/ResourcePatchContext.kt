@@ -1,4 +1,4 @@
-package app.revanced.patcher.data
+package app.revanced.patcher.patch
 
 import app.revanced.patcher.InternalApi
 import app.revanced.patcher.PackageMetadata
@@ -20,16 +20,16 @@ import java.nio.file.Files
 import java.util.logging.Logger
 
 /**
- * A context for the patcher containing the current state of the resources.
+ * A context for patches containing the current state of resources.
  *
  * @param packageMetadata The [PackageMetadata] of the apk file.
  * @param config The [PatcherConfig] used to create this context.
  */
-class ResourceContext internal constructor(
+class ResourcePatchContext internal constructor(
     private val packageMetadata: PackageMetadata,
     private val config: PatcherConfig,
-) : Context<PatcherResult.PatchedResources?> {
-    private val logger = Logger.getLogger(ResourceContext::class.java.name)
+) : PatchContext<PatcherResult.PatchedResources?> {
+    private val logger = Logger.getLogger(ResourcePatchContext::class.java.name)
 
     /**
      * Read and write documents in the [PatcherConfig.apkFiles].
@@ -231,6 +231,6 @@ class ResourceContext internal constructor(
     inner class DocumentOperatable {
         operator fun get(inputStream: InputStream) = Document(inputStream)
 
-        operator fun get(path: String) = Document(this@ResourceContext[path])
+        operator fun get(path: String) = Document(this@ResourcePatchContext[path])
     }
 }

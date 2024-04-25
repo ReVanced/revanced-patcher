@@ -1,6 +1,6 @@
 package app.revanced.patcher.util.method
 
-import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -13,7 +13,7 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
  * @param currentMethod The method to start from.
  */
 class MethodWalker internal constructor(
-    private val bytecodeContext: BytecodeContext,
+    private val bytecodeContext: BytecodePatchContext,
     private var currentMethod: Method,
 ) {
     /**

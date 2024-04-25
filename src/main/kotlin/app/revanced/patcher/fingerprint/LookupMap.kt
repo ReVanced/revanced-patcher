@@ -1,6 +1,6 @@
 package app.revanced.patcher.fingerprint
 
-import app.revanced.patcher.data.BytecodeContext
+import app.revanced.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
@@ -50,9 +50,9 @@ internal class LookupMap : MutableMap<String, LookupMap.MethodClassList> by muta
          * Initializes lookup maps for [MethodFingerprint] resolution
          * using attributes of methods such as the method signature or strings.
          *
-         * @param context The [BytecodeContext] containing the classes to initialize the lookup maps with.
+         * @param context The [BytecodePatchContext] containing the classes to initialize the lookup maps with.
          */
-        internal fun initializeLookupMaps(context: BytecodeContext) {
+        internal fun initializeLookupMaps(context: BytecodePatchContext) {
             if (methods.isNotEmpty()) clearLookupMaps()
 
             context.classes.forEach { classDef ->

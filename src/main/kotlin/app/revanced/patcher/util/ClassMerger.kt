@@ -1,7 +1,7 @@
 package app.revanced.patcher.util
 
-import app.revanced.patcher.data.BytecodeContext
 import app.revanced.patcher.extensions.or
+import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
 import app.revanced.patcher.util.ClassMerger.Utils.filterAny
 import app.revanced.patcher.util.ClassMerger.Utils.filterNotAny
@@ -36,7 +36,7 @@ internal object ClassMerger {
      */
     fun ClassDef.merge(
         otherClass: ClassDef,
-        context: BytecodeContext,
+        context: BytecodePatchContext,
     ) = this
         // .fixFieldAccess(otherClass)
         // .fixMethodAccess(otherClass)
@@ -95,7 +95,7 @@ internal object ClassMerger {
      */
     private fun ClassDef.publicize(
         reference: ClassDef,
-        context: BytecodeContext,
+        context: BytecodePatchContext,
     ) = if (reference.accessFlags.isPublic() && !accessFlags.isPublic()) {
         this.asMutableClass().apply {
             context.traverseClassHierarchy(this) {
@@ -175,7 +175,7 @@ internal object ClassMerger {
          * @param targetClass the class to start traversing the class hierarchy from
          * @param callback function that is called for every class in the hierarchy
          */
-        fun BytecodeContext.traverseClassHierarchy(
+        fun BytecodePatchContext.traverseClassHierarchy(
             targetClass: MutableClass,
             callback: MutableClass.() -> Unit,
         ) {

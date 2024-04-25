@@ -1,6 +1,6 @@
 package app.revanced.patcher.patch.options
 
-import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patcher.patch.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
@@ -68,11 +68,10 @@ internal class PatchOptionsTest {
 
     @Test
     fun `should be able to add options manually`() = options {
-        assertThrows<PatchOptionException.InvalidValueTypeException> {
-            set("array", get("array"))
-        }
         assertDoesNotThrow {
-            register(get("array"))
+            bytecodePatch {
+                option(get("array"))
+            }.options["array"]
         }
     }
 
