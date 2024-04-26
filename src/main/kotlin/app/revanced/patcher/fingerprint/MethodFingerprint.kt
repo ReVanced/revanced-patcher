@@ -29,11 +29,11 @@ annotation class FuzzyPatternScanMethod(
 /**
  * A fingerprint to resolve methods.
  *
- * @param returnType The method's return type compared using [String.startsWith].
- * @param accessFlags The method's exact access flags using values of [AccessFlags].
+ * @param returnType The return type compared using [String.startsWith].
+ * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
- * @param opcodes An opcode pattern of the method's instructions. Wildcard or unknown opcodes can be specified by `null`.
- * @param strings A list of the method's strings compared each using [String.contains].
+ * @param opcodes An opcode pattern of the instructions. Wildcard or unknown opcodes can be specified by `null`.
+ * @param strings A list of the strings compared each using [String.contains].
  * @param custom A custom condition for this fingerprint.
  */
 @Suppress("MemberVisibilityCanBePrivate")
@@ -312,12 +312,8 @@ class MethodFingerprint(
  * - Faster: Specify [MethodFingerprint.accessFlags], [MethodFingerprint.returnType] and [MethodFingerprint.parameters].
  * - Fastest: Specify [MethodFingerprint.strings], with at least one string being an exact (non-partial) match.
  */
-internal fun Set<MethodFingerprint>.resolveUsingLookupMap(context: BytecodePatchContext) {
-    if (methods.isEmpty()) throw PatchException("lookup map not initialized")
-
-    forEach { fingerprint ->
-        fingerprint.resolveUsingLookupMap(context)
-    }
+internal fun Set<MethodFingerprint>.resolveUsingLookupMap(context: BytecodePatchContext) = forEach { fingerprint ->
+    fingerprint.resolveUsingLookupMap(context)
 }
 
 /**
@@ -410,11 +406,11 @@ class MethodFingerprintResult(
 /**
  * A builder for [MethodFingerprint].
  *
- * @property returnType The method's return type compared using [String.startsWith].
- * @property accessFlags The method's exact access flags using values of [AccessFlags].
+ * @property returnType The return type compared using [String.startsWith].
+ * @property accessFlags The exact access flags using values of [AccessFlags].
  * @property parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
- * @property opcodes An opcode pattern of the method's instructions. Wildcard or unknown opcodes can be specified by `null`.
- * @property strings A list of the method's strings compared each using [String.contains].
+ * @property opcodes An opcode pattern of the instructions. Wildcard or unknown opcodes can be specified by `null`.
+ * @property strings A list of the strings compared each using [String.contains].
  * @property customBlock A custom condition for this fingerprint.
  *
  * @constructor Creates a new [MethodFingerprintBuilder].
@@ -428,34 +424,34 @@ class MethodFingerprintBuilder internal constructor() {
     private var customBlock: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null
 
     /**
-     * Set the method's return type.
+     * Set the return type.
      *
-     * @param returnType The method's return type compared using [String.startsWith].
+     * @param returnType The return type compared using [String.startsWith].
      */
-    fun returns(returnType: String) {
+    infix fun returns(returnType: String) {
         this.returnType = returnType
     }
 
     /**
-     * Set the method's access flags.
+     * Set the access flags.
      *
-     * @param accessFlags The method's exact access flags using values of [AccessFlags].
+     * @param accessFlags The exact access flags using values of [AccessFlags].
      */
     fun accessFlags(accessFlags: Int) {
         this.accessFlags = accessFlags
     }
 
     /**
-     * Set the method's access flags.
+     * Set the access flags.
      *
-     * @param accessFlags The method's exact access flags using values of [AccessFlags].
+     * @param accessFlags The exact access flags using values of [AccessFlags].
      */
     fun accessFlags(accessFlags: AccessFlags) {
         this.accessFlags = accessFlags.value
     }
 
     /**
-     * Set the method's parameters.
+     * Set the parameters.
      *
      * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
      */
@@ -464,9 +460,9 @@ class MethodFingerprintBuilder internal constructor() {
     }
 
     /**
-     * Set the method's opcodes.
+     * Set the opcodes.
      *
-     * @param opcodes An opcode pattern of the method's instructions.
+     * @param opcodes An opcode pattern of instructions.
      * Wildcard or unknown opcodes can be specified by `null`.
      */
     fun opcodes(vararg opcodes: Opcode?) {
@@ -474,9 +470,9 @@ class MethodFingerprintBuilder internal constructor() {
     }
 
     /**
-     * Set the method's opcodes.
+     * Set the opcodes.
      *
-     * @param instructions A list of the method's instructions or opcode names in SMALI format.
+     * @param instructions A list of instructions or opcode names in SMALI format.
      * - Wildcard or unknown opcodes can be specified by `null`.
      * - Empty lines are ignored.
      * - Each instruction must be on a new line.
@@ -497,9 +493,9 @@ class MethodFingerprintBuilder internal constructor() {
     }
 
     /**
-     * Set the method's strings.
+     * Set the strings.
      *
-     * @param strings A list of the method's strings compared each using [String.contains].
+     * @param strings A list of strings compared each using [String.contains].
      */
     fun strings(vararg strings: String) {
         this.strings = strings.toList()
@@ -539,4 +535,4 @@ fun methodFingerprint(block: MethodFingerprintBuilder.() -> Unit) =
  * @return The created [MethodFingerprint].
  */
 fun BytecodePatchBuilder.methodFingerprint(block: MethodFingerprintBuilder.() -> Unit) =
-    MethodFingerprintBuilder().apply(block).build()() // Invoke to add to its set of fingerprints.
+    app.revanced.patcher.fingerprint.methodFingerprint(block)() // Invoke to add to its set of fingerprints.

@@ -49,8 +49,8 @@ dependencies {
         // Exclude, otherwise the org.w3c.dom API breaks.
         exclude(group = "xerces", module = "xmlParserAPIs")
     }
-
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.mockk)
 }
 
 kotlin {

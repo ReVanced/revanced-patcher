@@ -105,105 +105,102 @@ class Patcher(
      * @param returnOnError If true, [Patcher] will return immediately if a [Patch] fails.
      * @return A pair of the name of the [Patch] and its [PatchResult].
      */
-    override fun apply(returnOnError: Boolean) =
-        flow {
-            fun Patch<*>.execute(
-                executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
-            ): PatchResult {
-                // If the patch was executed before or failed, return it's the result.
-                executedPatches[this]?.let { patchResult ->
-                    patchResult.exception ?: return patchResult
+    override fun apply(returnOnError: Boolean) = flow {
+        fun Patch<*>.execute(
+            executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
+        ): PatchResult {
+            // If the patch was executed before or failed, return it's the result.
+            executedPatches[this]?.let { patchResult ->
+                patchResult.exception ?: return patchResult
 
-                    return PatchResult(this, PatchException("'$this' failed previously"))
-                }
-
-                // Recursively execute all dependency patches.
-                dependencies.forEach { dependency ->
-                    execute(executedPatches).exception?.let {
-                        return PatchResult(
-                            this,
-                            PatchException(
-                                "'$this' depends on '$dependency' that raised an exception:\n${it.stackTraceToString()}",
-                            ),
-                        )
-                    }
-                }
-
-                // Execute the patch.
-                return try {
-                    execute(context)
-
-                    PatchResult(this)
-                } catch (exception: PatchException) {
-                    PatchResult(this, exception)
-                } catch (exception: Exception) {
-                    PatchResult(this, PatchException(exception))
-                }.also { executedPatches[this] = it }
+                return PatchResult(this, PatchException("'$this' failed previously"))
             }
 
-            if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
-
-            LookupMap.initializeLookupMaps(context.bytecodeContext)
-
-            // Prevent from decoding the app manifest twice if it is not needed.
-            if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
-                context.resourceContext.decodeResources(config.resourceMode)
-            }
-
-            logger.info("Executing patches")
-
-            val executedPatches = LinkedHashMap<Patch<*>, PatchResult>()
-
-            context.executablePatches.sortedBy { it.name }.forEach { patch ->
-                val patchResult = patch.execute(executedPatches)
-
-                // If the patch failed, emit the result, even if it is closeable.
-                // Results of executed patches that are closeable will be emitted later.
-                patchResult.exception?.let {
-                    // Propagate exception to caller instead of wrapping it in a new exception.
-                    emit(patchResult)
-
-                    if (returnOnError) return@flow
-                } ?: run {
-                    if (patch is Closeable) return@run
-
-                    emit(patchResult)
-                }
-            }
-
-            executedPatches.values.filter { it.exception == null }.asReversed().forEach { executedPatch ->
-                val patch = executedPatch.patch
-
-                val result =
-                    try {
-                        (patch as Closeable).close()
-
-                        executedPatch
-                    } catch (exception: PatchException) {
-                        PatchResult(patch, exception)
-                    } catch (exception: Exception) {
-                        PatchResult(patch, PatchException(exception))
-                    }
-
-                result.exception?.let {
-                    emit(
-                        PatchResult(
-                            patch,
-                            PatchException(
-                                "'$patch' raised an exception while being closed: ${it.stackTraceToString()}",
-                                result.exception,
-                            ),
+            // Recursively execute all dependency patches.
+            dependencies.forEach { dependency ->
+                dependency.execute(executedPatches).exception?.let {
+                    return PatchResult(
+                        this,
+                        PatchException(
+                            "'$this' depends on '$dependency' that raised an exception:\n${it.stackTraceToString()}",
                         ),
                     )
-
-                    if (returnOnError) return@flow
-                } ?: run {
-                    patch.name ?: return@run
-
-                    emit(result)
                 }
             }
+
+            // Execute the patch.
+            return try {
+                execute(context)
+
+                PatchResult(this)
+            } catch (exception: PatchException) {
+                PatchResult(this, exception)
+            } catch (exception: Exception) {
+                PatchResult(this, PatchException(exception))
+            }.also { executedPatches[this] = it }
         }
+
+        if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
+
+        LookupMap.initializeLookupMaps(context.bytecodeContext)
+
+        // Prevent from decoding the app manifest twice if it is not needed.
+        if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
+            context.resourceContext.decodeResources(config.resourceMode)
+        }
+
+        logger.info("Executing patches")
+
+        val executedPatches = LinkedHashMap<Patch<*>, PatchResult>()
+
+        context.executablePatches.sortedBy { it.name }.forEach { patch ->
+            val patchResult = patch.execute(executedPatches)
+
+            // If the patch failed, emit the result, even if it is closeable.
+            // Results of executed patches that are closeable will be emitted later.
+            patchResult.exception?.let {
+                // Propagate exception to caller instead of wrapping it in a new exception.
+                emit(patchResult)
+
+                if (returnOnError) return@flow
+            } ?: run {
+                emit(patchResult)
+            }
+        }
+
+        executedPatches.values.filter { it.exception == null }.asReversed().forEach { executionResult ->
+            val patch = executionResult.patch
+
+            val result =
+                try {
+                    patch.finalize(context)
+
+                    executionResult
+                } catch (exception: PatchException) {
+                    PatchResult(patch, exception)
+                } catch (exception: Exception) {
+                    PatchResult(patch, PatchException(exception))
+                }
+
+            result.exception?.let {
+                emit(
+                    PatchResult(
+                        patch,
+                        PatchException(
+                            "'$patch' raised an exception while being closed: ${it.stackTraceToString()}",
+                            result.exception,
+                        ),
+                    ),
+                )
+
+                if (returnOnError) return@flow
+            } ?: run {
+                patch.name ?: return@run
+
+                emit(result)
+            }
+        }
+    }
 
     override fun close() = LookupMap.clearLookupMaps()
 

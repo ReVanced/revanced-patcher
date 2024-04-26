@@ -257,17 +257,17 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected var finalizeBlock: ((C) -> Unit) = { }
 
     /**
-     * Adds a compatible packages to the patch.
+     * Add a compatible package to the patch.
      *
      * @param versions The versions of the package.
      */
     operator fun String.invoke(vararg versions: String) {
         if (compatiblePackages == null) compatiblePackages = mutableSetOf()
-        compatiblePackages!!.add(this to versions.toSet())
+        compatiblePackages!! += this to versions.toSet()
     }
 
     /**
-     * Adds the patch as a dependency.
+     * Add the patch as a dependency.
      *
      * @return The added patch.
      */
@@ -276,7 +276,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     }
 
     /**
-     * Adds options to the patch.
+     * Add options to the patch.
      *
      * @param option The options to add.
      */
@@ -285,7 +285,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     }
 
     /**
-     * Sets the execution block of the patch.
+     * Set the execution block of the patch.
      *
      * @param block The execution block of the patch.
      */
@@ -294,7 +294,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     }
 
     /**
-     * Sets the finalizing block of the patch.
+     * Set the finalizing block of the patch.
      *
      * @param block The closing block of the patch.
      */
@@ -339,7 +339,7 @@ class BytecodePatchBuilder internal constructor(
     }
 
     operator fun MethodFingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = result
-        ?: throw PatchException("Failed to resolve ${this.javaClass.simpleName}")
+        ?: throw PatchException("Can't delegate unresolved fingerprint result to ${property.name}.")
 
     override fun build() = BytecodePatch(
         name,
@@ -446,7 +446,7 @@ fun bytecodePatch(
 ) = BytecodePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as BytecodePatch
 
 /**
- * Creates a new [BytecodePatch] and adds it to the patch.
+ * Create a new [BytecodePatch] and add it to the patch.
  *
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
@@ -466,7 +466,7 @@ fun PatchBuilder<*>.bytecodePatch(
 ) = BytecodePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block)() as BytecodePatch
 
 /**
- * Creates a new [RawResourcePatch].
+ * Create a new [RawResourcePatch].
  *
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
@@ -485,7 +485,7 @@ fun rawResourcePatch(
 ) = RawResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as RawResourcePatch
 
 /**
- * Creates a new [RawResourcePatch] and adds it to the patch.
+ * Create a new [RawResourcePatch] and add it to the patch.
  *
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
@@ -505,7 +505,7 @@ fun PatchBuilder<*>.rawResourcePatch(
 ) = RawResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block)() as RawResourcePatch
 
 /**
- * Creates a new [ResourcePatch].
+ * Create a new [ResourcePatch].
  *
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
@@ -525,7 +525,7 @@ fun resourcePatch(
 ) = ResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as ResourcePatch
 
 /**
- * Creates a new [ResourcePatch] and adds it to the patch.
+ * Create a new [ResourcePatch] and add it to the patch.
  *
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
@@ -568,20 +568,19 @@ class PatchResult internal constructor(val patch: Patch<*>, val exception: Patch
  * Loads patches from JAR or DEX files declared as public fields or properties.
  * Patches with no name are not loaded.
  *
- * @param classLoader The [ClassLoader] to use for loading the classes.
- * @param getBinaryClassNames A function that returns the binary names of all classes accessible by the class loader.
  * @param patchesFiles A set of JAR or DEX files to load the patches from.
+ * @param getBinaryClassNames A function that returns the binary names of all classes accessible by the class loader.
+ * @param classLoader The [ClassLoader] to use for loading the classes.
  */
 sealed class PatchLoader private constructor(
-    classLoader: ClassLoader,
     patchesFiles: Set<File>,
-    getBinaryClassNames: (patchesFile: File) -> List<String>,
-    // This constructor parameter is unfortunately necessary,
-    // so that a reference to the mutable set is present in the constructor to be able to add patches to it.
-    // because the instance itself is a PatchSet, which is immutable, that is delegated by the parameter.
-    private val patchSet: MutableSet<Patch<*>> = mutableSetOf(),
-) : PatchSet by patchSet {
+    private val getBinaryClassNames: (patchesFile: File) -> List<String>,
+    private val classLoader: ClassLoader,
+) : PatchSet by mutableSetOf() {
     init {
+        @Suppress("UNCHECKED_CAST", "LeakingThis")
+        val thisSet = this as MutableSet<Patch<*>>
+
         patchesFiles.asSequence().flatMap(getBinaryClassNames).map {
             classLoader.loadClass(it)
         }.flatMap {
@@ -598,9 +597,7 @@ sealed class PatchLoader private constructor(
             patchFields + patchMethods
         }.filter {
             it.name != null
-        }.toList().let { patches ->
-            patchSet.addAll(patches)
-        }
+        }.toList().let(thisSet::addAll)
     }
 
     /**
@@ -608,15 +605,15 @@ sealed class PatchLoader private constructor(
      *
      * @param patchesFiles The JAR files to load the patches from.
      *
-     * @constructor Creates a new [PatchLoader] for JAR files.
+     * @constructor Create a new [PatchLoader] for JAR files.
      */
-    class Jar(vararg patchesFiles: File) : PatchLoader(
-        URLClassLoader(patchesFiles.map { it.toURI().toURL() }.toTypedArray()),
-        patchesFiles.toSet(),
+    internal class Jar(patchesFiles: Set<File>) : PatchLoader(
+        patchesFiles,
         { file ->
             JarFile(file).entries().toList().filter { it.name.endsWith(".class") }
                 .map { it.name.substringBeforeLast('.').replace('/', '.') }
         },
+        URLClassLoader(patchesFiles.map { it.toURI().toURL() }.toTypedArray()),
     )
 
     /**
@@ -626,21 +623,41 @@ sealed class PatchLoader private constructor(
      * @param optimizedDexDirectory The directory to store optimized DEX files in.
      * This parameter is deprecated and has no effect since API level 26.
      *
-     * @constructor Creates a new [PatchLoader] for [Dex] files.
+     * @constructor Create a new [PatchLoader] for [Dex] files.
      */
-    class Dex(vararg patchesFiles: File, optimizedDexDirectory: File? = null) : PatchLoader(
-        DexClassLoader(
-            patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
-            optimizedDexDirectory?.absolutePath,
-            null,
-            PatchLoader::class.java.classLoader,
-        ),
-        patchesFiles.toSet(),
+    internal class Dex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null) : PatchLoader(
+        patchesFiles,
         { patchBundle ->
             MultiDexIO.readDexFile(true, patchBundle, BasicDexFileNamer(), null, null).classes
                 .map { classDef ->
                     classDef.type.substring(1, classDef.length - 1)
                 }
         },
+        DexClassLoader(
+            patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
+            optimizedDexDirectory?.absolutePath,
+            null,
+            PatchLoader::class.java.classLoader,
+        ),
     )
 }
+
+/**
+ * Loads patches from JAR files.
+ *
+ * @param patchesFiles The JAR files to load the patches from.
+ *
+ * @return The loaded patches.
+ */
+fun loadPatchesFromJar(patchesFiles: Set<File>): PatchSet =
+    PatchLoader.Jar(patchesFiles)
+
+/**
+ * Loads patches from DEX files.
+ *
+ * @param patchesFiles The DEX files to load the patches from.
+ *
+ * @return The loaded patches.
+ */
+fun loadPatchesFromDex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null): PatchSet =
+    PatchLoader.Dex(patchesFiles, optimizedDexDirectory)
