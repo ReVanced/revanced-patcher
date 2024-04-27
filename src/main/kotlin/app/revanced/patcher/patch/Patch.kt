@@ -40,7 +40,7 @@ typealias Package = Pair<PackageName, Set<VersionName>>
  * @property finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
  *
- * @constructor Creates a new patch.
+ * @constructor Create a new patch.
  */
 sealed class Patch<C : PatchContext<*>>(
     val name: String?,
@@ -105,7 +105,7 @@ sealed class Patch<C : PatchContext<*>>(
  * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
  *
- * @constructor Creates a new bytecode patch.
+ * @constructor Create a new bytecode patch.
  */
 class BytecodePatch internal constructor(
     name: String?,
@@ -154,7 +154,7 @@ class BytecodePatch internal constructor(
  * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
  *
- * @constructor Creates a new raw resource patch.
+ * @constructor Create a new raw resource patch.
  */
 class RawResourcePatch internal constructor(
     name: String?,
@@ -197,7 +197,7 @@ class RawResourcePatch internal constructor(
  * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
  *
- * @constructor Creates a new resource patch.
+ * @constructor Create a new resource patch.
  */
 class ResourcePatch internal constructor(
     name: String?,
@@ -241,7 +241,7 @@ class ResourcePatch internal constructor(
  * @property finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
  *
- * @constructor Creates a new [Patch] builder.
+ * @constructor Create a new [Patch] builder.
  */
 sealed class PatchBuilder<C : PatchContext<*>>(
     protected val name: String?,
@@ -249,22 +249,12 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected val use: Boolean,
     protected val requiresIntegrations: Boolean,
 ) {
-    protected var compatiblePackages: MutableSet<Package>? = null
+    protected var compatiblePackages: Set<Package>? = null
     protected val dependencies = mutableSetOf<Patch<*>>()
     protected val options = mutableSetOf<PatchOption<*>>()
 
     protected var executionBlock: ((C) -> Unit) = { }
     protected var finalizeBlock: ((C) -> Unit) = { }
-
-    /**
-     * Add a compatible package to the patch.
-     *
-     * @param versions The versions of the package.
-     */
-    operator fun String.invoke(vararg versions: String) {
-        if (compatiblePackages == null) compatiblePackages = mutableSetOf()
-        compatiblePackages!! += this to versions.toSet()
-    }
 
     /**
      * Add the patch as a dependency.
@@ -273,6 +263,13 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      */
     operator fun Patch<*>.invoke() = apply {
         this@PatchBuilder.dependencies.add(this)
+    }
+
+    /**
+     * Sets the compatible packages of the patch.
+     */
+    fun compatibleWith(block: CompatibleWithBuilder.() -> Unit) {
+        compatiblePackages = CompatibleWithBuilder().apply(block).build()
     }
 
     /**
@@ -308,6 +305,26 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      * @return The built patch.
      */
     internal abstract fun build(): Patch<C>
+
+    /**
+     * A builder for compatible packages.
+     *
+     * @constructor Create a new [CompatibleWithBuilder].
+     */
+    class CompatibleWithBuilder internal constructor() {
+        private val compatiblePackages = mutableSetOf<Package>()
+
+        /**
+         * Add a compatible package to the patch.
+         *
+         * @param versions The versions of the package.
+         */
+        operator fun String.invoke(vararg versions: String) {
+            compatiblePackages += this to versions.toSet()
+        }
+
+        internal fun build(): Set<Package> = compatiblePackages
+    }
 }
 
 /**
@@ -321,7 +338,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
  *
  * @property fingerprints The fingerprints that are resolved before the patch is executed.
  *
- * @constructor Creates a new [BytecodePatchBuilder] builder.
+ * @constructor Create a new [BytecodePatchBuilder] builder.
  */
 class BytecodePatchBuilder internal constructor(
     name: String?,
@@ -364,7 +381,7 @@ class BytecodePatchBuilder internal constructor(
  * @param use Weather or not the patch should be used.
  * @param requiresIntegrations Weather or not the patch requires integrations.
  *
- * @constructor Creates a new [RawResourcePatch] builder.
+ * @constructor Create a new [RawResourcePatch] builder.
  */
 class RawResourcePatchBuilder internal constructor(
     name: String?,
@@ -394,7 +411,7 @@ class RawResourcePatchBuilder internal constructor(
  * @param use Weather or not the patch should be used.
  * @param requiresIntegrations Weather or not the patch requires integrations.
  *
- * @constructor Creates a new [ResourcePatch] builder.
+ * @constructor Create a new [ResourcePatch] builder.
  */
 class ResourcePatchBuilder internal constructor(
     name: String?,
@@ -426,7 +443,7 @@ class ResourcePatchBuilder internal constructor(
 private fun <B : PatchBuilder<*>> B.buildPatch(block: B.() -> Unit = {}) = apply(block).build()
 
 /**
- * Creates a new [BytecodePatch].
+ * Create a new [BytecodePatch].
  *
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].

@@ -413,7 +413,7 @@ class MethodFingerprintResult(
  * @property strings A list of the strings compared each using [String.contains].
  * @property customBlock A custom condition for this fingerprint.
  *
- * @constructor Creates a new [MethodFingerprintBuilder].
+ * @constructor Create a new [MethodFingerprintBuilder].
  */
 class MethodFingerprintBuilder internal constructor() {
     private var returnType: String? = null

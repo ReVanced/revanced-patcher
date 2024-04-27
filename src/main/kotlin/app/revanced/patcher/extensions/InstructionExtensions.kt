@@ -178,8 +178,8 @@ object InstructionExtensions {
                     if (compiledInstruction !is BuilderOffsetInstruction) return@forEachIndexed
 
                     /**
-                     * Creates a new label for the instruction
-                     * and replaces it with the label of the [compiledInstruction] at [compiledInstructionIndex].
+                     * Create a new label for the instruction
+                     * and replace it with the label of the [compiledInstruction] at [compiledInstructionIndex].
                      */
                     fun Instruction.makeNewLabel() {
                         fun replaceOffset(
