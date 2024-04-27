@@ -7,7 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-internal class PatchOptionsTest {
+internal object PatchOptionsTest {
     private val optionsTestPatch = bytecodePatch {
         booleanPatchOption("bool", true)
 

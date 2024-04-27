@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package app.revanced.patcher.patch
 
@@ -565,7 +565,7 @@ class PatchResult internal constructor(val patch: Patch<*>, val exception: Patch
 
 /**
  * A loader for [Patch].
- * Loads patches from JAR or DEX files declared as public fields or properties.
+ * Loads patches from JAR or DEX files declared as public static fields or returned by public static methods.
  * Patches with no name are not loaded.
  *
  * @param patchesFiles A set of JAR or DEX files to load the patches from.
@@ -576,30 +576,7 @@ sealed class PatchLoader private constructor(
     patchesFiles: Set<File>,
     private val getBinaryClassNames: (patchesFile: File) -> List<String>,
     private val classLoader: ClassLoader,
-) : PatchSet by mutableSetOf() {
-    init {
-        @Suppress("UNCHECKED_CAST", "LeakingThis")
-        val thisSet = this as MutableSet<Patch<*>>
-
-        patchesFiles.asSequence().flatMap(getBinaryClassNames).map {
-            classLoader.loadClass(it)
-        }.flatMap {
-            // Get all patches from the class declared as public fields.
-            val patchFields = it.fields.filter { field ->
-                Patch::class.java.isAssignableFrom(field.type)
-            }.map { field -> field.get(null) as Patch<*> }
-
-            // Get all patches from the class declared as public methods.
-            val patchMethods = it.methods.filter { method ->
-                Patch::class.java.isAssignableFrom(method.returnType)
-            }.map { method -> method.invoke(null) as Patch<*> }
-
-            patchFields + patchMethods
-        }.filter {
-            it.name != null
-        }.toList().let(thisSet::addAll)
-    }
-
+) : PatchSet by classLoader.loadPatches(patchesFiles.flatMap(getBinaryClassNames)) {
     /**
      * A [PatchLoader] for JAR files.
      *
@@ -640,10 +617,43 @@ sealed class PatchLoader private constructor(
             PatchLoader::class.java.classLoader,
         ),
     )
+
+    // Companion object required for unit tests.
+    private companion object {
+        /**
+         * Loads named patches declared as public static fields or returned by public static methods from classes.
+         *
+         * @param binaryClassNames The binary class name of the classes to load the patches from.
+         *
+         * @return The loaded patches.
+         */
+        private fun ClassLoader.loadPatches(binaryClassNames: List<String>) = binaryClassNames.asSequence().map {
+            loadClass(it)
+        }.flatMap {
+            val isPatch = { cls: Class<*> -> Patch::class.java.isAssignableFrom(cls) }
+
+            val patchesFromFields = it.fields.filter { field ->
+                isPatch(field.type) && field.canAccess(null)
+            }.map { field ->
+                field.get(null) as Patch<*>
+            }
+
+            val patchesFromMethods = it.methods.filter { method ->
+                isPatch(method.returnType) && method.canAccess(null)
+            }.map { method ->
+                method.invoke(null) as Patch<*>
+            }
+
+            patchesFromFields + patchesFromMethods
+        }.filter {
+            it.name != null
+        }.toSet()
+    }
 }
 
 /**
- * Loads patches from JAR files.
+ * Loads patches from JAR files declared as public static fields or returned by public static methods.
+ * Patches with no name are not loaded.
  *
  * @param patchesFiles The JAR files to load the patches from.
  *
@@ -653,7 +663,8 @@ fun loadPatchesFromJar(patchesFiles: Set<File>): PatchSet =
     PatchLoader.Jar(patchesFiles)
 
 /**
- * Loads patches from DEX files.
+ * Loads patches from DEX files declared as public static fields or returned by public static methods.
+ * Patches with no name are not loaded.
  *
  * @param patchesFiles The DEX files to load the patches from.
  *

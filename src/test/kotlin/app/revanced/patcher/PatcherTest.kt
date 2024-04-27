@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-object PatcherTest {
+internal object PatcherTest {
     private lateinit var patcher: Patcher
 
     @BeforeEach

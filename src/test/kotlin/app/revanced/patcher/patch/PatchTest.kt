@@ -4,7 +4,7 @@ import app.revanced.patcher.fingerprint.methodFingerprint
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-object PatchTest {
+internal object PatchTest {
     @Test
     fun `can create patch with name`() {
         val patch = bytecodePatch(name = "Test") {}
