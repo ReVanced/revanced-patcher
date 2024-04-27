@@ -15,16 +15,6 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
-import kotlin.reflect.full.findAnnotations
-
-/**
- * Annotations to scan a pattern [MethodFingerprint] with fuzzy algorithm.
- * @param threshold if [threshold] or more of the opcodes do not match, skip.
- */
-@Target(AnnotationTarget.CLASS)
-annotation class FuzzyPatternScanMethod(
-    val threshold: Int = 1,
-)
 
 /**
  * A fingerprint to resolve methods.
@@ -35,28 +25,23 @@ annotation class FuzzyPatternScanMethod(
  * @param opcodes An opcode pattern of the instructions. Wildcard or unknown opcodes can be specified by `null`.
  * @param strings A list of the strings compared each using [String.contains].
  * @param custom A custom condition for this fingerprint.
+ * @param fuzzyPatternScanThreshold The threshold for fuzzy pattern scanning.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class MethodFingerprint(
+class MethodFingerprint internal constructor(
     internal val returnType: String? = null,
     internal val accessFlags: Int? = null,
     internal val parameters: List<String>? = null,
     internal val opcodes: List<Opcode?>? = null,
     internal val strings: List<String>? = null,
     internal val custom: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null,
+    private val fuzzyPatternScanThreshold: Int = 0,
 ) {
     /**
      * The result of the [MethodFingerprint].
      */
     var result: MethodFingerprintResult? = null
         private set
-
-    /**
-     *  The [FuzzyPatternScanMethod] annotation of the [MethodFingerprint].
-     *
-     *  If the annotation is not present, this property is null.
-     */
-    val fuzzyPatternScanMethod = this::class.findAnnotations(FuzzyPatternScanMethod::class).singleOrNull()
 
     /**
      * Resolve a [MethodFingerprint] using the lookup map built by [initializeLookupMaps].
@@ -244,7 +229,7 @@ class MethodFingerprint(
                     fingerprint: MethodFingerprint,
                 ): MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult? {
                     val instructions = this.implementation!!.instructions
-                    val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyPatternScanMethod?.threshold ?: 0
+                    val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyPatternScanThreshold
 
                     val pattern = fingerprint.opcodes!!
                     val instructionLength = instructions.count()
@@ -412,10 +397,13 @@ class MethodFingerprintResult(
  * @property opcodes An opcode pattern of the instructions. Wildcard or unknown opcodes can be specified by `null`.
  * @property strings A list of the strings compared each using [String.contains].
  * @property customBlock A custom condition for this fingerprint.
+ * @property fuzzyPatternScanThreshold The threshold for fuzzy pattern scanning.
  *
  * @constructor Create a new [MethodFingerprintBuilder].
  */
-class MethodFingerprintBuilder internal constructor() {
+class MethodFingerprintBuilder internal constructor(
+    private val fuzzyPatternScanThreshold: Int = 0,
+) {
     private var returnType: String? = null
     private var accessFlags: Int? = null
     private var parameters: List<String>? = null
@@ -520,19 +508,28 @@ class MethodFingerprintBuilder internal constructor() {
 /**
  * Create a [MethodFingerprint].
  *
+ * @param fuzzyPatternScanThreshold The threshold for fuzzy pattern scanning. Default is 0.
  * @param block The block to build the [MethodFingerprint].
  *
  * @return The created [MethodFingerprint].
  */
-fun methodFingerprint(block: MethodFingerprintBuilder.() -> Unit) =
-    MethodFingerprintBuilder().apply(block).build()
+fun methodFingerprint(
+    fuzzyPatternScanThreshold: Int = 0,
+    block: MethodFingerprintBuilder.() -> Unit,
+) = MethodFingerprintBuilder(fuzzyPatternScanThreshold).apply(block).build()
 
 /**
  * Create a [MethodFingerprint] and add it to the set of fingerprints.
  *
+ * @param fuzzyPatternScanThreshold The threshold for fuzzy pattern scanning. Default is 0.
  * @param block The block to build the [MethodFingerprint].
  *
  * @return The created [MethodFingerprint].
  */
-fun BytecodePatchBuilder.methodFingerprint(block: MethodFingerprintBuilder.() -> Unit) =
-    app.revanced.patcher.fingerprint.methodFingerprint(block)() // Invoke to add to its set of fingerprints.
+fun BytecodePatchBuilder.methodFingerprint(
+    fuzzyPatternScanThreshold: Int = 0,
+    block: MethodFingerprintBuilder.() -> Unit,
+) = app.revanced.patcher.fingerprint.methodFingerprint(
+    fuzzyPatternScanThreshold,
+    block,
+)() // Invoke to add to its set of fingerprints.

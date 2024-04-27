@@ -1,10 +1,7 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.fingerprint.methodFingerprint
-import app.revanced.patcher.patch.PatchResult
-import app.revanced.patcher.patch.PatchSet
-import app.revanced.patcher.patch.ResourcePatchContext
-import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.ProxyClassList
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -80,26 +77,22 @@ internal object PatcherTest {
 
     @Test
     fun `throws if unresolved fingerprint result is delegated`() {
-        val patches = setOf(
-            bytecodePatch {
-                // Fingerprint can never be resolved.
-                val result by methodFingerprint {}
-                // Manually add the fingerprint.
-                app.revanced.patcher.fingerprint.methodFingerprint { }()
+        val patch = bytecodePatch {
+            // Fingerprint can never be resolved.
+            val result by methodFingerprint { }
+            // Manually add the fingerprint.
+            app.revanced.patcher.fingerprint.methodFingerprint { }()
 
-                execute {
-                    // Throws, because the fingerprint can't be resolved.
-                    result.scanResult
-                }
-            },
-        )
+            execute {
+                // Throws, because the fingerprint can't be resolved.
+                result.scanResult
+            }
+        }
 
-        assertEquals(2, patches.first().fingerprints.size)
-
-        val results = patches()
+        assertEquals(2, patch.fingerprints.size)
 
         assertTrue(
-            results.any { it.exception != null },
+            patch().exception != null,
             "Expected an exception because the fingerprint can't be resolved.",
         )
     }
@@ -130,6 +123,8 @@ internal object PatcherTest {
 
         return runBlocking { patcher.apply(false).toList() }
     }
+
+    private operator fun Patch<*>.invoke() = setOf(this)().first()
 
     private fun Any.setPrivateField(field: String, value: Any) {
         this::class.java.getDeclaredField(field).apply {

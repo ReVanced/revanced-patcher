@@ -12,14 +12,12 @@ import java.util.function.Supplier
 import java.util.logging.Logger
 
 @FunctionalInterface
-interface IntegrationsConsumer {
-    fun acceptIntegrations(integrations: Set<File>)
+interface PatchesConsumer {
+    fun accept(patches: PatchSet, integrations: Set<File> = emptySet())
 }
 
 @FunctionalInterface
-interface PatchesConsumer {
-    fun acceptPatches(patches: PatchSet)
-}
+interface PatcherResultSupplier : Supplier<PatcherResult>, Closeable
 
 @FunctionalInterface
 interface PatchExecutorFunction : Function<Boolean, Flow<PatchResult>>
@@ -31,7 +29,7 @@ interface PatchExecutorFunction : Function<Boolean, Flow<PatchResult>>
  */
 class Patcher(
     private val config: PatcherConfig,
-) : PatchExecutorFunction, PatchesConsumer, IntegrationsConsumer, Supplier<PatcherResult>, Closeable {
+) : PatchExecutorFunction, PatchesConsumer, PatcherResultSupplier {
     private val logger = Logger.getLogger(Patcher::class.java.name)
 
     /**
@@ -44,12 +42,15 @@ class Patcher(
     }
 
     /**
-     * Add [Patch]es to [Patcher].
+     * Add [Patch]es and integrations to the [Patcher].
      *
      * @param patches The [Patch]es to add.
+     * @param integrations The integrations to add. Must be a DEX file or container of DEX files.
      */
     @Suppress("NAME_SHADOWING")
-    override fun acceptPatches(patches: PatchSet) {
+    override fun accept(patches: PatchSet, integrations: Set<File>) {
+        // region Add patches
+
         // Add all patches to the executablePatches set.
         context.executablePatches.addAll(patches)
 
@@ -88,15 +89,14 @@ class Patcher(
                     break
                 }
         }
-    }
 
-    /**
-     * Add integrations to the [Patcher].
-     *
-     * @param integrations The integrations to add. Must be a DEX file or container of DEX files.
-     */
-    override fun acceptIntegrations(integrations: Set<File>) {
+        // endregion
+
+        // region Add integrations
+
         context.bytecodeContext.integrations.addAll(integrations)
+
+        // endregion
     }
 
     /**
