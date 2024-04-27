@@ -51,14 +51,16 @@ internal object PatcherTest {
         val patches = setOf(
             bytecodePatch { execute { executed += "1" } },
             bytecodePatch {
-                // Directly depend on this patch.
-                bytecodePatch {
-                    execute { executed += "2" }
-                    finalize { executed += "-2" }
-                }
+                dependsOn {
+                    // Directly depend on this patch.
+                    bytecodePatch {
+                        execute { executed += "2" }
+                        finalize { executed += "-2" }
+                    }
 
-                // Manually depend on this patch.
-                app.revanced.patcher.patch.bytecodePatch { execute { executed += "3" } }()
+                    // Manually depend on this patch.
+                    app.revanced.patcher.patch.bytecodePatch { execute { executed += "3" } }()
+                }
 
                 execute { executed += "4" }
                 finalize { executed += "-1" }

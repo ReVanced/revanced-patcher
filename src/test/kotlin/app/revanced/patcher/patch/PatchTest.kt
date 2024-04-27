@@ -15,7 +15,9 @@ internal object PatchTest {
     @Test
     fun `can create patch with compatible packages`() {
         val patch = bytecodePatch(name = "Test") {
-            "compatible.package"("1.0.0")
+            compatibleWith {
+                "compatible.package"("1.0.0")
+            }
         }
 
         assertEquals(1, patch.compatiblePackages!!.size)
@@ -44,8 +46,11 @@ internal object PatchTest {
         val externalPatch = resourcePatch {}
 
         val patch = bytecodePatch(name = "Test") {
-            externalPatch()
-            resourcePatch {}
+            dependsOn {
+                externalPatch()
+
+                resourcePatch {}
+            }
         }
 
         assertEquals(2, patch.dependencies.size)

@@ -74,14 +74,14 @@ sealed class Patch<C : PatchContext<*>>(
      * Runs the finalizing block of the patch.
      * Called by [Patcher].
      *
-     * @param context The [PatcherContext] to get the [PatchContext] from to close the patch with.
+     * @param context The [PatcherContext] to get the [PatchContext] from to finalize the patch with.
      */
     internal abstract fun finalize(context: PatcherContext)
 
     /**
      * Runs the finalizing block of the patch.
      *
-     * @param context The [PatchContext] to close the patch with.
+     * @param context The [PatchContext] to finalize the patch with.
      */
     fun finalize(context: C) = finalizeBlock(context)
 
@@ -250,23 +250,16 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected val requiresIntegrations: Boolean,
 ) {
     protected var compatiblePackages: Set<Package>? = null
-    protected val dependencies = mutableSetOf<Patch<*>>()
+    protected var dependencies: Set<Patch<*>> = emptySet()
     protected val options = mutableSetOf<PatchOption<*>>()
 
     protected var executionBlock: ((C) -> Unit) = { }
     protected var finalizeBlock: ((C) -> Unit) = { }
 
     /**
-     * Add the patch as a dependency.
-     *
-     * @return The added patch.
-     */
-    operator fun Patch<*>.invoke() = apply {
-        this@PatchBuilder.dependencies.add(this)
-    }
-
-    /**
      * Sets the compatible packages of the patch.
+     *
+     * @param block The block to set the compatible packages with.
      */
     fun compatibleWith(block: CompatibleWithBuilder.() -> Unit) {
         compatiblePackages = CompatibleWithBuilder().apply(block).build()
@@ -282,6 +275,15 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     }
 
     /**
+     * Add dependencies to the patch.
+     *
+     * @param block The block to add the dependencies with.
+     */
+    fun dependsOn(block: DependenciesBuilder.() -> Unit) {
+        dependencies = DependenciesBuilder().apply(block).build()
+    }
+
+    /**
      * Set the execution block of the patch.
      *
      * @param block The execution block of the patch.
@@ -293,7 +295,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     /**
      * Set the finalizing block of the patch.
      *
-     * @param block The closing block of the patch.
+     * @param block The finalizing block of the patch.
      */
     fun finalize(block: C.() -> Unit) {
         finalizeBlock = block
@@ -305,6 +307,26 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      * @return The built patch.
      */
     internal abstract fun build(): Patch<C>
+
+    /**
+     * A builder for dependencies.
+     *
+     * @constructor Create a new [DependenciesBuilder].
+     */
+    class DependenciesBuilder internal constructor() {
+        private val dependencies = mutableSetOf<Patch<*>>()
+
+        /**
+         * Add the patch as a dependency.
+         *
+         * @return The added patch.
+         */
+        operator fun Patch<*>.invoke() = apply {
+            this@DependenciesBuilder.dependencies.add(this)
+        }
+
+        internal fun build(): Set<Patch<*>> = dependencies
+    }
 
     /**
      * A builder for compatible packages.
@@ -474,7 +496,7 @@ fun bytecodePatch(
  *
  * @return The created [BytecodePatch].
  */
-fun PatchBuilder<*>.bytecodePatch(
+fun PatchBuilder.DependenciesBuilder.bytecodePatch(
     name: String? = null,
     description: String? = null,
     use: Boolean = true,
@@ -513,7 +535,7 @@ fun rawResourcePatch(
  *
  * @return The created [RawResourcePatch].
  */
-fun PatchBuilder<*>.rawResourcePatch(
+fun PatchBuilder.DependenciesBuilder.rawResourcePatch(
     name: String? = null,
     description: String? = null,
     use: Boolean = true,
@@ -553,7 +575,7 @@ fun resourcePatch(
  *
  * @return The created [ResourcePatch].
  */
-fun PatchBuilder<*>.resourcePatch(
+fun PatchBuilder.DependenciesBuilder.resourcePatch(
     name: String? = null,
     description: String? = null,
     use: Boolean = true,
@@ -582,7 +604,8 @@ class PatchResult internal constructor(val patch: Patch<*>, val exception: Patch
 
 /**
  * A loader for [Patch].
- * Loads patches from JAR or DEX files declared as public static fields or returned by public static methods.
+ * Loads patches from JAR or DEX files declared as public static fields
+ * or returned by public static and non-parametrized methods.
  * Patches with no name are not loaded.
  *
  * @param patchesFiles A set of JAR or DEX files to load the patches from.
@@ -638,7 +661,8 @@ sealed class PatchLoader private constructor(
     // Companion object required for unit tests.
     private companion object {
         /**
-         * Loads named patches declared as public static fields or returned by public static methods from classes.
+         * Loads named patches declared as public static fields
+         * or returned by public static and non-parametrized methods.
          *
          * @param binaryClassNames The binary class name of the classes to load the patches from.
          *
@@ -656,7 +680,7 @@ sealed class PatchLoader private constructor(
             }
 
             val patchesFromMethods = it.methods.filter { method ->
-                isPatch(method.returnType) && method.canAccess(null)
+                isPatch(method.returnType) && method.parameterCount == 0 && method.canAccess(null)
             }.map { method ->
                 method.invoke(null) as Patch<*>
             }
@@ -669,7 +693,8 @@ sealed class PatchLoader private constructor(
 }
 
 /**
- * Loads patches from JAR files declared as public static fields or returned by public static methods.
+ * Loads patches from JAR files declared as public static fields
+ * or returned by public static and non-parametrized methods.
  * Patches with no name are not loaded.
  *
  * @param patchesFiles The JAR files to load the patches from.
@@ -680,7 +705,8 @@ fun loadPatchesFromJar(patchesFiles: Set<File>): PatchSet =
     PatchLoader.Jar(patchesFiles)
 
 /**
- * Loads patches from DEX files declared as public static fields or returned by public static methods.
+ * Loads patches from DEX files declared as public static fields
+ * or returned by public static and non-parametrized methods.
  * Patches with no name are not loaded.
  *
  * @param patchesFiles The DEX files to load the patches from.
