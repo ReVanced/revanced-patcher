@@ -60,13 +60,15 @@ internal object PatchTest {
     @Test
     fun `can create patch with options`() {
         val patch = bytecodePatch(name = "Test") {
-            val print by stringPatchOption("print")
+            val print by stringOption("print")
+            val custom = option<String>("custom")()
 
             execute {
                 println(print)
+                println(custom.value)
             }
         }
 
-        assertEquals(1, patch.options.size)
+        assertEquals(2, patch.options.size)
     }
 }

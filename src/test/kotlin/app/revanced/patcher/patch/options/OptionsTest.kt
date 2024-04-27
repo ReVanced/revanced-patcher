@@ -3,23 +3,22 @@ package app.revanced.patcher.patch.options
 import app.revanced.patcher.patch.*
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.Test
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.reflect.typeOf
+import kotlin.test.*
 
-internal object PatchOptionsTest {
+internal object OptionsTest {
     private val optionsTestPatch = bytecodePatch {
-        booleanPatchOption("bool", true)
+        booleanOption("bool", true)
 
-        stringPatchOption("required", "default", required = true)
+        stringOption("required", "default", required = true)
 
-        stringArrayPatchOption("array", arrayOf("1", "2"))
+        stringsOption("list", listOf("1", "2"))
 
-        stringPatchOption("choices", "value", values = mapOf("Valid option value" to "valid"))
+        stringOption("choices", "value", values = mapOf("Valid option value" to "valid"))
 
-        stringPatchOption("validated", "default") { it == "valid" }
+        stringOption("validated", "default") { it == "valid" }
 
-        stringPatchOption("resettable", null, required = true)
+        stringOption("resettable", null, required = true)
     }
 
     @Test
@@ -30,12 +29,12 @@ internal object PatchOptionsTest {
     @Test
     fun `should not allow setting custom value with validation`() = options {
         // Getter validation on incorrect value.
-        assertThrows<PatchOptionException.ValueValidationException> {
+        assertThrows<OptionException.ValueValidationException> {
             set("validated", get("validated"))
         }
 
         // Setter validation on incorrect value.
-        assertThrows<PatchOptionException.ValueValidationException> {
+        assertThrows<OptionException.ValueValidationException> {
             set("validated", "invalid")
         }
 
@@ -47,7 +46,7 @@ internal object PatchOptionsTest {
 
     @Test
     fun `should throw due to incorrect type`() = options {
-        assertThrows<PatchOptionException.InvalidValueTypeException> {
+        assertThrows<OptionException.InvalidValueTypeException> {
             set("bool", "not a boolean")
         }
     }
@@ -61,7 +60,7 @@ internal object PatchOptionsTest {
 
     @Test
     fun `option should not be found`() = options {
-        assertThrows<PatchOptionException.PatchOptionNotFoundException> {
+        assertThrows<OptionException.OptionNotFoundException> {
             set("this option does not exist", 1)
         }
     }
@@ -70,15 +69,15 @@ internal object PatchOptionsTest {
     fun `should be able to add options manually`() = options {
         assertDoesNotThrow {
             bytecodePatch {
-                option(get("array"))
-            }.options["array"]
+                get("list")()
+            }.options["list"]
         }
     }
 
     @Test
     fun `should allow setting value from values`() = options {
         @Suppress("UNCHECKED_CAST")
-        val option = get("choices") as PatchOption<String>
+        val option = get("choices") as Option<String>
 
         option.value = option.values!!.values.last()
 
@@ -108,14 +107,14 @@ internal object PatchOptionsTest {
             get("resettable").reset()
         }
 
-        assertThrows<PatchOptionException.ValueRequiredException> {
+        assertThrows<OptionException.ValueRequiredException> {
             get("resettable").value
         }
     }
 
     @Test
     fun `option types should be known`() = options {
-        assertTrue(get("array").valueType == "StringArray")
+        assertEquals(typeOf<List<String>>(), get("list").type)
     }
 
     @Test
@@ -125,5 +124,5 @@ internal object PatchOptionsTest {
         }
     }
 
-    private fun options(block: PatchOptions.() -> Unit) = optionsTestPatch.options.let(block)
+    private fun options(block: Options.() -> Unit) = optionsTestPatch.options.let(block)
 }

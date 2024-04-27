@@ -21,7 +21,7 @@ typealias PatchSet = Set<Patch<*>>
 
 typealias PackageName = String
 typealias VersionName = String
-typealias Package = Pair<PackageName, Set<VersionName>>
+typealias Package = Pair<PackageName, Set<VersionName>?>
 
 /**
  * A patch.
@@ -49,11 +49,11 @@ sealed class Patch<C : PatchContext<*>>(
     val requiresIntegrations: Boolean,
     val compatiblePackages: Set<Package>?,
     val dependencies: Set<Patch<*>>,
-    options: Set<PatchOption<*>>,
+    options: Set<Option<*>>,
     private val executeBlock: ((C) -> Unit),
     private val finalizeBlock: ((C) -> Unit),
 ) {
-    val options = PatchOptions(options)
+    val options = Options(options)
 
     /**
      * Runs the execution block of the patch.
@@ -114,7 +114,7 @@ class BytecodePatch internal constructor(
     requiresIntegrations: Boolean,
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
-    options: Set<PatchOption<*>>,
+    options: Set<Option<*>>,
     internal val fingerprints: Set<MethodFingerprint>,
     executeBlock: ((BytecodePatchContext) -> Unit),
     finalizeBlock: ((BytecodePatchContext) -> Unit),
@@ -163,7 +163,7 @@ class RawResourcePatch internal constructor(
     requiresIntegrations: Boolean,
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
-    options: Set<PatchOption<*>>,
+    options: Set<Option<*>>,
     executeBlock: ((ResourcePatchContext) -> Unit),
     finalizeBlock: ((ResourcePatchContext) -> Unit),
 ) : Patch<ResourcePatchContext>(
@@ -206,7 +206,7 @@ class ResourcePatch internal constructor(
     requiresIntegrations: Boolean,
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
-    options: Set<PatchOption<*>>,
+    options: Set<Option<*>>,
     executeBlock: ((ResourcePatchContext) -> Unit),
     finalizeBlock: ((ResourcePatchContext) -> Unit),
 ) : Patch<ResourcePatchContext>(
@@ -236,7 +236,7 @@ class ResourcePatch internal constructor(
  * @property compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @property dependencies Other patches this patch depends on.
- * @property option The options of the patch.
+ * @property options The options of the patch.
  * @property executionBlock The execution block of the patch.
  * @property finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
@@ -251,10 +251,17 @@ sealed class PatchBuilder<C : PatchContext<*>>(
 ) {
     protected var compatiblePackages: Set<Package>? = null
     protected var dependencies: Set<Patch<*>> = emptySet()
-    protected val options = mutableSetOf<PatchOption<*>>()
+    protected val options = mutableSetOf<Option<*>>()
 
     protected var executionBlock: ((C) -> Unit) = { }
     protected var finalizeBlock: ((C) -> Unit) = { }
+
+    /**
+     * Add an option to the patch.
+     */
+    operator fun Option<*>.invoke() = apply {
+        options += this
+    }
 
     /**
      * Sets the compatible packages of the patch.
@@ -263,15 +270,6 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      */
     fun compatibleWith(block: CompatibleWithBuilder.() -> Unit) {
         compatiblePackages = CompatibleWithBuilder().apply(block).build()
-    }
-
-    /**
-     * Add options to the patch.
-     *
-     * @param option The options to add.
-     */
-    fun option(vararg option: PatchOption<*>) {
-        options.addAll(option)
     }
 
     /**
@@ -337,12 +335,19 @@ sealed class PatchBuilder<C : PatchContext<*>>(
         private val compatiblePackages = mutableSetOf<Package>()
 
         /**
-         * Add a compatible package to the patch.
+         * Add a package the patch is compatible with.
          *
          * @param versions The versions of the package.
          */
         operator fun String.invoke(vararg versions: String) {
             compatiblePackages += this to versions.toSet()
+        }
+
+        /**
+         * Add a package the patch is compatible with.
+         */
+        operator fun String.invoke() {
+            compatiblePackages += this to null as Set<String>?
         }
 
         internal fun build(): Set<Package> = compatiblePackages
