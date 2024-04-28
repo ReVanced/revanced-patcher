@@ -438,8 +438,8 @@ class MethodFingerprintBuilder internal constructor(
      *
      * @param accessFlags The exact access flags using values of [AccessFlags].
      */
-    fun accessFlags(accessFlags: AccessFlags) {
-        this.accessFlags = accessFlags.value
+    fun accessFlags(vararg accessFlags: AccessFlags) {
+        this.accessFlags = accessFlags.fold(0) { acc, it -> acc or it.value }
     }
 
     /**

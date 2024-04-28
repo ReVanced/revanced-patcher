@@ -1,6 +1,5 @@
 package app.revanced.patcher.util
 
-import app.revanced.patcher.extensions.or
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
 import app.revanced.patcher.util.ClassMerger.Utils.filterAny
@@ -199,7 +198,7 @@ internal object ClassMerger {
          *
          * @return The new [AccessFlags].
          */
-        fun Int.toPublic() = this.or(AccessFlags.PUBLIC).and(AccessFlags.PRIVATE.value.inv())
+        fun Int.toPublic() = or(AccessFlags.PUBLIC.value).and(AccessFlags.PRIVATE.value.inv())
 
         /**
          * Filter [this] on [needles] matching the given [predicate].

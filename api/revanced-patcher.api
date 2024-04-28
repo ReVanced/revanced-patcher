@@ -67,9 +67,6 @@ public final class app/revanced/patcher/PatchesConsumer$DefaultImpls {
 
 public final class app/revanced/patcher/extensions/ExtensionsKt {
 	public static final fun newLabel (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;I)Lcom/android/tools/smali/dexlib2/builder/Label;
-	public static final fun or (ILcom/android/tools/smali/dexlib2/AccessFlags;)I
-	public static final fun or (Lcom/android/tools/smali/dexlib2/AccessFlags;I)I
-	public static final fun or (Lcom/android/tools/smali/dexlib2/AccessFlags;Lcom/android/tools/smali/dexlib2/AccessFlags;)I
 }
 
 public final class app/revanced/patcher/extensions/InstructionExtensions {
@@ -112,7 +109,7 @@ public final class app/revanced/patcher/fingerprint/MethodFingerprint {
 public final class app/revanced/patcher/fingerprint/MethodFingerprintBuilder {
 	public fun <init> ()V
 	public final fun accessFlags (I)V
-	public final fun accessFlags (Lcom/android/tools/smali/dexlib2/AccessFlags;)V
+	public final fun accessFlags ([Lcom/android/tools/smali/dexlib2/AccessFlags;)V
 	public final fun custom (Lkotlin/jvm/functions/Function2;)V
 	public final fun opcodes (Ljava/lang/String;)V
 	public final fun opcodes ([Lcom/android/tools/smali/dexlib2/Opcode;)V
