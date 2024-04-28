@@ -35,8 +35,8 @@ internal object PatcherTest {
                 Logger.getAnonymousLogger(),
             )
 
-            every { context.bytecodeContext.classes } returns mockk(relaxed = true)
-            every { context.bytecodeContext.integrations } returns mockk(relaxed = true)
+            every { context.bytecodePatchContext.classes } returns mockk(relaxed = true)
+            every { context.bytecodePatchContext.integrations } returns mockk(relaxed = true)
             every { apply(false) } answers { callOriginal() }
         }
     }
@@ -134,8 +134,8 @@ internal object PatcherTest {
     }
 
     private fun mockClassWithMethod() {
-        every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
-            mutableSetOf(
+        every { patcher.context.bytecodePatchContext.classes } returns ProxyClassList(
+            mutableListOf(
                 ImmutableClassDef(
                     "class",
                     0,

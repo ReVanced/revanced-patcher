@@ -38,7 +38,7 @@ class Patcher(
     val context = PatcherContext(config)
 
     init {
-        context.resourceContext.decodeResources(ResourcePatchContext.ResourceMode.NONE)
+        context.resourcePatchContext.decodeResources(ResourcePatchContext.ResourceMode.NONE)
     }
 
     /**
@@ -85,7 +85,7 @@ class Patcher(
             // Check, if integrations need to be merged.
             for (patch in patches)
                 if (patch.anyRecursively { it.requiresIntegrations }) {
-                    context.bytecodeContext.integrations.merge = true
+                    context.bytecodePatchContext.integrations.merge = true
                     break
                 }
         }
@@ -94,7 +94,7 @@ class Patcher(
 
         // region Add integrations
 
-        context.bytecodeContext.integrations.addAll(integrations)
+        context.bytecodePatchContext.integrations.addAll(integrations)
 
         // endregion
     }
@@ -140,13 +140,13 @@ class Patcher(
             }.also { executedPatches[this] = it }
         }
 
-        if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
+        if (context.bytecodePatchContext.integrations.merge) context.bytecodePatchContext.integrations.flush()
 
-        LookupMap.initializeLookupMaps(context.bytecodeContext)
+        LookupMap.initializeLookupMaps(context.bytecodePatchContext)
 
         // Prevent from decoding the app manifest twice if it is not needed.
         if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
-            context.resourceContext.decodeResources(config.resourceMode)
+            context.resourcePatchContext.decodeResources(config.resourceMode)
         }
 
         logger.info("Executing patches")
@@ -212,8 +212,8 @@ class Patcher(
     @OptIn(InternalApi::class)
     override fun get() =
         PatcherResult(
-            context.bytecodeContext.get(),
-            context.resourceContext.get(),
+            context.bytecodePatchContext.get(),
+            context.resourcePatchContext.get(),
         )
 }
 

@@ -130,12 +130,12 @@ class BytecodePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) {
-        fingerprints.resolveUsingLookupMap(context.bytecodeContext)
+        fingerprints.resolveUsingLookupMap(context.bytecodePatchContext)
 
-        execute(context.bytecodeContext)
+        execute(context.bytecodePatchContext)
     }
 
-    override fun finalize(context: PatcherContext) = finalize(context.bytecodeContext)
+    override fun finalize(context: PatcherContext) = finalize(context.bytecodePatchContext)
 }
 
 /**
@@ -177,8 +177,8 @@ class RawResourcePatch internal constructor(
     executeBlock,
     finalizeBlock,
 ) {
-    override fun execute(context: PatcherContext) = execute(context.resourceContext)
-    override fun finalize(context: PatcherContext) = finalize(context.resourceContext)
+    override fun execute(context: PatcherContext) = execute(context.resourcePatchContext)
+    override fun finalize(context: PatcherContext) = finalize(context.resourcePatchContext)
 }
 
 /**
@@ -220,8 +220,8 @@ class ResourcePatch internal constructor(
     executeBlock,
     finalizeBlock,
 ) {
-    override fun execute(context: PatcherContext) = execute(context.resourceContext)
-    override fun finalize(context: PatcherContext) = finalize(context.resourceContext)
+    override fun execute(context: PatcherContext) = execute(context.resourcePatchContext)
+    override fun finalize(context: PatcherContext) = finalize(context.resourcePatchContext)
 }
 
 /**

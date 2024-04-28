@@ -5,8 +5,8 @@ import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.util.ClassMerger.merge
+import app.revanced.patcher.util.MethodNavigator
 import app.revanced.patcher.util.ProxyClassList
-import app.revanced.patcher.util.method.MethodWalker
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -46,7 +46,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                 BasicDexFileNamer(),
                 null,
                 null,
-            ).also { opcodes = it.opcodes }.classes.toMutableSet(),
+            ).also { opcodes = it.opcodes }.classes.toMutableList(),
         )
     }
 
@@ -56,44 +56,36 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val integrations = Integrations()
 
     /**
-     * Find a class by a given class name.
+     * Find a class by its type using a contains check.
      *
-     * @param className The name of the class.
-     * @return A proxy for the first class that matches the class name.
+     * @param type The type of the class.
+     * @return A proxy for the first class that matches the type.
      */
-    fun findClass(className: String) = findClass { it.type.contains(className) }
+    fun classByType(type: String) = classBy { type in it.type }
 
     /**
-     * Find a class by a given predicate.
+     * Find a class with a predicate.
      *
      * @param predicate A predicate to match the class.
      * @return A proxy for the first class that matches the predicate.
      */
-    fun findClass(predicate: (ClassDef) -> Boolean) =
-        // if we already proxied the class matching the predicate...
-        classes.proxies.firstOrNull { predicate(it.immutableClass) }
-            ?: // else resolve the class to a proxy and return it, if the predicate is matching a class
-            classes.find(predicate)?.let { proxy(it) }
+    fun classBy(predicate: (ClassDef) -> Boolean) =
+        classes.proxyPool.find { predicate(it.immutableClass) } ?: classes.find(predicate)?.proxy()
 
     /**
-     * Proxy a class.
-     * This will allow the class to be modified.
+     * Proxy the class to allow mutation.
      *
-     * @param classDef The class to proxy.
      * @return A proxy for the class.
      */
-    fun proxy(classDef: ClassDef) =
-        this.classes.proxies.find { it.immutableClass.type == classDef.type } ?: let {
-            ClassProxy(classDef).also { this.classes.add(it) }
-        }
+    fun ClassDef.proxy() = this@BytecodePatchContext.classes.proxyPool.find { it.immutableClass.type == type }
+        ?: ClassProxy(this).also { this@BytecodePatchContext.classes.proxyPool.add(it) }
 
     /**
-     * Create a [MethodWalker] instance for the current [BytecodePatchContext].
+     * Navigate a method.
      *
-     * @param startMethod The method to start at.
-     * @return A [MethodWalker] instance.
+     * @return A [MethodNavigator] for the method.
      */
-    fun toMethodWalker(startMethod: Method) = MethodWalker(this, startMethod)
+    fun Method.navigate() = MethodNavigator(this@BytecodePatchContext, this)
 
     /**
      * Compile bytecode from the [BytecodePatchContext].
@@ -116,7 +108,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     BasicDexFileNamer(),
                     object : DexFile {
                         override fun getClasses() =
-                            this@BytecodePatchContext.classes.also(ProxyClassList::replaceClasses)
+                            this@BytecodePatchContext.classes.also(ProxyClassList::replaceClasses).toSet()
 
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },

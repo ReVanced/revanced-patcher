@@ -1,3 +1,5 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package app.revanced.patcher.fingerprint
 
 import app.revanced.patcher.fingerprint.LookupMap.Maps.appendParameters
@@ -326,7 +328,6 @@ fun Iterable<MethodFingerprint>.resolve(
  * @param context The [BytecodePatchContext] this [MethodFingerprintResult] is attached to, to create proxies.
  */
 
-@Suppress("MemberVisibilityCanBePrivate")
 class MethodFingerprintResult(
     val method: Method,
     val classDef: ClassDef,
@@ -339,8 +340,11 @@ class MethodFingerprintResult(
      * Please note, this method allocates a [ClassProxy].
      * Use [classDef] where possible.
      */
-    @Suppress("MemberVisibilityCanBePrivate")
-    val mutableClass by lazy { context.proxy(classDef).mutableClass }
+    val mutableClass by lazy {
+        with(context) {
+            classDef.proxy().mutableClass
+        }
+    }
 
     /**
      * Returns a mutable clone of [method]

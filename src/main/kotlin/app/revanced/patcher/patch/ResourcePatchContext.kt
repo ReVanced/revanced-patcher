@@ -149,7 +149,7 @@ class ResourcePatchContext internal constructor(
                 // Excluded because present in resources.other.
                 // TODO: We are reusing config.apkFiles as a temporarily directory for extracting resources.
                 //  This is not ideal as it could conflict with files such as the ones that we filter here.
-                //  The problem is that ResourceContext#get returns a File relative to config.apkFiles,
+                //  The problem is that ResourcePatchContext#get returns a File relative to config.apkFiles,
                 //  and we need to extract files to that directory.
                 //  A solution would be to use config.apkFiles as the working directory for the patching process.
                 //  Once all patches have been executed, we can move the decoded resources to a new directory.

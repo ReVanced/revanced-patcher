@@ -180,7 +180,7 @@ internal object ClassMerger {
             callback: MutableClass.() -> Unit,
         ) {
             callback(targetClass)
-            this.findClass(targetClass.superclass ?: return)?.mutableClass?.let {
+            this.classByType(targetClass.superclass ?: return)?.mutableClass?.let {
                 traverseClassHierarchy(it, callback)
             }
         }

@@ -102,19 +102,15 @@ public final class app/revanced/patcher/extensions/InstructionExtensions {
 	public final fun replaceInstructions (Lcom/android/tools/smali/dexlib2/builder/MutableMethodImplementation;ILjava/util/List;)V
 }
 
-public abstract interface annotation class app/revanced/patcher/fingerprint/FuzzyPatternScanMethod : java/lang/annotation/Annotation {
-	public abstract fun threshold ()I
-}
-
 public final class app/revanced/patcher/fingerprint/MethodFingerprint {
 	public fun <init> ()V
-	public final fun getFuzzyPatternScanMethod ()Lapp/revanced/patcher/fingerprint/FuzzyPatternScanMethod;
 	public final fun getResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;
 	public final fun resolve (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
 	public final fun resolve (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
 }
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintBuilder {
+	public fun <init> ()V
 	public final fun accessFlags (I)V
 	public final fun accessFlags (Lcom/android/tools/smali/dexlib2/AccessFlags;)V
 	public final fun custom (Lkotlin/jvm/functions/Function2;)V
@@ -126,8 +122,10 @@ public final class app/revanced/patcher/fingerprint/MethodFingerprintBuilder {
 }
 
 public final class app/revanced/patcher/fingerprint/MethodFingerprintKt {
-	public static final fun methodFingerprint (Lapp/revanced/patcher/patch/BytecodePatchBuilder;Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
-	public static final fun methodFingerprint (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
+	public static final fun methodFingerprint (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
+	public static final fun methodFingerprint (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
+	public static synthetic fun methodFingerprint$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
+	public static synthetic fun methodFingerprint$default (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
 	public static final fun resolve (Ljava/lang/Iterable;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;)V
 }
 
@@ -173,13 +171,13 @@ public final class app/revanced/patcher/patch/BytecodePatchBuilder : app/revance
 }
 
 public final class app/revanced/patcher/patch/BytecodePatchContext : app/revanced/patcher/patch/PatchContext {
-	public final fun findClass (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/ClassProxy;
-	public final fun findClass (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/ClassProxy;
+	public final fun classBy (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/ClassProxy;
+	public final fun classByType (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 	public synthetic fun get ()Ljava/lang/Object;
 	public fun get ()Ljava/util/Set;
 	public final fun getClasses ()Lapp/revanced/patcher/util/ProxyClassList;
+	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun proxy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/ClassProxy;
-	public final fun toMethodWalker (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/method/MethodWalker;
 }
 
 public final class app/revanced/patcher/patch/Option {
@@ -486,31 +484,49 @@ public final class app/revanced/patcher/util/Document : java/io/Closeable, org/w
 	public fun setXmlVersion (Ljava/lang/String;)V
 }
 
-public final class app/revanced/patcher/util/ProxyClassList : java/util/Set, kotlin/jvm/internal/markers/KMutableSet {
-	public final fun add (Lapp/revanced/patcher/util/proxy/ClassProxy;)Z
+public final class app/revanced/patcher/util/MethodNavigator {
+	public final fun at ([I)Lapp/revanced/patcher/util/MethodNavigator;
+	public final fun getReference ()Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;
+	public final fun immutable ()Lcom/android/tools/smali/dexlib2/iface/Method;
+	public final fun mutable ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun setReference (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)V
+}
+
+public final class app/revanced/patcher/util/ProxyClassList : java/util/List, kotlin/jvm/internal/markers/KMutableList {
+	public fun add (ILcom/android/tools/smali/dexlib2/iface/ClassDef;)V
+	public synthetic fun add (ILjava/lang/Object;)V
 	public fun add (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
 	public synthetic fun add (Ljava/lang/Object;)Z
+	public fun addAll (ILjava/util/Collection;)Z
 	public fun addAll (Ljava/util/Collection;)Z
 	public fun clear ()V
 	public fun contains (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
 	public final fun contains (Ljava/lang/Object;)Z
 	public fun containsAll (Ljava/util/Collection;)Z
+	public fun get (I)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public synthetic fun get (I)Ljava/lang/Object;
 	public fun getSize ()I
+	public fun indexOf (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)I
+	public final fun indexOf (Ljava/lang/Object;)I
 	public fun isEmpty ()Z
 	public fun iterator ()Ljava/util/Iterator;
+	public fun lastIndexOf (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)I
+	public final fun lastIndexOf (Ljava/lang/Object;)I
+	public fun listIterator ()Ljava/util/ListIterator;
+	public fun listIterator (I)Ljava/util/ListIterator;
+	public final fun remove (I)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public synthetic fun remove (I)Ljava/lang/Object;
 	public fun remove (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
 	public final fun remove (Ljava/lang/Object;)Z
 	public fun removeAll (Ljava/util/Collection;)Z
+	public fun removeAt (I)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public fun retainAll (Ljava/util/Collection;)Z
+	public fun set (ILcom/android/tools/smali/dexlib2/iface/ClassDef;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public synthetic fun set (ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun size ()I
+	public fun subList (II)Ljava/util/List;
 	public fun toArray ()[Ljava/lang/Object;
 	public fun toArray ([Ljava/lang/Object;)[Ljava/lang/Object;
-}
-
-public final class app/revanced/patcher/util/method/MethodWalker {
-	public final fun getMethod ()Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun nextMethod (IZ)Lapp/revanced/patcher/util/method/MethodWalker;
-	public static synthetic fun nextMethod$default (Lapp/revanced/patcher/util/method/MethodWalker;IZILjava/lang/Object;)Lapp/revanced/patcher/util/method/MethodWalker;
 }
 
 public final class app/revanced/patcher/util/proxy/ClassProxy {
