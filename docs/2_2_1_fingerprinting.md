@@ -134,7 +134,7 @@ With this information, the original code can be reconstructed:
 
 > [!TIP]
 > A fingerprint should contain information about a method likely to remain the same across updates.
-> A method's name is not included in the fingerprint because it is likely to change with each update in an obfuscated app. In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the same.
+> A method's name is not included in the fingerprint because it will likely change with each update in an obfuscated app. In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the same.
 
 ## 🔨 How to use fingerprints
 
@@ -227,7 +227,7 @@ class MethodFingerprintScanResult(
 ## 🏹 Manual resolution of fingerprints
 
 Unless a fingerprint is added to a patch, the fingerprint will not be resolved automatically by ReVanced Patcher before the patch is executed.
-Instead, the fingerprint can be resolved manually using various overloads of the `resolve` function of a fingerprint.
+Instead, the fingerprint can be resolved manually using various overloads of a fingerprint's `resolve` function.
 
 You can resolve a fingerprint in the following ways:
 
@@ -282,7 +282,7 @@ You can resolve a fingerprint in the following ways:
   ```
 
 > [!TIP]
-> To see real-world examples of fingerprints, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
+> To see real-world examples of fingerprints, check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
 
 ## ⏭️ What's next
 
