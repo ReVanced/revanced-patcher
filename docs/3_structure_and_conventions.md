@@ -76,8 +76,8 @@ Patches are organized in a specific file structure. The file structure is as fol
 
 ## 📙 Conventions
 
-- 🔥 Name a patch after what it does. For example, if a patch removes ads, name it `RemoveAdsPatch`.
-  If a patch changes the color of a button, name it `ChangeButtonColorPatch`
+- 🔥 Name a patch after what it does. For example, if a patch removes ads, name it `Remove ads`.
+  If a patch changes the color of a button, name it `Change button color`
 - 🔥 Write the patch description in the third person, present tense, and end it with a period.
   If a patch removes ads, the description can be omitted because of redundancy, but if a patch changes the color of a button, the description can be _Changes the color of the resume button to red._
 - 🔥 Write patches with modularity and reusability in mind. Patches can depend on each other, so it is important to write patches in a way that can be used in different contexts.

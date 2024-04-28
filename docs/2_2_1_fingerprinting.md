@@ -72,14 +72,19 @@ Throughout the documentation, the following example will be used to demonstrate 
 
 package app.revanced.patches.ads.fingerprints
 
-object ShowAdsFingerprint : MethodFingerprint(
-    returnType = "Z",
-    accessFlags = AccessFlags.PUBLIC or AccessFlags.FINAL,
-    parameters = listOf("Z"),
-    opcodes = listOf(Opcode.RETURN),
-    strings = listOf("pro"),
-    customFingerprint = { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;" }
-)
+methodFingerprint {
+    returns("Z")
+    
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    
+    parameters("Z")
+    
+    opcodes(Opcode.RETURN)
+    
+    strings("pro")
+
+    custom { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;" }
+}
 ```
 
 ## 🔎 Reconstructing the original code from a fingerprint
@@ -91,22 +96,22 @@ The fingerprint contains the following information:
 - Method signature:
 
   ```kt
-  returnType = "Z",
-  access = AccessFlags.PUBLIC or AccessFlags.FINAL,
-  parameters = listOf("Z"),
+  returns("Z")
+  accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+  parameters("Z")
   ```
 
 - Method implementation:
 
   ```kt
-  opcodes = listOf(Opcode.RETURN)
-  strings = listOf("pro"),
+  opcodes(Opcode.RETURN)
+  strings("pro"),
   ```
 
 - Package and class name:
 
   ```kt
-  customFingerprint = { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;"}
+  custom = { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;"}
   ```
 
 With this information, the original code can be reconstructed:
@@ -133,44 +138,58 @@ With this information, the original code can be reconstructed:
 
 ## 🔨 How to use fingerprints
 
-After creating a fingerprint, add it to the constructor of a `BytecodePatch`:
+Fingerprints can be added to a patch by directly creating and adding them or by invoking them manually. Fingerprints added to a patch are resolved by ReVanced Patcher before the patch is executed.
 
 ```kt
-object DisableAdsPatch : BytecodePatch(
-    setOf(ShowAdsFingerprint)
-) {
+val fingerprint = methodFingerprint {
     // ...
- }
-```
+}
 
-> [!NOTE]
-> Fingerprints passed to the constructor of `BytecodePatch` are resolved by ReVanced Patcher before the patch is executed.
+val patch = bytecodePatch {
+    // Directly create and add a fingerprint.
+    methodFingerprint {
+        // ...
+    }
+
+    // Add a fingerprint manually by invoking it.
+    fingerprint()
+}
+```
 
 > [!TIP]
 > Multiple patches can share fingerprints. If a fingerprint is resolved once, it will not be resolved again.
 
 > [!TIP]
-> If a fingerprint has an opcode pattern, you can use the `FuzzyPatternScanMethod` annotation to fuzzy match the pattern.
+> If a fingerprint has an opcode pattern, you can use the `fuzzyPatternScanThreshhold` parameter of the `opcode` function to fuzzy match the pattern.  
 > Opcode pattern arrays can contain `null` values to indicate that the opcode at the index is unknown.
-> Any opcode will match to a `null` value.
-
-> [!WARNING]
-> If the fingerprint can not be resolved because it does not match any method, the result of a fingerprint is `null`.
+> Any opcode will match to a `null` value:
+>
+> ```kt
+> methodFingerprint(fuzzyPatternScanThreshhold = 0.5) {
+>    opcodes(
+>        Opcode.ICONST_0,
+>        null,
+>        Opcode.ICONST_1,
+>        Opcode.IRETURN,
+>    )
+>}
+> ```
 
 Once the fingerprint is resolved, the result can be used in the patch:
 
 ```kt
-object DisableAdsPatch : BytecodePatch(
-  setOf(ShowAdsFingerprint)
-) {
-    override fun execute(context: BytecodeContext) {
-        val result = ShowAdsFingerprint.result
-            ?: throw PatchException("ShowAdsFingerprint not found")
+val patch = bytecodePatch {
+    // Add a fingerprint and delegate it's result to a variable.
+    val result by showAdsFingerprint
 
-        // ...
+    execute {
+        val method = result.method
     }
 }
 ```
+
+> [!WARNING]
+> If the fingerprint can not be resolved because it does not match any method, the result of a fingerprint is `null`. If the result is delegated to a variable, accessing it will raise an exception.
 
 The result of a fingerprint that resolved successfully contains mutable and immutable references to the method and the class it is defined in.
 
@@ -207,7 +226,7 @@ class MethodFingerprintScanResult(
 
 ## 🏹 Manual resolution of fingerprints
 
-Unless a fingerprint is added to the constructor of `BytecodePatch`, the fingerprint will not be resolved automatically by ReVanced Patcher before the patch is executed.
+Unless a fingerprint is added to a patch, the fingerprint will not be resolved automatically by ReVanced Patcher before the patch is executed.
 Instead, the fingerprint can be resolved manually using various overloads of the `resolve` function of a fingerprint.
 
 You can resolve a fingerprint in the following ways:
@@ -217,12 +236,11 @@ You can resolve a fingerprint in the following ways:
   If you have a known list of classes you know the fingerprint can resolve on, you can resolve the fingerprint on the list of classes:
 
   ```kt
-  override fun execute(context: BytecodeContext) {
-      val result = ShowAdsFingerprint.also { it.resolve(context, context.classes) }.result
-          ?: throw PatchException("ShowAdsFingerprint not found")
-
-          // ...
-  }
+    execute {
+        val result = showAdsFingerprint.also { 
+            it.resolve(context, this.classes) 
+        }.result ?: throw PatchException("showAdsFingerprint not found")
+    }
   ```
 
 - On a **single class**, if the fingerprint can resolve on a single known class
@@ -230,13 +248,12 @@ You can resolve a fingerprint in the following ways:
   If you know the fingerprint can resolve to a method in a specific class, you can resolve the fingerprint on the class:
 
   ```kt
-  override fun execute(context: BytecodeContext) {
-      val adsLoaderClass = context.classes.single { it.name == "Lcom/some/app/ads/Loader;" }
+  execute {
+      val adsLoaderClass = classes.single { it.name == "Lcom/some/app/ads/Loader;" }
 
-      val result = ShowAdsFingerprint.also { it.resolve(context, adsLoaderClass) }.result
-          ?: throw PatchException("ShowAdsFingerprint not found")
-
-      // ...
+      val result = showAdsFingerprint.also { 
+        it.resolve(context, adsLoaderClass)
+      }.result ?: throw PatchException("showAdsFingerprint not found")
   }
   ```
 
@@ -246,13 +263,13 @@ You can resolve a fingerprint in the following ways:
   A fingerprint can be leveraged to extract such information from a method instead of manually figuring it out:
 
   ```kt
-  override fun execute(context: BytecodeContext) {
-      val adsFingerprintResult = ShowAdsFingerprint.result
-          ?: throw PatchException("ShowAdsFingerprint not found")
+  execute {
+      val adsFingerprintResult = showAdsFingerprint.result
+          ?: throw PatchException("showAdsFingerprint not found")
 
-      val proStringsFingerprint = object : MethodFingerprint(
-          strings = listOf("free", "trial")
-      ) {}
+      val proStringsFingerprint = methodFingerprint {
+          strings("free", "trial")
+      }
 
       proStringsFingerprint.also {
           it.resolve(context, adsFingerprintResult.method)
@@ -260,7 +277,6 @@ You can resolve a fingerprint in the following ways:
           result.scanResult.stringsScanResult!!.matches.forEach { match ->
               println("The index of the string '${match.string}' is ${match.index}")
           }
-
       } ?: throw PatchException("pro strings fingerprint not found")
   }
   ```

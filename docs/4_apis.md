@@ -4,13 +4,12 @@ A handful of APIs are available to make patch development easier and more effici
 
 ## 📙 Overview
 
-1. 👹 Create new mutable classes with `context.proxy(ClassDef)`
-2. 🔍 Find and proxy existing classes with `BytecodeContext.findClass(Predicate)`
-3. 🏃‍ Easily access referenced methods recursively by index with `BytecodeContext.toMethodWalker(Method)`
+1. 👹 Mutate classes with `classDex.proxy()`
+2. 🔍 Find and proxy existing classes with `classBy(Predicate)`
+3. 🏃‍ Easily access referenced methods recursively by index with `method.navigate()`
 4. 🔨 Make use of extension functions from `BytecodeUtils` and `ResourceUtils` with certain applications (Available in ReVanced Patches)
-5. 💾 Read and write (decoded) resources with `ResourceContext.get(Path, Boolean) `
-6. 📃 Read and write DOM files using `ResourceContext.document`
-7. 🔧 Equip patches with configurable options using `Patch.options`
+5. 💾 Read and write (decoded) resources with `ResourcePatchContext.get(Path, Boolean)`
+6. 📃 Read and write DOM files using `ResourcePatchContext.document`
 
 ### 🧰 APIs
 

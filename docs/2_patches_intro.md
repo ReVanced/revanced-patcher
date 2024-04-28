@@ -73,47 +73,35 @@ There are multiple types of patches. Each type can modify a different part of th
 
 Each patch can declare a set of dependencies on other patches. ReVanced Patcher will first execute dependencies before executing the patch itself. This way, multiple patches can work together for abstract purposes in a modular way.
 
-A patch class can be annotated with `@Patch` to provide metadata about and dependencies of the patch.
-Alternatively, a constructor of the superclass can be used. This is useful in the example scenario where you want to create an abstract patch class.
+The `execute` function of is the entry point for a patch. It is called by ReVanced Patcher when the patch is executed. The `execute` function receives an instance of a context object that provides access to the APK. The patch can use this context to modify the APK.
 
-The entry point of a patch is the `execute` function. This function is called by ReVanced Patcher when the patch is executed. The `execute` function receives an instance of the context object that provides access to the APK. The patch can use this context to modify the APK.
-
-Each type of context provides different APIs to modify the APK. For example, the `BytecodeContext` provides APIs to modify the Dalvik VM bytecode, while the `ResourceContext` provides APIs to modify resources.
+Each type of context provides different APIs to modify the APK. For example, the `BytecodePatchContext` provides APIs to modify the Dalvik VM bytecode, while the `ResourcePatchContext` provides APIs to modify resources.
 
 The difference between `ResourcePatch` and `RawResourcePatch` is that ReVanced Patcher will decode the resources if it is supplied a `ResourcePatch` for execution or if any kind of patch depends on a `ResourcePatch` and will not decode the resources before executing `RawResourcePatch`. Both, `ResourcePatch` and `RawResourcePatch` can modify arbitrary files in the APK, whereas only `ResourcePatch` can modify decoded resources. The choice of which type to use depends on the use case. Decoding and building resources is a time- and resource-consuming process, so if the patch does not need to modify decoded resources, it is better to use `RawResourcePatch` or `BytecodePatch`.
 
-Example of a `BytecodePatch`:
+Example of patches:
 
 ```kt
 @Surpress("unused")
-object MyPatch : BytecodePatch() {
-	override fun execute(context: BytecodeContext) {
-		// Your patch code here
-	}
+val bytecodePatch = bytecodePatch {
+    execute { 
+        // TODO
+    }
 }
-```
 
-Example of a `ResourcePatch`:
-
-```kt
 @Surpress("unused")
-object MyPatch : ResourcePatch() {
-	override fun execute(context: ResourceContext) {
-		// Your patch code here
-	}
+val rawResourcePatch = rawResourcePatch {
+    execute { 
+        // TODO
+    }
 }
-```
 
-Example of a `RawResourcePatch`:
-
-```kt
 @Surpress("unused")
-object MyPatch : RawResourcePatch() {
-	override fun execute(context: ResourceContext) {
-		// Your patch code here
-	}
+val resourcePatch = rawResourcePatch {
+    execute { 
+        // TODO
+    }
 }
-```
 
 > [!TIP]
 > To see real-world examples of patches, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
