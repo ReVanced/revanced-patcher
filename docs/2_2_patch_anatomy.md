@@ -98,32 +98,32 @@ val disableAdsPatch = bytecodePatch(
 
 > [!NOTE]  
 >
-> - Patches do not require a name but `PatchLoader` will only load patches that are named.
+> - Patches do not require a name, but `PatchLoader` will only load named patches.
 > - Patches can depend on others. Dependencies are executed first.
-If a dependency raises an exception, the dependent patch will not be executed.
-> - A patch can declare compatibility with specific packages and versions but patches can still be executed on any package or version. It is recommended to declare explicit compatibility to list known compatible packages.
+> The dependent patch will not be executed if a dependency raises an exception.
+> - A patch can declare compatibility with specific packages and versions, but patches can still be executed on any package or version. It is recommended to declare explicit compatibility to list known compatible packages.
 >   - If `compatibleWith` is not called, the patch is compatible with any package
 >   - If a package is specified with no versions, the patch is compatible with any version of the package
->   - If an empty array of versions is specified, the patch is not compatible with any version of the package. This is useful to declare explicit incompatibility with a specific package.
+>   - If an empty array of versions is specified, the patch is not compatible with any version of the package. This is useful for declaring explicit incompatibility with a specific package.
 > - This patch uses a fingerprint to find the method and replaces the method's instructions with new instructions.
 > The fingerprint is resolved on the classes present in `BytecodePatchContext`.
 > Fingerprints will be explained in more detail on the next page.
-> - A patch can raise a `PatchException` at any time to indicate that the patch failed to execute. Any other `Exception` or `Throwable` raised, will be wrapped in a `PatchException`.
+> - A patch can raise a `PatchException` at any time to indicate that the patch failed to execute. Any other `Exception` or `Throwable` raised will be wrapped in a `PatchException`.
 
 > [!WARNING]
 >
 > - Circular dependencies are not allowed. If a patch depends on another patch, the other patch cannot depend on the first patch.
-> - Dependencies inerhit compatibility from dependant patches.
+> - Dependencies inherit compatibility from dependant patches.
 
 
 > [!TIP]
-> To see real-world examples of patches, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
+> To see real-world examples of patches, check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
 
 ## 🧩 Patch API
 
 ### ♻️ Finalization
 
-Patches can have a finalization block that is called after all patches have been executed, in reverse order of patch execution.
+Patches can have a finalization block called after all patches have been executed, in reverse order of patch execution.
 
 ```kt
 val patch = bytecodePatch(name = "Patch") { 
@@ -149,11 +149,11 @@ val patch = bytecodePatch(name = "Patch") {
 }
 ```
 
-Because `Patch` depends on `Dependency`, first `Dependency` is executed, then `Patch`. The finalization blocks are called in reverse order of patch execution which means, first the finalization block of `Patch`, then the finalization block of `Dependency` is called. The output of the above patch would be `1234`. The same order is followed for multiple patches depending on a patch.
+Because `Patch` depends on `Dependency`, first `Dependency` is executed, then `Patch`. The finalization blocks are called in reverse order of patch execution, which means, first, the finalization block of `Patch`, then the finalization block of `Dependency` is called. The output of the above patch would be `1234`. The same order is followed for multiple patches depending on the patch.
 
 ### ⚙️ Patch options
 
-Patches can have options that can be get and set before a patch is executed. There are multiple inbuilt types that can be used as options.
+Patches can have options to get and set before a patch is executed. Multiple inbuilt types can be used as options.
 
 To define an option, use available `option` functions:
 
