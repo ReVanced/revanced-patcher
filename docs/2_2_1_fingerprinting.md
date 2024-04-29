@@ -73,16 +73,11 @@ Throughout the documentation, the following example will be used to demonstrate 
 package app.revanced.patches.ads.fingerprints
 
 methodFingerprint {
-    returns("Z")
-    
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-    
+    returns("Z")
     parameters("Z")
-    
     opcodes(Opcode.RETURN)
-    
-    strings("pro")
-
+    strings("pro"
     custom { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;" }
 }
 ```
@@ -96,8 +91,8 @@ The fingerprint contains the following information:
 - Method signature:
 
   ```kt
-  returns("Z")
   accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+  returns("Z")
   parameters("Z")
   ```
 
@@ -105,7 +100,7 @@ The fingerprint contains the following information:
 
   ```kt
   opcodes(Opcode.RETURN)
-  strings("pro"),
+  strings("pro")
   ```
 
 - Package and class name:
@@ -264,9 +259,6 @@ You can resolve a fingerprint in the following ways:
 
   ```kt
   execute {
-      val adsFingerprintResult = showAdsFingerprint.result
-          ?: throw PatchException("showAdsFingerprint not found")
-
       val proStringsFingerprint = methodFingerprint {
           strings("free", "trial")
       }

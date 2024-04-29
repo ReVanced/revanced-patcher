@@ -21,8 +21,8 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
 /**
  * A fingerprint to resolve methods.
  *
- * @param returnType The return type compared using [String.startsWith].
  * @param accessFlags The exact access flags using values of [AccessFlags].
+ * @param returnType The return type compared using [String.startsWith].
  * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
  * @param opcodes An opcode pattern of the instructions. Wildcard or unknown opcodes can be specified by `null`.
  * @param strings A list of the strings compared each using [String.contains].
@@ -31,8 +31,8 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class MethodFingerprint internal constructor(
-    internal val returnType: String? = null,
     internal val accessFlags: Int? = null,
+    internal val returnType: String? = null,
     internal val parameters: List<String>? = null,
     internal val opcodes: List<Opcode?>? = null,
     internal val strings: List<String>? = null,
@@ -395,8 +395,8 @@ class MethodFingerprintResult(
 /**
  * A builder for [MethodFingerprint].
  *
- * @property returnType The return type compared using [String.startsWith].
  * @property accessFlags The exact access flags using values of [AccessFlags].
+ * @property returnType The return type compared using [String.startsWith].
  * @property parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
  * @property opcodes An opcode pattern of the instructions. Wildcard or unknown opcodes can be specified by `null`.
  * @property strings A list of the strings compared each using [String.contains].
@@ -408,21 +408,12 @@ class MethodFingerprintResult(
 class MethodFingerprintBuilder internal constructor(
     private val fuzzyPatternScanThreshold: Int = 0,
 ) {
-    private var returnType: String? = null
     private var accessFlags: Int? = null
+    private var returnType: String? = null
     private var parameters: List<String>? = null
     private var opcodes: List<Opcode?>? = null
     private var strings: List<String>? = null
     private var customBlock: ((methodDef: Method, classDef: ClassDef) -> Boolean)? = null
-
-    /**
-     * Set the return type.
-     *
-     * @param returnType The return type compared using [String.startsWith].
-     */
-    infix fun returns(returnType: String) {
-        this.returnType = returnType
-    }
 
     /**
      * Set the access flags.
@@ -440,6 +431,15 @@ class MethodFingerprintBuilder internal constructor(
      */
     fun accessFlags(vararg accessFlags: AccessFlags) {
         this.accessFlags = accessFlags.fold(0) { acc, it -> acc or it.value }
+    }
+
+    /**
+     * Set the return type.
+     *
+     * @param returnType The return type compared using [String.startsWith].
+     */
+    infix fun returns(returnType: String) {
+        this.returnType = returnType
     }
 
     /**
@@ -502,7 +502,7 @@ class MethodFingerprintBuilder internal constructor(
         this.customBlock = customBlock
     }
 
-    internal fun build() = MethodFingerprint(returnType, accessFlags, parameters, opcodes, strings, customBlock)
+    internal fun build() = MethodFingerprint(accessFlags, returnType, parameters, opcodes, strings, customBlock)
 
     private companion object {
         val opcodesByName = Opcode.entries.associateBy { it.name }

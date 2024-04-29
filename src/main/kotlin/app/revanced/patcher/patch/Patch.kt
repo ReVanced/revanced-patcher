@@ -339,7 +339,7 @@ class BytecodePatchBuilder internal constructor(
      * Add the fingerprint to the patch.
      */
     operator fun MethodFingerprint.invoke() = apply {
-        fingerprints.add(MethodFingerprint(returnType, accessFlags, parameters, opcodes, strings, custom))
+        fingerprints.add(MethodFingerprint(accessFlags, returnType, parameters, opcodes, strings, custom))
     }
 
     operator fun MethodFingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = result

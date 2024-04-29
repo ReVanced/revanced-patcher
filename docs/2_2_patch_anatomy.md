@@ -71,13 +71,11 @@ val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
     description = "Disable ads in the app.",
 ) { 
-    compatibleWith { 
+    compatibleWith(
         "com.some.app"("1.0.0")
-    }
+    )
 
-    dependsOn { 
-        disableAdsResourcePatch()
-    }
+    dependsOn(disableAdsResourcePatch)
     
     val showAdsFingerprintResult by methodFingerprint {
         // ...
@@ -127,7 +125,7 @@ Patches can have a finalization block called after all patches have been execute
 
 ```kt
 val patch = bytecodePatch(name = "Patch") { 
-    dependsOn { 
+    dependsOn(
         bytecodePatch(name = "Dependency") { 
             execute {
                 print("1")
@@ -137,7 +135,7 @@ val patch = bytecodePatch(name = "Patch") {
                 print("4")
             }
         }
-    }
+    )
 
     execute {
         print("2")
