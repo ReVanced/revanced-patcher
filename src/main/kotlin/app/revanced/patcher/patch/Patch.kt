@@ -50,8 +50,8 @@ sealed class Patch<C : PatchContext<*>>(
     val compatiblePackages: Set<Package>?,
     val dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    private val executeBlock: ((C) -> Unit),
-    private val finalizeBlock: ((C) -> Unit),
+    private val executeBlock: (Patch<C>.(C) -> Unit),
+    private val finalizeBlock: (Patch<C>.(C) -> Unit),
 ) {
     val options = Options(options)
 
@@ -116,8 +116,8 @@ class BytecodePatch internal constructor(
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
     internal val fingerprints: Set<MethodFingerprint>,
-    executeBlock: ((BytecodePatchContext) -> Unit),
-    finalizeBlock: ((BytecodePatchContext) -> Unit),
+    executeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
+    finalizeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
 ) : Patch<BytecodePatchContext>(
     name,
     description,
@@ -164,8 +164,8 @@ class RawResourcePatch internal constructor(
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    executeBlock: ((ResourcePatchContext) -> Unit),
-    finalizeBlock: ((ResourcePatchContext) -> Unit),
+    executeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
+    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
 ) : Patch<ResourcePatchContext>(
     name,
     description,
@@ -207,8 +207,8 @@ class ResourcePatch internal constructor(
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    executeBlock: ((ResourcePatchContext) -> Unit),
-    finalizeBlock: ((ResourcePatchContext) -> Unit),
+    executeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
+    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
 ) : Patch<ResourcePatchContext>(
     name,
     description,
@@ -253,8 +253,8 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected var dependencies: Set<Patch<*>> = emptySet()
     protected val options = mutableSetOf<Option<*>>()
 
-    protected var executionBlock: ((C) -> Unit) = { }
-    protected var finalizeBlock: ((C) -> Unit) = { }
+    protected var executionBlock: (Patch<C>.(C) -> Unit) = { }
+    protected var finalizeBlock: (Patch<C>.(C) -> Unit) = { }
 
     /**
      * Add an option to the patch.
@@ -264,21 +264,28 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     }
 
     /**
+     * Create a package a patch is compatible with.
+     *
+     * @param versions The versions of the package.
+     */
+    operator fun String.invoke(vararg versions: String) = this to versions.toSet()
+
+    /**
      * Sets the compatible packages of the patch.
      *
-     * @param block The block to set the compatible packages with.
+     * @param packages The packages the patch is compatible with.
      */
-    fun compatibleWith(block: CompatibleWithBuilder.() -> Unit) {
-        compatiblePackages = CompatibleWithBuilder().apply(block).build()
+    fun compatibleWith(vararg packages: Package) {
+        compatiblePackages = packages.toSet()
     }
 
     /**
      * Add dependencies to the patch.
      *
-     * @param block The block to add the dependencies with.
+     * @param patches The patches the patch depends on.
      */
-    fun dependsOn(block: DependenciesBuilder.() -> Unit) {
-        dependencies = DependenciesBuilder().apply(block).build()
+    fun dependsOn(vararg patches: Patch<*>) {
+        dependencies = patches.toSet()
     }
 
     /**
@@ -286,7 +293,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      *
      * @param block The execution block of the patch.
      */
-    fun execute(block: C.() -> Unit) {
+    fun execute(block: Patch<C>.(C) -> Unit) {
         executionBlock = block
     }
 
@@ -295,7 +302,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      *
      * @param block The finalizing block of the patch.
      */
-    fun finalize(block: C.() -> Unit) {
+    fun finalize(block: Patch<C>.(C) -> Unit) {
         finalizeBlock = block
     }
 
@@ -305,53 +312,6 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      * @return The built patch.
      */
     internal abstract fun build(): Patch<C>
-
-    /**
-     * A builder for dependencies.
-     *
-     * @constructor Create a new [DependenciesBuilder].
-     */
-    class DependenciesBuilder internal constructor() {
-        private val dependencies = mutableSetOf<Patch<*>>()
-
-        /**
-         * Add the patch as a dependency.
-         *
-         * @return The added patch.
-         */
-        operator fun Patch<*>.invoke() = apply {
-            this@DependenciesBuilder.dependencies.add(this)
-        }
-
-        internal fun build(): Set<Patch<*>> = dependencies
-    }
-
-    /**
-     * A builder for compatible packages.
-     *
-     * @constructor Create a new [CompatibleWithBuilder].
-     */
-    class CompatibleWithBuilder internal constructor() {
-        private val compatiblePackages = mutableSetOf<Package>()
-
-        /**
-         * Add a package the patch is compatible with.
-         *
-         * @param versions The versions of the package.
-         */
-        operator fun String.invoke(vararg versions: String) {
-            compatiblePackages += this to versions.toSet()
-        }
-
-        /**
-         * Add a package the patch is compatible with.
-         */
-        operator fun String.invoke() {
-            compatiblePackages += this to null as Set<String>?
-        }
-
-        internal fun build(): Set<Package> = compatiblePackages
-    }
 }
 
 /**
@@ -490,26 +450,6 @@ fun bytecodePatch(
 ) = BytecodePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as BytecodePatch
 
 /**
- * Create a new [BytecodePatch] and add it to the patch.
- *
- * @param name The name of the patch.
- * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
- * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
- * @param block The block to build the patch.
- *
- * @return The created [BytecodePatch].
- */
-fun PatchBuilder.DependenciesBuilder.bytecodePatch(
-    name: String? = null,
-    description: String? = null,
-    use: Boolean = true,
-    requiresIntegrations: Boolean = false,
-    block: BytecodePatchBuilder.() -> Unit = {},
-) = BytecodePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block)() as BytecodePatch
-
-/**
  * Create a new [RawResourcePatch].
  *
  * @param name The name of the patch.
@@ -527,26 +467,6 @@ fun rawResourcePatch(
     requiresIntegrations: Boolean = false,
     block: RawResourcePatchBuilder.() -> Unit = {},
 ) = RawResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as RawResourcePatch
-
-/**
- * Create a new [RawResourcePatch] and add it to the patch.
- *
- * @param name The name of the patch.
- * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
- * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
- * @param block The block to build the patch.
- *
- * @return The created [RawResourcePatch].
- */
-fun PatchBuilder.DependenciesBuilder.rawResourcePatch(
-    name: String? = null,
-    description: String? = null,
-    use: Boolean = true,
-    requiresIntegrations: Boolean = false,
-    block: RawResourcePatchBuilder.() -> Unit = {},
-) = RawResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block)() as RawResourcePatch
 
 /**
  * Create a new [ResourcePatch].
@@ -567,26 +487,6 @@ fun resourcePatch(
     requiresIntegrations: Boolean = false,
     block: ResourcePatchBuilder.() -> Unit = {},
 ) = ResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as ResourcePatch
-
-/**
- * Create a new [ResourcePatch] and add it to the patch.
- *
- * @param name The name of the patch.
- * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
- * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
- * @param block The block to build the patch.
- *
- * @return The created [ResourcePatch].
- */
-fun PatchBuilder.DependenciesBuilder.resourcePatch(
-    name: String? = null,
-    description: String? = null,
-    use: Boolean = true,
-    requiresIntegrations: Boolean = false,
-    block: ResourcePatchBuilder.() -> Unit = {},
-) = ResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block)() as ResourcePatch
 
 /**
  * An exception thrown when patching.

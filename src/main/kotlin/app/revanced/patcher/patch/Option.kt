@@ -106,10 +106,10 @@ class Option<T> @PublishedApi internal constructor(
  *
  * @constructor Create a new [Options].
  */
-class Options(
+class Options internal constructor(
     private val options: Map<String, Option<*>>,
 ) : Map<String, Option<*>> by options {
-    constructor(options: Set<Option<*>>) : this(options.associateBy { it.key })
+    internal constructor(options: Set<Option<*>>) : this(options.associateBy { it.key })
 
     /**
      * Set an option's value.
