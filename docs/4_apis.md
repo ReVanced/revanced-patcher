@@ -6,7 +6,7 @@ A handful of APIs are available to make patch development easier and more effici
 
 1. 👹 Mutate classes with `classDex.proxy()`
 2. 🔍 Find and proxy existing classes with `classBy(Predicate)`
-3. 🏃‍ Easily access referenced methods recursively by index with `method.navigate()`
+3. 🏃‍ Easily access referenced methods recursively by index with `MethodNavigator`
 4. 🔨 Make use of extension functions from `BytecodeUtils` and `ResourceUtils` with certain applications (Available in ReVanced Patches)
 5. 💾 Read and write (decoded) resources with `ResourcePatchContext.get(Path, Boolean)`
 6. 📃 Read and write DOM files using `ResourcePatchContext.document`

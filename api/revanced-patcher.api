@@ -173,7 +173,7 @@ public final class app/revanced/patcher/patch/BytecodePatchContext : app/revance
 	public synthetic fun get ()Ljava/lang/Object;
 	public fun get ()Ljava/util/Set;
 	public final fun getClasses ()Lapp/revanced/patcher/util/ProxyClassList;
-	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/MethodNavigator;
+	public final fun navigator (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun proxy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 }
 
