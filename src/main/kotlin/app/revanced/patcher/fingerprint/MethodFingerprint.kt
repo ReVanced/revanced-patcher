@@ -341,9 +341,7 @@ class MethodFingerprintResult(
      * Use [classDef] where possible.
      */
     val mutableClass by lazy {
-        with(context) {
-            classDef.proxy().mutableClass
-        }
+        context.proxy(classDef).mutableClass
     }
 
     /**
