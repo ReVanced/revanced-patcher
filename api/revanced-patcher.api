@@ -297,6 +297,7 @@ public abstract class app/revanced/patcher/patch/Patch {
 
 public abstract class app/revanced/patcher/patch/PatchBuilder {
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun compatibleWith ([Ljava/lang/String;)V
 	public final fun compatibleWith ([Lkotlin/Pair;)V
 	public final fun dependsOn ([Lapp/revanced/patcher/patch/Patch;)V
 	public final fun execute (Lkotlin/jvm/functions/Function2;)V

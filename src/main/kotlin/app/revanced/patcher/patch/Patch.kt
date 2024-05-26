@@ -280,6 +280,15 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     }
 
     /**
+     * Sets the compatible packages of the patch.
+     *
+     * @param packages The packages the patch is compatible with.
+     */
+    fun compatibleWith(vararg packages: String) {
+        compatiblePackages = packages.map { it() }.toSet()
+    }
+
+    /**
      * Add dependencies to the patch.
      *
      * @param patches The patches the patch depends on.
