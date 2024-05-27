@@ -68,14 +68,12 @@ Patches are organized in a specific way. The file structure looks as follows:
 
 ```text
 📦your.patches.app.category
- ├ 📂fingerprints
- ├ ├ 🔍SomeFingerprintA.kt
- ├ └ 🔍SomeFingerprintB.kt
+ ├ 🔍Fingerprints.kt
  └ 🧩SomePatch.kt
 ```
 
 > [!NOTE]
-> Moving fingerprints to a separate package isn't strictly necessary, but it helps the organization when a patch uses multiple fingerprints.
+> Moving fingerprints to a separate file isn't strictly necessary, but it helps the organization when a patch uses multiple fingerprints.
 
 ## 📙 Conventions
 
