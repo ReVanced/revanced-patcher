@@ -258,8 +258,10 @@ sealed class PatchBuilder<C : PatchContext<*>>(
 
     /**
      * Add an option to the patch.
+     *
+     * @return The added option.
      */
-    operator fun Option<*>.invoke() = apply {
+    operator fun <T> Option<T>.invoke() = apply {
         options += this
     }
 
