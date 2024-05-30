@@ -249,8 +249,8 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected val use: Boolean,
     protected val requiresIntegrations: Boolean,
 ) {
-    protected var compatiblePackages: Set<Package>? = null
-    protected var dependencies: Set<Patch<*>> = emptySet()
+    protected var compatiblePackages: MutableSet<Package>? = null
+    protected var dependencies = mutableSetOf<Patch<*>>()
     protected val options = mutableSetOf<Option<*>>()
 
     protected var executionBlock: (Patch<C>.(C) -> Unit) = { }
@@ -273,22 +273,24 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     operator fun String.invoke(vararg versions: String) = this to versions.toSet()
 
     /**
-     * Sets the compatible packages of the patch.
+     * Add packages the patch is compatible with.
      *
      * @param packages The packages the patch is compatible with.
      */
     fun compatibleWith(vararg packages: Package) {
-        compatiblePackages = packages.toSet()
+        if (compatiblePackages == null) {
+            compatiblePackages = mutableSetOf()
+        }
+
+        compatiblePackages!! += packages
     }
 
     /**
-     * Sets the compatible packages of the patch.
+     * Set the compatible packages of the patch.
      *
      * @param packages The packages the patch is compatible with.
      */
-    fun compatibleWith(vararg packages: String) {
-        compatiblePackages = packages.map { it() }.toSet()
-    }
+    fun compatibleWith(vararg packages: String) = compatibleWith(*packages.map { it() }.toTypedArray())
 
     /**
      * Add dependencies to the patch.
@@ -296,7 +298,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      * @param patches The patches the patch depends on.
      */
     fun dependsOn(vararg patches: Patch<*>) {
-        dependencies = patches.toSet()
+        dependencies += patches
     }
 
     /**
@@ -318,7 +320,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     }
 
     /**
-     * Builds the patch.
+     * Build the patch.
      *
      * @return The built patch.
      */
