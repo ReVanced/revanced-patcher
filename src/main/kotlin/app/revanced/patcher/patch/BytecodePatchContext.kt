@@ -90,7 +90,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A [MethodNavigator] for the method.
      */
-    fun navigator(method: Method) = MethodNavigator(this@BytecodePatchContext, method)
+    fun navigate(method: Method) = MethodNavigator(this@BytecodePatchContext, method)
 
     /**
      * Compile bytecode from the [BytecodePatchContext].
