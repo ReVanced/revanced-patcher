@@ -86,7 +86,18 @@ public final class app/revanced/patcher/extensions/InstructionExtensions {
 	public final fun getInstruction (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;I)Ljava/lang/Object;
 	public final fun getInstruction (Lcom/android/tools/smali/dexlib2/builder/MutableMethodImplementation;I)Lcom/android/tools/smali/dexlib2/builder/BuilderInstruction;
 	public final fun getInstruction (Lcom/android/tools/smali/dexlib2/builder/MutableMethodImplementation;I)Ljava/lang/Object;
+	public final fun getInstruction (Lcom/android/tools/smali/dexlib2/iface/Method;I)Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;
+	public final fun getInstruction (Lcom/android/tools/smali/dexlib2/iface/Method;I)Ljava/lang/Object;
+	public final fun getInstruction (Lcom/android/tools/smali/dexlib2/iface/MethodImplementation;I)Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;
+	public final fun getInstruction (Lcom/android/tools/smali/dexlib2/iface/MethodImplementation;I)Ljava/lang/Object;
+	public final fun getInstructionOrNull (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;I)Lcom/android/tools/smali/dexlib2/builder/BuilderInstruction;
+	public final fun getInstructionOrNull (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;I)Ljava/lang/Object;
+	public final fun getInstructionOrNull (Lcom/android/tools/smali/dexlib2/iface/Method;I)Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;
+	public final fun getInstructionOrNull (Lcom/android/tools/smali/dexlib2/iface/Method;I)Ljava/lang/Object;
 	public final fun getInstructions (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;)Ljava/util/List;
+	public final fun getInstructions (Lcom/android/tools/smali/dexlib2/iface/Method;)Ljava/lang/Iterable;
+	public final fun getInstructionsOrNull (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;)Ljava/util/List;
+	public final fun getInstructionsOrNull (Lcom/android/tools/smali/dexlib2/iface/Method;)Ljava/lang/Iterable;
 	public final fun removeInstruction (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;I)V
 	public final fun removeInstructions (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;I)V
 	public final fun removeInstructions (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;II)V
@@ -173,7 +184,7 @@ public final class app/revanced/patcher/patch/BytecodePatchContext : app/revance
 	public synthetic fun get ()Ljava/lang/Object;
 	public fun get ()Ljava/util/Set;
 	public final fun getClasses ()Lapp/revanced/patcher/util/ProxyClassList;
-	public final fun navigator (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/MethodNavigator;
+	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun proxy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 }
 
@@ -467,11 +478,11 @@ public final class app/revanced/patcher/util/Document : java/io/Closeable, org/w
 }
 
 public final class app/revanced/patcher/util/MethodNavigator {
+	public final fun at (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun at ([I)Lapp/revanced/patcher/util/MethodNavigator;
-	public final fun getReference ()Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;
+	public static synthetic fun at$default (Lapp/revanced/patcher/util/MethodNavigator;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun immutable ()Lcom/android/tools/smali/dexlib2/iface/Method;
 	public final fun mutable ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
-	public final fun setReference (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)V
 }
 
 public final class app/revanced/patcher/util/ProxyClassList : java/util/List, kotlin/jvm/internal/markers/KMutableList {

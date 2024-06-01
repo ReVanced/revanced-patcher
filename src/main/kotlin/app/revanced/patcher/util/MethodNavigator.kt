@@ -2,6 +2,7 @@
 
 package app.revanced.patcher.util
 
+import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.MethodNavigator.NavigateException
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
@@ -26,9 +27,8 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
 class MethodNavigator internal constructor(private val context: BytecodePatchContext, private var startMethod: MethodReference) {
     private var lastNavigatedMethodReference = startMethod
 
-    // TODO: Remove this once extension functions are supported for immutable methods.
     private val lastNavigatedMethodInstructions get() = with(immutable()) {
-        implementation?.instructions ?: throw NavigateException("Method $definingClass.$name does not have an implementation.")
+        instructionsOrNull ?: throw NavigateException("Method $definingClass.$name does not have an implementation.")
     }
 
     /**

@@ -1,5 +1,6 @@
 package app.revanced.patcher.fingerprint
 
+import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -77,7 +78,7 @@ internal class LookupMap : MutableMap<String, LookupMap.MethodClassList> by muta
                     )
 
                     // Add strings contained in the method as the key.
-                    method.implementation?.instructions?.forEach instructions@{ instruction ->
+                    method.instructionsOrNull?.forEach instructions@{ instruction ->
                         if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) {
                             return@instructions
                         }

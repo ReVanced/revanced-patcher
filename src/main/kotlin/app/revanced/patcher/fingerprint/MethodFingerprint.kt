@@ -2,13 +2,16 @@
 
 package app.revanced.patcher.fingerprint
 
+import app.revanced.patcher.extensions.InstructionExtensions.instructions
+import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.fingerprint.LookupMap.Maps.appendParameters
 import app.revanced.patcher.fingerprint.LookupMap.Maps.initializeLookupMaps
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methodSignatureLookupMap
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methodStringsLookupMap
 import app.revanced.patcher.fingerprint.LookupMap.Maps.methods
 import app.revanced.patcher.fingerprint.MethodFingerprintResult.MethodFingerprintScanResult.StringsScanResult
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.BytecodePatchBuilder
+import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -196,11 +199,11 @@ class MethodFingerprint internal constructor(
             if (methodFingerprint.strings != null) {
                 StringsScanResult(
                     buildList {
-                        val implementation = method.implementation ?: return false
+                        val instructions = method.instructionsOrNull ?: return false
 
                         val stringsList = methodFingerprint.strings.toMutableList()
 
-                        implementation.instructions.forEachIndexed { instructionIndex, instruction ->
+                        instructions.forEachIndexed { instructionIndex, instruction ->
                             if (
                                 instruction.opcode != Opcode.CONST_STRING &&
                                 instruction.opcode != Opcode.CONST_STRING_JUMBO
@@ -225,12 +228,12 @@ class MethodFingerprint internal constructor(
 
         val patternScanResult =
             if (methodFingerprint.opcodes != null) {
-                method.implementation?.instructions ?: return false
+                method.instructionsOrNull ?: return false
 
                 fun Method.patternScan(
                     fingerprint: MethodFingerprint,
                 ): MethodFingerprintResult.MethodFingerprintScanResult.PatternScanResult? {
-                    val instructions = this.implementation!!.instructions
+                    val instructions = instructions
                     val fingerprintFuzzyPatternScanThreshold = fingerprint.fuzzyPatternScanThreshold
 
                     val pattern = fingerprint.opcodes!!
