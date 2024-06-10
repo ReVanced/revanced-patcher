@@ -71,7 +71,7 @@ ReVanced Patcher has a simple API that allows you to load patches and integratio
 Later on, you will learn how to create patches.
 
 ```kt
-val patches = loadPatchesFromJar(File("revanced-patches.jar"))
+val patches = loadPatchesFromJar(setOf(File("revanced-patches.jar")))
 val integrations = setOf(File("integrations.apk"))
 
 // Instantiating the patcher will decode the manifest of the APK file to read the package and version name.
