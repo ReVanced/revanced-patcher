@@ -77,7 +77,7 @@ methodFingerprint {
     returns("Z")
     parameters("Z")
     opcodes(Opcode.RETURN)
-    strings("pro"
+    strings("pro")
     custom { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;" }
 }
 ```
