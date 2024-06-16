@@ -29,14 +29,6 @@ public final class app/revanced/patcher/PatcherContext {
 	public final fun getPackageMetadata ()Lapp/revanced/patcher/PackageMetadata;
 }
 
-public abstract class app/revanced/patcher/PatcherException : java/lang/Exception {
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class app/revanced/patcher/PatcherException$CircularDependencyException : app/revanced/patcher/PatcherException {
-}
-
 public final class app/revanced/patcher/PatcherResult {
 	public final fun getDexFiles ()Ljava/util/Set;
 	public final fun getResources ()Lapp/revanced/patcher/PatcherResult$PatchedResources;
