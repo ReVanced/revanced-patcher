@@ -174,8 +174,8 @@ Once the fingerprint is resolved, the result can be used in the patch:
 
 ```kt
 val patch = bytecodePatch {
-    // Add a fingerprint and delegate it's result to a variable.
-    val result by showAdsFingerprint
+    // Add a fingerprint and delegate its result to a variable.
+    val result by showAdsFingerprint()
 
     execute {
         val method = result.method

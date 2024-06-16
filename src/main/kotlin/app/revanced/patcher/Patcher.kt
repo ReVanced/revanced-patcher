@@ -13,11 +13,13 @@ import java.util.logging.Logger
 
 @FunctionalInterface
 interface PatchesConsumer {
-    fun accept(patches: PatchSet, integrations: Set<File> = emptySet())
+    fun accept(patches: Set<Patch<*>>, integrations: Set<File> = emptySet())
 }
 
 @FunctionalInterface
-interface PatcherResultSupplier : Supplier<PatcherResult>, Closeable
+interface PatcherResultSupplier :
+    Supplier<PatcherResult>,
+    Closeable
 
 @FunctionalInterface
 interface PatchExecutorFunction : Function<Boolean, Flow<PatchResult>>
@@ -29,7 +31,9 @@ interface PatchExecutorFunction : Function<Boolean, Flow<PatchResult>>
  */
 class Patcher(
     private val config: PatcherConfig,
-) : PatchExecutorFunction, PatchesConsumer, PatcherResultSupplier {
+) : PatchExecutorFunction,
+    PatchesConsumer,
+    PatcherResultSupplier {
     private val logger = Logger.getLogger(Patcher::class.java.name)
 
     /**
@@ -48,7 +52,7 @@ class Patcher(
      * @param integrations The integrations to add. Must be a DEX file or container of DEX files.
      */
     @Suppress("NAME_SHADOWING")
-    override fun accept(patches: PatchSet, integrations: Set<File>) {
+    override fun accept(patches: Set<Patch<*>>, integrations: Set<File>) {
         // region Add patches
 
         // Add all patches to the executablePatches set.
@@ -83,11 +87,12 @@ class Patcher(
             }
 
             // Check, if integrations need to be merged.
-            for (patch in patches)
+            for (patch in patches) {
                 if (patch.anyRecursively { it.requiresIntegrations }) {
                     context.bytecodePatchContext.integrations.merge = true
                     break
                 }
+            }
         }
 
         // endregion
@@ -113,7 +118,7 @@ class Patcher(
             executedPatches[this]?.let { patchResult ->
                 patchResult.exception ?: return patchResult
 
-                return PatchResult(this, PatchException("'$this' failed previously"))
+                return PatchResult(this, PatchException("The patch '$this' failed previously"))
             }
 
             // Recursively execute all dependency patches.
@@ -122,7 +127,7 @@ class Patcher(
                     return PatchResult(
                         this,
                         PatchException(
-                            "'$this' depends on '$dependency' that raised an exception:\n${it.stackTraceToString()}",
+                            "The patch \"$this\" depends on \"$dependency\" which raised an exception:\n${it.stackTraceToString()}",
                         ),
                     )
                 }
@@ -187,7 +192,7 @@ class Patcher(
                     PatchResult(
                         patch,
                         PatchException(
-                            "'$patch' raised an exception while being closed: ${it.stackTraceToString()}",
+                            "The patch \"$patch\" raised an exception: ${it.stackTraceToString()}",
                             result.exception,
                         ),
                     ),
@@ -215,19 +220,4 @@ class Patcher(
             context.bytecodePatchContext.get(),
             context.resourcePatchContext.get(),
         )
-}
-
-/**
- * An exception thrown by [Patcher].
- *
- * @param errorMessage The exception message.
- * @param cause The corresponding [Throwable].
- */
-sealed class PatcherException(errorMessage: String?, cause: Throwable?) : Exception(errorMessage, cause) {
-    constructor(errorMessage: String) : this(errorMessage, null)
-
-    // TODO: Implement circular dependency detection.
-    class CircularDependencyException internal constructor(dependant: String) : PatcherException(
-        "Patch '$dependant' causes a circular dependency",
-    )
 }

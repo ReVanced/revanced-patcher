@@ -115,7 +115,7 @@ internal object PatcherTest {
             )
         }
     }
-    private operator fun PatchSet.invoke(): List<PatchResult> {
+    private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
 
         return runBlocking { patcher.apply(false).toList() }

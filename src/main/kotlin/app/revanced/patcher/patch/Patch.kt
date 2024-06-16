@@ -14,11 +14,6 @@ import java.net.URLClassLoader
 import java.util.jar.JarFile
 import kotlin.reflect.KProperty
 
-/**
- * A set of [Patch].
- */
-typealias PatchSet = Set<Patch<*>>
-
 typealias PackageName = String
 typealias VersionName = String
 typealias Package = Pair<PackageName, Set<VersionName>?>
@@ -115,7 +110,7 @@ class BytecodePatch internal constructor(
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    internal val fingerprints: Set<MethodFingerprint>,
+    val fingerprints: Set<MethodFingerprint>,
     executeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
     finalizeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
 ) : Patch<BytecodePatchContext>(
@@ -136,6 +131,8 @@ class BytecodePatch internal constructor(
     }
 
     override fun finalize(context: PatcherContext) = finalize(context.bytecodePatchContext)
+
+    override fun toString() = name ?: "BytecodePatch"
 }
 
 /**
@@ -178,7 +175,10 @@ class RawResourcePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) = execute(context.resourcePatchContext)
+
     override fun finalize(context: PatcherContext) = finalize(context.resourcePatchContext)
+
+    override fun toString() = name ?: "RawResourcePatch"
 }
 
 /**
@@ -221,7 +221,10 @@ class ResourcePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) = execute(context.resourcePatchContext)
+
     override fun finalize(context: PatcherContext) = finalize(context.resourcePatchContext)
+
+    override fun toString() = name ?: "ResourcePatch"
 }
 
 /**
@@ -346,17 +349,17 @@ class BytecodePatchBuilder internal constructor(
     use: Boolean,
     requiresIntegrations: Boolean,
 ) : PatchBuilder<BytecodePatchContext>(name, description, use, requiresIntegrations) {
-    internal val fingerprints = mutableSetOf<MethodFingerprint>()
+    private val fingerprints = mutableSetOf<MethodFingerprint>()
 
     /**
      * Add the fingerprint to the patch.
      */
     operator fun MethodFingerprint.invoke() = apply {
-        fingerprints.add(MethodFingerprint(accessFlags, returnType, parameters, opcodes, strings, custom))
+        fingerprints.add(this)
     }
 
     operator fun MethodFingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = result
-        ?: throw PatchException("Can't delegate unresolved fingerprint result to ${property.name}.")
+        ?: throw PatchException("Cannot delegate unresolved fingerprint result to ${property.name}.")
 
     override fun build() = BytecodePatch(
         name,
@@ -534,7 +537,7 @@ sealed class PatchLoader private constructor(
     patchesFiles: Set<File>,
     private val getBinaryClassNames: (patchesFile: File) -> List<String>,
     private val classLoader: ClassLoader,
-) : PatchSet by classLoader.loadPatches(patchesFiles.flatMap(getBinaryClassNames)) {
+) : Set<Patch<*>> by classLoader.loadPatches(patchesFiles.flatMap(getBinaryClassNames)) {
     /**
      * A [PatchLoader] for JAR files.
      *
@@ -542,14 +545,15 @@ sealed class PatchLoader private constructor(
      *
      * @constructor Create a new [PatchLoader] for JAR files.
      */
-    internal class Jar(patchesFiles: Set<File>) : PatchLoader(
-        patchesFiles,
-        { file ->
-            JarFile(file).entries().toList().filter { it.name.endsWith(".class") }
-                .map { it.name.substringBeforeLast('.').replace('/', '.') }
-        },
-        URLClassLoader(patchesFiles.map { it.toURI().toURL() }.toTypedArray()),
-    )
+    internal class Jar(patchesFiles: Set<File>) :
+        PatchLoader(
+            patchesFiles,
+            { file ->
+                JarFile(file).entries().toList().filter { it.name.endsWith(".class") }
+                    .map { it.name.substringBeforeLast('.').replace('/', '.') }
+            },
+            URLClassLoader(patchesFiles.map { it.toURI().toURL() }.toTypedArray()),
+        )
 
     /**
      * A [PatchLoader] for [Dex] files.
@@ -560,21 +564,22 @@ sealed class PatchLoader private constructor(
      *
      * @constructor Create a new [PatchLoader] for [Dex] files.
      */
-    internal class Dex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null) : PatchLoader(
-        patchesFiles,
-        { patchBundle ->
-            MultiDexIO.readDexFile(true, patchBundle, BasicDexFileNamer(), null, null).classes
-                .map { classDef ->
-                    classDef.type.substring(1, classDef.length - 1)
-                }
-        },
-        DexClassLoader(
-            patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
-            optimizedDexDirectory?.absolutePath,
-            null,
-            PatchLoader::class.java.classLoader,
-        ),
-    )
+    internal class Dex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null) :
+        PatchLoader(
+            patchesFiles,
+            { patchBundle ->
+                MultiDexIO.readDexFile(true, patchBundle, BasicDexFileNamer(), null, null).classes
+                    .map { classDef ->
+                        classDef.type.substring(1, classDef.length - 1)
+                    }
+            },
+            DexClassLoader(
+                patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
+                optimizedDexDirectory?.absolutePath,
+                null,
+                PatchLoader::class.java.classLoader,
+            ),
+        )
 
     // Companion object required for unit tests.
     private companion object {
@@ -619,7 +624,7 @@ sealed class PatchLoader private constructor(
  *
  * @return The loaded patches.
  */
-fun loadPatchesFromJar(patchesFiles: Set<File>): PatchSet =
+fun loadPatchesFromJar(patchesFiles: Set<File>): Set<Patch<*>> =
     PatchLoader.Jar(patchesFiles)
 
 /**
@@ -631,5 +636,5 @@ fun loadPatchesFromJar(patchesFiles: Set<File>): PatchSet =
  *
  * @return The loaded patches.
  */
-fun loadPatchesFromDex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null): PatchSet =
+fun loadPatchesFromDex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null): Set<Patch<*>> =
     PatchLoader.Dex(patchesFiles, optimizedDexDirectory)
