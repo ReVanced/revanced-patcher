@@ -1,41 +1,21 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.patch.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.Closeable
 import java.io.File
-import java.util.function.Function
-import java.util.function.Supplier
 import java.util.logging.Logger
-
-@FunctionalInterface
-interface PatchesConsumer {
-    fun accept(patches: Set<Patch<*>>, integrations: Set<File> = emptySet())
-}
-
-@FunctionalInterface
-interface PatcherResultSupplier :
-    Supplier<PatcherResult>,
-    Closeable
-
-@FunctionalInterface
-interface PatchExecutorFunction : Function<Boolean, Flow<PatchResult>>
 
 /**
  * A Patcher.
  *
  * @param config The configuration to use for the patcher.
  */
-class Patcher(
-    private val config: PatcherConfig,
-) : PatchExecutorFunction,
-    PatchesConsumer,
-    PatcherResultSupplier {
-    private val logger = Logger.getLogger(Patcher::class.java.name)
+class Patcher(private val config: PatcherConfig) : Closeable {
+    private val logger = Logger.getLogger(this::class.java.name)
 
     /**
-     * A context for the patcher containing the current state of the patcher.
+     * The context containing the current state of the patcher.
      */
     val context = PatcherContext(config)
 
@@ -44,17 +24,17 @@ class Patcher(
     }
 
     /**
-     * Add [Patch]es and integrations to the [Patcher].
+     * Add patches and integrations.
      *
-     * @param patches The [Patch]es to add.
-     * @param integrations The integrations to add. Must be a DEX file or container of DEX files.
+     * @param patchesIntegrationsPair The patches and integrations to add.
      */
-    @Suppress("NAME_SHADOWING")
-    override fun accept(patches: Set<Patch<*>>, integrations: Set<File>) {
+    operator fun plusAssign(patchesIntegrationsPair: Pair<Set<Patch<*>>, Set<File>>) {
+        val (patches, integrations) = patchesIntegrationsPair
+
         // region Add patches
 
         // Add all patches to the executablePatches set.
-        context.executablePatches.addAll(patches)
+        context.executablePatches += patches
 
         // Add all patches and their dependencies to the allPatches set.
         patches.forEach { patch ->
@@ -67,9 +47,8 @@ class Patcher(
         // TODO: Detect circular dependencies.
 
         /**
-         * Returns true if at least one patch or its dependencies matches the given predicate.
-         *
          * @param predicate The predicate to match.
+         * @return True if at least one patch or its dependencies matches the given predicate.
          */
         fun Patch<*>.anyRecursively(predicate: (Patch<*>) -> Boolean): Boolean =
             predicate(this) || dependencies.any { dependency -> dependency.anyRecursively(predicate) }
@@ -97,18 +76,17 @@ class Patcher(
 
         // region Add integrations
 
-        context.bytecodeContext.integrations.addAll(integrations)
+        context.bytecodeContext.integrations += integrations
 
         // endregion
     }
 
     /**
-     * Execute [Patch]es that were added to [Patcher].
+     * Execute added patches.
      *
-     * @param returnOnError If true, [Patcher] will return immediately if a [Patch] fails.
-     * @return A pair of the name of the [Patch] and its [PatchResult].
+     * @return A flow of [PatchResult]s.
      */
-    override fun apply(returnOnError: Boolean) = flow {
+    fun execute() = flow {
         fun Patch<*>.execute(
             executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
         ): PatchResult {
@@ -157,17 +135,10 @@ class Patcher(
         context.executablePatches.sortedBy { it.name }.forEach { patch ->
             val patchResult = patch.execute(executedPatches)
 
-            // If the patch failed, emit the result, even if it is closeable.
-            // Results of executed patches that are closeable will be emitted later.
-            patchResult.exception?.let {
-                // Propagate exception to caller instead of wrapping it in a new exception.
-                emit(patchResult)
+            // TODO: Only emit, if the patch has no finalizerBlock.
+            //  if (patchResult.exception == null && patch.finalizerBlock != null) return@forEach
 
-                if (returnOnError) return@flow
-            } ?: run {
-                // TODO: Only emit, if the patch has no finalizerBlock.
-                emit(patchResult)
-            }
+            emit(patchResult)
         }
 
         executedPatches.values.filter { it.exception == null }.asReversed().forEach { executionResult ->
@@ -184,21 +155,17 @@ class Patcher(
                     PatchResult(patch, PatchException(exception))
                 }
 
-            result.exception?.let {
+            if (result.exception != null) {
                 emit(
                     PatchResult(
                         patch,
                         PatchException(
-                            "The patch \"$patch\" raised an exception: ${it.stackTraceToString()}",
+                            "The patch \"$patch\" raised an exception: ${result.exception.stackTraceToString()}",
                             result.exception,
                         ),
                     ),
                 )
-
-                if (returnOnError) return@flow
-            } ?: run {
-                patch.name ?: return@run
-
+            } else if (patch.name != null) {
                 emit(result)
             }
         }
@@ -207,14 +174,10 @@ class Patcher(
     override fun close() = context.bytecodeContext.methodLookupMaps.close()
 
     /**
-     * Compile and save the patched APK file.
+     * Compile and save patched APK files.
      *
-     * @return The [PatcherResult] containing the patched input files.
+     * @return The [PatcherResult] containing the patched APK files.
      */
     @OptIn(InternalApi::class)
-    override fun get() =
-        PatcherResult(
-            context.bytecodeContext.get(),
-            context.resourceContext.get(),
-        )
+    fun get() = PatcherResult(context.bytecodeContext.get(), context.resourceContext.get())
 }

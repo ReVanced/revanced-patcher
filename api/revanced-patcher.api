@@ -53,18 +53,13 @@ public final class app/revanced/patcher/PackageMetadata {
 	public final fun getPackageVersion ()Ljava/lang/String;
 }
 
-public abstract interface class app/revanced/patcher/PatchExecutorFunction : java/util/function/Function {
-}
-
-public final class app/revanced/patcher/Patcher : app/revanced/patcher/PatchExecutorFunction, app/revanced/patcher/PatcherResultSupplier, app/revanced/patcher/PatchesConsumer {
+public final class app/revanced/patcher/Patcher : java/io/Closeable {
 	public fun <init> (Lapp/revanced/patcher/PatcherConfig;)V
-	public fun accept (Ljava/util/Set;Ljava/util/Set;)V
-	public synthetic fun apply (Ljava/lang/Object;)Ljava/lang/Object;
-	public fun apply (Z)Lkotlinx/coroutines/flow/Flow;
 	public fun close ()V
-	public fun get ()Lapp/revanced/patcher/PatcherResult;
-	public synthetic fun get ()Ljava/lang/Object;
+	public final fun execute ()Lkotlinx/coroutines/flow/Flow;
+	public final fun get ()Lapp/revanced/patcher/PatcherResult;
 	public final fun getContext ()Lapp/revanced/patcher/PatcherContext;
+	public final fun plusAssign (Lkotlin/Pair;)V
 }
 
 public final class app/revanced/patcher/PatcherConfig {
@@ -91,17 +86,6 @@ public final class app/revanced/patcher/PatcherResult$PatchedResources {
 	public final fun getDoNotCompress ()Ljava/util/Set;
 	public final fun getOtherResources ()Ljava/io/File;
 	public final fun getResourcesApk ()Ljava/io/File;
-}
-
-public abstract interface class app/revanced/patcher/PatcherResultSupplier : java/io/Closeable, java/util/function/Supplier {
-}
-
-public abstract interface class app/revanced/patcher/PatchesConsumer {
-	public abstract fun accept (Ljava/util/Set;Ljava/util/Set;)V
-}
-
-public final class app/revanced/patcher/PatchesConsumer$DefaultImpls {
-	public static synthetic fun accept$default (Lapp/revanced/patcher/PatchesConsumer;Ljava/util/Set;Ljava/util/Set;ILjava/lang/Object;)V
 }
 
 public final class app/revanced/patcher/extensions/ExtensionsKt {

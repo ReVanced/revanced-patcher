@@ -86,11 +86,11 @@ val patcherResult = Patcher(patcherConfig).use { patcher ->
     // such as package name, version code, version name, etc.
 
     // Add patches and integrations.
-    patcher.accept(patches, integrations)
+    patcher += patches to integrations
 
     // Execute the patches.
     runBlocking {
-        patcher.apply(returnOnError = false).collect { patchResult ->
+        patcher.execute().collect { patchResult ->
             if (patchResult.exception != null)
                 logger.info("\"${patchResult.patchName}\" failed:\n${patchResult.exception}")
             else
