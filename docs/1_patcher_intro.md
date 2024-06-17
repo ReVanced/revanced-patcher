@@ -76,12 +76,10 @@ ReVanced Patcher has a simple API that allows you to load patches and integratio
 and apply them to an APK file. Later on, you will learn how to create patches.
 
 ```kt
-val patcherConfig = PatcherConfig(apkFile = File("some.apk"))
-
 val patches = loadPatchesFromJar(setOf(File("revanced-patches.jar")))
 val integrations = setOf(File("integrations.apk"))
 
-val patcherResult = Patcher(patcherConfig).use { patcher ->
+val patcherResult = Patcher(PatcherConfig(apkFile = File("some.apk"))).use { patcher ->
     // Here you can access metadata about the APK file through patcher.context.packageMetadata
     // such as package name, version code, version name, etc.
 
