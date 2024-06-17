@@ -1,8 +1,6 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.fingerprint.LookupMap
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.patch.ResourcePatchContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.Closeable
@@ -42,7 +40,7 @@ class Patcher(
     val context = PatcherContext(config)
 
     init {
-        context.resourcePatchContext.decodeResources(ResourcePatchContext.ResourceMode.NONE)
+        context.resourceContext.decodeResources(ResourcePatchContext.ResourceMode.NONE)
     }
 
     /**
@@ -89,7 +87,7 @@ class Patcher(
             // Check, if integrations need to be merged.
             for (patch in patches) {
                 if (patch.anyRecursively { it.requiresIntegrations }) {
-                    context.bytecodePatchContext.integrations.merge = true
+                    context.bytecodeContext.integrations.merge = true
                     break
                 }
             }
@@ -99,7 +97,7 @@ class Patcher(
 
         // region Add integrations
 
-        context.bytecodePatchContext.integrations.addAll(integrations)
+        context.bytecodeContext.integrations.addAll(integrations)
 
         // endregion
     }
@@ -145,13 +143,11 @@ class Patcher(
             }.also { executedPatches[this] = it }
         }
 
-        if (context.bytecodePatchContext.integrations.merge) context.bytecodePatchContext.integrations.flush()
-
-        LookupMap.initializeLookupMaps(context.bytecodePatchContext)
+        if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
 
         // Prevent from decoding the app manifest twice if it is not needed.
         if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
-            context.resourcePatchContext.decodeResources(config.resourceMode)
+            context.resourceContext.decodeResources(config.resourceMode)
         }
 
         logger.info("Executing patches")
@@ -207,7 +203,7 @@ class Patcher(
         }
     }
 
-    override fun close() = LookupMap.clearLookupMaps()
+    override fun close() = context.bytecodeContext.methodLookupMaps.close()
 
     /**
      * Compile and save the patched APK file.
@@ -217,7 +213,7 @@ class Patcher(
     @OptIn(InternalApi::class)
     override fun get() =
         PatcherResult(
-            context.bytecodePatchContext.get(),
-            context.resourcePatchContext.get(),
+            context.bytecodeContext.get(),
+            context.resourceContext.get(),
         )
 }

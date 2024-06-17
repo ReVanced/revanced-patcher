@@ -1,7 +1,9 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.fingerprint.methodFingerprint
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.ResourcePatchContext
+import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.ProxyClassList
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -35,8 +37,8 @@ internal object PatcherTest {
                 Logger.getAnonymousLogger(),
             )
 
-            every { context.bytecodePatchContext.classes } returns mockk(relaxed = true)
-            every { context.bytecodePatchContext.integrations } returns mockk(relaxed = true)
+            every { context.bytecodeContext.classes } returns mockk(relaxed = true)
+            every { context.bytecodeContext.integrations } returns mockk(relaxed = true)
             every { apply(false) } answers { callOriginal() }
         }
     }
@@ -73,16 +75,16 @@ internal object PatcherTest {
     }
 
     @Test
-    fun `throws if unresolved fingerprint result is delegated`() {
+    fun `throws if unmatched fingerprint match is delegated`() {
         val patch = bytecodePatch {
-            // Fingerprint can never be resolved.
-            val result by methodFingerprint { }
+            // Fingerprint can never match.
+            val match by fingerprint { }
             // Manually add the fingerprint.
-            app.revanced.patcher.fingerprint.methodFingerprint { }()
+            app.revanced.patcher.fingerprint { }()
 
             execute {
-                // Throws, because the fingerprint can't be resolved.
-                result.scanResult
+                // Throws, because the fingerprint can't be matched.
+                match.patternMatch
             }
         }
 
@@ -90,28 +92,28 @@ internal object PatcherTest {
 
         assertTrue(
             patch().exception != null,
-            "Expected an exception because the fingerprint can't be resolved.",
+            "Expected an exception because the fingerprint can't match.",
         )
     }
 
     @Test
-    fun `resolves fingerprint`() {
+    fun `matches fingerprint`() {
         mockClassWithMethod()
 
-        val patches = setOf(bytecodePatch { methodFingerprint { this returns "V" }() })
+        val patches = setOf(bytecodePatch { fingerprint { this returns "V" }() })
 
         assertNull(
-            patches.first().fingerprints.first().result,
-            "Expected fingerprint to be unresolved before execution.",
+            patches.first().fingerprints.first().match,
+            "Expected fingerprint to be matched before execution.",
         )
 
         patches()
 
-        assertDoesNotThrow("Expected fingerprint to be resolved.") {
+        assertDoesNotThrow("Expected fingerprint to be matched.") {
             assertEquals(
                 "V",
-                patches.first().fingerprints.first().result!!.method.returnType,
-                "Expected fingerprint to be resolved.",
+                patches.first().fingerprints.first().match!!.method.returnType,
+                "Expected fingerprint to be matched.",
             )
         }
     }
@@ -131,7 +133,7 @@ internal object PatcherTest {
     }
 
     private fun mockClassWithMethod() {
-        every { patcher.context.bytecodePatchContext.classes } returns ProxyClassList(
+        every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
             mutableListOf(
                 ImmutableClassDef(
                     "class",

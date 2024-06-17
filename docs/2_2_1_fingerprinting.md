@@ -60,9 +60,10 @@
 
 # 🔎 Fingerprinting
 
-In the context of ReVanced, fingerprinting is primarily used to resolve methods with a limited amount of known information.
+In the context of ReVanced, fingerprinting is primarily used to match methods with a limited amount of known information.
 Methods with obfuscated names that change with each update are primary candidates for fingerprinting.
-The goal of fingerprinting is to uniquely identify a method by capturing various attributes, such as the return type, access flags, an opcode pattern, strings, and more.
+The goal of fingerprinting is to uniquely identify a method by capturing various attributes, such as the return type,
+access flags, an opcode pattern, strings, and more.
 
 ## ⛳️ Example fingerprint
 
@@ -72,13 +73,13 @@ Throughout the documentation, the following example will be used to demonstrate 
 
 package app.revanced.patches.ads.fingerprints
 
-methodFingerprint {
+fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
     parameters("Z")
     opcodes(Opcode.RETURN)
     strings("pro")
-    custom { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;" }
+    custom { (method, classDef) -> method.definingClass == "Lcom/some/app/ads/AdsLoader;" }
 }
 ```
 
@@ -106,7 +107,7 @@ The fingerprint contains the following information:
 - Package and class name:
 
   ```kt
-  custom = { (methodDef, classDef) -> methodDef.definingClass == "Lcom/some/app/ads/AdsLoader;"}
+  custom = { (method, classDef) -> method.definingClass == "Lcom/some/app/ads/AdsLoader;"}
   ```
 
 With this information, the original code can be reconstructed:
@@ -129,20 +130,22 @@ With this information, the original code can be reconstructed:
 
 > [!TIP]
 > A fingerprint should contain information about a method likely to remain the same across updates.
-> A method's name is not included in the fingerprint because it will likely change with each update in an obfuscated app. In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the same.
+> A method's name is not included in the fingerprint because it will likely change with each update in an obfuscated app.
+> In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the same.
 
 ## 🔨 How to use fingerprints
 
-Fingerprints can be added to a patch by directly creating and adding them or by invoking them manually. Fingerprints added to a patch are resolved by ReVanced Patcher before the patch is executed.
+Fingerprints can be added to a patch by directly creating and adding them or by invoking them manually.
+Fingerprints added to a patch are matched by ReVanced Patcher before the patch is executed.
 
 ```kt
-val fingerprint = methodFingerprint {
+val fingerprint = fingerprint {
     // ...
 }
 
 val patch = bytecodePatch {
     // Directly create and add a fingerprint.
-    methodFingerprint {
+    fingerprint {
         // ...
     }
 
@@ -152,15 +155,15 @@ val patch = bytecodePatch {
 ```
 
 > [!TIP]
-> Multiple patches can share fingerprints. If a fingerprint is resolved once, it will not be resolved again.
+> Multiple patches can share fingerprints. If a fingerprint is matched once, it will not be matched again.
 
 > [!TIP]
-> If a fingerprint has an opcode pattern, you can use the `fuzzyPatternScanThreshhold` parameter of the `opcode` function to fuzzy match the pattern.  
-> Opcode pattern arrays can contain `null` values to indicate that the opcode at the index is unknown.
-> Any opcode will match to a `null` value:
+> If a fingerprint has an opcode pattern, you can use the `fuzzyPatternScanThreshhold` parameter of the `opcode`
+> function to fuzzy match the pattern.  
+> `null` can be used as a wildcard to match any opcode:
 >
 > ```kt
-> methodFingerprint(fuzzyPatternScanThreshhold = 0.5) {
+> fingerprint(fuzzyPatternScanThreshhold = 2) {
 >    opcodes(
 >        Opcode.ICONST_0,
 >        null,
@@ -170,29 +173,31 @@ val patch = bytecodePatch {
 >}
 > ```
 
-Once the fingerprint is resolved, the result can be used in the patch:
+Once the fingerprint is matched, the match can be used in the patch:
 
 ```kt
 val patch = bytecodePatch {
-    // Add a fingerprint and delegate its result to a variable.
-    val result by showAdsFingerprint()
+    // Add a fingerprint and delegate its match to a variable.
+    val match by showAdsFingerprint()
 
     execute {
-        val method = result.method
+        val method = match.method
     }
 }
 ```
 
 > [!WARNING]
-> If the fingerprint can not be resolved because it does not match any method, the result of a fingerprint is `null`. If the result is delegated to a variable, accessing it will raise an exception.
+> If the fingerprint can not be matched to any method, the match of a fingerprint is `null`. If the match is delegated
+> to a variable, accessing it will raise an exception.
 
-The result of a fingerprint that resolved successfully contains mutable and immutable references to the method and the class it is defined in.
+The match of a fingerprint contains mutable and immutable references to the method and the class it is defined in.
 
 ```kt
-class MethodFingerprintResult(
+class Match(
     val method: Method,
     val classDef: ClassDef,
-    val scanResult: MethodFingerprintScanResult,
+    val patternMatch: Match.PatternMatch?,
+    val stringMatches: List<Match.StringMatch>?,
     // ...
 ) {
     val mutableClass by lazy { /* ... */ }
@@ -200,73 +205,59 @@ class MethodFingerprintResult(
 
     // ...
 }
-
-class MethodFingerprintScanResult(
-    val patternScanResult: PatternScanResult?,
-    val stringsScanResult: StringsScanResult?,
-) {
-    class StringsScanResult(val matches: List<StringMatch>) {
-        class StringMatch(val string: String, val index: Int)
-    }
-
-    class PatternScanResult(
-        val startIndex: Int,
-        val endIndex: Int,
-        // ...
-    ) {
-        // ...
-    }
-}
 ```
 
-## 🏹 Manual resolution of fingerprints
+## 🏹 Manual matching of fingerprints
 
-Unless a fingerprint is added to a patch, the fingerprint will not be resolved automatically by ReVanced Patcher before the patch is executed.
-Instead, the fingerprint can be resolved manually using various overloads of a fingerprint's `resolve` function.
+Unless a fingerprint is added to a patch, the fingerprint will not be matched automatically by ReVanced Patcher
+before the patch is executed.
+Instead, the fingerprint can be matched manually using various overloads of a fingerprint's `match` function.
 
-You can resolve a fingerprint in the following ways:
+You can match a fingerprint the following ways:
 
-- On a **list of classes**, if the fingerprint can resolve on a known subset of classes
+- In a **list of classes**, if the fingerprint can match in a known subset of classes
 
-  If you have a known list of classes you know the fingerprint can resolve on, you can resolve the fingerprint on the list of classes:
+  If you have a known list of classes you know the fingerprint can match in,
+you can match the fingerprint on the list of classes:
 
   ```kt
-    execute {
-        val result = showAdsFingerprint.also { 
-            it.resolve(context, this.classes) 
-        }.result ?: throw PatchException("showAdsFingerprint not found")
+    execute { context ->
+        val match = showAdsFingerprint.apply { 
+            match(context, context.classes) 
+        }.match ?: throw PatchException("showAdsFingerprint not found")
     }
   ```
 
-- On a **single class**, if the fingerprint can resolve on a single known class
+- In a **single class**, if the fingerprint can match in a single known class
 
-  If you know the fingerprint can resolve to a method in a specific class, you can resolve the fingerprint on the class:
+  If you know the fingerprint can match a method in a specific class, you can match the fingerprint in the class:
 
   ```kt
-  execute {
-      val adsLoaderClass = classes.single { it.name == "Lcom/some/app/ads/Loader;" }
+  execute { context ->
+      val adsLoaderClass = context.classes.single { it.name == "Lcom/some/app/ads/Loader;" }
 
-      val result = showAdsFingerprint.also { 
-        it.resolve(context, adsLoaderClass)
-      }.result ?: throw PatchException("showAdsFingerprint not found")
+      val match = showAdsFingerprint.apply { 
+        match(context, adsLoaderClass)
+      }.match ?: throw PatchException("showAdsFingerprint not found")
   }
   ```
 
-- On a **single method**, to extract certain information about a method
+- Match a **single method**, to extract certain information about it
 
-  The result of a fingerprint contains useful information about the method, such as the start and end index of an opcode pattern or the indices of the instructions with certain string references.
+  The match of a fingerprint contains useful information about the method, such as the start and end index of an opcode pattern
+or the indices of the instructions with certain string references.
   A fingerprint can be leveraged to extract such information from a method instead of manually figuring it out:
 
   ```kt
-  execute {
-      val proStringsFingerprint = methodFingerprint {
+  execute { context ->
+      val proStringsFingerprint = fingerprint {
           strings("free", "trial")
       }
 
-      proStringsFingerprint.also {
-          it.resolve(context, adsFingerprintResult.method)
-      }.result?.let { result ->
-          result.scanResult.stringsScanResult!!.matches.forEach { match ->
+      proStringsFingerprint.apply {
+          match(context, adsFingerprintMatch.method)
+      }.match?.let { match ->
+          match.stringMatches.forEach { match ->
               println("The index of the string '${match.string}' is ${match.index}")
           }
       } ?: throw PatchException("pro strings fingerprint not found")
@@ -274,7 +265,8 @@ You can resolve a fingerprint in the following ways:
   ```
 
 > [!TIP]
-> To see real-world examples of fingerprints, check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
+> To see real-world examples of fingerprints,
+> check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
 
 ## ⏭️ What's next
 

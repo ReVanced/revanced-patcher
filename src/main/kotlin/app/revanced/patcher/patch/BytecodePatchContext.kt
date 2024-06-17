@@ -4,20 +4,26 @@ import app.revanced.patcher.InternalApi
 import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.PatcherResult
+import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
 import app.revanced.patcher.util.ProxyClassList
 import app.revanced.patcher.util.proxy.ClassProxy
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
+import java.io.Closeable
 import java.io.File
 import java.io.FileFilter
 import java.io.Flushable
+import java.util.*
 import java.util.logging.Logger
 
 /**
@@ -26,29 +32,31 @@ import java.util.logging.Logger
  * @param config The [PatcherConfig] used to create this context.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class BytecodePatchContext internal constructor(private val config: PatcherConfig) :
-    PatchContext<Set<PatcherResult.PatchedDexFile>> {
+class BytecodePatchContext internal constructor(private val config: PatcherConfig) : PatchContext<Set<PatcherResult.PatchedDexFile>> {
     private val logger = Logger.getLogger(BytecodePatchContext::class.java.name)
 
     /**
      * [Opcodes] of the supplied [PatcherConfig.apkFile].
      */
-    internal lateinit var opcodes: Opcodes
+    internal val opcodes: Opcodes
 
     /**
      * The list of classes.
      */
-    val classes by lazy {
-        ProxyClassList(
-            MultiDexIO.readDexFile(
-                true,
-                config.apkFile,
-                BasicDexFileNamer(),
-                null,
-                null,
-            ).also { opcodes = it.opcodes }.classes.toMutableList(),
-        )
-    }
+    val classes = ProxyClassList(
+        MultiDexIO.readDexFile(
+            true,
+            config.apkFile,
+            BasicDexFileNamer(),
+            null,
+            null,
+        ).also { opcodes = it.opcodes }.classes.toMutableList(),
+    )
+
+    /**
+     * The lookup maps for methods and the class they are a member of from the [classes].
+     */
+    internal val methodLookupMaps by lazy { MethodLookupMaps(classes) }
 
     /**
      * The [Integrations] of this [PatcherContext].
@@ -131,7 +139,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     /**
      * The integrations of a [PatcherContext].
      */
-    internal inner class Integrations : MutableList<File> by mutableListOf(), Flushable {
+    internal inner class Integrations :
+        MutableList<File> by mutableListOf(),
+        Flushable {
         /**
          * Whether to merge integrations.
          * Set to true, if the field requiresIntegrations of any supplied [Patch] is true.
@@ -178,4 +188,115 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             clear()
         }
     }
+
+    /**
+     * A lookup map for methods and the class they are a member of.
+     *
+     * @param classes The list of classes to create the lookup maps from.
+     */
+    internal class MethodLookupMaps internal constructor(classes: List<ClassDef>) : Closeable {
+        /**
+         * All methods and the class they are a member of.
+         */
+        internal val all = MethodClassPairs()
+
+        /**
+         * Methods associated by its access flags, return type and parameter.
+         */
+        internal val bySignature = MethodClassPairsLookupMap()
+
+        /**
+         * Methods associated by strings referenced in it.
+         */
+        internal val byStrings = MethodClassPairsLookupMap()
+
+        init {
+            classes.forEach { classDef ->
+                classDef.methods.forEach { method ->
+                    val methodClassPair: MethodClassPair = method to classDef
+
+                    // For fingerprints with no access or return type specified.
+                    all += methodClassPair
+
+                    val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
+
+                    // Add <access><returnType> as the key.
+                    bySignature[accessFlagsReturnKey] = methodClassPair
+
+                    // Add <access><returnType>[parameters] as the key.
+                    bySignature[
+                        buildString {
+                            append(accessFlagsReturnKey)
+                            appendParameters(method.parameterTypes)
+                        },
+                    ] = methodClassPair
+
+                    // Add strings contained in the method as the key.
+                    method.instructionsOrNull?.forEach instructions@{ instruction ->
+                        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) {
+                            return@instructions
+                        }
+
+                        val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+
+                        byStrings[string] = methodClassPair
+                    }
+
+                    // In the future, the class type could be added to the lookup map.
+                    // This would require MethodFingerprint to be changed to include the class type.
+                }
+            }
+        }
+
+        internal companion object {
+            /**
+             * Appends a string based on the parameter reference types of this method.
+             */
+            internal fun StringBuilder.appendParameters(parameters: Iterable<CharSequence>) {
+                // Maximum parameters to use in the signature key.
+                // Some apps have methods with an incredible number of parameters (over 100 parameters have been seen).
+                // To keep the signature map from becoming needlessly bloated,
+                // group together in the same map entry all methods with the same access/return and 5 or more parameters.
+                // The value of 5 was chosen based on local performance testing and is not set in stone.
+                val maxSignatureParameters = 5
+                // Must append a unique value before the parameters to distinguish this key includes the parameters.
+                // If this is not appended, then methods with no parameters
+                // will collide with different keys that specify access/return but omit the parameters.
+                append("p:")
+                parameters.forEachIndexed { index, parameter ->
+                    if (index >= maxSignatureParameters) return
+                    append(parameter.first())
+                }
+            }
+        }
+
+        override fun close() {
+            all.clear()
+            bySignature.clear()
+            byStrings.clear()
+        }
+    }
+}
+
+/**
+ * A pair of a [Method] and the [ClassDef] it is a member of.
+ */
+internal typealias MethodClassPair = Pair<Method, ClassDef>
+
+/**
+ * A list of [MethodClassPair]s.
+ */
+internal typealias MethodClassPairs = LinkedList<MethodClassPair>
+
+/**
+ * A lookup map for [MethodClassPairs]s.
+ * The key is a string and the value is a list of [MethodClassPair]s.
+ */
+internal class MethodClassPairsLookupMap : MutableMap<String, MethodClassPairs> by mutableMapOf() {
+    /**
+     * Add a [MethodClassPair] associated by any key.
+     * If the key does not exist, a new list is created and the [MethodClassPair] is added to it.
+     */
+    internal operator fun set(key: String, methodClassPair: MethodClassPair) =
+        apply { getOrPut(key) { MethodClassPairs() }.add(methodClassPair) }
 }

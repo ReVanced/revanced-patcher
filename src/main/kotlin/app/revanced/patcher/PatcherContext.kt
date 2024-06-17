@@ -29,12 +29,12 @@ class PatcherContext internal constructor(config: PatcherConfig) {
     internal val allPatches = mutableSetOf<Patch<*>>()
 
     /**
-     * A context for patches containing the current state of the resources.
+     * The context for patches containing the current state of the resources.
      */
-    internal val resourcePatchContext = ResourcePatchContext(packageMetadata, config)
+    internal val resourceContext = ResourcePatchContext(packageMetadata, config)
 
     /**
-     * A context for patches containing the current state of the bytecode.
+     * The context for patches containing the current state of the bytecode.
      */
-    internal val bytecodePatchContext = BytecodePatchContext(config)
+    internal val bytecodeContext = BytecodePatchContext(config)
 }

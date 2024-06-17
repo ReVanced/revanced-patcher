@@ -1,6 +1,6 @@
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.fingerprint.methodFingerprint
+import app.revanced.patcher.fingerprint
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -26,15 +26,15 @@ internal object PatchTest {
 
     @Test
     fun `can create patch with fingerprints`() {
-        val externalFingerprint = methodFingerprint {}
+        val externalFingerprint = fingerprint {}
 
         val patch = bytecodePatch(name = "Test") {
             val result by externalFingerprint()
-            val internalFingerprint = methodFingerprint {}
+            val internalFingerprint = fingerprint {}
 
             execute {
                 result.method
-                internalFingerprint.result
+                internalFingerprint.match
             }
         }
 

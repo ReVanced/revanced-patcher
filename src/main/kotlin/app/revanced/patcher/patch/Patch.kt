@@ -2,10 +2,9 @@
 
 package app.revanced.patcher.patch
 
+import app.revanced.patcher.Fingerprint
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.PatcherContext
-import app.revanced.patcher.fingerprint.MethodFingerprint
-import app.revanced.patcher.fingerprint.resolveUsingLookupMap
 import dalvik.system.DexClassLoader
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.MultiDexIO
@@ -110,7 +109,7 @@ class BytecodePatch internal constructor(
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    val fingerprints: Set<MethodFingerprint>,
+    val fingerprints: Set<Fingerprint>,
     executeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
     finalizeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
 ) : Patch<BytecodePatchContext>(
@@ -125,12 +124,12 @@ class BytecodePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) {
-        fingerprints.resolveUsingLookupMap(context.bytecodePatchContext)
+        fingerprints.forEach { it.match(context.bytecodeContext) }
 
-        execute(context.bytecodePatchContext)
+        execute(context.bytecodeContext)
     }
 
-    override fun finalize(context: PatcherContext) = finalize(context.bytecodePatchContext)
+    override fun finalize(context: PatcherContext) = finalize(context.bytecodeContext)
 
     override fun toString() = name ?: "BytecodePatch"
 }
@@ -174,9 +173,9 @@ class RawResourcePatch internal constructor(
     executeBlock,
     finalizeBlock,
 ) {
-    override fun execute(context: PatcherContext) = execute(context.resourcePatchContext)
+    override fun execute(context: PatcherContext) = execute(context.resourceContext)
 
-    override fun finalize(context: PatcherContext) = finalize(context.resourcePatchContext)
+    override fun finalize(context: PatcherContext) = finalize(context.resourceContext)
 
     override fun toString() = name ?: "RawResourcePatch"
 }
@@ -220,9 +219,9 @@ class ResourcePatch internal constructor(
     executeBlock,
     finalizeBlock,
 ) {
-    override fun execute(context: PatcherContext) = execute(context.resourcePatchContext)
+    override fun execute(context: PatcherContext) = execute(context.resourceContext)
 
-    override fun finalize(context: PatcherContext) = finalize(context.resourcePatchContext)
+    override fun finalize(context: PatcherContext) = finalize(context.resourceContext)
 
     override fun toString() = name ?: "ResourcePatch"
 }
@@ -349,16 +348,16 @@ class BytecodePatchBuilder internal constructor(
     use: Boolean,
     requiresIntegrations: Boolean,
 ) : PatchBuilder<BytecodePatchContext>(name, description, use, requiresIntegrations) {
-    private val fingerprints = mutableSetOf<MethodFingerprint>()
+    private val fingerprints = mutableSetOf<Fingerprint>()
 
     /**
      * Add the fingerprint to the patch.
      */
-    operator fun MethodFingerprint.invoke() = apply {
+    operator fun Fingerprint.invoke() = apply {
         fingerprints.add(this)
     }
 
-    operator fun MethodFingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = result
+    operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = match
         ?: throw PatchException("Cannot delegate unresolved fingerprint result to ${property.name}.")
 
     override fun build() = BytecodePatch(
