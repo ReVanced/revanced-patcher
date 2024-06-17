@@ -87,7 +87,7 @@ so it is important to write patches in a way that can be used in different conte
 - 🔥🔥 Keep patches as minimal as possible. This reduces the risk of failing patches.
   Instead of involving many abstract changes in one patch or writing entire methods or classes in a patch,
   you can write code in integrations. Integrations are compiled classes merged into the app
-before patches are executed as described in [💉 Introduction to ReVanced Patcher](1_patcher_intro).
+before patches are executed as described in [💉 Introduction to ReVanced Patcher](1_patcher_intro.md).
   Patches can then reference methods and classes from integrations.
   A real-world example of integrations can be found in the [ReVanced Integrations](https://github.com/ReVanced/revanced-integrations) repository
 - 🔥🔥🔥 Do not overload a fingerprint with information about a method that's likely to change.
