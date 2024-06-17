@@ -1,5 +1,6 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.patch.BytecodePatchContext.MethodLookupMaps
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.ResourcePatchContext
@@ -39,7 +40,7 @@ internal object PatcherTest {
 
             every { context.bytecodeContext.classes } returns mockk(relaxed = true)
             every { context.bytecodeContext.integrations } returns mockk(relaxed = true)
-            every { apply(false) } answers { callOriginal() }
+            every { execute() } answers { callOriginal() }
         }
     }
 
@@ -100,7 +101,7 @@ internal object PatcherTest {
     fun `matches fingerprint`() {
         mockClassWithMethod()
 
-        val patches = setOf(bytecodePatch { fingerprint { this returns "V" }() })
+        val patches = setOf(bytecodePatch { fingerprint { this returns "V" } })
 
         assertNull(
             patches.first().fingerprints.first().match,
@@ -120,7 +121,7 @@ internal object PatcherTest {
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
 
-        return runBlocking { patcher.apply(false).toList() }
+        return runBlocking { patcher.execute().toList() }
     }
 
     private operator fun Patch<*>.invoke() = setOf(this)().first()
@@ -158,5 +159,6 @@ internal object PatcherTest {
                 ),
             ),
         )
+        every { patcher.context.bytecodeContext.methodLookupMaps } returns MethodLookupMaps(patcher.context.bytecodeContext.classes)
     }
 }
