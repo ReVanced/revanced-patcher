@@ -165,6 +165,7 @@ class Patcher(
 
                 if (returnOnError) return@flow
             } ?: run {
+                // TODO: Only emit, if the patch has no finalizerBlock.
                 emit(patchResult)
             }
         }
