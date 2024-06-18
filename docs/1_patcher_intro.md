@@ -72,11 +72,11 @@ ReVanced Patcher receives a list of patches and applies them to a given APK file
 It then returns the modified components of the APK file, such as modified dex files and resources,
 that can be repackaged into a new APK file.
 
-ReVanced Patcher has a simple API that allows you to load patches from JAR files
+ReVanced Patcher has a simple API that allows you to load patches from RVP (JAR or DEX container) files
 and apply them to an APK file. Later on, you will learn how to create patches.
 
 ```kt
-val patches = loadPatchesFromJar(setOf(File("revanced-patches.jar")))
+val patches = loadPatchesFromJar(setOf(File("revanced-patches.rvp")))
 
 val patcherResult = Patcher(PatcherConfig(apkFile = File("some.apk"))).use { patcher ->
     // Here you can access metadata about the APK file through patcher.context.packageMetadata
