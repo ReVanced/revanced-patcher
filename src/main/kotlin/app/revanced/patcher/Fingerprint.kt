@@ -5,7 +5,7 @@ package app.revanced.patcher
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.BytecodePatchBuilder
 import app.revanced.patcher.patch.BytecodePatchContext
-import app.revanced.patcher.patch.BytecodePatchContext.MethodLookupMaps.Companion.appendParameters
+import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps.Companion.appendParameters
 import app.revanced.patcher.patch.MethodClassPairs
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -43,7 +43,7 @@ class Fingerprint internal constructor(
         private set
 
     /**
-     * Match using [BytecodePatchContext.MethodLookupMaps].
+     * Match using [BytecodePatchContext.LookupMaps].
      *
      * Generally faster than the other [match] overloads when there are many methods to check for a match.
      *
@@ -57,7 +57,7 @@ class Fingerprint internal constructor(
      * @return True if a match was found or if the fingerprint is already matched to a method, false otherwise.
      */
     internal fun match(context: BytecodePatchContext): Boolean {
-        val lookupMaps = context.methodLookupMaps
+        val lookupMaps = context.lookupMaps
 
         fun Fingerprint.match(methodClasses: MethodClassPairs): Boolean {
             methodClasses.forEach { (classDef, method) ->
@@ -67,7 +67,7 @@ class Fingerprint internal constructor(
         }
 
         // TODO: If only one string is necessary, why not use a single string for every fingerprint?
-        fun Fingerprint.lookupByStrings() = strings?.firstNotNullOfOrNull { lookupMaps.byStrings[it] }
+        fun Fingerprint.lookupByStrings() = strings?.firstNotNullOfOrNull { lookupMaps.methodsByStrings[it] }
         if (lookupByStrings()?.let(::match) == true) {
             return true
         }
@@ -75,7 +75,7 @@ class Fingerprint internal constructor(
         // No strings declared or none matched (partial matches are allowed).
         // Use signature matching.
         fun Fingerprint.lookupBySignature(): MethodClassPairs {
-            if (accessFlags == null) return lookupMaps.all
+            if (accessFlags == null) return lookupMaps.allMethods
 
             var returnTypeValue = returnType
             if (returnTypeValue == null) {
@@ -83,7 +83,7 @@ class Fingerprint internal constructor(
                     // Constructors always have void return type.
                     returnTypeValue = "V"
                 } else {
-                    return lookupMaps.all
+                    return lookupMaps.allMethods
                 }
             }
 
@@ -94,7 +94,7 @@ class Fingerprint internal constructor(
                     appendParameters(parameters ?: return@buildString)
                 }
 
-            return lookupMaps.bySignature[signature] ?: return MethodClassPairs()
+            return lookupMaps.methodsBySignature[signature] ?: return MethodClassPairs()
         }
         return match(lookupBySignature())
     }

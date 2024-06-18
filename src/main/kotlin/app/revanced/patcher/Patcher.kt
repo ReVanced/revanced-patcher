@@ -3,7 +3,6 @@ package app.revanced.patcher
 import app.revanced.patcher.patch.*
 import kotlinx.coroutines.flow.flow
 import java.io.Closeable
-import java.io.File
 import java.util.logging.Logger
 
 /**
@@ -24,15 +23,11 @@ class Patcher(private val config: PatcherConfig) : Closeable {
     }
 
     /**
-     * Add patches and integrations.
+     * Add patches.
      *
-     * @param patchesIntegrationsPair The patches and integrations to add.
+     * @param patches The patches to add.
      */
-    operator fun plusAssign(patchesIntegrationsPair: Pair<Set<Patch<*>>, Set<File>>) {
-        val (patches, integrations) = patchesIntegrationsPair
-
-        // region Add patches
-
+    operator fun plusAssign(patches: Set<Patch<*>>) {
         // Add all patches to the executablePatches set.
         context.executablePatches += patches
 
@@ -44,12 +39,6 @@ class Patcher(private val config: PatcherConfig) : Closeable {
             patch.addRecursively()
         }
 
-        // TODO: Detect circular dependencies.
-
-        /**
-         * @param predicate The predicate to match.
-         * @return True if at least one patch or its dependencies matches the given predicate.
-         */
         fun Patch<*>.anyRecursively(predicate: (Patch<*>) -> Boolean): Boolean =
             predicate(this) || dependencies.any { dependency -> dependency.anyRecursively(predicate) }
 
@@ -62,23 +51,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
             } else {
                 ResourcePatchContext.ResourceMode.NONE
             }
-
-            // Check, if integrations need to be merged.
-            for (patch in patches) {
-                if (patch.anyRecursively { it.requiresIntegrations }) {
-                    context.bytecodeContext.integrations.merge = true
-                    break
-                }
-            }
         }
-
-        // endregion
-
-        // region Add integrations
-
-        context.bytecodeContext.integrations += integrations
-
-        // endregion
     }
 
     /**
@@ -120,8 +93,6 @@ class Patcher(private val config: PatcherConfig) : Closeable {
                 PatchResult(this, PatchException(exception))
             }.also { executedPatches[this] = it }
         }
-
-        if (context.bytecodeContext.integrations.merge) context.bytecodeContext.integrations.flush()
 
         // Prevent from decoding the app manifest twice if it is not needed.
         if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
@@ -171,7 +142,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
         }
     }
 
-    override fun close() = context.bytecodeContext.methodLookupMaps.close()
+    override fun close() = context.bytecodeContext.lookupMaps.close()
 
     /**
      * Compile and save patched APK files.
