@@ -86,7 +86,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
      *
      * @return A flow of [PatchResult]s.
      */
-    fun execute() = flow {
+    operator fun invoke() = flow {
         fun Patch<*>.execute(
             executedPatches: LinkedHashMap<Patch<*>, PatchResult>,
         ): PatchResult {

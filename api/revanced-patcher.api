@@ -56,9 +56,9 @@ public final class app/revanced/patcher/PackageMetadata {
 public final class app/revanced/patcher/Patcher : java/io/Closeable {
 	public fun <init> (Lapp/revanced/patcher/PatcherConfig;)V
 	public fun close ()V
-	public final fun execute ()Lkotlinx/coroutines/flow/Flow;
 	public final fun get ()Lapp/revanced/patcher/PatcherResult;
 	public final fun getContext ()Lapp/revanced/patcher/PatcherContext;
+	public final fun invoke ()Lkotlinx/coroutines/flow/Flow;
 	public final fun plusAssign (Lkotlin/Pair;)V
 }
 

@@ -88,11 +88,11 @@ val patcherResult = Patcher(PatcherConfig(apkFile = File("some.apk"))).use { pat
 
     // Execute the patches.
     runBlocking {
-        patcher.execute().collect { patchResult ->
+        patcher().collect { patchResult ->
             if (patchResult.exception != null)
-                logger.info("\"${patchResult.patchName}\" failed:\n${patchResult.exception}")
+                logger.info("\"${patchResult.patch}\" failed:\n${patchResult.exception}")
             else
-                logger.info("\"${patchResult.patchName}\" succeeded")
+                logger.info("\"${patchResult.patch}\" succeeded")
         }
     }
 
