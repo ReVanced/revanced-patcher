@@ -80,7 +80,7 @@ val disableAdsPatch = bytecodePatch(
     dependsOn(disableAdsResourcePatch)
 
     // Precompiled DEX file to be merged into the patched app.
-    extendedBy("disable-ads.rve")
+    extendWith("disable-ads.rve")
 
     // Fingerprint to find the method to patch.
     val showAdsMatch by showAdsFingerprint {
@@ -170,7 +170,7 @@ and use it in a patch:
 
 ```kt
 val patch = bytecodePatch(name = "Complex patch") {
-    extendedBy("complex-patch.rve")
+    extendWith("complex-patch.rve")
     
     val match by methodFingerprint()
     

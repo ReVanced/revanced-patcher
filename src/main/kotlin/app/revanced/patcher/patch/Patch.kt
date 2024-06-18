@@ -338,6 +338,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
  * @property fingerprints The fingerprints that are resolved before the patch is executed.
  * @property extension The name of the extension resource this patch uses.
  * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
+ * @property classLoader The [ClassLoader] to use for reading the extension from the resources.
  *
  * @constructor Create a new [BytecodePatchBuilder] builder.
  */
@@ -358,7 +359,7 @@ class BytecodePatchBuilder internal constructor(
     operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = match
         ?: throw PatchException("Cannot delegate unresolved fingerprint result to ${property.name}.")
 
-    // Must be internal for the inlined function "extendedBy".
+    // Must be internal for the inlined function "extendWith".
     @PublishedApi
     internal var extension: String? = null
 
@@ -372,7 +373,7 @@ class BytecodePatchBuilder internal constructor(
      *
      * @param extension The name of the extension resource.
      */
-    inline fun extendedBy(extension: String) = apply {
+    inline fun extendWith(extension: String) = apply {
         this.extension = extension
         classLoader = object {}.javaClass.classLoader
     }

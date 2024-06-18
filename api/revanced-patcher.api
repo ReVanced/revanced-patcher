@@ -201,7 +201,7 @@ public final class app/revanced/patcher/patch/BytecodePatch : app/revanced/patch
 
 public final class app/revanced/patcher/patch/BytecodePatchBuilder : app/revanced/patcher/patch/PatchBuilder {
 	public synthetic fun build$revanced_patcher ()Lapp/revanced/patcher/patch/Patch;
-	public final fun extendedBy (Ljava/lang/String;)Lapp/revanced/patcher/patch/BytecodePatchBuilder;
+	public final fun extendWith (Ljava/lang/String;)Lapp/revanced/patcher/patch/BytecodePatchBuilder;
 	public final fun getClassLoader ()Ljava/lang/ClassLoader;
 	public final fun getExtension ()Ljava/lang/String;
 	public final fun getValue (Lapp/revanced/patcher/Fingerprint;Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Match;
