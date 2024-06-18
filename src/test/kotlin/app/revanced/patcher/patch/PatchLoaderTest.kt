@@ -3,8 +3,10 @@
 package app.revanced.patcher.patch
 
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.*
+import kotlin.reflect.full.companionObject
+import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 import kotlin.test.assertEquals
@@ -62,14 +64,14 @@ internal object PatchLoaderTest {
         val loadPatchesFunction = getPrivateFunctionByName(
             patchLoaderCompanionObject,
             LOAD_PATCHES_FUNCTION_NAME,
-        ) as KFunction<Set<Patch<*>>>
+        ) as KFunction<Map<File, Set<Patch<*>>>>
 
         // Call private PatchLoader.Companion.loadPatches function.
         val patches = loadPatchesFunction.call(
             patchLoaderCompanionObject,
             TEST_PATCHES_CLASS_LOADER,
-            listOf(TEST_PATCHES_CLASS),
-        )
+            mapOf(File("patchesFile") to setOf(TEST_PATCHES_CLASS)),
+        ).values.first()
 
         assertEquals(
             2,
