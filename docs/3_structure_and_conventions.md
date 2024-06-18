@@ -81,22 +81,22 @@ Patches are organized in a specific way. The file structure looks as follows:
   If a patch changes the color of a button, name it `Change button color`
 - 🔥 Write the patch description in the third person, present tense, and end it with a period.
   If a patch removes ads, the description can be omitted because of redundancy,
-but if a patch changes the color of a button, the description can be _Changes the color of the resume button to red._
+  but if a patch changes the color of a button, the description can be _Changes the color of the resume button to red._
 - 🔥 Write patches with modularity and reusability in mind. Patches can depend on each other,
-so it is important to write patches in a way that can be used in different contexts.
+  so it is important to write patches in a way that can be used in different contexts.
 - 🔥🔥 Keep patches as minimal as possible. This reduces the risk of failing patches.
   Instead of involving many abstract changes in one patch or writing entire methods or classes in a patch,
-  you can write code in integrations. Integrations are compiled classes merged into the app
-before patches are executed as described in [💉 Introduction to ReVanced Patcher](1_patcher_intro.md).
-  Patches can then reference methods and classes from integrations.
+  you can write code in extensions. An extension is a precompiled DEX file that is merged into the patched app 
+  before this patch is executed.
+  Patches can then reference methods and classes from extensions.
   A real-world example of integrations can be found in the [ReVanced Integrations](https://github.com/ReVanced/revanced-integrations) repository
 - 🔥🔥🔥 Do not overload a fingerprint with information about a method that's likely to change.
   In the example of an obfuscated method, it's better to fingerprint the method by its return type
-and parameters rather than its name because the name is likely to change. An intelligent selection
-of an opcode pattern or strings in a method can result in a strong fingerprint dynamic to app updates.
+  and parameters rather than its name because the name is likely to change. An intelligent selection
+  of an opcode pattern or strings in a method can result in a strong fingerprint dynamic to app updates.
 - 🔥🔥🔥 Document your patches. Patches are abstract, so it is important to document parts of the code
-that are not self-explanatory. For example, explain why and how a certain method is patched or large blocks
-of instructions that are modified or added to a method
+  that are not self-explanatory. For example, explain why and how a certain method is patched or large blocks
+  of instructions that are modified or added to a method
 
 ## ⏭️ What's next
 

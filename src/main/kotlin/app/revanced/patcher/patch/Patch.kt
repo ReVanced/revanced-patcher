@@ -21,17 +21,16 @@ typealias Package = Pair<PackageName, Set<VersionName>?>
  * A patch.
  *
  * @param C The [PatchContext] to execute and finalize the patch with.
- * @property name The name of the patch.
+ * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
- * @property description The description of the patch.
- * @property use Weather or not the patch should be used.
- * @property requiresIntegrations Weather or not the patch requires integrations.
- * @property compatiblePackages The packages the patch is compatible with.
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param dependencies Other patches this patch depends on.
+ * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
- * @property dependencies Other patches this patch depends on.
- * @property options The options of the patch.
- * @property executeBlock The execution block of the patch.
- * @property finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
+ * @param options The options of the patch.
+ * @param executeBlock The execution block of the patch.
+ * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
  *
  * @constructor Create a new patch.
@@ -40,12 +39,11 @@ sealed class Patch<C : PatchContext<*>>(
     val name: String?,
     val description: String?,
     val use: Boolean,
-    val requiresIntegrations: Boolean,
-    val compatiblePackages: Set<Package>?,
     val dependencies: Set<Patch<*>>,
+    val compatiblePackages: Set<Package>?,
     options: Set<Option<*>>,
-    private val executeBlock: (Patch<C>.(C) -> Unit),
-    private val finalizeBlock: (Patch<C>.(C) -> Unit),
+    private val executeBlock: Patch<C>.(C) -> Unit,
+    private val finalizeBlock: Patch<C>.(C) -> Unit,
 ) {
     val options = Options(options)
 
@@ -89,15 +87,17 @@ sealed class Patch<C : PatchContext<*>>(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @param dependencies Other patches this patch depends on.
  * @param options The options of the patch.
  * @param fingerprints The fingerprints that are resolved before the patch is executed.
+ * @param extension The name of the extension resource this patch uses.
+ * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
  * @param executeBlock The execution block of the patch.
  * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
+ * @param classLoader The [ClassLoader] to use for reading the extension from the resources.
  *
  * @constructor Create a new bytecode patch.
  */
@@ -105,28 +105,35 @@ class BytecodePatch internal constructor(
     name: String?,
     description: String?,
     use: Boolean,
-    requiresIntegrations: Boolean,
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
     val fingerprints: Set<Fingerprint>,
-    executeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
-    finalizeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit),
+    val extension: String?,
+    executeBlock: Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit,
+    finalizeBlock: Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit,
+    val classLoader: ClassLoader?,
 ) : Patch<BytecodePatchContext>(
     name,
     description,
     use,
-    requiresIntegrations,
-    compatiblePackages,
     dependencies,
+    compatiblePackages,
     options,
     executeBlock,
     finalizeBlock,
 ) {
-    override fun execute(context: PatcherContext) {
-        fingerprints.forEach { it.match(context.bytecodeContext) }
+    override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
+        if (extension != null) {
+            mergeExtension(
+                classLoader!!.getResourceAsStream(extension)?.readAllBytes()
+                    ?: throw PatchException("Extension resource \"$extension\" not found"),
+            )
+        }
 
-        execute(context.bytecodeContext)
+        fingerprints.forEach { it.match(this) }
+
+        execute(this)
     }
 
     override fun finalize(context: PatcherContext) = finalize(context.bytecodeContext)
@@ -141,7 +148,6 @@ class BytecodePatch internal constructor(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @param dependencies Other patches this patch depends on.
@@ -156,19 +162,17 @@ class RawResourcePatch internal constructor(
     name: String?,
     description: String?,
     use: Boolean,
-    requiresIntegrations: Boolean,
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    executeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
-    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
+    executeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
+    finalizeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
 ) : Patch<ResourcePatchContext>(
     name,
     description,
     use,
-    requiresIntegrations,
-    compatiblePackages,
     dependencies,
+    compatiblePackages,
     options,
     executeBlock,
     finalizeBlock,
@@ -187,7 +191,6 @@ class RawResourcePatch internal constructor(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @param dependencies Other patches this patch depends on.
@@ -202,19 +205,17 @@ class ResourcePatch internal constructor(
     name: String?,
     description: String?,
     use: Boolean,
-    requiresIntegrations: Boolean,
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    executeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
-    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit),
+    executeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
+    finalizeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
 ) : Patch<ResourcePatchContext>(
     name,
     description,
     use,
-    requiresIntegrations,
-    compatiblePackages,
     dependencies,
+    compatiblePackages,
     options,
     executeBlock,
     finalizeBlock,
@@ -230,11 +231,10 @@ class ResourcePatch internal constructor(
  * A [Patch] builder.
  *
  * @param C The [PatchContext] to execute and finalize the patch with.
- * @property name The name of the patch.
+ * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
- * @property description The description of the patch.
- * @property use Weather or not the patch should be used.
- * @property requiresIntegrations Weather or not the patch requires integrations.
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
  * @property compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @property dependencies Other patches this patch depends on.
@@ -249,7 +249,6 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected val name: String?,
     protected val description: String?,
     protected val use: Boolean,
-    protected val requiresIntegrations: Boolean,
 ) {
     protected var compatiblePackages: MutableSet<Package>? = null
     protected var dependencies = mutableSetOf<Patch<*>>()
@@ -336,9 +335,9 @@ sealed class PatchBuilder<C : PatchContext<*>>(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
- *
  * @property fingerprints The fingerprints that are resolved before the patch is executed.
+ * @property extension The name of the extension resource this patch uses.
+ * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
  *
  * @constructor Create a new [BytecodePatchBuilder] builder.
  */
@@ -346,8 +345,7 @@ class BytecodePatchBuilder internal constructor(
     name: String?,
     description: String?,
     use: Boolean,
-    requiresIntegrations: Boolean,
-) : PatchBuilder<BytecodePatchContext>(name, description, use, requiresIntegrations) {
+) : PatchBuilder<BytecodePatchContext>(name, description, use) {
     private val fingerprints = mutableSetOf<Fingerprint>()
 
     /**
@@ -360,17 +358,37 @@ class BytecodePatchBuilder internal constructor(
     operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = match
         ?: throw PatchException("Cannot delegate unresolved fingerprint result to ${property.name}.")
 
+    // Must be internal for the inlined function "extendedBy".
+    @PublishedApi
+    internal var extension: String? = null
+
+    @PublishedApi
+    internal var classLoader: ClassLoader? = null
+
+    // Inlining is necessary to get the class loader that loaded the patch
+    // to load the extension from the resources.
+    /**
+     * Set the extension of the patch.
+     *
+     * @param extension The name of the extension resource.
+     */
+    inline fun extendedBy(extension: String) = apply {
+        this.extension = extension
+        classLoader = object {}.javaClass.classLoader
+    }
+
     override fun build() = BytecodePatch(
         name,
         description,
         use,
-        requiresIntegrations,
         compatiblePackages,
         dependencies,
         options,
         fingerprints,
+        extension,
         executionBlock,
         finalizeBlock,
+        classLoader,
     )
 }
 
@@ -381,7 +399,6 @@ class BytecodePatchBuilder internal constructor(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  *
  * @constructor Create a new [RawResourcePatch] builder.
  */
@@ -389,13 +406,11 @@ class RawResourcePatchBuilder internal constructor(
     name: String?,
     description: String?,
     use: Boolean,
-    requiresIntegrations: Boolean,
-) : PatchBuilder<ResourcePatchContext>(name, description, use, requiresIntegrations) {
+) : PatchBuilder<ResourcePatchContext>(name, description, use) {
     override fun build() = RawResourcePatch(
         name,
         description,
         use,
-        requiresIntegrations,
         compatiblePackages,
         dependencies,
         options,
@@ -411,7 +426,6 @@ class RawResourcePatchBuilder internal constructor(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  *
  * @constructor Create a new [ResourcePatch] builder.
  */
@@ -419,13 +433,11 @@ class ResourcePatchBuilder internal constructor(
     name: String?,
     description: String?,
     use: Boolean,
-    requiresIntegrations: Boolean,
-) : PatchBuilder<ResourcePatchContext>(name, description, use, requiresIntegrations) {
+) : PatchBuilder<ResourcePatchContext>(name, description, use) {
     override fun build() = ResourcePatch(
         name,
         description,
         use,
-        requiresIntegrations,
         compatiblePackages,
         dependencies,
         options,
@@ -451,7 +463,6 @@ private fun <B : PatchBuilder<*>> B.buildPatch(block: B.() -> Unit = {}) = apply
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  * @param block The block to build the patch.
  *
  * @return The created [BytecodePatch].
@@ -460,9 +471,8 @@ fun bytecodePatch(
     name: String? = null,
     description: String? = null,
     use: Boolean = true,
-    requiresIntegrations: Boolean = false,
     block: BytecodePatchBuilder.() -> Unit = {},
-) = BytecodePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as BytecodePatch
+) = BytecodePatchBuilder(name, description, use).buildPatch(block) as BytecodePatch
 
 /**
  * Create a new [RawResourcePatch].
@@ -471,7 +481,6 @@ fun bytecodePatch(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  * @param block The block to build the patch.
  * @return The created [RawResourcePatch].
  */
@@ -479,9 +488,8 @@ fun rawResourcePatch(
     name: String? = null,
     description: String? = null,
     use: Boolean = true,
-    requiresIntegrations: Boolean = false,
     block: RawResourcePatchBuilder.() -> Unit = {},
-) = RawResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as RawResourcePatch
+) = RawResourcePatchBuilder(name, description, use).buildPatch(block) as RawResourcePatch
 
 /**
  * Create a new [ResourcePatch].
@@ -490,7 +498,6 @@ fun rawResourcePatch(
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @param requiresIntegrations Weather or not the patch requires integrations.
  * @param block The block to build the patch.
  *
  * @return The created [ResourcePatch].
@@ -499,9 +506,8 @@ fun resourcePatch(
     name: String? = null,
     description: String? = null,
     use: Boolean = true,
-    requiresIntegrations: Boolean = false,
     block: ResourcePatchBuilder.() -> Unit = {},
-) = ResourcePatchBuilder(name, description, use, requiresIntegrations).buildPatch(block) as ResourcePatch
+) = ResourcePatchBuilder(name, description, use).buildPatch(block) as ResourcePatch
 
 /**
  * An exception thrown when patching.
@@ -583,7 +589,7 @@ sealed class PatchLoader private constructor(
                 patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
                 optimizedDexDirectory?.absolutePath,
                 null,
-                PatchLoader::class.java.classLoader,
+                this::class.java.classLoader,
             ),
         )
 

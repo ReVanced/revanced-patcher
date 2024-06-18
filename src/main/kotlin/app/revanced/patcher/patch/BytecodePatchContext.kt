@@ -2,7 +2,6 @@ package app.revanced.patcher.patch
 
 import app.revanced.patcher.InternalApi
 import app.revanced.patcher.PatcherConfig
-import app.revanced.patcher.PatcherContext
 import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
@@ -19,10 +18,9 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
+import lanchon.multidexlib2.RawDexIO
 import java.io.Closeable
-import java.io.File
 import java.io.FileFilter
-import java.io.Flushable
 import java.util.*
 import java.util.logging.Logger
 
@@ -56,12 +54,35 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     /**
      * The lookup maps for methods and the class they are a member of from the [classes].
      */
-    internal val methodLookupMaps by lazy { MethodLookupMaps(classes) }
+    internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
-     * The [Integrations] of this [PatcherContext].
+     * Merge the extension to [classes].
      */
-    internal val integrations = Integrations()
+    internal fun mergeExtension(extension: ByteArray) {
+        RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
+            val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
+                logger.fine("Adding $classDef")
+
+                lookupMaps.classesByType[classDef.type] = classDef
+                classes += classDef
+
+                return@forEach
+            }
+
+            logger.fine("$classDef exists. Adding missing methods and fields.")
+
+            existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
+                // If the class was merged, replace the original class with the merged class.
+                if (mergedClass === existingClass) {
+                    return@let
+                }
+
+                classes -= existingClass
+                classes += mergedClass
+            }
+        }
+    }
 
     /**
      * Find a class by its type using a contains check.
@@ -137,78 +158,30 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     }
 
     /**
-     * The integrations of a [PatcherContext].
-     */
-    internal inner class Integrations :
-        MutableList<File> by mutableListOf(),
-        Flushable {
-        /**
-         * Whether to merge integrations.
-         * Set to true, if the field requiresIntegrations of any supplied [Patch] is true.
-         */
-        var merge = false
-
-        /**
-         * Merge integrations into the [BytecodePatchContext] and flush all [Integrations].
-         */
-        override fun flush() {
-            if (!merge) return
-
-            logger.info("Merging integrations")
-
-            val classMap = classes.associateBy { it.type }
-
-            this@Integrations.forEach { integrations ->
-                MultiDexIO.readDexFile(
-                    true,
-                    integrations,
-                    BasicDexFileNamer(),
-                    null,
-                    null,
-                ).classes.forEach classDef@{ classDef ->
-                    val existingClass =
-                        classMap[classDef.type] ?: run {
-                            logger.fine("Adding $classDef")
-                            classes.add(classDef)
-                            return@classDef
-                        }
-
-                    logger.fine("$classDef exists. Adding missing methods and fields.")
-
-                    existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
-                        // If the class was merged, replace the original class with the merged class.
-                        if (mergedClass === existingClass) return@let
-                        classes.apply {
-                            remove(existingClass)
-                            add(mergedClass)
-                        }
-                    }
-                }
-            }
-            clear()
-        }
-    }
-
-    /**
-     * A lookup map for methods and the class they are a member of.
+     * A lookup map for methods and the class they are a member of and classes.
      *
      * @param classes The list of classes to create the lookup maps from.
      */
-    internal class MethodLookupMaps internal constructor(classes: List<ClassDef>) : Closeable {
+    internal class LookupMaps internal constructor(classes: List<ClassDef>) : Closeable {
+        /**
+         * Classes associated by their type.
+         */
+        internal val classesByType = classes.associateBy { it.type }.toMutableMap()
+
         /**
          * All methods and the class they are a member of.
          */
-        internal val all = MethodClassPairs()
+        internal val allMethods = MethodClassPairs()
 
         /**
          * Methods associated by its access flags, return type and parameter.
          */
-        internal val bySignature = MethodClassPairsLookupMap()
+        internal val methodsBySignature = MethodClassPairsLookupMap()
 
         /**
          * Methods associated by strings referenced in it.
          */
-        internal val byStrings = MethodClassPairsLookupMap()
+        internal val methodsByStrings = MethodClassPairsLookupMap()
 
         init {
             classes.forEach { classDef ->
@@ -216,15 +189,15 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     val methodClassPair: MethodClassPair = method to classDef
 
                     // For fingerprints with no access or return type specified.
-                    all += methodClassPair
+                    allMethods += methodClassPair
 
                     val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
 
                     // Add <access><returnType> as the key.
-                    bySignature[accessFlagsReturnKey] = methodClassPair
+                    methodsBySignature[accessFlagsReturnKey] = methodClassPair
 
                     // Add <access><returnType>[parameters] as the key.
-                    bySignature[
+                    methodsBySignature[
                         buildString {
                             append(accessFlagsReturnKey)
                             appendParameters(method.parameterTypes)
@@ -239,7 +212,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
                         val string = ((instruction as ReferenceInstruction).reference as StringReference).string
 
-                        byStrings[string] = methodClassPair
+                        methodsByStrings[string] = methodClassPair
                     }
 
                     // In the future, the class type could be added to the lookup map.
@@ -271,9 +244,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         }
 
         override fun close() {
-            all.clear()
-            bySignature.clear()
-            byStrings.clear()
+            allMethods.clear()
+            methodsBySignature.clear()
+            methodsByStrings.clear()
         }
     }
 }

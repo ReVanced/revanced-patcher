@@ -1,6 +1,6 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.patch.BytecodePatchContext.MethodLookupMaps
+import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.ResourcePatchContext
@@ -39,8 +39,7 @@ internal object PatcherTest {
             )
 
             every { context.bytecodeContext.classes } returns mockk(relaxed = true)
-            every { context.bytecodeContext.integrations } returns mockk(relaxed = true)
-            every { execute() } answers { callOriginal() }
+            every { this@mockk() } answers { callOriginal() }
         }
     }
 
@@ -121,7 +120,7 @@ internal object PatcherTest {
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
 
-        return runBlocking { patcher.execute().toList() }
+        return runBlocking { patcher().toList() }
     }
 
     private operator fun Patch<*>.invoke() = setOf(this)().first()
@@ -159,6 +158,6 @@ internal object PatcherTest {
                 ),
             ),
         )
-        every { patcher.context.bytecodeContext.methodLookupMaps } returns MethodLookupMaps(patcher.context.bytecodeContext.classes)
+        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
     }
 }
