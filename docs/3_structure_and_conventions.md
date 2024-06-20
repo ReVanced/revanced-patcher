@@ -89,7 +89,7 @@ Patches are organized in a specific way. The file structure looks as follows:
   you can write code in extensions. An extension is a precompiled DEX file that is merged into the patched app 
   before this patch is executed.
   Patches can then reference methods and classes from extensions.
-  A real-world example of integrations can be found in the [ReVanced Integrations](https://github.com/ReVanced/revanced-integrations) repository
+  A real-world example of extensions can be found in the [ReVanced Patches](https://github.com/ReVanced/revanced-patches) repository
 - 🔥🔥🔥 Do not overload a fingerprint with information about a method that's likely to change.
   In the example of an obfuscated method, it's better to fingerprint the method by its return type
   and parameters rather than its name because the name is likely to change. An intelligent selection

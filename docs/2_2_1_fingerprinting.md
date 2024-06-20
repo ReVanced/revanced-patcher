@@ -179,18 +179,22 @@ Once the fingerprint is matched, the match can be used in the patch:
 val patch = bytecodePatch {
     // Add a fingerprint and delegate its match to a variable.
     val match by showAdsFingerprint()
-
+    val match2 by fingerprint {
+        // ...
+    }
+  
     execute {
         val method = match.method
+        val method2 = match2.method
     }
 }
 ```
 
 > [!WARNING]
-> If the fingerprint can not be matched to any method, the match of a fingerprint is `null`. If the match is delegated
+> If the fingerprint can not be matched to any method, the match of a fingerprint is `null`. If such a match is delegated
 > to a variable, accessing it will raise an exception.
 
-The match of a fingerprint contains mutable and immutable references to the method and the class it is defined in.
+The match of a fingerprint contains mutable and immutable references to the method and the class it matches to.
 
 ```kt
 class Match(
@@ -224,7 +228,7 @@ you can match the fingerprint on the list of classes:
     execute { context ->
         val match = showAdsFingerprint.apply { 
             match(context, context.classes) 
-        }.match ?: throw PatchException("showAdsFingerprint not found")
+        }.match ?: throw PatchException("No match found")
     }
   ```
 
@@ -238,7 +242,7 @@ you can match the fingerprint on the list of classes:
 
       val match = showAdsFingerprint.apply { 
         match(context, adsLoaderClass)
-      }.match ?: throw PatchException("showAdsFingerprint not found")
+      }.match ?: throw PatchException("No match found")
   }
   ```
 
@@ -260,7 +264,7 @@ or the indices of the instructions with certain string references.
           match.stringMatches.forEach { match ->
               println("The index of the string '${match.string}' is ${match.index}")
           }
-      } ?: throw PatchException("pro strings fingerprint not found")
+      } ?: throw PatchException("No match found")
   }
   ```
 

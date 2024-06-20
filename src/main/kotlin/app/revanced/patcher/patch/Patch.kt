@@ -9,6 +9,7 @@ import dalvik.system.DexClassLoader
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.MultiDexIO
 import java.io.File
+import java.io.InputStream
 import java.net.URLClassLoader
 import java.util.jar.JarFile
 import kotlin.reflect.KProperty
@@ -92,12 +93,11 @@ sealed class Patch<C : PatchContext<*>>(
  * @param dependencies Other patches this patch depends on.
  * @param options The options of the patch.
  * @param fingerprints The fingerprints that are resolved before the patch is executed.
- * @param extension The name of the extension resource this patch uses.
+ * @property extension An input stream of the extension resource this patch uses.
  * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
  * @param executeBlock The execution block of the patch.
  * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
  * in reverse order of execution.
- * @param classLoader The [ClassLoader] to use for reading the extension from the resources.
  *
  * @constructor Create a new bytecode patch.
  */
@@ -109,10 +109,9 @@ class BytecodePatch internal constructor(
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
     val fingerprints: Set<Fingerprint>,
-    val extension: String?,
+    val extension: InputStream?,
     executeBlock: Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit,
     finalizeBlock: Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit,
-    val classLoader: ClassLoader?,
 ) : Patch<BytecodePatchContext>(
     name,
     description,
@@ -124,13 +123,7 @@ class BytecodePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
-        if (extension != null) {
-            mergeExtension(
-                classLoader!!.getResourceAsStream(extension)?.readAllBytes()
-                    ?: throw PatchException("Extension resource \"$extension\" not found"),
-            )
-        }
-
+        extension?.let(::merge)
         fingerprints.forEach { it.match(this) }
 
         execute(this)
@@ -336,9 +329,8 @@ sealed class PatchBuilder<C : PatchContext<*>>(
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
  * @property fingerprints The fingerprints that are resolved before the patch is executed.
- * @property extension The name of the extension resource this patch uses.
+ * @property extension An input stream of the extension resource this patch uses.
  * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
- * @property classLoader The [ClassLoader] to use for reading the extension from the resources.
  *
  * @constructor Create a new [BytecodePatchBuilder] builder.
  */
@@ -351,20 +343,23 @@ class BytecodePatchBuilder internal constructor(
 
     /**
      * Add the fingerprint to the patch.
+     *
+     * @return A wrapper for the fingerprint with the ability to delegate the match to the fingerprint.
      */
-    operator fun Fingerprint.invoke() = apply {
-        fingerprints.add(this)
-    }
+    operator fun Fingerprint.invoke() = InvokedFingerprint(also { fingerprints.add(it) })
 
-    operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>) = match
-        ?: throw PatchException("Cannot delegate unresolved fingerprint result to ${property.name}.")
+    class InvokedFingerprint(private val fingerprint: Fingerprint) {
+        // The reason getValue isn't extending the Fingerprint class is
+        // because delegating makes only sense if the fingerprint was previously added to the patch by invoking it.
+        // It may be likely to forget invoking it. By wrapping the fingerprint into this class,
+        // the compiler will throw an error if the fingerprint was not invoked if attempting to delegate the match.
+        operator fun getValue(nothing: Nothing?, property: KProperty<*>) = fingerprint.match
+            ?: throw PatchException("No fingerprint match to delegate to ${property.name}.")
+    }
 
     // Must be internal for the inlined function "extendWith".
     @PublishedApi
-    internal var extension: String? = null
-
-    @PublishedApi
-    internal var classLoader: ClassLoader? = null
+    internal var extension: InputStream? = null
 
     // Inlining is necessary to get the class loader that loaded the patch
     // to load the extension from the resources.
@@ -374,8 +369,8 @@ class BytecodePatchBuilder internal constructor(
      * @param extension The name of the extension resource.
      */
     inline fun extendWith(extension: String) = apply {
-        this.extension = extension
-        classLoader = object {}.javaClass.classLoader
+        this.extension = object {}.javaClass.classLoader.getResourceAsStream(extension)
+            ?: throw PatchException("Extension resource \"$extension\" not found")
     }
 
     override fun build() = BytecodePatch(
@@ -389,7 +384,6 @@ class BytecodePatchBuilder internal constructor(
         extension,
         executionBlock,
         finalizeBlock,
-        classLoader,
     )
 }
 

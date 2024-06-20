@@ -29,12 +29,12 @@ internal object PatchTest {
         val externalFingerprint = fingerprint {}
 
         val patch = bytecodePatch(name = "Test") {
-            val result by externalFingerprint()
-            val internalFingerprint = fingerprint {}
+            val externalFingerprintMatch by externalFingerprint()
+            val internalFingerprintMatch by fingerprint {}
 
             execute {
-                result.method
-                internalFingerprint.match
+                externalFingerprintMatch.method
+                internalFingerprintMatch.method
             }
         }
 

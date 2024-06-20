@@ -21,6 +21,7 @@ import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
 import java.io.Closeable
 import java.io.FileFilter
+import java.io.InputStream
 import java.util.*
 import java.util.logging.Logger
 
@@ -57,12 +58,16 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
-     * Merge the extension to [classes].
+     * Merge an extension to [classes].
+     *
+     * @param extensionInputStream The input stream of the extension to merge.
      */
-    internal fun mergeExtension(extension: ByteArray) {
+    internal fun merge(extensionInputStream: InputStream) {
+        val extension = extensionInputStream.readAllBytes()
+
         RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
             val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
-                logger.fine("Adding $classDef")
+                logger.fine("Adding class \"$classDef\"")
 
                 lookupMaps.classesByType[classDef.type] = classDef
                 classes += classDef
@@ -70,7 +75,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                 return@forEach
             }
 
-            logger.fine("$classDef exists. Adding missing methods and fields.")
+            logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
 
             existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
                 // If the class was merged, replace the original class with the merged class.

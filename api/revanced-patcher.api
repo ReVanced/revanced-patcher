@@ -18,9 +18,9 @@ public final class app/revanced/patcher/FingerprintBuilder {
 
 public final class app/revanced/patcher/FingerprintKt {
 	public static final fun fingerprint (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/Fingerprint;
-	public static final fun fingerprint (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/Fingerprint;
+	public static final fun fingerprint (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint;
 	public static synthetic fun fingerprint$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/Fingerprint;
-	public static synthetic fun fingerprint$default (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/Fingerprint;
+	public static synthetic fun fingerprint$default (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint;
 }
 
 public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
@@ -193,8 +193,7 @@ public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$Meth
 }
 
 public final class app/revanced/patcher/patch/BytecodePatch : app/revanced/patcher/patch/Patch {
-	public final fun getClassLoader ()Ljava/lang/ClassLoader;
-	public final fun getExtension ()Ljava/lang/String;
+	public final fun getExtension ()Ljava/io/InputStream;
 	public final fun getFingerprints ()Ljava/util/Set;
 	public fun toString ()Ljava/lang/String;
 }
@@ -202,12 +201,14 @@ public final class app/revanced/patcher/patch/BytecodePatch : app/revanced/patch
 public final class app/revanced/patcher/patch/BytecodePatchBuilder : app/revanced/patcher/patch/PatchBuilder {
 	public synthetic fun build$revanced_patcher ()Lapp/revanced/patcher/patch/Patch;
 	public final fun extendWith (Ljava/lang/String;)Lapp/revanced/patcher/patch/BytecodePatchBuilder;
-	public final fun getClassLoader ()Ljava/lang/ClassLoader;
-	public final fun getExtension ()Ljava/lang/String;
-	public final fun getValue (Lapp/revanced/patcher/Fingerprint;Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Match;
-	public final fun invoke (Lapp/revanced/patcher/Fingerprint;)Lapp/revanced/patcher/Fingerprint;
-	public final fun setClassLoader (Ljava/lang/ClassLoader;)V
-	public final fun setExtension (Ljava/lang/String;)V
+	public final fun getExtension ()Ljava/io/InputStream;
+	public final fun invoke (Lapp/revanced/patcher/Fingerprint;)Lapp/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint;
+	public final fun setExtension (Ljava/io/InputStream;)V
+}
+
+public final class app/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint {
+	public fun <init> (Lapp/revanced/patcher/Fingerprint;)V
+	public final fun getValue (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Match;
 }
 
 public final class app/revanced/patcher/patch/BytecodePatchContext : app/revanced/patcher/patch/PatchContext {
