@@ -24,7 +24,6 @@ tasks {
 
 repositories {
     mavenCentral()
-    mavenLocal()
     google()
     maven {
         // A repository must be specified for some reason. "registry" is a dummy.
