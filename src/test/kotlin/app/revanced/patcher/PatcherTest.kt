@@ -1,10 +1,7 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
-import app.revanced.patcher.patch.Patch
-import app.revanced.patcher.patch.PatchResult
-import app.revanced.patcher.patch.ResourcePatchContext
-import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.ProxyClassList
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
@@ -75,6 +72,81 @@ internal object PatcherTest {
     }
 
     @Test
+    fun `handles execution of patches correctly when exceptions occur`() {
+        val executed = mutableListOf<String>()
+
+        infix fun Patch<*>.produces(equals: List<String>) {
+            val patches = setOf(this)
+
+            patches()
+
+            assertEquals(equals, executed, "Expected patches to be executed in correct order.")
+
+            executed.clear()
+        }
+
+        // No patches execute successfully,
+        // because the dependency patch throws an exception inside the execute block.
+        bytecodePatch {
+            dependsOn(
+                bytecodePatch {
+                    execute { throw PatchException("1") }
+                    finalize { executed += "-2" }
+                },
+            )
+
+            execute { executed += "2" }
+            finalize { executed += "-1" }
+        } produces emptyList()
+
+        // The dependency patch is executed successfully,
+        // because only the dependant patch throws an exception inside the finalize block.
+        // Patches that depend on a failed patch should not be executed,
+        // but patches that are depended on by a failed patch should be executed.
+        bytecodePatch {
+            dependsOn(
+                bytecodePatch {
+                    execute { executed += "1" }
+                    finalize { executed += "-2" }
+                },
+            )
+
+            execute { throw PatchException("2") }
+            finalize { executed += "-1" }
+        } produces listOf("1", "-2")
+
+        // Because the finalize block of the dependency patch is executed after the finalize block of the dependant patch,
+        // the dependant patch executes successfully, but the dependency patch raises an exception in the finalize block.
+        bytecodePatch {
+            dependsOn(
+                bytecodePatch {
+                    execute { executed += "1" }
+                    finalize { throw PatchException("-2") }
+                },
+            )
+
+            execute { executed += "2" }
+            finalize { executed += "-1" }
+        } produces listOf("1", "2", "-1")
+
+        // The dependency patch is executed successfully,
+        // because the dependant patch raises an exception in the finalize block.
+        // Patches that depend on a failed patch should not be executed,
+        // but patches that are depended on by a failed patch should be executed.
+        bytecodePatch {
+            dependsOn(
+                bytecodePatch {
+                    execute { executed += "1" }
+                    finalize { executed += "-2" }
+                },
+            )
+
+            execute { executed += "2" }
+            finalize { throw PatchException("-1") }
+        } produces listOf("1", "2", "-2")
+    }
+
+    @Test
     fun `throws if unmatched fingerprint match is delegated`() {
         val patch = bytecodePatch {
             // Fingerprint can never match.
@@ -117,6 +189,7 @@ internal object PatcherTest {
             )
         }
     }
+
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
 
