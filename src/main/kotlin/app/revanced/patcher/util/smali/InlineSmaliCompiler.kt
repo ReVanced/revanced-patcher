@@ -1,5 +1,6 @@
 package app.revanced.patcher.util.smali
 
+import app.revanced.patcher.extensions.InstructionExtensions.instructions
 import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcodes
@@ -13,7 +14,7 @@ import org.antlr.runtime.CommonTokenStream
 import org.antlr.runtime.TokenSource
 import org.antlr.runtime.tree.CommonTreeNodeStream
 import java.io.InputStreamReader
-import java.util.Locale
+import java.util.*
 
 private const val METHOD_TEMPLATE = """
     .class LInlineCompiler;
@@ -64,7 +65,7 @@ class InlineSmaliCompiler {
             val dexGen = smaliTreeWalker(treeStream)
             dexGen.setDexBuilder(DexBuilder(Opcodes.getDefault()))
             val classDef = dexGen.smali_file()
-            return classDef.methods.first().implementation!!.instructions.map { it as BuilderInstruction }
+            return classDef.methods.first().instructions.map { it as BuilderInstruction }
         }
     }
 }

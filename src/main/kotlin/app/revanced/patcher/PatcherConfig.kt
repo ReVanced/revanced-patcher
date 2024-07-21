@@ -1,6 +1,6 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.data.ResourceContext
+import app.revanced.patcher.patch.ResourcePatchContext
 import brut.androlib.Config
 import java.io.File
 import java.util.logging.Logger
@@ -27,9 +27,9 @@ class PatcherConfig(
     /**
      * The mode to use for resource decoding and compiling.
      *
-     * @see ResourceContext.ResourceMode
+     * @see ResourcePatchContext.ResourceMode
      */
-    internal var resourceMode = ResourceContext.ResourceMode.NONE
+    internal var resourceMode = ResourcePatchContext.ResourceMode.NONE
 
     /**
      * The configuration for decoding and compiling resources.

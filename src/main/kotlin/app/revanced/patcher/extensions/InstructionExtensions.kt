@@ -9,6 +9,8 @@ import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
 import com.android.tools.smali.dexlib2.builder.Label
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.builder.instruction.*
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.MethodImplementation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
 object InstructionExtensions {
@@ -30,7 +32,7 @@ object InstructionExtensions {
      * @param instructions The instructions to add.
      */
     fun MutableMethodImplementation.addInstructions(instructions: List<BuilderInstruction>) =
-        instructions.forEach { this.addInstruction(it) }
+        instructions.forEach { addInstruction(it) }
 
     /**
      * Remove instructions from a method at the given index.
@@ -178,8 +180,8 @@ object InstructionExtensions {
                     if (compiledInstruction !is BuilderOffsetInstruction) return@forEachIndexed
 
                     /**
-                     * Creates a new label for the instruction
-                     * and replaces it with the label of the [compiledInstruction] at [compiledInstructionIndex].
+                     * Create a new label for the instruction
+                     * and replace it with the label of the [compiledInstruction] at [compiledInstructionIndex].
                      */
                     fun Instruction.makeNewLabel() {
                         fun replaceOffset(
@@ -316,6 +318,24 @@ object InstructionExtensions {
      * @param index The index to get the instruction at.
      * @return The instruction.
      */
+    fun MethodImplementation.getInstruction(index: Int) = instructions.elementAt(index)
+
+    /**
+     * Get an instruction at the given index.
+     *
+     * @param index The index to get the instruction at.
+     * @param T The type of instruction to return.
+     * @return The instruction.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T> MethodImplementation.getInstruction(index: Int): T = getInstruction(index) as T
+
+    /**
+     * Get an instruction at the given index.
+     *
+     * @param index The index to get the instruction at.
+     * @return The instruction.
+     */
     fun MutableMethodImplementation.getInstruction(index: Int): BuilderInstruction = instructions[index]
 
     /**
@@ -331,9 +351,24 @@ object InstructionExtensions {
     /**
      * Get an instruction at the given index.
      * @param index The index to get the instruction at.
+     * @return The instruction or null if the method has no implementation.
+     */
+    fun Method.getInstructionOrNull(index: Int): Instruction? = implementation?.getInstruction(index)
+
+    /**
+     * Get an instruction at the given index.
+     * @param index The index to get the instruction at.
      * @return The instruction.
      */
-    fun MutableMethod.getInstruction(index: Int): BuilderInstruction = implementation!!.getInstruction(index)
+    fun Method.getInstruction(index: Int): Instruction = getInstructionOrNull(index)!!
+
+    /**
+     * Get an instruction at the given index.
+     * @param index The index to get the instruction at.
+     * @param T The type of instruction to return.
+     * @return The instruction or null if the method has no implementation.
+     */
+    fun <T> Method.getInstructionOrNull(index: Int): T? = implementation?.getInstruction<T>(index)
 
     /**
      * Get an instruction at the given index.
@@ -341,11 +376,59 @@ object InstructionExtensions {
      * @param T The type of instruction to return.
      * @return The instruction.
      */
-    fun <T> MutableMethod.getInstruction(index: Int): T = implementation!!.getInstruction<T>(index)
+    fun <T> Method.getInstruction(index: Int): T = getInstructionOrNull<T>(index)!!
 
     /**
-     * Get the instructions of a method.
+     * Get an instruction at the given index.
+     * @param index The index to get the instruction at.
+     * @return The instruction or null if the method has no implementation.
+     */
+    fun MutableMethod.getInstructionOrNull(index: Int): BuilderInstruction? = implementation?.getInstruction(index)
+
+    /**
+     * Get an instruction at the given index.
+     * @param index The index to get the instruction at.
+     * @return The instruction.
+     */
+    fun MutableMethod.getInstruction(index: Int): BuilderInstruction = getInstructionOrNull(index)!!
+
+    /**
+     * Get an instruction at the given index.
+     * @param index The index to get the instruction at.
+     * @param T The type of instruction to return.
+     * @return The instruction or null if the method has no implementation.
+     */
+    fun <T> MutableMethod.getInstructionOrNull(index: Int): T? = implementation?.getInstruction<T>(index)
+
+    /**
+     * Get an instruction at the given index.
+     * @param index The index to get the instruction at.
+     * @param T The type of instruction to return.
+     * @return The instruction.
+     */
+    fun <T> MutableMethod.getInstruction(index: Int): T = getInstructionOrNull<T>(index)!!
+
+    /**
+     * The instructions of a method.
+     * @return The instructions or null if the method has no implementation.
+     */
+    val Method.instructionsOrNull: Iterable<Instruction>? get() = implementation?.instructions
+
+    /**
+     * The instructions of a method.
      * @return The instructions.
      */
-    fun MutableMethod.getInstructions(): MutableList<BuilderInstruction> = implementation!!.instructions
+    val Method.instructions: Iterable<Instruction> get() = instructionsOrNull!!
+
+    /**
+     * The instructions of a method.
+     * @return The instructions or null if the method has no implementation.
+     */
+    val MutableMethod.instructionsOrNull: MutableList<BuilderInstruction>? get() = implementation?.instructions
+
+    /**
+     * The instructions of a method.
+     * @return The instructions.
+     */
+    val MutableMethod.instructions: MutableList<BuilderInstruction> get() = instructionsOrNull!!
 }

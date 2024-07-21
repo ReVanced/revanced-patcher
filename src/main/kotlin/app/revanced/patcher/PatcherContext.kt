@@ -1,8 +1,8 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.data.BytecodeContext
-import app.revanced.patcher.data.ResourceContext
+import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.ResourcePatchContext
 import brut.androlib.apk.ApkInfo
 import brut.directory.ExtFile
 
@@ -19,22 +19,22 @@ class PatcherContext internal constructor(config: PatcherConfig) {
     val packageMetadata = PackageMetadata(ApkInfo(ExtFile(config.apkFile)))
 
     /**
-     * The map of [Patch]es associated by their [PatchClass].
+     * The set of [Patch]es.
      */
-    internal val executablePatches = mutableMapOf<PatchClass, Patch<*>>()
+    internal val executablePatches = mutableSetOf<Patch<*>>()
 
     /**
-     * The map of all [Patch]es and their dependencies associated by their [PatchClass].
+     * The set of all [Patch]es and their dependencies.
      */
-    internal val allPatches = mutableMapOf<PatchClass, Patch<*>>()
+    internal val allPatches = mutableSetOf<Patch<*>>()
 
     /**
-     * A context for the patcher containing the current state of the resources.
+     * The context for patches containing the current state of the resources.
      */
-    internal val resourceContext = ResourceContext(packageMetadata, config)
+    internal val resourceContext = ResourcePatchContext(packageMetadata, config)
 
     /**
-     * A context for the patcher containing the current state of the bytecode.
+     * The context for patches containing the current state of the bytecode.
      */
-    internal val bytecodeContext = BytecodeContext(config)
+    internal val bytecodeContext = BytecodePatchContext(config)
 }
