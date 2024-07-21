@@ -24,7 +24,6 @@ tasks {
 
 repositories {
     mavenCentral()
-    mavenLocal()
     google()
     maven {
         // A repository must be specified for some reason. "registry" is a dummy.
@@ -49,8 +48,8 @@ dependencies {
         // Exclude, otherwise the org.w3c.dom API breaks.
         exclude(group = "xerces", module = "xmlParserAPIs")
     }
-
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.mockk)
 }
 
 kotlin {

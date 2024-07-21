@@ -98,7 +98,8 @@ Throughout the documentation, [ReVanced Patches](https://github.com/revanced/rev
 3. Open the project in your IDE
 
 > [!TIP]
-> It is a good idea to set up a complete development environment for ReVanced, so that you can also test your patches by following the [ReVanced documentation](https://github.com/ReVanced/revanced-documentation).
+> It is a good idea to set up a complete development environment for ReVanced, so that you can also test your patches
+> by following the [ReVanced documentation](https://github.com/ReVanced/revanced-documentation).
 
 ## ⏭️ What's next
 

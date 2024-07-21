@@ -1,11 +1,10 @@
-package app.revanced.patcher.data
+package app.revanced.patcher.patch
 
 import app.revanced.patcher.InternalApi
 import app.revanced.patcher.PackageMetadata
 import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.util.Document
-import app.revanced.patcher.util.DomFileEditor
 import brut.androlib.AaptInvoker
 import brut.androlib.ApkDecoder
 import brut.androlib.apk.UsesFramework
@@ -15,32 +14,27 @@ import brut.androlib.res.decoder.AndroidManifestResourceParser
 import brut.androlib.res.decoder.XmlPullStreamDecoder
 import brut.androlib.res.xml.ResXmlPatcher
 import brut.directory.ExtFile
-import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import java.util.logging.Logger
 
 /**
- * A context for the patcher containing the current state of the resources.
+ * A context for patches containing the current state of resources.
  *
  * @param packageMetadata The [PackageMetadata] of the apk file.
  * @param config The [PatcherConfig] used to create this context.
  */
-class ResourceContext internal constructor(
+class ResourcePatchContext internal constructor(
     private val packageMetadata: PackageMetadata,
     private val config: PatcherConfig,
-) : Context<PatcherResult.PatchedResources?>, Iterable<File> {
-    private val logger = Logger.getLogger(ResourceContext::class.java.name)
+) : PatchContext<PatcherResult.PatchedResources?> {
+    private val logger = Logger.getLogger(ResourcePatchContext::class.java.name)
 
     /**
      * Read and write documents in the [PatcherConfig.apkFiles].
      */
     val document = DocumentOperatable()
-
-    @Deprecated("Use document instead.")
-    @Suppress("DEPRECATION")
-    val xmlEditor = XmlFileHolder()
 
     /**
      * Predicate to delete resources from [PatcherConfig.apkFiles].
@@ -155,7 +149,7 @@ class ResourceContext internal constructor(
                 // Excluded because present in resources.other.
                 // TODO: We are reusing config.apkFiles as a temporarily directory for extracting resources.
                 //  This is not ideal as it could conflict with files such as the ones that we filter here.
-                //  The problem is that ResourceContext#get returns a File relative to config.apkFiles,
+                //  The problem is that ResourcePatchContext#get returns a File relative to config.apkFiles,
                 //  and we need to extract files to that directory.
                 //  A solution would be to use config.apkFiles as the working directory for the patching process.
                 //  Once all patches have been executed, we can move the decoded resources to a new directory.
@@ -213,12 +207,6 @@ class ResourceContext internal constructor(
      */
     fun stageDelete(shouldDelete: (String) -> Boolean) = deleteResources.add(shouldDelete)
 
-    @Deprecated("Use get(String, Boolean) instead.", ReplaceWith("get(path, false)"))
-    operator fun get(path: String) = get(path, false)
-
-    @Deprecated("Use get(String, Boolean) instead.")
-    override fun iterator(): Iterator<File> = config.apkFiles.listFiles()!!.iterator()
-
     /**
      * How to handle resources decoding and compiling.
      */
@@ -243,18 +231,6 @@ class ResourceContext internal constructor(
     inner class DocumentOperatable {
         operator fun get(inputStream: InputStream) = Document(inputStream)
 
-        @Suppress("DEPRECATION")
-        operator fun get(path: String) = Document(this@ResourceContext[path])
-    }
-
-    @Deprecated("Use DocumentOperatable instead.")
-    inner class XmlFileHolder {
-        @Suppress("DEPRECATION")
-        operator fun get(inputStream: InputStream) = DomFileEditor(inputStream)
-
-        @Suppress("DEPRECATION")
-        operator fun get(path: String): DomFileEditor {
-            return DomFileEditor(this@ResourceContext[path])
-        }
+        operator fun get(path: String) = Document(this@ResourcePatchContext[path])
     }
 }

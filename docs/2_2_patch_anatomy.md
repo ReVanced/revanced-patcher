@@ -64,145 +64,186 @@ Learn the API to create patches using ReVanced Patcher.
 
 ## ⛳️ Example patch
 
-Throughout the documentation, the following example will be used to demonstrate the concepts of patches:
+The following example patch disables ads in an app.  
+In the following sections, each part of the patch will be explained in detail.
 
 ```kt
 package app.revanced.patches.ads
 
-@Patch(
+val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
     description = "Disable ads in the app.",
-    dependencies = [DisableAdsResourcePatch::class],
-    compatiblePackages = [CompatiblePackage("com.some.app", ["1.3.0"])]
-)
-object DisableAdsPatch : BytecodePatch(
-    setOf(ShowAdsFingerprint)
-) {
-    override fun execute(context: BytecodeContext) {
-        ShowAdsFingerprint.result?.let { result ->
-            result.mutableMethod.addInstructions(
-                0,
-                """
-                    # Return false.
-                    const/4 v0, 0x0
-                    return v0
-                """
-            )
-        } ?: throw PatchException("ShowAdsFingerprint not found")
+) { 
+    compatibleWith("com.some.app"("1.0.0"))
+    
+    // Resource patch disables ads by patching resource files.
+    dependsOn(disableAdsResourcePatch)
+
+    // Precompiled DEX file to be merged into the patched app.
+    extendWith("disable-ads.rve")
+
+    // Fingerprint to find the method to patch.
+    val showAdsMatch by showAdsFingerprint {
+        // More about fingerprints on the next page of the documentation.
+    }
+    
+    // Business logic of the patch to disable ads in the app.
+    execute {
+        // In the method that shows ads,
+        // call DisableAdsPatch.shouldDisableAds() from the extension (precompiled DEX file)
+        // to enable or disable ads.
+        showAdsMatch.mutableMethod.addInstructions(
+            0,
+            """
+                invoke-static {}, LDisableAdsPatch;->shouldDisableAds()Z
+                move-result v0
+                return v0
+            """
+        )
     }
 }
 ```
 
-## 🔎 Breakdown
+> [!TIP]
+> To see real-world examples of patches,
+> check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
 
-The example patch consists of the following parts:
+## 🧩 Patch API
 
-### 📝 Patch annotation
+### ⚙️ Patch options
+
+Patches can have options to get and set before a patch is executed.
+Options are useful for making patches configurable.
+After loading the patches using `PatchLoader`, options can be set for a patch.
+Multiple types are already inbuilt in ReVanced Patcher and are supported by any application that uses ReVanced Patcher.
+
+To define an option, use available `option` functions:
 
 ```kt
-@Patch(
-    name = "Disable ads",
-    description = "Disable ads in the app.",
-    dependencies = [DisableAdsResourcePatch::class],
-    compatiblePackages = [CompatiblePackage("com.some.app", ["1.3.0"])]
-)
-```
+val patch = bytecodePatch(name = "Patch") {
+    // Add an inbuilt option and delegate it to a property.
+    val value by stringOption(key = "option")
 
-The `@Patch` annotation is used to provide metadata about the patch.
-
-Notable annotation parameters are:
-
-- `name`: The name of the patch. This is used as an identifier for the patch.
-  If this parameter is not set, `PatchBundleLoader` will not load the patch.
-  Other patches can still use this patch as a dependency
-- `description`: A description of the patch. Can be unset if the name is descriptive enough
-- `dependencies`: A set of patches which the patch depends on. The patches in this set will be executed before this patch. If a dependency patch raises an exception, this patch will not be executed; subsquently, other patches that depend on this patch will not be executed.
-- `compatiblePackages`: A set of `CompatiblePackage` objects. Each `CompatiblePackage` object contains the package name and a set of compatible version names. This parameter can specify the packages and versions the patch is compatible with. Patches can still execute on incompatible packages, but it is recommended to use this parameter to list known compatible packages
-  - If unset, it is implied that the patch is compatible with all packages
-  - If the set of versions is unset, it is implied that the patch is compatible with all versions of the package
-  - If the set of versions is empty, it is implied that the patch is not compatible with any version of the package. This can be useful, for example, to prevent a patch from executing on specific packages that are known to be incompatible
-
-> [!WARNING]
-> Circular dependencies are not allowed. If a patch depends on another patch, the other patch cannot depend on the first patch.
-
-> [!NOTE]
-> The `@Patch` annotation is optional. If the patch does not require any metadata, it can be omitted.
-> If the patch is only used as a dependency, the metadata, such as the `compatiblePackages` parameter, has no effect, as every dependency patch inherits the compatible packages of the patches that depend on it.
-
-> [!TIP]
-> An abstract patch class can be annotated with `@Patch`.
-> Patches extending off the abstract patch class will inherit the metadata of the abstract patch class.
-
-> [!TIP]
-> Instead of the `@Patch` annotation, the superclass's constructor can be used. This is useful in the example scenario where you want to create an abstract patch class.
->
-> Example:
->
-> ```kt
-> abstract class AbstractDisableAdsPatch(
->     fingerprints: Set<Fingerprint>
-> ) : BytecodePatch(
->     name = "Disable ads",
->     description = "Disable ads in the app.",
->     fingerprints
-> ) {
->   // ...
-> }
-> ```
->
-> Remember that this constructor has precedence over the `@Patch` annotation.
-
-### 🏗️ Patch class
-
-```kt
-object DisableAdsPatch : BytecodePatch( /* Parameters */ ) {
-  // ...
+    // Add an option with a custom type and delegate it to a property.
+    val string by option<String>(key = "string")
+    
+    execute {
+        println(value)
+        println(string)
+    }
 }
 ```
 
-Each patch class extends off a base class that implements the `Patch` interface.
-The interface requires the `execute` method to be implemented.
-Depending on which base class is extended, the patch can modify different parts of the APK as described in [🧩 Introduction to ReVanced Patches](2_introduction_to_patches.md).
-
-> [!TIP]
-> A patch is usually a singleton object, meaning only one patch instance exists in the JVM.
-> Because dependencies are executed before the patch itself, a patch can rely on the state of the dependency patch.
-> This is useful in the example scenario, where the `DisableAdsPatch` depends on the `DisableAdsResourcePatch`.
-> The `DisableAdsResourcePatch` can, for example, be used to read the decoded resources of the app and provide the `DisableAdsPatch` with the necessary information to disable ads because the `DisableAdsResourcePatch` is executed before the `DisableAdsPatch` and is a singleton object.
-
-### 🏁 The `execute` function
-
-The `execute` function is declared in the `Patch` interface and needs to be implemented.
-The `execute` function receives an instance of a context object that provides access to the APK. The patch can use this context to modify the APK as described in [🧩 Introduction to ReVanced Patches](2_introduction_to_patches.md).
-
-In the current example, the patch adds instructions at the beginning of a method implementation in the Dalvik VM bytecode. The added instructions return `false` to disable ads in the current example:
+Options of a patch can be set after loading the patches with `PatchLoader` by obtaining the instance for the patch:
 
 ```kt
-val result = LoadAdsFingerprint.result
-  ?: throw PatchException("LoadAdsFingerprint not found")
-
-result.mutableMethod.addInstructions(
-    0,
-    """
-        # Return false.
-        const/4 v0, 0x0
-        return v0
-    """
-)
+loadPatchesJar(patches).apply {
+    // Type is checked at runtime.
+    first { it.name == "Patch" }.options["option"] = "Value"
+}
 ```
 
+The type of an option can be obtained from the `type` property of the option:
+
+```kt
+option.type // The KType of the option.
+```
+
+### 🧩 Extensions
+
+An extension is a precompiled DEX file that is merged into the patched app before a patch is executed.
+While patches are compile-time constructs, extensions are runtime constructs
+that extend the patched app with additional classes.
+
+Assume you want to add a complex feature to an app that would need multiple classes and methods:
+
+```java
+public class ComplexPatch {
+    public static void doSomething() {
+        // ...
+    }
+}
+```
+
+After compiling the above code as a DEX file, you can add the DEX file as a resource in the patches file
+and use it in a patch:
+
+```kt
+val patch = bytecodePatch(name = "Complex patch") {
+    extendWith("complex-patch.rve")
+    
+    val match by methodFingerprint()
+    
+    execute { 
+        match.mutableMethod.addInstructions(0, "invoke-static { }, LComplexPatch;->doSomething()V")
+    }
+}
+```
+
+ReVanced Patcher merges the classes from the extension into `context.classes` before executing the patch. 
+When the patch is executed, it can reference the classes and methods from the extension.
+
 > [!NOTE]
-> This patch uses a fingerprint to find the method and replaces the method's instructions with new instructions.
-> The fingerprint is resolved on the classes present in `BytecodeContext`.
-> Fingerprints will be explained in more detail on the next page.
+> 
+> The [ReVanced Patches template](https://github.com/ReVanced/revanced-patches-template) repository
+> is a template project to create patches and extensions.
 
 > [!TIP]
-> The patch can also raise any `Exception` or `Throwable` at any time to indicate that the patch failed to execute. A `PatchException` is recommended to be raised if the patch fails to execute.
-> If any patch depends on this patch, the dependent patch will not be executed, whereas other patches that do not depend on this patch can still be executed.
-> ReVanced Patcher will handle any exception raised by a patch.
+> To see real-world examples of extensions,
+> check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
 
-> [!TIP]
-> To see real-world examples of patches, check out the [ReVanced Patches](https://github.com/revanced/revanced-patches) repository.
+### ♻️ Finalization
+
+Patches can have a finalization block called after all patches have been executed, in reverse order of patch execution.
+The finalization block is called after all patches that depend on the patch have been executed.
+This is useful for doing post-processing tasks.
+A simple real-world example would be a patch that opens a resource file of the app for writing.
+Other patches that depend on this patch can write to the file, and the finalization block can close the file.
+
+```kt
+val patch = bytecodePatch(name = "Patch") { 
+    dependsOn(
+        bytecodePatch(name = "Dependency") { 
+            execute {
+                print("1")
+            }
+
+            finalize {
+                print("4")
+            }
+        }
+    )
+
+    execute {
+        print("2")
+    }
+
+    finalize {
+        print("3")
+    }
+}
+```
+
+Because `Patch` depends on `Dependency`, first `Dependency` is executed, then `Patch`.
+Finalization blocks are called in reverse order of patch execution, which means,
+first, the finalization block of `Patch`, then the finalization block of `Dependency` is called.
+The output after executing the patch above would be `1234`.
+The same order is followed for multiple patches depending on the patch.
+
+## 💡 Additional tips
+
+- When using ´PatchLoader` to load patches, only patches with a name are loaded.
+  Refer to the inline documentation of `PatchLoader` for detailed information.
+- Patches can depend on others. Dependencies are executed first.
+  The dependent patch will not be executed if a dependency raises an exception while executing.
+- A patch can declare compatibility with specific packages and versions,
+  but patches can still be executed on any package or version.
+  It is recommended to declare compatibility to present known compatible packages and versions.
+   - If `compatibleWith` is not used, the patch is treated as compatible with any package
+- If a package is specified with no versions, the patch is compatible with any version of the package
+- If an empty array of versions is specified, the patch is not compatible with any version of the package.
+    This is useful for declaring incompatibility with a specific package.
+- A patch can raise a `PatchException` at any time of execution to indicate that the patch failed to execute.
 
 ## ⏭️ What's next
 

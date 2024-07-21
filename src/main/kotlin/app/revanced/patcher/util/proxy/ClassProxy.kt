@@ -8,6 +8,7 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
  *
  * A class proxy simply holds a reference to the original class
  * and allocates a mutable clone for the original class if needed.
+ *
  * @param immutableClass The class to proxy.
  */
 class ClassProxy internal constructor(
