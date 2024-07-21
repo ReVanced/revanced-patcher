@@ -133,65 +133,6 @@ public final class app/revanced/patcher/extensions/InstructionExtensions {
 	public final fun replaceInstructions (Lcom/android/tools/smali/dexlib2/builder/MutableMethodImplementation;ILjava/util/List;)V
 }
 
-public final class app/revanced/patcher/fingerprint/MethodFingerprint {
-	public fun <init> ()V
-	public final fun getResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult;
-	public final fun resolve (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
-	public final fun resolve (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
-}
-
-public final class app/revanced/patcher/fingerprint/MethodFingerprintBuilder {
-	public fun <init> ()V
-	public final fun accessFlags (I)V
-	public final fun accessFlags ([Lcom/android/tools/smali/dexlib2/AccessFlags;)V
-	public final fun custom (Lkotlin/jvm/functions/Function2;)V
-	public final fun opcodes (Ljava/lang/String;)V
-	public final fun opcodes ([Lcom/android/tools/smali/dexlib2/Opcode;)V
-	public final fun parameters ([Ljava/lang/String;)V
-	public final fun returns (Ljava/lang/String;)V
-	public final fun strings ([Ljava/lang/String;)V
-}
-
-public final class app/revanced/patcher/fingerprint/MethodFingerprintKt {
-	public static final fun methodFingerprint (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
-	public static final fun methodFingerprint (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
-	public static synthetic fun methodFingerprint$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
-	public static synthetic fun methodFingerprint$default (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/fingerprint/MethodFingerprint;
-	public static final fun resolve (Ljava/lang/Iterable;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;)V
-}
-
-public final class app/revanced/patcher/fingerprint/MethodFingerprintResult {
-	public fun <init> (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;Lapp/revanced/patcher/patch/BytecodePatchContext;)V
-	public final fun getClassDef ()Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun getMethod ()Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun getMutableClass ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
-	public final fun getMutableMethod ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
-	public final fun getScanResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult;
-}
-
-public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult {
-	public fun <init> (Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;)V
-	public final fun getPatternScanResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult;
-	public final fun getStringsScanResult ()Lapp/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult;
-}
-
-public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$PatternScanResult {
-	public fun <init> (II)V
-	public final fun getEndIndex ()I
-	public final fun getStartIndex ()I
-}
-
-public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult {
-	public fun <init> (Ljava/util/List;)V
-	public final fun getMatches ()Ljava/util/List;
-}
-
-public final class app/revanced/patcher/fingerprint/MethodFingerprintResult$MethodFingerprintScanResult$StringsScanResult$StringMatch {
-	public fun <init> (Ljava/lang/String;I)V
-	public final fun getIndex ()I
-	public final fun getString ()Ljava/lang/String;
-}
-
 public final class app/revanced/patcher/patch/BytecodePatch : app/revanced/patcher/patch/Patch {
 	public final fun getExtension ()Ljava/io/InputStream;
 	public final fun getFingerprints ()Ljava/util/Set;

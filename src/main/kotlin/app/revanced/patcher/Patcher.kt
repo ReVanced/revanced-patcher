@@ -42,11 +42,11 @@ class Patcher(private val config: PatcherConfig) : Closeable {
         fun Patch<*>.anyRecursively(predicate: (Patch<*>) -> Boolean): Boolean =
             predicate(this) || dependencies.any { dependency -> dependency.anyRecursively(predicate) }
 
-        context.allPatches.let { patches ->
+        context.allPatches.let { allPatches ->
             // Check, if what kind of resource mode is required.
-            config.resourceMode = if (patches.any { patch -> patch.anyRecursively { it is ResourcePatch } }) {
+            config.resourceMode = if (allPatches.any { patch -> patch.anyRecursively { it is ResourcePatch } }) {
                 ResourcePatchContext.ResourceMode.FULL
-            } else if (patches.any { patch -> patch.anyRecursively { it is RawResourcePatch } }) {
+            } else if (allPatches.any { patch -> patch.anyRecursively { it is RawResourcePatch } }) {
                 ResourcePatchContext.ResourceMode.RAW_ONLY
             } else {
                 ResourcePatchContext.ResourceMode.NONE
@@ -76,7 +76,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
                     return PatchResult(
                         this,
                         PatchException(
-                            "The patch \"$this\" depends on \"$dependency\" which raised an exception:\n${it.stackTraceToString()}",
+                            "The patch \"$this\" depends on \"$dependency\", which raised an exception:\n${it.stackTraceToString()}",
                         ),
                     )
                 }
@@ -106,13 +106,17 @@ class Patcher(private val config: PatcherConfig) : Closeable {
         context.executablePatches.sortedBy { it.name }.forEach { patch ->
             val patchResult = patch.execute(executedPatches)
 
-            // TODO: Only emit, if the patch has no finalizerBlock.
-            //  if (patchResult.exception == null && patch.finalizerBlock != null) return@forEach
-
-            emit(patchResult)
+            // If an exception occurred or the patch has no finalize block, emit the result.
+            if (patchResult.exception != null || patch.finalizeBlock == null) {
+                emit(patchResult)
+            }
         }
 
-        executedPatches.values.filter { it.exception == null }.asReversed().forEach { executionResult ->
+        val succeededPatchesWithFinalizeBlock = executedPatches.values.filter {
+            it.exception == null && it.patch.finalizeBlock != null
+        }
+
+        succeededPatchesWithFinalizeBlock.asReversed().forEach { executionResult ->
             val patch = executionResult.patch
 
             val result =
@@ -136,7 +140,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
                         ),
                     ),
                 )
-            } else if (patch.name != null) {
+            } else if (patch in context.executablePatches) {
                 emit(result)
             }
         }

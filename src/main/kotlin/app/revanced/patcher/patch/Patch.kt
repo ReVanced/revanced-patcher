@@ -44,7 +44,9 @@ sealed class Patch<C : PatchContext<*>>(
     val compatiblePackages: Set<Package>?,
     options: Set<Option<*>>,
     private val executeBlock: Patch<C>.(C) -> Unit,
-    private val finalizeBlock: Patch<C>.(C) -> Unit,
+    // Must be internal and nullable, so that Patcher.invoke can check,
+    // if a patch has a finalizing block in order to not emit it twice.
+    internal var finalizeBlock: (Patch<C>.(C) -> Unit)?,
 ) {
     val options = Options(options)
 
@@ -76,7 +78,9 @@ sealed class Patch<C : PatchContext<*>>(
      *
      * @param context The [PatchContext] to finalize the patch with.
      */
-    fun finalize(context: C) = finalizeBlock(context)
+    fun finalize(context: C) {
+        finalizeBlock?.invoke(this, context)
+    }
 
     override fun toString() = name ?: "Patch"
 }
@@ -111,7 +115,7 @@ class BytecodePatch internal constructor(
     val fingerprints: Set<Fingerprint>,
     val extension: InputStream?,
     executeBlock: Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit,
-    finalizeBlock: Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit,
+    finalizeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit)?,
 ) : Patch<BytecodePatchContext>(
     name,
     description,
@@ -159,7 +163,7 @@ class RawResourcePatch internal constructor(
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
     executeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
-    finalizeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
+    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit)?,
 ) : Patch<ResourcePatchContext>(
     name,
     description,
@@ -202,7 +206,7 @@ class ResourcePatch internal constructor(
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
     executeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
-    finalizeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
+    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit)?,
 ) : Patch<ResourcePatchContext>(
     name,
     description,
@@ -248,7 +252,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected val options = mutableSetOf<Option<*>>()
 
     protected var executionBlock: (Patch<C>.(C) -> Unit) = { }
-    protected var finalizeBlock: (Patch<C>.(C) -> Unit) = { }
+    protected var finalizeBlock: (Patch<C>.(C) -> Unit)? = null
 
     /**
      * Add an option to the patch.
