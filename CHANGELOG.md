@@ -1,3 +1,15 @@
+# [20.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.3.1...v20.0.0-dev.1) (2024-07-22)
+
+
+### Features
+
+* Convert APIs to Kotlin DSL ([#298](https://github.com/ReVanced/revanced-patcher/issues/298)) ([3f9cbd2](https://github.com/ReVanced/revanced-patcher/commit/3f9cbd2408fa085690a062b357e11e42c51e7f8b))
+
+
+### BREAKING CHANGES
+
+* Various old APIs are removed, and DSL APIs are added instead.
+
 ## [19.3.1](https://github.com/ReVanced/revanced-patcher/compare/v19.3.0...v19.3.1) (2024-02-14)
 
 ## [19.3.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.3.0...v19.3.1-dev.1) (2024-02-14)
