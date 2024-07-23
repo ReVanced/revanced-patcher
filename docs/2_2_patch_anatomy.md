@@ -115,9 +115,9 @@ val disableAdsPatch = bytecodePatch(
 Patches can have options to get and set before a patch is executed.
 Options are useful for making patches configurable.
 After loading the patches using `PatchLoader`, options can be set for a patch.
-Multiple types are already inbuilt in ReVanced Patcher and are supported by any application that uses ReVanced Patcher.
+Multiple types are already built into ReVanced Patcher and are supported by any application that uses ReVanced Patcher.
 
-To define an option, use available `option` functions:
+To define an option, use the available `option` functions:
 
 ```kt
 val patch = bytecodePatch(name = "Patch") {
@@ -151,7 +151,7 @@ option.type // The KType of the option.
 
 ### 🧩 Extensions
 
-An extension is a precompiled DEX file that is merged into the patched app before a patch is executed.
+An extension is a precompiled DEX file merged into the patched app before a patch is executed.
 While patches are compile-time constructs, extensions are runtime constructs
 that extend the patched app with additional classes.
 
@@ -232,13 +232,13 @@ The same order is followed for multiple patches depending on the patch.
 
 ## 💡 Additional tips
 
-- When using ´PatchLoader` to load patches, only patches with a name are loaded.
+- When using `PatchLoader` to load patches, only patches with a name are loaded.
   Refer to the inline documentation of `PatchLoader` for detailed information.
 - Patches can depend on others. Dependencies are executed first.
   The dependent patch will not be executed if a dependency raises an exception while executing.
 - A patch can declare compatibility with specific packages and versions,
   but patches can still be executed on any package or version.
-  It is recommended to declare compatibility to present known compatible packages and versions.
+  It is recommended that compatibility is specified to present known compatible packages and versions.
    - If `compatibleWith` is not used, the patch is treated as compatible with any package
 - If a package is specified with no versions, the patch is compatible with any version of the package
 - If an empty array of versions is specified, the patch is not compatible with any version of the package.
