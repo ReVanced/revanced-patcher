@@ -232,7 +232,7 @@ The same order is followed for multiple patches depending on the patch.
 
 ## 💡 Additional tips
 
-- When using ´PatchLoader` to load patches, only patches with a name are loaded.
+- When using `PatchLoader` to load patches, only patches with a name are loaded.
   Refer to the inline documentation of `PatchLoader` for detailed information.
 - Patches can depend on others. Dependencies are executed first.
   The dependent patch will not be executed if a dependency raises an exception while executing.
