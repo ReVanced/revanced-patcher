@@ -8,17 +8,13 @@ class MutableBooleanEncodedValue(booleanEncodedValue: BooleanEncodedValue) :
     MutableEncodedValue {
     private var value = booleanEncodedValue.value
 
-    override fun getValue(): Boolean {
-        return this.value
-    }
+    override fun getValue(): Boolean = this.value
 
     fun setValue(value: Boolean) {
         this.value = value
     }
 
     companion object {
-        fun BooleanEncodedValue.toMutable(): MutableBooleanEncodedValue {
-            return MutableBooleanEncodedValue(this)
-        }
+        fun BooleanEncodedValue.toMutable(): MutableBooleanEncodedValue = MutableBooleanEncodedValue(this)
     }
 }

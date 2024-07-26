@@ -5,18 +5,16 @@ import com.android.tools.smali.dexlib2.base.value.BaseArrayEncodedValue
 import com.android.tools.smali.dexlib2.iface.value.ArrayEncodedValue
 import com.android.tools.smali.dexlib2.iface.value.EncodedValue
 
-class MutableArrayEncodedValue(arrayEncodedValue: ArrayEncodedValue) : BaseArrayEncodedValue(), MutableEncodedValue {
+class MutableArrayEncodedValue(arrayEncodedValue: ArrayEncodedValue) :
+    BaseArrayEncodedValue(),
+    MutableEncodedValue {
     private val _value by lazy {
         arrayEncodedValue.value.map { encodedValue -> encodedValue.toMutable() }.toMutableList()
     }
 
-    override fun getValue(): MutableList<out EncodedValue> {
-        return _value
-    }
+    override fun getValue(): MutableList<out EncodedValue> = _value
 
     companion object {
-        fun ArrayEncodedValue.toMutable(): MutableArrayEncodedValue {
-            return MutableArrayEncodedValue(this)
-        }
+        fun ArrayEncodedValue.toMutable(): MutableArrayEncodedValue = MutableArrayEncodedValue(this)
     }
 }

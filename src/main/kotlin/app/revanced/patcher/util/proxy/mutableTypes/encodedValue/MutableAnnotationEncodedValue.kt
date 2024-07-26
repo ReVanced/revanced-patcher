@@ -14,21 +14,15 @@ class MutableAnnotationEncodedValue(annotationEncodedValue: AnnotationEncodedVal
         annotationEncodedValue.elements.map { annotationElement -> annotationElement.toMutable() }.toMutableSet()
     }
 
-    override fun getType(): String {
-        return this.type
-    }
+    override fun getType(): String = this.type
 
     fun setType(type: String) {
         this.type = type
     }
 
-    override fun getElements(): MutableSet<out AnnotationElement> {
-        return _elements
-    }
+    override fun getElements(): MutableSet<out AnnotationElement> = _elements
 
     companion object {
-        fun AnnotationEncodedValue.toMutable(): MutableAnnotationEncodedValue {
-            return MutableAnnotationEncodedValue(this)
-        }
+        fun AnnotationEncodedValue.toMutable(): MutableAnnotationEncodedValue = MutableAnnotationEncodedValue(this)
     }
 }

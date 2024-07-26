@@ -8,17 +8,13 @@ class MutableDoubleEncodedValue(doubleEncodedValue: DoubleEncodedValue) :
     MutableEncodedValue {
     private var value = doubleEncodedValue.value
 
-    override fun getValue(): Double {
-        return this.value
-    }
+    override fun getValue(): Double = this.value
 
     fun setValue(value: Double) {
         this.value = value
     }
 
     companion object {
-        fun DoubleEncodedValue.toMutable(): MutableDoubleEncodedValue {
-            return MutableDoubleEncodedValue(this)
-        }
+        fun DoubleEncodedValue.toMutable(): MutableDoubleEncodedValue = MutableDoubleEncodedValue(this)
     }
 }

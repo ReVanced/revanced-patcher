@@ -9,17 +9,13 @@ class MutableMethodEncodedValue(methodEncodedValue: MethodEncodedValue) :
     MutableEncodedValue {
     private var value = methodEncodedValue.value
 
-    override fun getValue(): MethodReference {
-        return this.value
-    }
+    override fun getValue(): MethodReference = this.value
 
     fun setValue(value: MethodReference) {
         this.value = value
     }
 
     companion object {
-        fun MethodEncodedValue.toMutable(): MutableMethodEncodedValue {
-            return MutableMethodEncodedValue(this)
-        }
+        fun MethodEncodedValue.toMutable(): MutableMethodEncodedValue = MutableMethodEncodedValue(this)
     }
 }
