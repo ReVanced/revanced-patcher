@@ -85,6 +85,31 @@ sealed class Patch<C : PatchContext<*>>(
     override fun toString() = name ?: "Patch"
 }
 
+internal fun Patch<*>.anyRecursively(
+    visited: MutableSet<Patch<*>> = mutableSetOf(),
+    predicate: (Patch<*>) -> Boolean,
+): Boolean {
+    if (this in visited) return false
+
+    if (predicate(this)) return true
+
+    visited += this
+
+    return dependencies.any { it.anyRecursively(visited, predicate) }
+}
+
+internal fun Iterable<Patch<*>>.forEachRecursively(
+    visited: MutableSet<Patch<*>> = mutableSetOf(),
+    action: (Patch<*>) -> Unit,
+): Unit = forEach {
+    if (it in visited) return@forEach
+
+    visited += it
+    action(it)
+
+    it.dependencies.forEachRecursively(visited, action)
+}
+
 /**
  * A bytecode patch.
  *
@@ -127,7 +152,6 @@ class BytecodePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
-        extension?.let(::merge)
         fingerprints.forEach { it.match(this) }
 
         execute(this)
@@ -333,6 +357,16 @@ sealed class PatchBuilder<C : PatchContext<*>>(
 }
 
 /**
+ * Builds a [Patch].
+ *
+ * @param B The [PatchBuilder] to build the patch with.
+ * @param block The block to build the patch.
+ *
+ * @return The built [Patch].
+ */
+private fun <B : PatchBuilder<*>> B.buildPatch(block: B.() -> Unit = {}) = apply(block).build()
+
+/**
  * A [BytecodePatchBuilder] builder.
  *
  * @param name The name of the patch.
@@ -379,9 +413,10 @@ class BytecodePatchBuilder internal constructor(
      *
      * @param extension The name of the extension resource.
      */
+    @Suppress("NOTHING_TO_INLINE")
     inline fun extendWith(extension: String) = apply {
         this.extension = object {}.javaClass.classLoader.getResourceAsStream(extension)
-            ?: throw PatchException("Extension resource \"$extension\" not found")
+            ?: throw PatchException("Extension \"$extension\" not found")
     }
 
     override fun build() = BytecodePatch(
@@ -397,6 +432,24 @@ class BytecodePatchBuilder internal constructor(
         finalizeBlock,
     )
 }
+
+/**
+ * Create a new [BytecodePatch].
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [BytecodePatch].
+ */
+fun bytecodePatch(
+    name: String? = null,
+    description: String? = null,
+    use: Boolean = true,
+    block: BytecodePatchBuilder.() -> Unit = {},
+) = BytecodePatchBuilder(name, description, use).buildPatch(block) as BytecodePatch
 
 /**
  * A [RawResourcePatch] builder.
@@ -426,6 +479,23 @@ class RawResourcePatchBuilder internal constructor(
 }
 
 /**
+ * Create a new [RawResourcePatch].
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ * @return The created [RawResourcePatch].
+ */
+fun rawResourcePatch(
+    name: String? = null,
+    description: String? = null,
+    use: Boolean = true,
+    block: RawResourcePatchBuilder.() -> Unit = {},
+) = RawResourcePatchBuilder(name, description, use).buildPatch(block) as RawResourcePatch
+
+/**
  * A [ResourcePatch] builder.
  *
  * @param name The name of the patch.
@@ -451,51 +521,6 @@ class ResourcePatchBuilder internal constructor(
         finalizeBlock,
     )
 }
-
-/**
- * Builds a [Patch].
- *
- * @param B The [PatchBuilder] to build the patch with.
- * @param block The block to build the patch.
- *
- * @return The built [Patch].
- */
-private fun <B : PatchBuilder<*>> B.buildPatch(block: B.() -> Unit = {}) = apply(block).build()
-
-/**
- * Create a new [BytecodePatch].
- *
- * @param name The name of the patch.
- * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
- * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
- * @param block The block to build the patch.
- *
- * @return The created [BytecodePatch].
- */
-fun bytecodePatch(
-    name: String? = null,
-    description: String? = null,
-    use: Boolean = true,
-    block: BytecodePatchBuilder.() -> Unit = {},
-) = BytecodePatchBuilder(name, description, use).buildPatch(block) as BytecodePatch
-
-/**
- * Create a new [RawResourcePatch].
- *
- * @param name The name of the patch.
- * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
- * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
- * @param block The block to build the patch.
- * @return The created [RawResourcePatch].
- */
-fun rawResourcePatch(
-    name: String? = null,
-    description: String? = null,
-    use: Boolean = true,
-    block: RawResourcePatchBuilder.() -> Unit = {},
-) = RawResourcePatchBuilder(name, description, use).buildPatch(block) as RawResourcePatch
 
 /**
  * Create a new [ResourcePatch].
