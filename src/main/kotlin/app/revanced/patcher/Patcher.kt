@@ -39,9 +39,6 @@ class Patcher(private val config: PatcherConfig) : Closeable {
             patch.addRecursively()
         }
 
-        fun Patch<*>.anyRecursively(predicate: (Patch<*>) -> Boolean): Boolean =
-            predicate(this) || dependencies.any { dependency -> dependency.anyRecursively(predicate) }
-
         context.allPatches.let { allPatches ->
             // Check, if what kind of resource mode is required.
             config.resourceMode = if (allPatches.any { patch -> patch.anyRecursively { it is ResourcePatch } }) {
@@ -99,6 +96,17 @@ class Patcher(private val config: PatcherConfig) : Closeable {
             context.resourceContext.decodeResources(config.resourceMode)
         }
 
+        logger.info("Merging extensions")
+
+        context.executablePatches.forEachRecursively { patch ->
+            if (patch is BytecodePatch && patch.extension != null) {
+                context.bytecodeContext.merge(patch.extension)
+            }
+        }
+
+        // Initialize lookup maps.
+        context.bytecodeContext.lookupMaps
+
         logger.info("Executing patches")
 
         val executedPatches = LinkedHashMap<Patch<*>, PatchResult>()
@@ -146,7 +154,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
         }
     }
 
-    override fun close() = context.bytecodeContext.lookupMaps.close()
+    override fun close() = context.bytecodeContext.close()
 
     /**
      * Compile and save patched APK files.

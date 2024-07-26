@@ -31,7 +31,9 @@ import java.util.logging.Logger
  * @param config The [PatcherConfig] used to create this context.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class BytecodePatchContext internal constructor(private val config: PatcherConfig) : PatchContext<Set<PatcherResult.PatchedDexFile>> {
+class BytecodePatchContext internal constructor(private val config: PatcherConfig) :
+    PatchContext<Set<PatcherResult.PatchedDexFile>>,
+    Closeable {
     private val logger = Logger.getLogger(BytecodePatchContext::class.java.name)
 
     /**
@@ -58,6 +60,13 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
+     * A map for lookup by [merge].
+     */
+    internal val classesByType = mutableMapOf<String, ClassDef>().apply {
+        classes.forEach { classDef -> put(classDef.type, classDef) }
+    }
+
+    /**
      * Merge an extension to [classes].
      *
      * @param extensionInputStream The input stream of the extension to merge.
@@ -66,11 +75,11 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         val extension = extensionInputStream.readAllBytes()
 
         RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
-            val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
+            val existingClass = classesByType[classDef.type] ?: run {
                 logger.fine("Adding class \"$classDef\"")
 
-                lookupMaps.classesByType[classDef.type] = classDef
                 classes += classDef
+                classesByType[classDef.type] = classDef
 
                 return@forEach
             }
@@ -253,6 +262,12 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             methodsBySignature.clear()
             methodsByStrings.clear()
         }
+    }
+
+    override fun close() {
+        lookupMaps.close()
+        classesByType.clear()
+        classes.clear()
     }
 }
 
