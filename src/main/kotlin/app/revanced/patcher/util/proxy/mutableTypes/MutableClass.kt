@@ -7,7 +7,6 @@ import com.android.tools.smali.dexlib2.base.reference.BaseTypeReference
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.util.FieldUtil
 import com.android.tools.smali.dexlib2.util.MethodUtil
-import com.google.common.collect.Iterables
 
 class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
     // Class
@@ -23,13 +22,13 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
 
     // Methods
     private val _methods by lazy { classDef.methods.map { method -> method.toMutable() }.toMutableSet() }
-    private val _directMethods by lazy { Iterables.filter(_methods, MethodUtil.METHOD_IS_DIRECT).toMutableSet() }
-    private val _virtualMethods by lazy { Iterables.filter(_methods, MethodUtil.METHOD_IS_VIRTUAL).toMutableSet() }
+    private val _directMethods by lazy { _methods.filter { method -> MethodUtil.isDirect(method) }.toMutableSet() }
+    private val _virtualMethods by lazy { _methods.filter { method -> !MethodUtil.isDirect(method) }.toMutableSet() }
 
     // Fields
     private val _fields by lazy { classDef.fields.map { field -> field.toMutable() }.toMutableSet() }
-    private val _staticFields by lazy { Iterables.filter(_fields, FieldUtil.FIELD_IS_STATIC).toMutableSet() }
-    private val _instanceFields by lazy { Iterables.filter(_fields, FieldUtil.FIELD_IS_INSTANCE).toMutableSet() }
+    private val _staticFields by lazy { _fields.filter { field -> FieldUtil.isStatic(field) }.toMutableSet() }
+    private val _instanceFields by lazy { _fields.filter { field -> !FieldUtil.isStatic(field) }.toMutableSet() }
 
     fun setType(type: String) {
         this.type = type
