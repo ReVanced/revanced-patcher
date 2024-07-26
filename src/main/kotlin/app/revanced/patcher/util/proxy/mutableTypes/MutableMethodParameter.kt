@@ -5,7 +5,9 @@ import com.android.tools.smali.dexlib2.base.BaseMethodParameter
 import com.android.tools.smali.dexlib2.iface.MethodParameter
 
 // TODO: finish overriding all members if necessary
-class MutableMethodParameter(parameter: MethodParameter) : MethodParameter, BaseMethodParameter() {
+class MutableMethodParameter(parameter: MethodParameter) :
+    BaseMethodParameter(),
+    MethodParameter {
     private var type = parameter.type
     private var name = parameter.name
     private var signature = parameter.signature
@@ -13,25 +15,15 @@ class MutableMethodParameter(parameter: MethodParameter) : MethodParameter, Base
         parameter.annotations.map { annotation -> annotation.toMutable() }.toMutableSet()
     }
 
-    override fun getType(): String {
-        return type
-    }
+    override fun getType(): String = type
 
-    override fun getName(): String? {
-        return name
-    }
+    override fun getName(): String? = name
 
-    override fun getSignature(): String? {
-        return signature
-    }
+    override fun getSignature(): String? = signature
 
-    override fun getAnnotations(): MutableSet<MutableAnnotation> {
-        return _annotations
-    }
+    override fun getAnnotations(): MutableSet<MutableAnnotation> = _annotations
 
     companion object {
-        fun MethodParameter.toMutable(): MutableMethodParameter {
-            return MutableMethodParameter(this)
-        }
+        fun MethodParameter.toMutable(): MutableMethodParameter = MutableMethodParameter(this)
     }
 }

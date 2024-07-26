@@ -9,17 +9,13 @@ class MutableMethodHandleEncodedValue(methodHandleEncodedValue: MethodHandleEnco
     MutableEncodedValue {
     private var value = methodHandleEncodedValue.value
 
-    override fun getValue(): MethodHandleReference {
-        return this.value
-    }
+    override fun getValue(): MethodHandleReference = this.value
 
     fun setValue(value: MethodHandleReference) {
         this.value = value
     }
 
     companion object {
-        fun MethodHandleEncodedValue.toMutable(): MutableMethodHandleEncodedValue {
-            return MutableMethodHandleEncodedValue(this)
-        }
+        fun MethodHandleEncodedValue.toMutable(): MutableMethodHandleEncodedValue = MutableMethodHandleEncodedValue(this)
     }
 }

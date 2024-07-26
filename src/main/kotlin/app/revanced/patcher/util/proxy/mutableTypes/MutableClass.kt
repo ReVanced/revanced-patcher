@@ -8,7 +8,9 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.util.FieldUtil
 import com.android.tools.smali.dexlib2.util.MethodUtil
 
-class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
+class MutableClass(classDef: ClassDef) :
+    BaseTypeReference(),
+    ClassDef {
     // Class
     private var type = classDef.type
     private var sourceFile = classDef.sourceFile
@@ -46,57 +48,31 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
         this.superclass = superclass
     }
 
-    override fun getType(): String {
-        return type
-    }
+    override fun getType(): String = type
 
-    override fun getAccessFlags(): Int {
-        return accessFlags
-    }
+    override fun getAccessFlags(): Int = accessFlags
 
-    override fun getSourceFile(): String? {
-        return sourceFile
-    }
+    override fun getSourceFile(): String? = sourceFile
 
-    override fun getSuperclass(): String? {
-        return superclass
-    }
+    override fun getSuperclass(): String? = superclass
 
-    override fun getInterfaces(): MutableList<String> {
-        return _interfaces
-    }
+    override fun getInterfaces(): MutableList<String> = _interfaces
 
-    override fun getAnnotations(): MutableSet<MutableAnnotation> {
-        return _annotations
-    }
+    override fun getAnnotations(): MutableSet<MutableAnnotation> = _annotations
 
-    override fun getStaticFields(): MutableSet<MutableField> {
-        return _staticFields
-    }
+    override fun getStaticFields(): MutableSet<MutableField> = _staticFields
 
-    override fun getInstanceFields(): MutableSet<MutableField> {
-        return _instanceFields
-    }
+    override fun getInstanceFields(): MutableSet<MutableField> = _instanceFields
 
-    override fun getFields(): MutableSet<MutableField> {
-        return _fields
-    }
+    override fun getFields(): MutableSet<MutableField> = _fields
 
-    override fun getDirectMethods(): MutableSet<MutableMethod> {
-        return _directMethods
-    }
+    override fun getDirectMethods(): MutableSet<MutableMethod> = _directMethods
 
-    override fun getVirtualMethods(): MutableSet<MutableMethod> {
-        return _virtualMethods
-    }
+    override fun getVirtualMethods(): MutableSet<MutableMethod> = _virtualMethods
 
-    override fun getMethods(): MutableSet<MutableMethod> {
-        return _methods
-    }
+    override fun getMethods(): MutableSet<MutableMethod> = _methods
 
     companion object {
-        fun ClassDef.toMutable(): MutableClass {
-            return MutableClass(this)
-        }
+        fun ClassDef.toMutable(): MutableClass = MutableClass(this)
     }
 }
