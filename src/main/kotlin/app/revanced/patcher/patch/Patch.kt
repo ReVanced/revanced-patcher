@@ -268,7 +268,14 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      *
      * @param versions The versions of the package.
      */
-    operator fun String.invoke(vararg versions: String) = this to versions.toSet()
+    operator fun String.invoke(vararg versions: String) = invoke(versions.toSet())
+
+    /**
+     * Create a package a patch is compatible with.
+     *
+     * @param versions The versions of the package.
+     */
+    private operator fun String.invoke(versions: Set<String>? = null) = this to versions
 
     /**
      * Add packages the patch is compatible with.
@@ -358,7 +365,7 @@ class BytecodePatchBuilder internal constructor(
         // It may be likely to forget invoking it. By wrapping the fingerprint into this class,
         // the compiler will throw an error if the fingerprint was not invoked if attempting to delegate the match.
         operator fun getValue(nothing: Nothing?, property: KProperty<*>) = fingerprint.match
-            ?: throw PatchException("No fingerprint match to delegate to ${property.name}.")
+            ?: throw PatchException("No fingerprint match to delegate to \"${property.name}\".")
     }
 
     // Must be internal for the inlined function "extendWith".
