@@ -154,7 +154,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
         }
     }
 
-    override fun close() = context.bytecodeContext.close()
+    override fun close() = context.close()
 
     /**
      * Compile and save patched APK files.

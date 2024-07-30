@@ -67,7 +67,8 @@ public final class app/revanced/patcher/PatcherConfig {
 	public synthetic fun <init> (Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
-public final class app/revanced/patcher/PatcherContext {
+public final class app/revanced/patcher/PatcherContext : java/io/Closeable {
+	public fun close ()V
 	public final fun getPackageMetadata ()Lapp/revanced/patcher/PackageMetadata;
 }
 
@@ -152,9 +153,10 @@ public final class app/revanced/patcher/patch/BytecodePatchBuilder$InvokedFinger
 	public final fun getValue (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Match;
 }
 
-public final class app/revanced/patcher/patch/BytecodePatchContext : app/revanced/patcher/patch/PatchContext {
+public final class app/revanced/patcher/patch/BytecodePatchContext : app/revanced/patcher/patch/PatchContext, java/io/Closeable {
 	public final fun classBy (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 	public final fun classByType (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/ClassProxy;
+	public fun close ()V
 	public synthetic fun get ()Ljava/lang/Object;
 	public fun get ()Ljava/util/Set;
 	public final fun getClasses ()Lapp/revanced/patcher/util/ProxyClassList;
