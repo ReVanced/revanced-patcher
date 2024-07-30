@@ -5,7 +5,9 @@ kotlin = "2.0.0"
 kotlinx-coroutines-core = "1.8.1"
 mockk = "1.13.10"
 multidexlib2 = "3.0.3.r3"
-smali = "3.0.7"
+# Tracking https://github.com/google/smali/issues/64.
+#noinspection GradleDependency
+smali = "3.0.5"
 binary-compatibility-validator = "0.15.1"
 xpp3 = "1.1.4c"
 

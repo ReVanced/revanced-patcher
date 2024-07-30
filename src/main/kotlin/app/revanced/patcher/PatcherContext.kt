@@ -5,6 +5,7 @@ import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.ResourcePatchContext
 import brut.androlib.apk.ApkInfo
 import brut.directory.ExtFile
+import java.io.Closeable
 
 /**
  * A context for the patcher containing the current state of the patcher.
@@ -12,7 +13,7 @@ import brut.directory.ExtFile
  * @param config The configuration for the patcher.
  */
 @Suppress("MemberVisibilityCanBePrivate")
-class PatcherContext internal constructor(config: PatcherConfig) {
+class PatcherContext internal constructor(config: PatcherConfig): Closeable {
     /**
      * [PackageMetadata] of the supplied [PatcherConfig.apkFile].
      */
@@ -37,4 +38,6 @@ class PatcherContext internal constructor(config: PatcherConfig) {
      * The context for patches containing the current state of the bytecode.
      */
     internal val bytecodeContext = BytecodePatchContext(config)
+
+    override fun close() = bytecodeContext.close()
 }
