@@ -1,3 +1,12 @@
+# [20.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.1...v20.0.0-dev.2) (2024-07-31)
+
+
+### Bug Fixes
+
+* Downgrade smali to fix dex compilation issue ([714447d](https://github.com/ReVanced/revanced-patcher/commit/714447de70096bf736e8e1d31c14bb5f24195070))
+* Merge all extensions before initializing lookup maps ([328aa87](https://github.com/ReVanced/revanced-patcher/commit/328aa876d8ed7826be3713754b6404195e9fe84b))
+* Use null for compatible package version when adding packages only ([a8e8fa4](https://github.com/ReVanced/revanced-patcher/commit/a8e8fa4093deb8cffbd7a582409f41867f6b568b))
+
 # [20.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.3.1...v20.0.0-dev.1) (2024-07-22)
 
 
