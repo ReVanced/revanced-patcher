@@ -1,3 +1,15 @@
+# [20.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.2...v20.0.0-dev.3) (2024-08-01)
+
+
+### Bug Fixes
+
+* Make constructor internal as supposed ([e95fcd1](https://github.com/ReVanced/revanced-patcher/commit/e95fcd1c0b641164bbf0840ec7e562aeb3bacc3e))
+
+
+### Features
+
+* Add ability to create options outside of a patch ([b8d763a](https://github.com/ReVanced/revanced-patcher/commit/b8d763a66e0601627dd71c8c24247726aa300146))
+
 # [20.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.1...v20.0.0-dev.2) (2024-07-31)
 
 
