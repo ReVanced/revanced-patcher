@@ -36,20 +36,21 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.xpp3)
-    implementation(libs.smali)
-    implementation(libs.multidexlib2)
-    implementation(libs.apktool.lib)
-    implementation(libs.kotlin.reflect)
-
     // TODO: Convert project to KMP.
     compileOnly(libs.android) {
         // Exclude, otherwise the org.w3c.dom API breaks.
         exclude(group = "xerces", module = "xmlParserAPIs")
     }
-    testImplementation(libs.kotlin.test)
+
+    implementation(libs.apktool.lib)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.multidexlib2)
+    implementation(libs.smali)
+    implementation(libs.xpp3)
+
     testImplementation(libs.mockk)
+    testImplementation(libs.kotlin.test)
 }
 
 kotlin {

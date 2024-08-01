@@ -1,6 +1,7 @@
 [versions]
 android = "4.1.1.4"
 apktool-lib = "2.9.3"
+binary-compatibility-validator = "0.15.1"
 kotlin = "2.0.0"
 kotlinx-coroutines-core = "1.8.1"
 mockk = "1.13.10"
@@ -8,15 +9,14 @@ multidexlib2 = "3.0.3.r3"
 # Tracking https://github.com/google/smali/issues/64.
 #noinspection GradleDependency
 smali = "3.0.5"
-binary-compatibility-validator = "0.15.1"
 xpp3 = "1.1.4c"
 
 [libraries]
 android = { module = "com.google.android:android", version.ref = "android" }
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 apktool-lib = { module = "app.revanced:apktool-lib", version.ref = "apktool-lib" }
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 multidexlib2 = { module = "app.revanced:multidexlib2", version.ref = "multidexlib2" }
 smali = { module = "com.android.tools.smali:smali", version.ref = "smali" }
