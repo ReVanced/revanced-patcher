@@ -48,6 +48,9 @@ sealed class Patch<C : PatchContext<*>>(
     // if a patch has a finalizing block in order to not emit it twice.
     internal var finalizeBlock: (Patch<C>.(C) -> Unit)?,
 ) {
+    /**
+     * The options of the patch.
+     */
     val options = Options(options)
 
     /**
