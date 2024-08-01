@@ -396,7 +396,7 @@ class BytecodePatchBuilder internal constructor(
      */
     operator fun Fingerprint.invoke() = InvokedFingerprint(also { fingerprints.add(it) })
 
-    class InvokedFingerprint(private val fingerprint: Fingerprint) {
+    class InvokedFingerprint internal constructor(private val fingerprint: Fingerprint) {
         // The reason getValue isn't extending the Fingerprint class is
         // because delegating makes only sense if the fingerprint was previously added to the patch by invoking it.
         // It may be likely to forget invoking it. By wrapping the fingerprint into this class,

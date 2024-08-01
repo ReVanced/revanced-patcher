@@ -3,8 +3,7 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
-import app.revanced.patcher.patch.BytecodePatchBuilder
-import app.revanced.patcher.patch.BytecodePatchContext
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps.Companion.appendParameters
 import app.revanced.patcher.patch.MethodClassPairs
 import app.revanced.patcher.util.proxy.ClassProxy

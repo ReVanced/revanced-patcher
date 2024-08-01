@@ -149,7 +149,6 @@ public final class app/revanced/patcher/patch/BytecodePatchBuilder : app/revance
 }
 
 public final class app/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint {
-	public fun <init> (Lapp/revanced/patcher/Fingerprint;)V
 	public final fun getValue (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Match;
 }
 
