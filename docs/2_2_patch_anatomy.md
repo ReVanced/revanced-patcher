@@ -149,6 +149,18 @@ The type of an option can be obtained from the `type` property of the option:
 option.type // The KType of the option.
 ```
 
+Options can be declared outside of a patch and added to a patch manually:
+
+```kt
+val option = stringOption(key = "option")
+
+bytecodePatch(name = "Patch") {
+    val value by option()
+}
+```
+
+This is useful when the same option is referenced in multiple patches.
+
 ### 🧩 Extensions
 
 An extension is a precompiled DEX file merged into the patched app before a patch is executed.

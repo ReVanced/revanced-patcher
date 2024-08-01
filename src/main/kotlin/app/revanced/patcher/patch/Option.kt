@@ -100,7 +100,7 @@ class Option<T> @PublishedApi internal constructor(
 }
 
 /**
- * A collection of [Option]s where options can be set and retrieved by key.
+ * A collection of [Option]s where options can be set and retrieved by their key.
  *
  * @param options The options.
  *
@@ -144,6 +144,39 @@ class Options internal constructor(
 }
 
 /**
+ * Create a new [Option] with a string value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun stringOption(
+    key: String,
+    default: String? = null,
+    values: Map<String, String?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<String>.(String?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
  * Create a new [Option] with a string value and add it to the current [PatchBuilder].
  *
  * @param key The key.
@@ -166,6 +199,39 @@ fun PatchBuilder<*>.stringOption(
     description: String? = null,
     required: Boolean = false,
     validator: Option<String>.(String?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
+ * Create a new [Option] with an integer value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun intOption(
+    key: String,
+    default: Int? = null,
+    values: Map<String, Int?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Int?>.(Int?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -210,6 +276,39 @@ fun PatchBuilder<*>.intOption(
 )
 
 /**
+ * Create a new [Option] with a boolean value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun booleanOption(
+    key: String,
+    default: Boolean? = null,
+    values: Map<String, Boolean?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Boolean?>.(Boolean?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
  * Create a new [Option] with a boolean value and add it to the current [PatchBuilder].
  *
  * @param key The key.
@@ -232,6 +331,39 @@ fun PatchBuilder<*>.booleanOption(
     description: String? = null,
     required: Boolean = false,
     validator: Option<Boolean?>.(Boolean?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
+ * Create a new [Option] with a float value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun floatOption(
+    key: String,
+    default: Float? = null,
+    values: Map<String, Float?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Float?>.(Float?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -276,6 +408,39 @@ fun PatchBuilder<*>.floatOption(
 )
 
 /**
+ * Create a new [Option] with a long value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun longOption(
+    key: String,
+    default: Long? = null,
+    values: Map<String, Long?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Long?>.(Long?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
  * Create a new [Option] with a long value and add it to the current [PatchBuilder].
  *
  * @param key The key.
@@ -298,6 +463,39 @@ fun PatchBuilder<*>.longOption(
     description: String? = null,
     required: Boolean = false,
     validator: Option<Long?>.(Long?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
+ * Create a new [Option] with a string list value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun stringsOption(
+    key: String,
+    default: List<String>? = null,
+    values: Map<String, List<String>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<String>>.(List<String>?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -342,6 +540,39 @@ fun PatchBuilder<*>.stringsOption(
 )
 
 /**
+ * Create a new [Option] with an integer list value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun intsOption(
+    key: String,
+    default: List<Int>? = null,
+    values: Map<String, List<Int>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Int>>.(List<Int>?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
  * Create a new [Option] with an integer list value and add it to the current [PatchBuilder].
  *
  * @param key The key.
@@ -364,6 +595,39 @@ fun PatchBuilder<*>.intsOption(
     description: String? = null,
     required: Boolean = false,
     validator: Option<List<Int>>.(List<Int>?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
+ * Create a new [Option] with a boolean list value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun booleansOption(
+    key: String,
+    default: List<Boolean>? = null,
+    values: Map<String, List<Boolean>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Boolean>>.(List<Boolean>?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -441,6 +705,39 @@ fun PatchBuilder<*>.floatsOption(
 )
 
 /**
+ * Create a new [Option] with a long list value.
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+fun longsOption(
+    key: String,
+    default: List<Long>? = null,
+    values: Map<String, List<Long>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Long>>.(List<Long>?) -> Boolean = { true },
+) = option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    validator,
+)
+
+/**
  * Create a new [Option] with a long list value and add it to the current [PatchBuilder].
  *
  * @param key The key.
@@ -474,6 +771,40 @@ fun PatchBuilder<*>.longsOption(
 )
 
 /**
+ * Create a new [Option].
+ *
+ * @param key The key.
+ * @param default The default value.
+ * @param values Eligible option values mapped to a human-readable name.
+ * @param title The title.
+ * @param description A description.
+ * @param required Whether the option is required.
+ * @param validator The function to validate the option value.
+ *
+ * @return The created [Option].
+ *
+ * @see Option
+ */
+inline fun <reified T> option(
+    key: String,
+    default: T? = null,
+    values: Map<String, T?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    noinline validator: Option<T>.(T?) -> Boolean = { true },
+) = Option(
+    key,
+    default,
+    values,
+    title,
+    description,
+    required,
+    typeOf<T>(),
+    validator,
+)
+
+/**
  * Create a new [Option] and add it to the current [PatchBuilder].
  *
  * @param key The key.
@@ -496,14 +827,13 @@ inline fun <reified T> PatchBuilder<*>.option(
     description: String? = null,
     required: Boolean = false,
     noinline validator: Option<T>.(T?) -> Boolean = { true },
-) = Option(
+) = app.revanced.patcher.patch.option(
     key,
     default,
     values,
     title,
     description,
     required,
-    typeOf<T>(),
     validator,
 ).also { it() }
 
@@ -519,30 +849,26 @@ sealed class OptionException(errorMessage: String) : Exception(errorMessage, nul
      * @param invalidType The type of the value that was passed.
      * @param expectedType The type of the value that was expected.
      */
-    class InvalidValueTypeException(invalidType: String, expectedType: String) :
-        OptionException("Type $expectedType was expected but received type $invalidType")
+    class InvalidValueTypeException(invalidType: String, expectedType: String) : OptionException("Type $expectedType was expected but received type $invalidType")
 
     /**
      * An exception thrown when a value did not satisfy the value conditions specified by the [Option].
      *
      * @param value The value that failed validation.
      */
-    class ValueValidationException(value: Any?, option: Option<*>) :
-        OptionException("The option value \"$value\" failed validation for ${option.key}")
+    class ValueValidationException(value: Any?, option: Option<*>) : OptionException("The option value \"$value\" failed validation for ${option.key}")
 
     /**
      * An exception thrown when a value is required but null was passed.
      *
      * @param option The [Option] that requires a value.
      */
-    class ValueRequiredException(option: Option<*>) :
-        OptionException("The option ${option.key} requires a value, but null was passed")
+    class ValueRequiredException(option: Option<*>) : OptionException("The option ${option.key} requires a value, but null was passed")
 
     /**
      * An exception thrown when a [Option] is not found.
      *
      * @param key The key of the [Option].
      */
-    class OptionNotFoundException(key: String) :
-        OptionException("No option with key $key")
+    class OptionNotFoundException(key: String) : OptionException("No option with key $key")
 }

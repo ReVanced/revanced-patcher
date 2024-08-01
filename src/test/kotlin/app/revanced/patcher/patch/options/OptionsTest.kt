@@ -7,7 +7,11 @@ import kotlin.reflect.typeOf
 import kotlin.test.*
 
 internal object OptionsTest {
+    private val externalOption = stringOption("external", "default")
+
     private val optionsTestPatch = bytecodePatch {
+        externalOption()
+
         booleanOption("bool", true)
 
         stringOption("required", "default", required = true)
@@ -122,6 +126,18 @@ internal object OptionsTest {
         assertDoesNotThrow {
             assertNull(get("resettable").default)
         }
+    }
+
+    @Test
+    fun `external option should be accessible`() {
+        assertDoesNotThrow {
+            externalOption.value = "test"
+        }
+    }
+
+    @Test
+    fun `should allow getting the external option from the patch`() {
+        assertEquals(optionsTestPatch.options["external"].value, externalOption.value)
     }
 
     private fun options(block: Options.() -> Unit) = optionsTestPatch.options.let(block)
