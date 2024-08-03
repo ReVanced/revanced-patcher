@@ -863,7 +863,7 @@ sealed class OptionException(errorMessage: String) : Exception(errorMessage, nul
      *
      * @param option The [Option] that requires a value.
      */
-    class ValueRequiredException(option: Option<*>) : OptionException("The option ${option.key} requires a value, but null was passed")
+    class ValueRequiredException(option: Option<*>) : OptionException("The option ${option.key} requires a value, but the value was null")
 
     /**
      * An exception thrown when a [Option] is not found.
