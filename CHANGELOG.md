@@ -1,3 +1,10 @@
+# [20.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.3...v20.0.0-dev.4) (2024-08-06)
+
+
+### Bug Fixes
+
+* Improve exception message wording ([bd434ce](https://github.com/ReVanced/revanced-patcher/commit/bd434ceb3394d1d5292e8b94e5bfd6da0e4e9c72))
+
 # [20.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.2...v20.0.0-dev.3) (2024-08-01)
 
 
