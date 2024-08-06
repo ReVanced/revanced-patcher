@@ -7,7 +7,9 @@ import com.android.tools.smali.dexlib2.HiddenApiRestriction
 import com.android.tools.smali.dexlib2.base.reference.BaseFieldReference
 import com.android.tools.smali.dexlib2.iface.Field
 
-class MutableField(field: Field) : Field, BaseFieldReference() {
+class MutableField(field: Field) :
+    BaseFieldReference(),
+    Field {
     private var definingClass = field.definingClass
     private var name = field.name
     private var type = field.type
@@ -37,37 +39,21 @@ class MutableField(field: Field) : Field, BaseFieldReference() {
         this.initialValue = initialValue
     }
 
-    override fun getDefiningClass(): String {
-        return this.definingClass
-    }
+    override fun getDefiningClass(): String = this.definingClass
 
-    override fun getName(): String {
-        return this.name
-    }
+    override fun getName(): String = this.name
 
-    override fun getType(): String {
-        return this.type
-    }
+    override fun getType(): String = this.type
 
-    override fun getAnnotations(): MutableSet<MutableAnnotation> {
-        return this._annotations
-    }
+    override fun getAnnotations(): MutableSet<MutableAnnotation> = this._annotations
 
-    override fun getAccessFlags(): Int {
-        return this.accessFlags
-    }
+    override fun getAccessFlags(): Int = this.accessFlags
 
-    override fun getHiddenApiRestrictions(): MutableSet<HiddenApiRestriction> {
-        return this._hiddenApiRestrictions
-    }
+    override fun getHiddenApiRestrictions(): MutableSet<HiddenApiRestriction> = this._hiddenApiRestrictions
 
-    override fun getInitialValue(): MutableEncodedValue? {
-        return this.initialValue
-    }
+    override fun getInitialValue(): MutableEncodedValue? = this.initialValue
 
     companion object {
-        fun Field.toMutable(): MutableField {
-            return MutableField(this)
-        }
+        fun Field.toMutable(): MutableField = MutableField(this)
     }
 }

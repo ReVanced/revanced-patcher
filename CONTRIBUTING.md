@@ -72,7 +72,7 @@ This document describes how to contribute to ReVanced Patcher.
 ## 🙏 Submitting a feature request
 
 Features can be requested by opening an issue using the
-[Feature request issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Feature+request&projects=&template=feature-request.yml&title=feat%3A+).
+[Feature request issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Feature+request&projects=&template=feature_request.yml&title=feat%3A+).
 
 > **Note**
 > Requests can be accepted or rejected at the discretion of maintainers of ReVanced Patcher.
@@ -81,7 +81,7 @@ Features can be requested by opening an issue using the
 ## 🐞 Submitting a bug report
 
 If you encounter a bug while using ReVanced Patcher, open an issue using the
-[Bug report issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Bug+report&projects=&template=bug-report.yml&title=bug%3A+).
+[Bug report issue template](https://github.com/ReVanced/revanced-patcher/issues/new?assignees=&labels=Bug+report&projects=&template=bug_report.yml&title=bug%3A+).
 
 ## 📝 How to contribute
 

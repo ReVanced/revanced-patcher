@@ -7,7 +7,9 @@ import com.android.tools.smali.dexlib2.base.reference.BaseMethodReference
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.iface.Method
 
-class MutableMethod(method: Method) : Method, BaseMethodReference() {
+class MutableMethod(method: Method) :
+    BaseMethodReference(),
+    Method {
     private var definingClass = method.definingClass
     private var name = method.name
     private var accessFlags = method.accessFlags
@@ -36,45 +38,25 @@ class MutableMethod(method: Method) : Method, BaseMethodReference() {
         this.returnType = returnType
     }
 
-    override fun getDefiningClass(): String {
-        return definingClass
-    }
+    override fun getDefiningClass(): String = definingClass
 
-    override fun getName(): String {
-        return name
-    }
+    override fun getName(): String = name
 
-    override fun getParameterTypes(): MutableList<CharSequence> {
-        return _parameterTypes
-    }
+    override fun getParameterTypes(): MutableList<CharSequence> = _parameterTypes
 
-    override fun getReturnType(): String {
-        return returnType
-    }
+    override fun getReturnType(): String = returnType
 
-    override fun getAnnotations(): MutableSet<MutableAnnotation> {
-        return _annotations
-    }
+    override fun getAnnotations(): MutableSet<MutableAnnotation> = _annotations
 
-    override fun getAccessFlags(): Int {
-        return accessFlags
-    }
+    override fun getAccessFlags(): Int = accessFlags
 
-    override fun getHiddenApiRestrictions(): MutableSet<HiddenApiRestriction> {
-        return _hiddenApiRestrictions
-    }
+    override fun getHiddenApiRestrictions(): MutableSet<HiddenApiRestriction> = _hiddenApiRestrictions
 
-    override fun getParameters(): MutableList<MutableMethodParameter> {
-        return _parameters
-    }
+    override fun getParameters(): MutableList<MutableMethodParameter> = _parameters
 
-    override fun getImplementation(): MutableMethodImplementation? {
-        return _implementation
-    }
+    override fun getImplementation(): MutableMethodImplementation? = _implementation
 
     companion object {
-        fun Method.toMutable(): MutableMethod {
-            return MutableMethod(this)
-        }
+        fun Method.toMutable(): MutableMethod = MutableMethod(this)
     }
 }

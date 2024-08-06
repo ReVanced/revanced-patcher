@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.binary.compatibility.validator)
@@ -22,10 +24,9 @@ tasks {
 
 repositories {
     mavenCentral()
-    mavenLocal()
     google()
     maven {
-        // A repository must be speficied for some reason. "registry" is a dummy.
+        // A repository must be specified for some reason. "registry" is a dummy.
         url = uri("https://maven.pkg.github.com/revanced/registry")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
@@ -35,24 +36,33 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.xpp3)
-    implementation(libs.smali)
-    implementation(libs.multidexlib2)
-    implementation(libs.apktool.lib)
-    implementation(libs.kotlin.reflect)
-
     // TODO: Convert project to KMP.
     compileOnly(libs.android) {
         // Exclude, otherwise the org.w3c.dom API breaks.
         exclude(group = "xerces", module = "xmlParserAPIs")
     }
 
+    implementation(libs.apktool.lib)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.multidexlib2)
+    implementation(libs.smali)
+    implementation(libs.xpp3)
+
+    testImplementation(libs.mockk)
     testImplementation(libs.kotlin.test)
 }
 
 kotlin {
-    jvmToolchain(11)
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
+    }
+}
+
+java {
+    targetCompatibility = JavaVersion.VERSION_11
+
+    withSourcesJar()
 }
 
 publishing {

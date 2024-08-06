@@ -18,17 +18,11 @@ class MutableAnnotationElement(annotationElement: AnnotationElement) : BaseAnnot
         this.value = value
     }
 
-    override fun getName(): String {
-        return name
-    }
+    override fun getName(): String = name
 
-    override fun getValue(): EncodedValue {
-        return value
-    }
+    override fun getValue(): EncodedValue = value
 
     companion object {
-        fun AnnotationElement.toMutable(): MutableAnnotationElement {
-            return MutableAnnotationElement(this)
-        }
+        fun AnnotationElement.toMutable(): MutableAnnotationElement = MutableAnnotationElement(this)
     }
 }

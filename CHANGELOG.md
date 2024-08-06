@@ -1,3 +1,43 @@
+# [20.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.3...v20.0.0-dev.4) (2024-08-06)
+
+
+### Bug Fixes
+
+* Improve exception message wording ([bd434ce](https://github.com/ReVanced/revanced-patcher/commit/bd434ceb3394d1d5292e8b94e5bfd6da0e4e9c72))
+
+# [20.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.2...v20.0.0-dev.3) (2024-08-01)
+
+
+### Bug Fixes
+
+* Make constructor internal as supposed ([e95fcd1](https://github.com/ReVanced/revanced-patcher/commit/e95fcd1c0b641164bbf0840ec7e562aeb3bacc3e))
+
+
+### Features
+
+* Add ability to create options outside of a patch ([b8d763a](https://github.com/ReVanced/revanced-patcher/commit/b8d763a66e0601627dd71c8c24247726aa300146))
+
+# [20.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0-dev.1...v20.0.0-dev.2) (2024-07-31)
+
+
+### Bug Fixes
+
+* Downgrade smali to fix dex compilation issue ([714447d](https://github.com/ReVanced/revanced-patcher/commit/714447de70096bf736e8e1d31c14bb5f24195070))
+* Merge all extensions before initializing lookup maps ([328aa87](https://github.com/ReVanced/revanced-patcher/commit/328aa876d8ed7826be3713754b6404195e9fe84b))
+* Use null for compatible package version when adding packages only ([a8e8fa4](https://github.com/ReVanced/revanced-patcher/commit/a8e8fa4093deb8cffbd7a582409f41867f6b568b))
+
+# [20.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.3.1...v20.0.0-dev.1) (2024-07-22)
+
+
+### Features
+
+* Convert APIs to Kotlin DSL ([#298](https://github.com/ReVanced/revanced-patcher/issues/298)) ([3f9cbd2](https://github.com/ReVanced/revanced-patcher/commit/3f9cbd2408fa085690a062b357e11e42c51e7f8b))
+
+
+### BREAKING CHANGES
+
+* Various old APIs are removed, and DSL APIs are added instead.
+
 ## [19.3.1](https://github.com/ReVanced/revanced-patcher/compare/v19.3.0...v19.3.1) (2024-02-14)
 
 ## [19.3.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v19.3.0...v19.3.1-dev.1) (2024-02-14)

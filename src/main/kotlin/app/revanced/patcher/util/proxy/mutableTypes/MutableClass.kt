@@ -7,9 +7,10 @@ import com.android.tools.smali.dexlib2.base.reference.BaseTypeReference
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.util.FieldUtil
 import com.android.tools.smali.dexlib2.util.MethodUtil
-import com.google.common.collect.Iterables
 
-class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
+class MutableClass(classDef: ClassDef) :
+    BaseTypeReference(),
+    ClassDef {
     // Class
     private var type = classDef.type
     private var sourceFile = classDef.sourceFile
@@ -23,13 +24,13 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
 
     // Methods
     private val _methods by lazy { classDef.methods.map { method -> method.toMutable() }.toMutableSet() }
-    private val _directMethods by lazy { Iterables.filter(_methods, MethodUtil.METHOD_IS_DIRECT).toMutableSet() }
-    private val _virtualMethods by lazy { Iterables.filter(_methods, MethodUtil.METHOD_IS_VIRTUAL).toMutableSet() }
+    private val _directMethods by lazy { _methods.filter { method -> MethodUtil.isDirect(method) }.toMutableSet() }
+    private val _virtualMethods by lazy { _methods.filter { method -> !MethodUtil.isDirect(method) }.toMutableSet() }
 
     // Fields
     private val _fields by lazy { classDef.fields.map { field -> field.toMutable() }.toMutableSet() }
-    private val _staticFields by lazy { Iterables.filter(_fields, FieldUtil.FIELD_IS_STATIC).toMutableSet() }
-    private val _instanceFields by lazy { Iterables.filter(_fields, FieldUtil.FIELD_IS_INSTANCE).toMutableSet() }
+    private val _staticFields by lazy { _fields.filter { field -> FieldUtil.isStatic(field) }.toMutableSet() }
+    private val _instanceFields by lazy { _fields.filter { field -> !FieldUtil.isStatic(field) }.toMutableSet() }
 
     fun setType(type: String) {
         this.type = type
@@ -47,57 +48,31 @@ class MutableClass(classDef: ClassDef) : ClassDef, BaseTypeReference() {
         this.superclass = superclass
     }
 
-    override fun getType(): String {
-        return type
-    }
+    override fun getType(): String = type
 
-    override fun getAccessFlags(): Int {
-        return accessFlags
-    }
+    override fun getAccessFlags(): Int = accessFlags
 
-    override fun getSourceFile(): String? {
-        return sourceFile
-    }
+    override fun getSourceFile(): String? = sourceFile
 
-    override fun getSuperclass(): String? {
-        return superclass
-    }
+    override fun getSuperclass(): String? = superclass
 
-    override fun getInterfaces(): MutableList<String> {
-        return _interfaces
-    }
+    override fun getInterfaces(): MutableList<String> = _interfaces
 
-    override fun getAnnotations(): MutableSet<MutableAnnotation> {
-        return _annotations
-    }
+    override fun getAnnotations(): MutableSet<MutableAnnotation> = _annotations
 
-    override fun getStaticFields(): MutableSet<MutableField> {
-        return _staticFields
-    }
+    override fun getStaticFields(): MutableSet<MutableField> = _staticFields
 
-    override fun getInstanceFields(): MutableSet<MutableField> {
-        return _instanceFields
-    }
+    override fun getInstanceFields(): MutableSet<MutableField> = _instanceFields
 
-    override fun getFields(): MutableSet<MutableField> {
-        return _fields
-    }
+    override fun getFields(): MutableSet<MutableField> = _fields
 
-    override fun getDirectMethods(): MutableSet<MutableMethod> {
-        return _directMethods
-    }
+    override fun getDirectMethods(): MutableSet<MutableMethod> = _directMethods
 
-    override fun getVirtualMethods(): MutableSet<MutableMethod> {
-        return _virtualMethods
-    }
+    override fun getVirtualMethods(): MutableSet<MutableMethod> = _virtualMethods
 
-    override fun getMethods(): MutableSet<MutableMethod> {
-        return _methods
-    }
+    override fun getMethods(): MutableSet<MutableMethod> = _methods
 
     companion object {
-        fun ClassDef.toMutable(): MutableClass {
-            return MutableClass(this)
-        }
+        fun ClassDef.toMutable(): MutableClass = MutableClass(this)
     }
 }
