@@ -94,21 +94,21 @@ Example of patches:
 
 ```kt
 @Surpress("unused")
-val bytecodePatch = bytecodePatch {
+val bytecodePatch = BytecodePatch {
     execute { 
         // TODO
     }
 }
 
 @Surpress("unused")
-val rawResourcePatch = rawResourcePatch {
+val rawResourcePatch = RawResourcePatch {
     execute { 
         // TODO
     }
 }
 
 @Surpress("unused")
-val resourcePatch = rawResourcePatch {
+val resourcePatch = ResourcePatch {
     execute { 
         // TODO
     }
