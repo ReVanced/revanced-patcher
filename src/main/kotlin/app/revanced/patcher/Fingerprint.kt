@@ -128,7 +128,7 @@ class Fingerprint internal constructor(
     fun match(
         context: BytecodePatchContext,
         method: Method,
-    ) = match(context, method, context.classByType(method.definingClass)!!.immutableClass)
+    ) = match(context, method, context.classBy { method.definingClass == it.type }!!.immutableClass)
 
     /**
      * Match using a [Method].
