@@ -1,3 +1,10 @@
+## [20.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0...v20.0.1-dev.1) (2024-09-18)
+
+
+### Bug Fixes
+
+* Check for class type exactly instead of with contains ([#310](https://github.com/ReVanced/revanced-patcher/issues/310)) ([69f2f20](https://github.com/ReVanced/revanced-patcher/commit/69f2f20fd99162f91cd9c531dfe47d00d3152ead))
+
 # [20.0.0](https://github.com/ReVanced/revanced-patcher/compare/v19.3.1...v20.0.0) (2024-08-06)
 
 
