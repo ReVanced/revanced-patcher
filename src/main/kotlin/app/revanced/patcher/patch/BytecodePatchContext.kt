@@ -104,6 +104,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * @param type The type of the class.
      * @return A proxy for the first class that matches the type.
      */
+    @Deprecated("Use classBy { type in it.type } instead.", ReplaceWith("classBy { type in it.type }"))
     fun classByType(type: String) = classBy { type in it.type }
 
     /**
