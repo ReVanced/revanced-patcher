@@ -98,14 +98,12 @@ class Patcher(private val config: PatcherConfig) : Closeable {
 
         logger.info("Merging extensions")
 
-        context.executablePatches.forEachRecursively { patch ->
-            if (patch is BytecodePatch && patch.extension != null) {
-                context.bytecodeContext.merge(patch.extension)
-            }
-        }
+        with(context.bytecodeContext) {
+            context.executablePatches.mergeExtensions()
 
-        // Initialize lookup maps.
-        context.bytecodeContext.lookupMaps
+            // Initialize lookup maps.
+           lookupMaps
+        }
 
         logger.info("Executing patches")
 

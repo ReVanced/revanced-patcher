@@ -20,6 +20,7 @@ class PatcherConfig(
     private val temporaryFilesPath: File = File("revanced-temporary-files"),
     aaptBinaryPath: String? = null,
     frameworkFileDirectory: String? = null,
+    @Deprecated("This is going to be removed in the future because it is not needed anymore.")
     internal val multithreadingDexFileWriter: Boolean = false,
 ) {
     private val logger = Logger.getLogger(PatcherConfig::class.java.name)

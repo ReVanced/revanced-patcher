@@ -6,7 +6,9 @@ import app.revanced.patcher.util.ProxyClassList
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
@@ -193,6 +195,7 @@ internal object PatcherTest {
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
         every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
+        every { with(patcher.context.bytecodeContext) { any<Set<Patch<*>>>().mergeExtensions() } } just runs
 
         return runBlocking { patcher().toList() }
     }
