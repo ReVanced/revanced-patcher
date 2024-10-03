@@ -1,3 +1,10 @@
+## [20.0.1-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.2...v20.0.1-dev.3) (2024-10-03)
+
+
+### Performance Improvements
+
+* Free memory earlier and remove negligible lookup maps ([d53aacd](https://github.com/ReVanced/revanced-patcher/commit/d53aacdad4ed3750ddae526fb307577ea36e6171))
+
 ## [20.0.1-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.1...v20.0.1-dev.2) (2024-10-01)
 
 ## [20.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0...v20.0.1-dev.1) (2024-09-18)
