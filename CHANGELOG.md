@@ -1,3 +1,10 @@
+## [20.0.1-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.3...v20.0.1-dev.4) (2024-10-07)
+
+
+### Bug Fixes
+
+* Make it work on Android by not using APIs from JVM unavailable to Android. ([2be6e97](https://github.com/ReVanced/revanced-patcher/commit/2be6e97817437f40e17893dfff3bea2cd4c3ff9e))
+
 ## [20.0.1-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.2...v20.0.1-dev.3) (2024-10-03)
 
 
