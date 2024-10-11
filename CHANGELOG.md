@@ -1,3 +1,10 @@
+## [20.0.1-dev.5](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.4...v20.0.1-dev.5) (2024-10-11)
+
+
+### Bug Fixes
+
+* Use non-nullable type for options ([ea6fc70](https://github.com/ReVanced/revanced-patcher/commit/ea6fc70caab055251ad4d0d3f1b5cf53865abb85))
+
 ## [20.0.1-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.3...v20.0.1-dev.4) (2024-10-07)
 
 
