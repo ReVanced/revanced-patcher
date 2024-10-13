@@ -108,7 +108,7 @@ val rawResourcePatch = rawResourcePatch {
 }
 
 @Surpress("unused")
-val resourcePatch = rawResourcePatch {
+val resourcePatch = resourcePatch {
     execute { 
         // TODO
     }

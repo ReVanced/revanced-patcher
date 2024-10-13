@@ -231,7 +231,7 @@ fun intOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Int?>.(Int?) -> Boolean = { true },
+    validator: Option<Int>.(Int?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -264,7 +264,7 @@ fun PatchBuilder<*>.intOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Int?>.(Int?) -> Boolean = { true },
+    validator: Option<Int>.(Int?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -297,7 +297,7 @@ fun booleanOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Boolean?>.(Boolean?) -> Boolean = { true },
+    validator: Option<Boolean>.(Boolean?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -330,7 +330,7 @@ fun PatchBuilder<*>.booleanOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Boolean?>.(Boolean?) -> Boolean = { true },
+    validator: Option<Boolean>.(Boolean?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -363,7 +363,7 @@ fun floatOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Float?>.(Float?) -> Boolean = { true },
+    validator: Option<Float>.(Float?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -396,7 +396,7 @@ fun PatchBuilder<*>.floatOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Float?>.(Float?) -> Boolean = { true },
+    validator: Option<Float>.(Float?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -429,7 +429,7 @@ fun longOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Long?>.(Long?) -> Boolean = { true },
+    validator: Option<Long>.(Long?) -> Boolean = { true },
 ) = option(
     key,
     default,
@@ -462,7 +462,7 @@ fun PatchBuilder<*>.longOption(
     title: String? = null,
     description: String? = null,
     required: Boolean = false,
-    validator: Option<Long?>.(Long?) -> Boolean = { true },
+    validator: Option<Long>.(Long?) -> Boolean = { true },
 ) = option(
     key,
     default,

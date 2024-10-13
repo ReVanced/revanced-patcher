@@ -10,6 +10,9 @@ import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.MultiDexIO
 import java.io.File
 import java.io.InputStream
+import java.lang.reflect.Member
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.net.URLClassLoader
 import java.util.jar.JarFile
 import kotlin.reflect.KProperty
@@ -636,7 +639,7 @@ sealed class PatchLoader private constructor(
          */
         private val Class<*>.patchFields
             get() = fields.filter { field ->
-                field.type.isPatch && field.canAccess(null)
+                field.type.isPatch && field.canAccess()
             }.map { field ->
                 field.get(null) as Patch<*>
             }
@@ -646,7 +649,7 @@ sealed class PatchLoader private constructor(
          */
         private val Class<*>.patchMethods
             get() = methods.filter { method ->
-                method.returnType.isPatch && method.parameterCount == 0 && method.canAccess(null)
+                method.returnType.isPatch && method.parameterCount == 0 && method.canAccess()
             }.map { method ->
                 method.invoke(null) as Patch<*>
             }
@@ -670,6 +673,12 @@ sealed class PatchLoader private constructor(
                     it.name != null
                 }.toSet()
             }
+
+        private fun Member.canAccess(): Boolean {
+            if (this is Method && parameterCount != 0) return false
+
+            return Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)
+        }
     }
 }
 

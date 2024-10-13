@@ -21,7 +21,6 @@ import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
 import java.io.Closeable
 import java.io.FileFilter
-import java.io.InputStream
 import java.util.*
 import java.util.logging.Logger
 
@@ -60,40 +59,41 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
-     * A map for lookup by [merge].
+     * Merge the extensions for this set of patches.
      */
-    internal val classesByType = mutableMapOf<String, ClassDef>().apply {
-        classes.forEach { classDef -> put(classDef.type, classDef) }
-    }
+    internal fun Set<Patch<*>>.mergeExtensions() {
+        // Lookup map for fast checking if a class exists by its type.
+        val classesByType = mutableMapOf<String, ClassDef>().apply {
+            classes.forEach { classDef -> put(classDef.type, classDef) }
+        }
 
-    /**
-     * Merge an extension to [classes].
-     *
-     * @param extensionInputStream The input stream of the extension to merge.
-     */
-    internal fun merge(extensionInputStream: InputStream) {
-        val extension = extensionInputStream.readAllBytes()
+        forEachRecursively { patch ->
+            if (patch is BytecodePatch && patch.extension != null) {
 
-        RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
-            val existingClass = classesByType[classDef.type] ?: run {
-                logger.fine("Adding class \"$classDef\"")
+                val extension = patch.extension.readAllBytes()
 
-                classes += classDef
-                classesByType[classDef.type] = classDef
+                RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
+                    val existingClass = classesByType[classDef.type] ?: run {
+                        logger.fine("Adding class \"$classDef\"")
 
-                return@forEach
-            }
+                        classes += classDef
+                        classesByType[classDef.type] = classDef
 
-            logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
+                        return@forEach
+                    }
 
-            existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
-                // If the class was merged, replace the original class with the merged class.
-                if (mergedClass === existingClass) {
-                    return@let
+                    logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
+
+                    existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
+                        // If the class was merged, replace the original class with the merged class.
+                        if (mergedClass === existingClass) {
+                            return@let
+                        }
+
+                        classes -= existingClass
+                        classes += mergedClass
+                    }
                 }
-
-                classes -= existingClass
-                classes += mergedClass
             }
         }
     }
@@ -104,6 +104,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * @param type The type of the class.
      * @return A proxy for the first class that matches the type.
      */
+    @Deprecated("Use classBy { type in it.type } instead.", ReplaceWith("classBy { type in it.type }"))
     fun classByType(type: String) = classBy { type in it.type }
 
     /**
@@ -144,6 +145,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     override fun get(): Set<PatcherResult.PatchedDexFile> {
         logger.info("Compiling patched dex files")
 
+        // Free up memory before compiling the dex files.
+        lookupMaps.close()
+
         val patchedDexFileResults =
             config.patchedFiles.resolve("dex").also {
                 it.deleteRecursively() // Make sure the directory is empty.
@@ -178,21 +182,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      */
     internal class LookupMaps internal constructor(classes: List<ClassDef>) : Closeable {
         /**
-         * Classes associated by their type.
-         */
-        internal val classesByType = classes.associateBy { it.type }.toMutableMap()
-
-        /**
-         * All methods and the class they are a member of.
-         */
-        internal val allMethods = MethodClassPairs()
-
-        /**
-         * Methods associated by its access flags, return type and parameter.
-         */
-        internal val methodsBySignature = MethodClassPairsLookupMap()
-
-        /**
          * Methods associated by strings referenced in it.
          */
         internal val methodsByStrings = MethodClassPairsLookupMap()
@@ -201,22 +190,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             classes.forEach { classDef ->
                 classDef.methods.forEach { method ->
                     val methodClassPair: MethodClassPair = method to classDef
-
-                    // For fingerprints with no access or return type specified.
-                    allMethods += methodClassPair
-
-                    val accessFlagsReturnKey = method.accessFlags.toString() + method.returnType.first()
-
-                    // Add <access><returnType> as the key.
-                    methodsBySignature[accessFlagsReturnKey] = methodClassPair
-
-                    // Add <access><returnType>[parameters] as the key.
-                    methodsBySignature[
-                        buildString {
-                            append(accessFlagsReturnKey)
-                            appendParameters(method.parameterTypes)
-                        },
-                    ] = methodClassPair
 
                     // Add strings contained in the method as the key.
                     method.instructionsOrNull?.forEach instructions@{ instruction ->
@@ -258,15 +231,12 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         }
 
         override fun close() {
-            allMethods.clear()
-            methodsBySignature.clear()
             methodsByStrings.clear()
         }
     }
 
     override fun close() {
         lookupMaps.close()
-        classesByType.clear()
         classes.clear()
     }
 }

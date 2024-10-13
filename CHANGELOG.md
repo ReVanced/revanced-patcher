@@ -1,3 +1,33 @@
+## [20.0.1-dev.5](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.4...v20.0.1-dev.5) (2024-10-11)
+
+
+### Bug Fixes
+
+* Use non-nullable type for options ([ea6fc70](https://github.com/ReVanced/revanced-patcher/commit/ea6fc70caab055251ad4d0d3f1b5cf53865abb85))
+
+## [20.0.1-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.3...v20.0.1-dev.4) (2024-10-07)
+
+
+### Bug Fixes
+
+* Make it work on Android by not using APIs from JVM unavailable to Android. ([2be6e97](https://github.com/ReVanced/revanced-patcher/commit/2be6e97817437f40e17893dfff3bea2cd4c3ff9e))
+
+## [20.0.1-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.2...v20.0.1-dev.3) (2024-10-03)
+
+
+### Performance Improvements
+
+* Free memory earlier and remove negligible lookup maps ([d53aacd](https://github.com/ReVanced/revanced-patcher/commit/d53aacdad4ed3750ddae526fb307577ea36e6171))
+
+## [20.0.1-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1-dev.1...v20.0.1-dev.2) (2024-10-01)
+
+## [20.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0...v20.0.1-dev.1) (2024-09-18)
+
+
+### Bug Fixes
+
+* Check for class type exactly instead of with contains ([#310](https://github.com/ReVanced/revanced-patcher/issues/310)) ([69f2f20](https://github.com/ReVanced/revanced-patcher/commit/69f2f20fd99162f91cd9c531dfe47d00d3152ead))
+
 # [20.0.0](https://github.com/ReVanced/revanced-patcher/compare/v19.3.1...v20.0.0) (2024-08-06)
 
 

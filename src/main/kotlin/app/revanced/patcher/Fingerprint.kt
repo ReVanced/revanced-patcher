@@ -66,36 +66,15 @@ class Fingerprint internal constructor(
         }
 
         // TODO: If only one string is necessary, why not use a single string for every fingerprint?
-        fun Fingerprint.lookupByStrings() = strings?.firstNotNullOfOrNull { lookupMaps.methodsByStrings[it] }
-        if (lookupByStrings()?.let(::match) == true) {
+        if (strings?.firstNotNullOfOrNull { lookupMaps.methodsByStrings[it] }?.let(::match) == true) {
             return true
         }
 
-        // No strings declared or none matched (partial matches are allowed).
-        // Use signature matching.
-        fun Fingerprint.lookupBySignature(): MethodClassPairs {
-            if (accessFlags == null) return lookupMaps.allMethods
-
-            var returnTypeValue = returnType
-            if (returnTypeValue == null) {
-                if (AccessFlags.CONSTRUCTOR.isSet(accessFlags)) {
-                    // Constructors always have void return type.
-                    returnTypeValue = "V"
-                } else {
-                    return lookupMaps.allMethods
-                }
-            }
-
-            val signature =
-                buildString {
-                    append(accessFlags)
-                    append(returnTypeValue.first())
-                    appendParameters(parameters ?: return@buildString)
-                }
-
-            return lookupMaps.methodsBySignature[signature] ?: return MethodClassPairs()
+        context.classes.forEach { classDef ->
+            if (match(context, classDef)) return true
         }
-        return match(lookupBySignature())
+
+        return false
     }
 
     /**
@@ -128,7 +107,7 @@ class Fingerprint internal constructor(
     fun match(
         context: BytecodePatchContext,
         method: Method,
-    ) = match(context, method, context.classByType(method.definingClass)!!.immutableClass)
+    ) = match(context, method, context.classBy { method.definingClass == it.type }!!.immutableClass)
 
     /**
      * Match using a [Method].
