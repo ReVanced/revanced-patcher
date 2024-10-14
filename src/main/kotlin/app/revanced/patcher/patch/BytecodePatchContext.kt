@@ -19,8 +19,10 @@ import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
+import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.FileFilter
+import java.io.InputStream
 import java.util.*
 import java.util.logging.Logger
 
@@ -59,6 +61,26 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
+     * Because InputStream.readAllBytes() is not available with Android until 13.0,
+     * roll our own implementation until this project uses Kotlin multiplatform.
+     */
+    private fun InputStream.readAllBytesBackwardsCompatible(): ByteArray {
+        val buffer = ByteArrayOutputStream()
+        val data = ByteArray(1024)
+
+        while (true) {
+            var length = this.read(data)
+            if (length >= 0) {
+                buffer.write(data, 0, length)
+            } else {
+                break
+            }
+        }
+
+        return buffer.toByteArray()
+    }
+
+    /**
      * Merge the extensions for this set of patches.
      */
     internal fun Set<Patch<*>>.mergeExtensions() {
@@ -70,7 +92,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         forEachRecursively { patch ->
             if (patch is BytecodePatch && patch.extension != null) {
 
-                val extension = patch.extension.readAllBytes()
+                val extension = patch.extension.readAllBytesBackwardsCompatible()
 
                 RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
                     val existingClass = classesByType[classDef.type] ?: run {
