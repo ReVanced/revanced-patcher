@@ -93,8 +93,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                         classes += mergedClass
                     }
                 }
-
-                patch.extension.close()
             }
         }
     }
