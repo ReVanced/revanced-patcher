@@ -1,3 +1,10 @@
+## [20.0.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1...v20.0.2-dev.1) (2024-10-15)
+
+
+### Bug Fixes
+
+* Make it work on Android 12 and lower by using existing APIs ([#312](https://github.com/ReVanced/revanced-patcher/issues/312)) ([a44802e](https://github.com/ReVanced/revanced-patcher/commit/a44802ef4ebf59ae47213854ba761c81dadc51f3))
+
 ## [20.0.1](https://github.com/ReVanced/revanced-patcher/compare/v20.0.0...v20.0.1) (2024-10-13)
 
 
