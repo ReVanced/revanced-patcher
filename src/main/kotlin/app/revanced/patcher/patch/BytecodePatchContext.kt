@@ -19,10 +19,8 @@ import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
-import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.FileFilter
-import java.io.InputStream
 import java.util.*
 import java.util.logging.Logger
 
@@ -61,40 +59,19 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
-     * Because InputStream.readAllBytes() is not available with Android until 13.0,
-     * roll our own implementation until this project uses Kotlin multiplatform.
-     */
-    private fun InputStream.readAllBytesBackwardsCompatible(): ByteArray {
-        val buffer = ByteArrayOutputStream()
-        val data = ByteArray(1024)
-
-        while (true) {
-            var length = this.read(data)
-            if (length >= 0) {
-                buffer.write(data, 0, length)
-            } else {
-                break
-            }
-        }
-
-        return buffer.toByteArray()
-    }
-
-    /**
      * Merge the extensions for this set of patches.
      */
     internal fun Set<Patch<*>>.mergeExtensions() {
-        // Lookup map for fast checking if a class exists by its type.
+        // Lookup map to check if a class exists by its type quickly.
         val classesByType = mutableMapOf<String, ClassDef>().apply {
             classes.forEach { classDef -> put(classDef.type, classDef) }
         }
 
         forEachRecursively { patch ->
-            if (patch is BytecodePatch && patch.extension != null) {
+            if (patch !is BytecodePatch) return@forEachRecursively
 
-                val extension = patch.extension.readAllBytesBackwardsCompatible()
-
-                RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
+            patch.extension?.use { extensionStream ->
+                RawDexIO.readRawDexFile(extensionStream, 1024, null).classes.forEach { classDef ->
                     val existingClass = classesByType[classDef.type] ?: run {
                         logger.fine("Adding class \"$classDef\"")
 
@@ -116,6 +93,8 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                         classes += mergedClass
                     }
                 }
+
+                patch.extension.close()
             }
         }
     }
