@@ -71,7 +71,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             if (patch !is BytecodePatch) return@forEachRecursively
 
             patch.extension?.use { extensionStream ->
-                RawDexIO.readRawDexFile(extensionStream, 1024, null).classes.forEach { classDef ->
+                RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
                     val existingClass = classesByType[classDef.type] ?: run {
                         logger.fine("Adding class \"$classDef\"")
 
