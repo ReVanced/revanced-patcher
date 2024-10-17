@@ -62,17 +62,16 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * Merge the extensions for this set of patches.
      */
     internal fun Set<Patch<*>>.mergeExtensions() {
-        // Lookup map for fast checking if a class exists by its type.
+        // Lookup map to check if a class exists by its type quickly.
         val classesByType = mutableMapOf<String, ClassDef>().apply {
             classes.forEach { classDef -> put(classDef.type, classDef) }
         }
 
         forEachRecursively { patch ->
-            if (patch is BytecodePatch && patch.extension != null) {
+            if (patch !is BytecodePatch) return@forEachRecursively
 
-                val extension = patch.extension.readAllBytes()
-
-                RawDexIO.readRawDexFile(extension, 0, null).classes.forEach { classDef ->
+            patch.extension?.use { extensionStream ->
+                RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
                     val existingClass = classesByType[classDef.type] ?: run {
                         logger.fine("Adding class \"$classDef\"")
 
