@@ -158,7 +158,13 @@ class BytecodePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
-        fingerprints.forEach { it.match(this) }
+        with(context.bytecodeContext) {
+            mergeExtension()
+        }
+
+        fingerprints.forEach {
+            it.match(this)
+        }
 
         execute(this)
     }

@@ -59,42 +59,33 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
-     * Merge the extensions for this set of patches.
+     * Merge the extension of this patch.
      */
-    internal fun Set<Patch<*>>.mergeExtensions() {
-        // Lookup map to check if a class exists by its type quickly.
-        val classesByType = mutableMapOf<String, ClassDef>().apply {
-            classes.forEach { classDef -> put(classDef.type, classDef) }
-        }
+    internal fun BytecodePatch.mergeExtension() {
+        extension?.use { extensionStream ->
+            RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
+                val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
+                    logger.fine("Adding class \"$classDef\"")
 
-        forEachRecursively { patch ->
-            if (patch !is BytecodePatch) return@forEachRecursively
+                    classes += classDef
+                    lookupMaps.classesByType[classDef.type] = classDef
 
-            patch.extension?.use { extensionStream ->
-                RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
-                    val existingClass = classesByType[classDef.type] ?: run {
-                        logger.fine("Adding class \"$classDef\"")
+                    return@forEach
+                }
 
-                        classes += classDef
-                        classesByType[classDef.type] = classDef
+                logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
 
-                        return@forEach
+                existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
+                    // If the class was merged, replace the original class with the merged class.
+                    if (mergedClass === existingClass) {
+                        return@let
                     }
 
-                    logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
-
-                    existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
-                        // If the class was merged, replace the original class with the merged class.
-                        if (mergedClass === existingClass) {
-                            return@let
-                        }
-
-                        classes -= existingClass
-                        classes += mergedClass
-                    }
+                    classes -= existingClass
+                    classes += mergedClass
                 }
             }
-        }
+        } ?: return logger.fine("No extension to merge")
     }
 
     /**
@@ -185,6 +176,11 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
          */
         internal val methodsByStrings = MethodClassPairsLookupMap()
 
+        // Lookup map for fast checking if a class exists by its type.
+        val classesByType = mutableMapOf<String, ClassDef>().apply {
+            classes.forEach { classDef -> put(classDef.type, classDef) }
+        }
+
         init {
             classes.forEach { classDef ->
                 classDef.methods.forEach { method ->
@@ -231,6 +227,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
         override fun close() {
             methodsByStrings.clear()
+            classesByType.clear()
         }
     }
 

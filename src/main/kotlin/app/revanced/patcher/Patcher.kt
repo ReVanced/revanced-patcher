@@ -91,19 +91,15 @@ class Patcher(private val config: PatcherConfig) : Closeable {
             }.also { executedPatches[this] = it }
         }
 
-        // Prevent from decoding the app manifest twice if it is not needed.
+        // Prevent decoding the app manifest twice if it is not needed.
         if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
             context.resourceContext.decodeResources(config.resourceMode)
         }
 
-        logger.info("Merging extensions")
+        logger.info("Initializing lookup maps")
 
-        with(context.bytecodeContext) {
-            context.executablePatches.mergeExtensions()
-
-            // Initialize lookup maps.
-           lookupMaps
-        }
+        // Accessing the lazy lookup maps to initialize them.
+        context.bytecodeContext.lookupMaps
 
         logger.info("Executing patches")
 
