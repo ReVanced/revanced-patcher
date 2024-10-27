@@ -12,6 +12,7 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
@@ -147,7 +148,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A [MethodNavigator] for the method.
      */
-    fun navigate(method: Method) = MethodNavigator(this@BytecodePatchContext, method)
+    fun navigate(method: MethodReference) = MethodNavigator(this@BytecodePatchContext, method)
 
     /**
      * Compile bytecode from the [BytecodePatchContext].

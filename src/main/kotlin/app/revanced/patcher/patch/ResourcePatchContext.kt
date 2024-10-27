@@ -32,14 +32,19 @@ class ResourcePatchContext internal constructor(
     private val logger = Logger.getLogger(ResourcePatchContext::class.java.name)
 
     /**
-     * Read and write documents in the [PatcherConfig.apkFiles].
+     * Read a document from an [InputStream].
      */
-    val document = DocumentOperatable()
+    fun document(inputStream: InputStream) = Document(inputStream)
 
     /**
-     * Predicate to delete resources from [PatcherConfig.apkFiles].
+     * Read and write documents in the [PatcherConfig.apkFiles].
      */
-    private val deleteResources = mutableSetOf<(String) -> Boolean>()
+    fun document(path: String) = Document(get(path))
+
+    /**
+     * Set of resources from [PatcherConfig.apkFiles] to delete.
+     */
+    private val deleteResources = mutableSetOf<String>()
 
     /**
      * Decode resources of [PatcherConfig.apkFile].
@@ -201,11 +206,11 @@ class ResourcePatchContext internal constructor(
     }
 
     /**
-     * Stage a file to be deleted from [PatcherConfig.apkFile].
+     * Mark a file for deletion when the APK is rebuilt.
      *
-     * @param shouldDelete The predicate to stage the file for deletion given its name.
+     * @param name The name of the file to delete.
      */
-    fun stageDelete(shouldDelete: (String) -> Boolean) = deleteResources.add(shouldDelete)
+    fun delete(name: String) = deleteResources.add(name)
 
     /**
      * How to handle resources decoding and compiling.
@@ -226,11 +231,5 @@ class ResourcePatchContext internal constructor(
          * Do not decode or compile any resources.
          */
         NONE,
-    }
-
-    inner class DocumentOperatable {
-        operator fun get(inputStream: InputStream) = Document(inputStream)
-
-        operator fun get(path: String) = Document(this@ResourcePatchContext[path])
     }
 }

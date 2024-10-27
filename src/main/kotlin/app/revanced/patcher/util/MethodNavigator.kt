@@ -12,6 +12,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import kotlin.reflect.KProperty
 
 /**
  * A navigator for methods.
@@ -27,7 +28,7 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
 class MethodNavigator internal constructor(private val context: BytecodePatchContext, private var startMethod: MethodReference) {
     private var lastNavigatedMethodReference = startMethod
 
-    private val lastNavigatedMethodInstructions get() = with(immutable()) {
+    private val lastNavigatedMethodInstructions get() = with(original()) {
         instructionsOrNull ?: throw NavigateException("Method $definingClass.$name does not have an implementation.")
     }
 
@@ -76,15 +77,22 @@ class MethodNavigator internal constructor(private val context: BytecodePatchCon
      *
      * @return The last navigated method mutably.
      */
-    fun mutable() = context.classBy(matchesCurrentMethodReferenceDefiningClass)!!.mutableClass.firstMethodBySignature
+    fun stop() = context.classBy(matchesCurrentMethodReferenceDefiningClass)!!.mutableClass.firstMethodBySignature
         as MutableMethod
+
+    /**
+     * Get the last navigated method mutably.
+     *
+     * @return The last navigated method mutably.
+     */
+    operator fun getValue(nothing: Nothing?, property: KProperty<*>) = stop()
 
     /**
      * Get the last navigated method immutably.
      *
      * @return The last navigated method immutably.
      */
-    fun immutable() = context.classes.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
+    fun original() = context.classes.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
 
     /**
      * Predicate to match the class defining the current method reference.

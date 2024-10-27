@@ -150,7 +150,7 @@ public final class app/revanced/patcher/patch/BytecodePatchContext : app/revance
 	public final fun getValue (Lapp/revanced/patcher/Fingerprint;Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Match;
 	public final fun match (Lapp/revanced/patcher/Fingerprint;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 	public final fun match (Lapp/revanced/patcher/Fingerprint;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
-	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/MethodNavigator;
+	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun proxy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 }
 
@@ -386,18 +386,13 @@ public final class app/revanced/patcher/patch/ResourcePatchBuilder : app/revance
 }
 
 public final class app/revanced/patcher/patch/ResourcePatchContext : app/revanced/patcher/patch/PatchContext {
+	public final fun delete (Ljava/lang/String;)Z
+	public final fun document (Ljava/io/InputStream;)Lapp/revanced/patcher/util/Document;
+	public final fun document (Ljava/lang/String;)Lapp/revanced/patcher/util/Document;
 	public fun get ()Lapp/revanced/patcher/PatcherResult$PatchedResources;
 	public synthetic fun get ()Ljava/lang/Object;
 	public final fun get (Ljava/lang/String;Z)Ljava/io/File;
 	public static synthetic fun get$default (Lapp/revanced/patcher/patch/ResourcePatchContext;Ljava/lang/String;ZILjava/lang/Object;)Ljava/io/File;
-	public final fun getDocument ()Lapp/revanced/patcher/patch/ResourcePatchContext$DocumentOperatable;
-	public final fun stageDelete (Lkotlin/jvm/functions/Function1;)Z
-}
-
-public final class app/revanced/patcher/patch/ResourcePatchContext$DocumentOperatable {
-	public fun <init> (Lapp/revanced/patcher/patch/ResourcePatchContext;)V
-	public final fun get (Ljava/io/InputStream;)Lapp/revanced/patcher/util/Document;
-	public final fun get (Ljava/lang/String;)Lapp/revanced/patcher/util/Document;
 }
 
 public final class app/revanced/patcher/util/Document : java/io/Closeable, org/w3c/dom/Document {
@@ -476,8 +471,9 @@ public final class app/revanced/patcher/util/MethodNavigator {
 	public final fun at (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun at ([I)Lapp/revanced/patcher/util/MethodNavigator;
 	public static synthetic fun at$default (Lapp/revanced/patcher/util/MethodNavigator;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/util/MethodNavigator;
-	public final fun immutable ()Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun mutable ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun getValue (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun original ()Lcom/android/tools/smali/dexlib2/iface/Method;
+	public final fun stop ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
 }
 
 public final class app/revanced/patcher/util/ProxyClassList : java/util/List, kotlin/jvm/internal/markers/KMutableList {
