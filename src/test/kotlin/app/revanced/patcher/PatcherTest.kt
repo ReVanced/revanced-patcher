@@ -195,7 +195,7 @@ internal object PatcherTest {
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
         every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
-        every { with(patcher.context.bytecodeContext) { any<Set<Patch<*>>>().mergeExtensions() } } just runs
+        every { with(patcher.context.bytecodeContext) { any<BytecodePatch>().mergeExtension() } } just runs
 
         return runBlocking { patcher().toList() }
     }
