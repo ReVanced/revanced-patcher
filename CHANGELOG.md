@@ -1,3 +1,22 @@
+# [21.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v20.0.2...v21.0.0-dev.1) (2024-10-27)
+
+
+### Bug Fixes
+
+* Merge extension only when patch executes ([#315](https://github.com/ReVanced/revanced-patcher/issues/315)) ([aa472eb](https://github.com/ReVanced/revanced-patcher/commit/aa472eb9857145b53b49f843406a9764fbb7e5ce))
+
+
+### Features
+
+* Improve Fingerprint API ([#316](https://github.com/ReVanced/revanced-patcher/issues/316)) ([0abf1c6](https://github.com/ReVanced/revanced-patcher/commit/0abf1c6c0279708fdef5cb66b141d07d17682693))
+* Improve various APIs  ([#317](https://github.com/ReVanced/revanced-patcher/issues/317)) ([b824978](https://github.com/ReVanced/revanced-patcher/commit/b8249789df8b90129f7b7ad0e523a8d0ceaab848))
+
+
+### BREAKING CHANGES
+
+* Various APIs have been changed.
+* Many APIs have been changed.
+
 ## [20.0.2](https://github.com/ReVanced/revanced-patcher/compare/v20.0.1...v20.0.2) (2024-10-17)
 
 
