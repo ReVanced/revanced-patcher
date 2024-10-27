@@ -14,7 +14,7 @@ A handful of APIs are available to make patch development easier and more effici
 
 #### 👹 `proxy(ClassDef)`
 
-By default, the classes are immutable, meaning that they cannot be modified.
+By default, the classes are immutable, meaning they cannot be modified.
 To make a class mutable, use the `proxy(ClassDef)` function.
 This function creates a lazy mutable copy of the class definition.
 Accessing the property will replace the original class definition with the mutable copy,
@@ -52,11 +52,11 @@ execute {
     // stop() returns the mutable copy of the method.
     val method = navigate(someMethod).at(2) { instruction -> instruction.opcode == Opcode.INVOKEVIRTUAL }.stop()
     
-    // Alternatively to stop(), you can delegeate the method to a variable.
+    // Alternatively, to stop(), you can delegate the method to a variable.
     val method by navigate(someMethod).at(1)
     
     // You can chain multiple calls to at() to navigate deeper into the method.
-    val method = navigate(someMethod).at(1).at(2, 3, 4).at(5).stop()
+    val method by navigate(someMethod).at(1).at(2, 3, 4).at(5)
 }
 ```
 
@@ -72,7 +72,7 @@ execute {
 }
 ```
 
-The `delete` function can be used to mark files for deletion when the APK is rebuilt.
+The `delete` function can mark files for deletion when the APK is rebuilt.
 
 ```kt
 execute {
