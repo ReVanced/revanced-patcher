@@ -1,8 +1,6 @@
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.InternalApi
-import app.revanced.patcher.PatcherConfig
-import app.revanced.patcher.PatcherResult
+import app.revanced.patcher.*
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
@@ -23,6 +21,7 @@ import java.io.Closeable
 import java.io.FileFilter
 import java.util.*
 import java.util.logging.Logger
+import kotlin.reflect.KProperty
 
 /**
  * A context for patches containing the current state of the bytecode.
@@ -54,18 +53,51 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     )
 
     /**
+     * The match for this [Fingerprint]. Null if unmatched.
+     */
+    val Fingerprint.match get() = match(this@BytecodePatchContext)
+
+    /**
+     * Match using a [ClassDef].
+     *
+     * @param classDef The class to match against.
+     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
+     */
+    fun Fingerprint.match(classDef: ClassDef) = match(this@BytecodePatchContext, classDef)
+
+    /**
+     * Match using a [Method].
+     * The class is retrieved from the method.
+     *
+     * @param method The method to match against.
+     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
+     */
+    fun Fingerprint.match(method: Method) = match(this@BytecodePatchContext, method)
+
+    /**
+     * Get the match for this [Fingerprint].
+     *
+     * @throws IllegalStateException If the [Fingerprint] has not been matched.
+     */
+    operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>): Match = _match
+        ?: throw PatchException("No fingerprint match to delegate to \"${property.name}\".")
+
+    /**
      * The lookup maps for methods and the class they are a member of from the [classes].
      */
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
-     * Merge the extension of this patch.
+     * Merge the extension of [bytecodePatch] into the [BytecodePatchContext].
+     * If no extension is present, the function will return early.
+     *
+     * @param bytecodePatch The [BytecodePatch] to merge the extension of.
      */
-    internal fun BytecodePatch.mergeExtension() {
-        extension?.use { extensionStream ->
+    internal fun mergeExtension(bytecodePatch: BytecodePatch) {
+        bytecodePatch.extensionInputStream?.get()?.use { extensionStream ->
             RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
                 val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
-                    logger.fine("Adding class \"$classDef\"")
+                    logger.fine { "Adding class \"$classDef\"" }
 
                     classes += classDef
                     lookupMaps.classesByType[classDef.type] = classDef
@@ -73,7 +105,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     return@forEach
                 }
 
-                logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
+                logger.fine { "Class \"$classDef\" exists already. Adding missing methods and fields." }
 
                 existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
                     // If the class was merged, replace the original class with the merged class.
@@ -85,17 +117,8 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     classes += mergedClass
                 }
             }
-        } ?: return logger.fine("No extension to merge")
+        } ?: logger.fine("No extension to merge")
     }
-
-    /**
-     * Find a class by its type using a contains check.
-     *
-     * @param type The type of the class.
-     * @return A proxy for the first class that matches the type.
-     */
-    @Deprecated("Use classBy { type in it.type } instead.", ReplaceWith("classBy { type in it.type }"))
-    fun classByType(type: String) = classBy { type in it.type }
 
     /**
      * Find a class with a predicate.
@@ -145,7 +168,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             }.apply {
                 MultiDexIO.writeDexFile(
                     true,
-                    if (config.multithreadingDexFileWriter) -1 else 1,
+                    -1,
                     this,
                     BasicDexFileNamer(),
                     object : DexFile {
@@ -155,7 +178,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },
                     DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
-                ) { _, entryName, _ -> logger.info("Compiled $entryName") }
+                ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
             }.listFiles(FileFilter { it.isFile })!!.map {
                 PatcherResult.PatchedDexFile(it.name, it.inputStream())
             }.toSet()

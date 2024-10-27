@@ -96,21 +96,21 @@ Example of patches:
 @Surpress("unused")
 val bytecodePatch = bytecodePatch {
     execute { 
-        // TODO
+        // More about this on the next page of the documentation.
     }
 }
 
 @Surpress("unused")
 val rawResourcePatch = rawResourcePatch {
-    execute { 
-        // TODO
+    execute {
+        // More about this on the next page of the documentation.
     }
 }
 
 @Surpress("unused")
 val resourcePatch = resourcePatch {
-    execute { 
-        // TODO
+    execute {
+        // More about this on the next page of the documentation.
     }
 }
 ```

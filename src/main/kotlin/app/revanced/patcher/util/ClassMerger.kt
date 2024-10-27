@@ -60,7 +60,7 @@ internal object ClassMerger {
 
         if (missingMethods.isEmpty()) return this
 
-        logger.fine("Found ${missingMethods.size} missing methods")
+        logger.fine { "Found ${missingMethods.size} missing methods" }
 
         return asMutableClass().apply {
             methods.addAll(missingMethods.map { it.toMutable() })
@@ -80,7 +80,7 @@ internal object ClassMerger {
 
         if (missingFields.isEmpty()) return this
 
-        logger.fine("Found ${missingFields.size} missing fields")
+        logger.fine { "Found ${missingFields.size} missing fields" }
 
         return asMutableClass().apply {
             fields.addAll(missingFields.map { it.toMutable() })
@@ -100,7 +100,7 @@ internal object ClassMerger {
             context.traverseClassHierarchy(this) {
                 if (accessFlags.isPublic()) return@traverseClassHierarchy
 
-                logger.fine("Publicizing ${this.type}")
+                logger.fine { "Publicizing ${this.type}" }
 
                 accessFlags = accessFlags.toPublic()
             }
@@ -124,7 +124,7 @@ internal object ClassMerger {
 
         if (brokenFields.isEmpty()) return this
 
-        logger.fine("Found ${brokenFields.size} broken fields")
+        logger.fine { "Found ${brokenFields.size} broken fields" }
 
         /**
          * Make a field public.
@@ -153,7 +153,7 @@ internal object ClassMerger {
 
         if (brokenMethods.isEmpty()) return this
 
-        logger.fine("Found ${brokenMethods.size} methods")
+        logger.fine { "Found ${brokenMethods.size} methods" }
 
         /**
          * Make a method public.

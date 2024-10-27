@@ -4,7 +4,6 @@ package app.revanced.patcher
 
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps.Companion.appendParameters
 import app.revanced.patcher.patch.MethodClassPairs
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -16,7 +15,17 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 
 /**
- * A fingerprint.
+ * A fingerprint for a method. A fingerprint is a partial description of a method.
+ * It is used to uniquely match a method by its characteristics.
+ *
+ * An example fingerprint for a public method that takes a single string parameter and returns void:
+ * ```
+ * fingerprint {
+ *    accessFlags(AccessFlags.PUBLIC)
+ *    returns("V")
+ *    parameters("Ljava/lang/String;")
+ * }
+ * ```
  *
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
@@ -38,13 +47,14 @@ class Fingerprint internal constructor(
     /**
      * The match for this [Fingerprint]. Null if unmatched.
      */
-    var match: Match? = null
-        private set
+    // Backing property for "match" extension in BytecodePatchContext.
+    @Suppress("ktlint:standard:backing-property-naming", "PropertyName")
+    internal var _match: Match? = null
 
     /**
      * Match using [BytecodePatchContext.LookupMaps].
      *
-     * Generally faster than the other [match] overloads when there are many methods to check for a match.
+     * Generally faster than the other [_match] overloads when there are many methods to check for a match.
      *
      * Fingerprints can be optimized for performance:
      * - Slowest: Specify [custom] or [opcodes] and nothing else.
@@ -52,48 +62,54 @@ class Fingerprint internal constructor(
      * - Faster: Specify [accessFlags], [returnType] and [parameters].
      * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
      *
-     * @param context The context to create mutable proxies for the matched method and its class.
-     * @return True if a match was found or if the fingerprint is already matched to a method, false otherwise.
+     * @param context The [BytecodePatchContext] to match against [BytecodePatchContext.classes].
+     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
      */
-    internal fun match(context: BytecodePatchContext): Boolean {
+    internal fun match(context: BytecodePatchContext): Match? {
+        if (_match != null) return _match
+
         val lookupMaps = context.lookupMaps
 
-        fun Fingerprint.match(methodClasses: MethodClassPairs): Boolean {
+        fun Fingerprint.match(methodClasses: MethodClassPairs): Match? {
             methodClasses.forEach { (classDef, method) ->
-                if (match(context, classDef, method)) return true
+                val match = match(context, classDef, method)
+                if (match != null) return match
             }
-            return false
+
+            return null
         }
 
         // TODO: If only one string is necessary, why not use a single string for every fingerprint?
-        if (strings?.firstNotNullOfOrNull { lookupMaps.methodsByStrings[it] }?.let(::match) == true) {
-            return true
-        }
+        val match = strings?.firstNotNullOfOrNull { lookupMaps.methodsByStrings[it] }?.let(::match)
+        if (match != null) return match
 
         context.classes.forEach { classDef ->
-            if (match(context, classDef)) return true
+            val match = match(context, classDef)
+            if (match != null) return match
         }
 
-        return false
+        return null
     }
 
     /**
      * Match using a [ClassDef].
      *
      * @param classDef The class to match against.
-     * @param context The context to create mutable proxies for the matched method and its class.
-     * @return True if a match was found or if the fingerprint is already matched to a method, false otherwise.
+     * @param context The [BytecodePatchContext] to match against [BytecodePatchContext.classes].
+     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
      */
-    fun match(
+    internal fun match(
         context: BytecodePatchContext,
         classDef: ClassDef,
-    ): Boolean {
+    ): Match? {
+        if (_match != null) return _match
+
         for (method in classDef.methods) {
-            if (match(context, method, classDef)) {
-                return true
-            }
+            val match = match(context, method, classDef)
+            if (match != null)return match
         }
-        return false
+
+        return null
     }
 
     /**
@@ -101,10 +117,10 @@ class Fingerprint internal constructor(
      * The class is retrieved from the method.
      *
      * @param method The method to match against.
-     * @param context The context to create mutable proxies for the matched method and its class.
-     * @return True if a match was found or if the fingerprint is already matched to a method, false otherwise.
+     * @param context The [BytecodePatchContext] to match against [BytecodePatchContext.classes].
+     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
      */
-    fun match(
+    internal fun match(
         context: BytecodePatchContext,
         method: Method,
     ) = match(context, method, context.classBy { method.definingClass == it.type }!!.immutableClass)
@@ -114,22 +130,22 @@ class Fingerprint internal constructor(
      *
      * @param method The method to match against.
      * @param classDef The class the method is a member of.
-     * @param context The context to create mutable proxies for the matched method and its class.
-     * @return True if a match was found or if the fingerprint is already matched to a method, false otherwise.
+     * @param context The [BytecodePatchContext] to match against [BytecodePatchContext.classes].
+     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
      */
     internal fun match(
         context: BytecodePatchContext,
         method: Method,
         classDef: ClassDef,
-    ): Boolean {
-        if (match != null) return true
+    ): Match? {
+        if (_match != null) return _match
 
         if (returnType != null && !method.returnType.startsWith(returnType)) {
-            return false
+            return null
         }
 
         if (accessFlags != null && accessFlags != method.accessFlags) {
-            return false
+            return null
         }
 
         fun parametersEqual(
@@ -146,17 +162,17 @@ class Fingerprint internal constructor(
 
         // TODO: parseParameters()
         if (parameters != null && !parametersEqual(parameters, method.parameterTypes)) {
-            return false
+            return null
         }
 
         if (custom != null && !custom.invoke(method, classDef)) {
-            return false
+            return null
         }
 
         val stringMatches: List<Match.StringMatch>? =
             if (strings != null) {
                 buildList {
-                    val instructions = method.instructionsOrNull ?: return false
+                    val instructions = method.instructionsOrNull ?: return null
 
                     val stringsList = strings.toMutableList()
 
@@ -176,14 +192,14 @@ class Fingerprint internal constructor(
                         stringsList.removeAt(index)
                     }
 
-                    if (stringsList.isNotEmpty()) return false
+                    if (stringsList.isNotEmpty()) return null
                 }
             } else {
                 null
             }
 
         val patternMatch = if (opcodes != null) {
-            val instructions = method.instructionsOrNull ?: return false
+            val instructions = method.instructionsOrNull ?: return null
 
             fun patternScan(): Match.PatternMatch? {
                 val fingerprintFuzzyPatternScanThreshold = fuzzyPatternScanThreshold
@@ -222,54 +238,54 @@ class Fingerprint internal constructor(
                 return null
             }
 
-            patternScan() ?: return false
+            patternScan() ?: return null
         } else {
             null
         }
 
-        match = Match(
-            method,
+        _match = Match(
             classDef,
+            method,
             patternMatch,
             stringMatches,
             context,
         )
 
-        return true
+        return _match
     }
 }
 
 /**
  * A match for a [Fingerprint].
  *
- * @param method The matching method.
- * @param classDef The class the matching method is a member of.
+ * @param originalClassDef The class the matching method is a member of.
+ * @param originalMethod The matching method.
  * @param patternMatch The match for the opcode pattern.
  * @param stringMatches The matches for the strings.
  * @param context The context to create mutable proxies in.
  */
-class Match(
-    val method: Method,
-    val classDef: ClassDef,
+class Match internal constructor(
+    val originalClassDef: ClassDef,
+    val originalMethod: Method,
     val patternMatch: PatternMatch?,
     val stringMatches: List<StringMatch>?,
     internal val context: BytecodePatchContext,
 ) {
     /**
-     * The mutable version of [classDef].
+     * The mutable version of [originalClassDef].
      *
      * Accessing this property allocates a [ClassProxy].
-     * Use [classDef] if mutable access is not required.
+     * Use [originalClassDef] if mutable access is not required.
      */
-    val mutableClass by lazy { context.proxy(classDef).mutableClass }
+    val classDef by lazy { context.proxy(originalClassDef).mutableClass }
 
     /**
-     * The mutable version of [method].
+     * The mutable version of [originalMethod].
      *
      * Accessing this property allocates a [ClassProxy].
-     * Use [method] if mutable access is not required.
+     * Use [originalMethod] if mutable access is not required.
      */
-    val mutableMethod by lazy { mutableClass.methods.first { MethodUtil.methodSignaturesMatch(it, method) } }
+    val method by lazy { classDef.methods.first { MethodUtil.methodSignaturesMatch(it, originalMethod) } }
 
     /**
      * A match for an opcode pattern.
@@ -336,7 +352,7 @@ class FingerprintBuilder internal constructor(
      *
      * @param returnType The return type compared using [String.startsWith].
      */
-    infix fun returns(returnType: String) {
+    fun returns(returnType: String) {
         this.returnType = returnType
     }
 
@@ -427,19 +443,3 @@ fun fingerprint(
     fuzzyPatternScanThreshold: Int = 0,
     block: FingerprintBuilder.() -> Unit,
 ) = FingerprintBuilder(fuzzyPatternScanThreshold).apply(block).build()
-
-/**
- * Create a [Fingerprint] and add it to the set of fingerprints.
- *
- * @param fuzzyPatternScanThreshold The threshold for fuzzy pattern scanning. Default is 0.
- * @param block The block to build the [Fingerprint].
- *
- * @return The created [Fingerprint].
- */
-fun BytecodePatchBuilder.fingerprint(
-    fuzzyPatternScanThreshold: Int = 0,
-    block: FingerprintBuilder.() -> Unit,
-) = app.revanced.patcher.fingerprint(
-    fuzzyPatternScanThreshold,
-    block,
-)() // Invoke to add it.

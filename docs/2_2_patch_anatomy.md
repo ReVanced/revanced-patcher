@@ -76,23 +76,23 @@ val disableAdsPatch = bytecodePatch(
 ) { 
     compatibleWith("com.some.app"("1.0.0"))
     
-    // Resource patch disables ads by patching resource files.
+    // Patches can depend on other patches, executing them first.
     dependsOn(disableAdsResourcePatch)
 
-    // Precompiled DEX file to be merged into the patched app.
+    // Merge precompiled DEX files into the patched app, before the patch is executed.
     extendWith("disable-ads.rve")
-
-    // Fingerprint to find the method to patch.
-    val showAdsMatch by showAdsFingerprint {
-        // More about fingerprints on the next page of the documentation.
-    }
     
     // Business logic of the patch to disable ads in the app.
     execute {
+        // Fingerprint to find the method to patch.
+        val showAdsMatch by showAdsFingerprint {
+          // More about fingerprints on the next page of the documentation.
+        }
+      
         // In the method that shows ads,
         // call DisableAdsPatch.shouldDisableAds() from the extension (precompiled DEX file)
         // to enable or disable ads.
-        showAdsMatch.mutableMethod.addInstructions(
+        showAdsMatch.method.addInstructions(
             0,
             """
                 invoke-static {}, LDisableAdsPatch;->shouldDisableAds()Z
@@ -146,10 +146,10 @@ loadPatchesJar(patches).apply {
 The type of an option can be obtained from the `type` property of the option:
 
 ```kt
-option.type // The KType of the option.
+option.type // The KType of the option. Captures the full type information of the option.
 ```
 
-Options can be declared outside of a patch and added to a patch manually:
+Options can be declared outside a patch and added to a patch manually:
 
 ```kt
 val option = stringOption(key = "option")
@@ -183,11 +183,9 @@ and use it in a patch:
 ```kt
 val patch = bytecodePatch(name = "Complex patch") {
     extendWith("complex-patch.rve")
-    
-    val match by methodFingerprint()
-    
+  
     execute { 
-        match.mutableMethod.addInstructions(0, "invoke-static { }, LComplexPatch;->doSomething()V")
+        fingerprint.match!!.mutableMethod.addInstructions(0, "invoke-static { }, LComplexPatch;->doSomething()V")
     }
 }
 ```

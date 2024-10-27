@@ -3,21 +3,21 @@ package app.revanced.patcher
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
 import app.revanced.patcher.util.ProxyClassList
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import jdk.internal.module.ModuleBootstrap.patcher
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertAll
 import java.util.logging.Logger
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal object PatcherTest {
     private lateinit var patcher: Patcher
@@ -151,18 +151,14 @@ internal object PatcherTest {
     @Test
     fun `throws if unmatched fingerprint match is delegated`() {
         val patch = bytecodePatch {
-            // Fingerprint can never match.
-            val match by fingerprint { }
-            // Manually add the fingerprint.
-            app.revanced.patcher.fingerprint { }()
-
             execute {
+                // Fingerprint can never match.
+                val match by fingerprint { }
+
                 // Throws, because the fingerprint can't be matched.
                 match.patternMatch
             }
         }
-
-        assertEquals(2, patch.fingerprints.size)
 
         assertTrue(
             patch().exception != null,
@@ -172,44 +168,6 @@ internal object PatcherTest {
 
     @Test
     fun `matches fingerprint`() {
-        mockClassWithMethod()
-
-        val patches = setOf(bytecodePatch { fingerprint { this returns "V" } })
-
-        assertNull(
-            patches.first().fingerprints.first().match,
-            "Expected fingerprint to be matched before execution.",
-        )
-
-        patches()
-
-        assertDoesNotThrow("Expected fingerprint to be matched.") {
-            assertEquals(
-                "V",
-                patches.first().fingerprints.first().match!!.method.returnType,
-                "Expected fingerprint to be matched.",
-            )
-        }
-    }
-
-    private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
-        every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
-        every { with(patcher.context.bytecodeContext) { any<BytecodePatch>().mergeExtension() } } just runs
-
-        return runBlocking { patcher().toList() }
-    }
-
-    private operator fun Patch<*>.invoke() = setOf(this)().first()
-
-    private fun Any.setPrivateField(field: String, value: Any) {
-        this::class.java.getDeclaredField(field).apply {
-            this.isAccessible = true
-            set(this@setPrivateField, value)
-        }
-    }
-
-    private fun mockClassWithMethod() {
         every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
             mutableListOf(
                 ImmutableClassDef(
@@ -235,6 +193,50 @@ internal object PatcherTest {
                 ),
             ),
         )
+        every { with(patcher.context.bytecodeContext) { any<Fingerprint>().match } } answers { callOriginal() }
+        every { with(patcher.context.bytecodeContext) { any<Fingerprint>().match(any<ClassDef>()) } } answers { callOriginal() }
+        every { with(patcher.context.bytecodeContext) { any<Fingerprint>().match(any<Method>()) } } answers { callOriginal() }
+        every { patcher.context.bytecodeContext.classBy(any()) } answers { callOriginal() }
+        every { patcher.context.bytecodeContext.proxy(any()) } answers { callOriginal() }
+
+        val fingerprint = fingerprint { returns("V") }
+        val fingerprint2 = fingerprint { returns("V") }
+        val fingerprint3 = fingerprint { returns("V") }
+
+        val patches = setOf(
+            bytecodePatch {
+                execute {
+                    fingerprint.match(classes.first().methods.first())
+                    fingerprint2.match(classes.first())
+                    fingerprint3.match
+                }
+            },
+        )
+
+        patches()
+
+        assertAll(
+            "Expected fingerprints to match.",
+            { assertNotNull(fingerprint._match) },
+            { assertNotNull(fingerprint2._match) },
+            { assertNotNull(fingerprint3._match) },
+        )
+    }
+
+    private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
+        every { patcher.context.executablePatches } returns toMutableSet()
         every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
+        every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
+
+        return runBlocking { patcher().toList() }
+    }
+
+    private operator fun Patch<*>.invoke() = setOf(this)().first()
+
+    private fun Any.setPrivateField(field: String, value: Any) {
+        this::class.java.getDeclaredField(field).apply {
+            this.isAccessible = true
+            set(this@setPrivateField, value)
+        }
     }
 }
