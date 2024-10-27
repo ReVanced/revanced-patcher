@@ -8,7 +8,7 @@ A handful of APIs are available to make patch development easier and more effici
 2. 🔍 Find and create mutable replaces with `classBy(Predicate)`
 3. 🏃‍ Navigate method calls recursively by index with `navigate(Method)`
 4. 💾 Read and write resource files with `get(String, Boolean)` and `delete(String)`
-5. 📃 Read and write DOM files using `document(String)` or `document(InputStream)`
+5. 📃 Read and write DOM files using `document(String)` and  `document(InputStream)`
 
 ### 🧰 APIs
 
@@ -60,7 +60,7 @@ execute {
 }
 ```
 
-#### 💾 `get(String, Boolean)`
+#### 💾 `get(String, Boolean)` and `delete(String)`
 
 The `get(String, Boolean)` function returns a `File` object that can be used to read and write resource files.
 
@@ -80,7 +80,7 @@ execute {
 }
 ```
 
-#### 📃 `document`
+#### 📃 `document(String)`  and  `document(InputStream)`
 
 The `document` function is used to read and write DOM files.
 
