@@ -157,7 +157,7 @@ val patch = bytecodePatch {
 The fingerprint won't be matched again, if it has already been matched once.
 This makes it useful, to share fingerprints between multiple patches, and let the first patch match the fingerprint:
 
-```
+```kt
 // Either of these two patches will match the fingerprint first and the other patch can reuse the match:
 val mainActivityPatch1 = bytecodePatch {
     execute {
@@ -245,8 +245,8 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
 you can match the fingerprint on the list of classes:
 
   ```kt
-    execute {
-        val match = showAdsFingerprint.match(classes) ?: throw PatchException("No match found")
+  execute {
+    val match = showAdsFingerprint.match(classes) ?: throw PatchException("No match found")
   }
   ```
 
@@ -256,9 +256,9 @@ you can match the fingerprint on the list of classes:
 
   ```kt
   execute {
-      val adsLoaderClass = classes.single { it.name == "Lcom/some/app/ads/Loader;" }
+    val adsLoaderClass = classes.single { it.name == "Lcom/some/app/ads/Loader;" }
 
-      val match = showAdsFingerprint.match(context, adsLoaderClass) ?: throw PatchException("No match found")
+    val match = showAdsFingerprint.match(context, adsLoaderClass) ?: throw PatchException("No match found")
   }
   ```
 
@@ -270,13 +270,13 @@ you can match the fingerprint on the list of classes:
 
   ```kt
   execute {
-      val currentPlanFingerprint = fingerprint {
+    val currentPlanFingerprint = fingerprint {
       strings("free", "trial")
     }
 
-      currentPlanFingerprint.match(adsFingerprintMatch.method)?.let { match ->
+    currentPlanFingerprint.match(adsFingerprintMatch.method)?.let { match ->
       match.stringMatches.forEach { match ->
-          println("The index of the string '${match.string}' is ${match.index}")
+        println("The index of the string '${match.string}' is ${match.index}")
       }
     } ?: throw PatchException("No match found")
   }
