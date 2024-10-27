@@ -115,19 +115,19 @@ The fingerprint contains the following information:
 With this information, the original code can be reconstructed:
 
 ```java
-    package com.some.app.ads;
+package com.some.app.ads;
 
-    <accessFlags> class AdsLoader {
-        public final boolean <methodName>(boolean <parameter>) {
-            // ...
+<accessFlags> class AdsLoader {
+    public final boolean <methodName>(boolean <parameter>) {
+        // ...
 
-            var userStatus = "pro";
+        var userStatus = "pro";
 
-            // ...
+        // ...
 
-            return <returnValue>;
-        }
+        return <returnValue>;
     }
+}
 ```
 
 Using that fingerprint, this method can be matched uniquely from all other methods.
