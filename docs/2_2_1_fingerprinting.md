@@ -266,6 +266,15 @@ you can match the fingerprint on the list of classes:
     val match = showAdsFingerprint.match(context, adsLoaderClass) ?: throw PatchException("No match found")
   }
   ```
+  
+  Another common usecase is to use a fingerprint to reduce the search space of a method to a single class.
+
+  ```kt
+  execute {
+    // Match showAdsFingerprint in the class of the ads loader found by adsLoaderClassFingerprint.
+    val match by showAdsFingerprint.match(adsLoaderClassFingerprint.match!!.classDef)
+  }
+  ```
 
 - Match a **single method**, to extract certain information about it
 
