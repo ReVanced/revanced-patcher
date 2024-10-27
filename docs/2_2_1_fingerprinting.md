@@ -233,6 +233,11 @@ The `classDef` and `method` properties can be used to make changes to the class 
 They are lazy properties, so they are only computed 
 and will effectively replace the original method or class definition when accessed.
 
+> [!TIP]
+> If only read-only access to the class or method is needed, 
+> the `originalClassDef` and `originalMethod` properties can be used, 
+> to avoid making a mutable copy of the class or method.
+
 ## 🏹 Manually matching fingerprints
 
 By default, a fingerprint is matched automatically against all classes when the `match` property is accessed.
