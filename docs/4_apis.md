@@ -43,7 +43,7 @@ execute {
 
 The `navigate(Method)` function allows you to navigate method calls recursively by index.
 
-```
+```kt
 execute {
     // Sequentially navigate to the instructions at index 1 within 'someMethod'.
     val method = navigate(someMethod).at(1).original() // original() returns the original immutable method.
