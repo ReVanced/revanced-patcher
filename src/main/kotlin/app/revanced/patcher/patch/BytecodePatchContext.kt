@@ -98,7 +98,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         bytecodePatch.extensionInputStream?.get()?.use { extensionStream ->
             RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
                 val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
-                    logger.fine("Adding class \"$classDef\"")
+                    logger.fine { "Adding class \"$classDef\"" }
 
                     classes += classDef
                     lookupMaps.classesByType[classDef.type] = classDef
@@ -106,7 +106,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     return@forEach
                 }
 
-                logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
+                logger.fine { "Class \"$classDef\" exists already. Adding missing methods and fields." }
 
                 existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
                     // If the class was merged, replace the original class with the merged class.
@@ -179,7 +179,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },
                     DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
-                ) { _, entryName, _ -> logger.info("Compiled $entryName") }
+                ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
             }.listFiles(FileFilter { it.isFile })!!.map {
                 PatcherResult.PatchedDexFile(it.name, it.inputStream())
             }.toSet()

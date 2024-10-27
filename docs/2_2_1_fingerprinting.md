@@ -233,6 +233,11 @@ The `classDef` and `method` properties can be used to make changes to the class 
 They are lazy properties, so they are only computed 
 and will effectively replace the original method or class definition when accessed.
 
+> [!TIP]
+> If only read-only access to the class or method is needed, 
+> the `originalClassDef` and `originalMethod` properties can be used, 
+> to avoid making a mutable copy of the class or method.
+
 ## 🏹 Manually matching fingerprints
 
 By default, a fingerprint is matched automatically against all classes when the `match` property is accessed.
@@ -259,6 +264,15 @@ you can match the fingerprint on the list of classes:
     val adsLoaderClass = classes.single { it.name == "Lcom/some/app/ads/Loader;" }
 
     val match = showAdsFingerprint.match(context, adsLoaderClass) ?: throw PatchException("No match found")
+  }
+  ```
+  
+  Another common usecase is to use a fingerprint to reduce the search space of a method to a single class.
+
+  ```kt
+  execute {
+    // Match showAdsFingerprint in the class of the ads loader found by adsLoaderClassFingerprint.
+    val match by showAdsFingerprint.match(adsLoaderClassFingerprint.match!!.classDef)
   }
   ```
 
