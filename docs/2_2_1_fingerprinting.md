@@ -203,11 +203,11 @@ val patch = bytecodePatch {
 >
 > ```kt
 > fingerprint(fuzzyPatternScanThreshhold = 2) {
->    opcodes(
->        Opcode.ICONST_0,
->        null,
->        Opcode.ICONST_1,
->        Opcode.IRETURN,
+>   opcodes(
+>     Opcode.ICONST_0,
+>     null,
+>     Opcode.ICONST_1,
+>     Opcode.IRETURN,
 >    )
 >}
 > ```
@@ -247,7 +247,7 @@ you can match the fingerprint on the list of classes:
   ```kt
     execute {
         val match = showAdsFingerprint.match(classes) ?: throw PatchException("No match found")
-    }
+  }
   ```
 
 - In a **single class**, if the fingerprint can match in a single known class
@@ -271,14 +271,14 @@ you can match the fingerprint on the list of classes:
   ```kt
   execute {
       val currentPlanFingerprint = fingerprint {
-          strings("free", "trial")
-      }
+      strings("free", "trial")
+    }
 
       currentPlanFingerprint.match(adsFingerprintMatch.method)?.let { match ->
-          match.stringMatches.forEach { match ->
-              println("The index of the string '${match.string}' is ${match.index}")
-          }
-      } ?: throw PatchException("No match found")
+      match.stringMatches.forEach { match ->
+          println("The index of the string '${match.string}' is ${match.index}")
+      }
+    } ?: throw PatchException("No match found")
   }
   ```
 
