@@ -1,3 +1,10 @@
+# [21.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0-dev.1...v21.0.0-dev.2) (2024-11-01)
+
+
+### Bug Fixes
+
+* Match fingerprint before delegating the match property ([5d996de](https://github.com/ReVanced/revanced-patcher/commit/5d996def4d3de4e2bfc34562e5a6c7d89a8cddf0))
+
 # [21.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v20.0.2...v21.0.0-dev.1) (2024-10-27)
 
 
