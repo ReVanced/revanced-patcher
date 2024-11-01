@@ -80,7 +80,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @throws IllegalStateException If the [Fingerprint] has not been matched.
      */
-    operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>): Match = _match
+    operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>): Match = match
         ?: throw PatchException("No fingerprint match to delegate to \"${property.name}\".")
 
     /**
