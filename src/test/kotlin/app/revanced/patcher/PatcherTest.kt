@@ -3,21 +3,18 @@ package app.revanced.patcher
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
 import app.revanced.patcher.util.ProxyClassList
-import com.android.tools.smali.dexlib2.iface.ClassDef
-import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import jdk.internal.module.ModuleBootstrap.patcher
+import io.mockk.*
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
 import java.util.logging.Logger
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 internal object PatcherTest {
     private lateinit var patcher: Patcher
@@ -153,10 +150,10 @@ internal object PatcherTest {
         val patch = bytecodePatch {
             execute {
                 // Fingerprint can never match.
-                val match by fingerprint { }
+                val fingerprint = fingerprint { }
 
                 // Throws, because the fingerprint can't be matched.
-                match.patternMatch
+                fingerprint.patternMatch
             }
         }
 
@@ -193,11 +190,6 @@ internal object PatcherTest {
                 ),
             ),
         )
-        every { with(patcher.context.bytecodeContext) { any<Fingerprint>().match } } answers { callOriginal() }
-        every { with(patcher.context.bytecodeContext) { any<Fingerprint>().match(any<ClassDef>()) } } answers { callOriginal() }
-        every { with(patcher.context.bytecodeContext) { any<Fingerprint>().match(any<Method>()) } } answers { callOriginal() }
-        every { patcher.context.bytecodeContext.classBy(any()) } answers { callOriginal() }
-        every { patcher.context.bytecodeContext.proxy(any()) } answers { callOriginal() }
 
         val fingerprint = fingerprint { returns("V") }
         val fingerprint2 = fingerprint { returns("V") }
@@ -208,19 +200,21 @@ internal object PatcherTest {
                 execute {
                     fingerprint.match(classes.first().methods.first())
                     fingerprint2.match(classes.first())
-                    fingerprint3.match
+                    fingerprint3.originalClassDef
                 }
             },
         )
 
         patches()
 
-        assertAll(
-            "Expected fingerprints to match.",
-            { assertNotNull(fingerprint._match) },
-            { assertNotNull(fingerprint2._match) },
-            { assertNotNull(fingerprint3._match) },
-        )
+        with(patcher.context.bytecodeContext) {
+            assertAll(
+                "Expected fingerprints to match.",
+                { assertNotNull(fingerprint.originalClassDefOrNull) },
+                { assertNotNull(fingerprint2.originalClassDefOrNull) },
+                { assertNotNull(fingerprint3.originalClassDefOrNull) },
+            )
+        }
     }
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {

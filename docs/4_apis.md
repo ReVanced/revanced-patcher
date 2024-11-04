@@ -46,17 +46,17 @@ The `navigate(Method)` function allows you to navigate method calls recursively 
 ```kt
 execute {
     // Sequentially navigate to the instructions at index 1 within 'someMethod'.
-    val method = navigate(someMethod).at(1).original() // original() returns the original immutable method.
+    val method = navigate(someMethod).to(1).original() // original() returns the original immutable method.
     
     // Further navigate to the second occurrence where the instruction's opcode is 'INVOKEVIRTUAL'.
     // stop() returns the mutable copy of the method.
-    val method = navigate(someMethod).at(2) { instruction -> instruction.opcode == Opcode.INVOKEVIRTUAL }.stop()
+    val method = navigate(someMethod).to(2) { instruction -> instruction.opcode == Opcode.INVOKEVIRTUAL }.stop()
     
     // Alternatively, to stop(), you can delegate the method to a variable.
-    val method by navigate(someMethod).at(1)
+    val method by navigate(someMethod).to(1)
     
     // You can chain multiple calls to at() to navigate deeper into the method.
-    val method by navigate(someMethod).at(1).at(2, 3, 4).at(5)
+    val method by navigate(someMethod).to(1).to(2, 3, 4).to(5)
 }
 ```
 
@@ -85,7 +85,7 @@ execute {
 The `document` function is used to read and write DOM files.
 
 ```kt
-execute { 
+execute {
     document("res/values/strings.xml").use { document ->
         val element = doc.createElement("string").apply {
             textContent = "Hello, World!"
@@ -112,5 +112,6 @@ ReVanced Patcher is a powerful library to patch Android applications, offering a
 that outlive app updates. Patches make up ReVanced; without you, the community of patch developers,
 ReVanced would not be what it is today. We hope that this documentation has been helpful to you
 and are excited to see what you will create with ReVanced Patcher. If you have any questions or need help,
-talk to us on one of our platforms linked on [revanced.app](https://revanced.app) or open an issue in case of a bug or feature request,  
+talk to us on one of our platforms linked on [revanced.app](https://revanced.app) or open an issue in case of a bug or
+feature request,  
 ReVanced

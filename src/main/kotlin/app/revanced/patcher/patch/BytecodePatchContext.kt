@@ -1,6 +1,8 @@
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.*
+import app.revanced.patcher.InternalApi
+import app.revanced.patcher.PatcherConfig
+import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
@@ -22,7 +24,6 @@ import java.io.Closeable
 import java.io.FileFilter
 import java.util.*
 import java.util.logging.Logger
-import kotlin.reflect.KProperty
 
 /**
  * A context for patches containing the current state of the bytecode.
@@ -33,7 +34,7 @@ import kotlin.reflect.KProperty
 class BytecodePatchContext internal constructor(private val config: PatcherConfig) :
     PatchContext<Set<PatcherResult.PatchedDexFile>>,
     Closeable {
-    private val logger = Logger.getLogger(BytecodePatchContext::class.java.name)
+    private val logger = Logger.getLogger(this::javaClass.name)
 
     /**
      * [Opcodes] of the supplied [PatcherConfig.apkFile].
@@ -52,36 +53,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             null,
         ).also { opcodes = it.opcodes }.classes.toMutableList(),
     )
-
-    /**
-     * The match for this [Fingerprint]. Null if unmatched.
-     */
-    val Fingerprint.match get() = match(this@BytecodePatchContext)
-
-    /**
-     * Match using a [ClassDef].
-     *
-     * @param classDef The class to match against.
-     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
-     */
-    fun Fingerprint.match(classDef: ClassDef) = match(this@BytecodePatchContext, classDef)
-
-    /**
-     * Match using a [Method].
-     * The class is retrieved from the method.
-     *
-     * @param method The method to match against.
-     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
-     */
-    fun Fingerprint.match(method: Method) = match(this@BytecodePatchContext, method)
-
-    /**
-     * Get the match for this [Fingerprint].
-     *
-     * @throws IllegalStateException If the [Fingerprint] has not been matched.
-     */
-    operator fun Fingerprint.getValue(nothing: Nothing?, property: KProperty<*>): Match = match
-        ?: throw PatchException("No fingerprint match to delegate to \"${property.name}\".")
 
     /**
      * The lookup maps for methods and the class they are a member of from the [classes].
@@ -137,9 +108,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A proxy for the class.
      */
-    fun proxy(classDef: ClassDef) = this@BytecodePatchContext.classes.proxyPool.find {
+    fun proxy(classDef: ClassDef) = classes.proxyPool.find {
         it.immutableClass.type == classDef.type
-    } ?: ClassProxy(classDef).also { this@BytecodePatchContext.classes.proxyPool.add(it) }
+    } ?: ClassProxy(classDef).also { classes.proxyPool.add(it) }
 
     /**
      * Navigate a method.
@@ -148,7 +119,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A [MethodNavigator] for the method.
      */
-    fun navigate(method: MethodReference) = MethodNavigator(this@BytecodePatchContext, method)
+    fun navigate(method: MethodReference) = MethodNavigator(method)
 
     /**
      * Compile bytecode from the [BytecodePatchContext].
@@ -223,28 +194,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
                     // In the future, the class type could be added to the lookup map.
                     // This would require MethodFingerprint to be changed to include the class type.
-                }
-            }
-        }
-
-        internal companion object {
-            /**
-             * Appends a string based on the parameter reference types of this method.
-             */
-            internal fun StringBuilder.appendParameters(parameters: Iterable<CharSequence>) {
-                // Maximum parameters to use in the signature key.
-                // Some apps have methods with an incredible number of parameters (over 100 parameters have been seen).
-                // To keep the signature map from becoming needlessly bloated,
-                // group together in the same map entry all methods with the same access/return and 5 or more parameters.
-                // The value of 5 was chosen based on local performance testing and is not set in stone.
-                val maxSignatureParameters = 5
-                // Must append a unique value before the parameters to distinguish this key includes the parameters.
-                // If this is not appended, then methods with no parameters
-                // will collide with different keys that specify access/return but omit the parameters.
-                append("p:")
-                parameters.forEachIndexed { index, parameter ->
-                    if (index >= maxSignatureParameters) return
-                    append(parameter.first())
                 }
             }
         }
