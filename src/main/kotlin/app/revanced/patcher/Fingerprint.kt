@@ -72,10 +72,9 @@ class Fingerprint internal constructor(
     internal fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        val lookupMaps = lookupMaps
-
-        // Find the first
-        var match = strings?.firstNotNullOfOrNull { lookupMaps.methodsByStrings[it] }?.let { methodClasses ->
+        var match = strings?.mapNotNull {
+            lookupMaps.methodsByStrings[it]
+        }?.minByOrNull { it.size }?.let { methodClasses ->
             methodClasses.forEach { (classDef, method) ->
                 val match = matchOrNull(classDef, method)
                 if (match != null) return@let match
@@ -83,7 +82,6 @@ class Fingerprint internal constructor(
 
             null
         }
-
         if (match != null) return match
 
         classes.forEach { classDef ->
