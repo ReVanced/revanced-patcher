@@ -60,14 +60,16 @@
 
 # 🔎 Fingerprinting
 
-In the context of ReVanced, fingerprinting is primarily used to match methods with a limited amount of known information.
+In the context of ReVanced, a fingerprint is a partial description of a method.
+It is used to uniquely match a method by its characteristics.
+Fingerprinting is used to match methods with a limited amount of known information.
 Methods with obfuscated names that change with each update are primary candidates for fingerprinting.
 The goal of fingerprinting is to uniquely identify a method by capturing various attributes, such as the return type,
 access flags, an opcode pattern, strings, and more.
 
 ## ⛳️ Example fingerprint
 
-Throughout the documentation, the following example will be used to demonstrate the concepts of fingerprints:
+An example fingerprint is shown below:
 
 ```kt
 
@@ -79,11 +81,11 @@ fingerprint {
     parameters("Z")
     opcodes(Opcode.RETURN)
     strings("pro")
-    custom { (method, classDef) -> method.definingClass == "Lcom/some/app/ads/AdsLoader;" }
+    custom { (method, classDef) -> classDef == "Lcom/some/app/ads/AdsLoader;" }
 }
 ```
 
-## 🔎 Reconstructing the original code from a fingerprint
+## 🔎 Reconstructing the original code from the example fingerprint from above
 
 The following code is reconstructed from the fingerprint to understand how a fingerprint is created.
 
@@ -107,36 +109,43 @@ The fingerprint contains the following information:
 - Package and class name:
 
   ```kt
-  custom = { (method, classDef) -> method.definingClass == "Lcom/some/app/ads/AdsLoader;"}
+  custom { (method, classDef) -> classDef == "Lcom/some/app/ads/AdsLoader;" }
   ```
 
 With this information, the original code can be reconstructed:
 
 ```java
-    package com.some.app.ads;
+package com.some.app.ads;
 
-    <accessFlags> class AdsLoader {
-        public final boolean <methodName>(boolean <parameter>) {
-            // ...
+<accessFlags>
 
-            var userStatus = "pro";
+class AdsLoader {
+    public final boolean <methodName>(boolean <parameter>)
 
-            // ...
+    {
+        // ...
 
-            return <returnValue>;
-        }
+        var userStatus = "pro";
+
+        // ...
+
+        return <returnValue >;
     }
+}
 ```
+
+Using that fingerprint, this method can be matched uniquely from all other methods.
 
 > [!TIP]
 > A fingerprint should contain information about a method likely to remain the same across updates.
-> A method's name is not included in the fingerprint because it will likely change with each update in an obfuscated app.
-> In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the same.
+> A method's name is not included in the fingerprint because it will likely change with each update in an obfuscated
+> app.
+> In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the
+> same.
 
 ## 🔨 How to use fingerprints
 
-Fingerprints can be added to a patch by directly creating and adding them or by invoking them manually.
-Fingerprints added to a patch are matched by ReVanced Patcher before the patch is executed.
+After declaring a fingerprint, it can be used in a patch to find the method it matches to:
 
 ```kt
 val fingerprint = fingerprint {
@@ -144,18 +153,35 @@ val fingerprint = fingerprint {
 }
 
 val patch = bytecodePatch {
-    // Directly create and add a fingerprint.
-    fingerprint {
-        // ...
+    execute {
+        fingerprint.method
     }
-
-    // Add a fingerprint manually by invoking it.
-    fingerprint()
 }
 ```
 
-> [!TIP]
-> Multiple patches can share fingerprints. If a fingerprint is matched once, it will not be matched again.
+The fingerprint won't be matched again, if it has already been matched once, for performance reasons.
+This makes it useful, to share fingerprints between multiple patches,
+and let the first executing patch match the fingerprint:
+
+```kt
+// Either of these two patches will match the fingerprint first and the other patch can reuse the match:
+val mainActivityPatch1 = bytecodePatch {
+    execute {
+        mainActivityOnCreateFingerprint.method
+    }
+}
+
+val mainActivityPatch2 = bytecodePatch {
+    execute {
+        mainActivityOnCreateFingerprint.method
+    }
+}
+```
+
+> [!WARNING]
+> If the fingerprint can not be matched to any method,
+> accessing certain properties of the fingerprint will raise an exception.
+> Instead, the `orNull` properties can be used to return `null` if no match is found.
 
 > [!TIP]
 > If a fingerprint has an opcode pattern, you can use the `fuzzyPatternScanThreshhold` parameter of the `opcode`
@@ -164,72 +190,52 @@ val patch = bytecodePatch {
 >
 > ```kt
 > fingerprint(fuzzyPatternScanThreshhold = 2) {
->    opcodes(
->        Opcode.ICONST_0,
->        null,
->        Opcode.ICONST_1,
->        Opcode.IRETURN,
+>   opcodes(
+>     Opcode.ICONST_0,
+>     null,
+>     Opcode.ICONST_1,
+>     Opcode.IRETURN,
 >    )
 >}
 > ```
 
-Once the fingerprint is matched, the match can be used in the patch:
+The following properties can be accessed in a fingerprint:
 
-```kt
-val patch = bytecodePatch {
-    // Add a fingerprint and delegate its match to a variable.
-    val match by showAdsFingerprint()
-    val match2 by fingerprint {
-        // ...
-    }
-  
-    execute {
-        val method = match.method
-        val method2 = match2.method
-    }
-}
-```
+- `originalClassDef`: The original class definition the fingerprint matches to.
+- `originalClassDefOrNull`: The original class definition the fingerprint matches to.
+- `originalMethod`: The original method the fingerprint matches to.
+- `originalMethodOrNull`: The original method the fingerprint matches to.
+- `classDef`: The class the fingerprint matches to.
+- `classDefOrNull`: The class the fingerprint matches to.
+- `method`: The method the fingerprint matches to. If no match is found, an exception is raised.
+- `methodOrNull`: The method the fingerprint matches to.
 
-> [!WARNING]
-> If the fingerprint can not be matched to any method, the match of a fingerprint is `null`. If such a match is delegated
-> to a variable, accessing it will raise an exception.
+The difference between the `original` and non-`original` properties is that the `original` properties return the
+original class or method definition, while the non-`original` properties return a mutable copy of the class or method.
+The mutable copies can be modified. They are lazy properties, so they are only computed
+and only then will effectively replace the `original` method or class definition when accessed.
 
-The match of a fingerprint contains mutable and immutable references to the method and the class it matches to.
+> [!TIP]
+> If only read-only access to the class or method is needed,
+> the `originalClassDef` and `originalMethod` properties should be used,
+> to avoid making a mutable copy of the class or method.
 
-```kt
-class Match(
-    val method: Method,
-    val classDef: ClassDef,
-    val patternMatch: Match.PatternMatch?,
-    val stringMatches: List<Match.StringMatch>?,
-    // ...
-) {
-    val mutableClass by lazy { /* ... */ }
-    val mutableMethod by lazy { /* ... */ }
+## 🏹 Manually matching fingerprints
 
-    // ...
-}
-```
+By default, a fingerprint is matched automatically against all classes
+when one of the fingerprint's properties is accessed.
 
-## 🏹 Manual matching of fingerprints
-
-Unless a fingerprint is added to a patch, the fingerprint will not be matched automatically by ReVanced Patcher
-before the patch is executed.
-Instead, the fingerprint can be matched manually using various overloads of a fingerprint's `match` function.
-
-You can match a fingerprint the following ways:
+Instead, the fingerprint can be matched manually using various overloads of a fingerprint's `match` function:
 
 - In a **list of classes**, if the fingerprint can match in a known subset of classes
 
   If you have a known list of classes you know the fingerprint can match in,
-you can match the fingerprint on the list of classes:
+  you can match the fingerprint on the list of classes:
 
   ```kt
-    execute { context ->
-        val match = showAdsFingerprint.apply { 
-            match(context, context.classes) 
-        }.match ?: throw PatchException("No match found")
-    }
+  execute {
+    val match = showAdsFingerprint(classes)
+  }
   ```
 
 - In a **single class**, if the fingerprint can match in a single known class
@@ -237,36 +243,47 @@ you can match the fingerprint on the list of classes:
   If you know the fingerprint can match a method in a specific class, you can match the fingerprint in the class:
 
   ```kt
-  execute { context ->
-      val adsLoaderClass = context.classes.single { it.name == "Lcom/some/app/ads/Loader;" }
+  execute {
+    val adsLoaderClass = classes.single { it.name == "Lcom/some/app/ads/Loader;" }
 
-      val match = showAdsFingerprint.apply { 
-        match(context, adsLoaderClass)
-      }.match ?: throw PatchException("No match found")
+    val match = showAdsFingerprint.match(adsLoaderClass)
+  }
+  ```
+
+  Another common usecase is to use a fingerprint to reduce the search space of a method to a single class.
+
+  ```kt
+  execute {
+    // Match showAdsFingerprint in the class of the ads loader found by adsLoaderClassFingerprint.
+    val match = showAdsFingerprint.match(adsLoaderClassFingerprint.classDef)
   }
   ```
 
 - Match a **single method**, to extract certain information about it
 
-  The match of a fingerprint contains useful information about the method, such as the start and end index of an opcode pattern
-or the indices of the instructions with certain string references.
+  The match of a fingerprint contains useful information about the method,
+  such as the start and end index of an opcode pattern or the indices of the instructions with certain string
+  references.
   A fingerprint can be leveraged to extract such information from a method instead of manually figuring it out:
 
   ```kt
-  execute { context ->
-      val proStringsFingerprint = fingerprint {
-          strings("free", "trial")
-      }
+  execute {
+    val currentPlanFingerprint = fingerprint {
+      strings("free", "trial")
+    }
 
-      proStringsFingerprint.apply {
-          match(context, adsFingerprintMatch.method)
-      }.match?.let { match ->
-          match.stringMatches.forEach { match ->
-              println("The index of the string '${match.string}' is ${match.index}")
-          }
-      } ?: throw PatchException("No match found")
+    currentPlanFingerprint.match(adsFingerprint.method).let { match ->
+      match.stringMatches.forEach { match ->
+        println("The index of the string '${match.string}' is ${match.index}")
+      }
+    }
   }
   ```
+
+> [!WARNING]
+> If the fingerprint can not be matched to any method, calling `match` will raise an
+> exception.
+> Instead, the `orNull` overloads can be used to return `null` if no match is found.
 
 > [!TIP]
 > To see real-world examples of fingerprints,

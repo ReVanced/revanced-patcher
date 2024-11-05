@@ -72,6 +72,10 @@ To start developing patches with ReVanced Patcher, you must prepare a developmen
 
 Throughout the documentation, [ReVanced Patches](https://github.com/revanced/revanced-patches) will be used as an example project.
 
+> [!NOTE]
+> To start a fresh project, 
+> you can use the [ReVanced Patches template](https://github.com/revanced/revanced-patches-template).
+
 1. Clone the repository
 
    ```bash

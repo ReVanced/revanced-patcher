@@ -1,6 +1,5 @@
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.fingerprint
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -22,23 +21,6 @@ internal object PatchTest {
 
         assertEquals(1, patch.compatiblePackages!!.size)
         assertEquals("compatible.package", patch.compatiblePackages!!.first().first)
-    }
-
-    @Test
-    fun `can create patch with fingerprints`() {
-        val externalFingerprint = fingerprint {}
-
-        val patch = bytecodePatch(name = "Test") {
-            val externalFingerprintMatch by externalFingerprint()
-            val internalFingerprintMatch by fingerprint {}
-
-            execute {
-                externalFingerprintMatch.method
-                internalFingerprintMatch.method
-            }
-        }
-
-        assertEquals(2, patch.fingerprints.size)
     }
 
     @Test

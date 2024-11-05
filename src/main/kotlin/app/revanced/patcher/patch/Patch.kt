@@ -2,7 +2,6 @@
 
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.Fingerprint
 import app.revanced.patcher.Patcher
 import app.revanced.patcher.PatcherContext
 import dalvik.system.DexClassLoader
@@ -14,8 +13,8 @@ import java.lang.reflect.Member
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.net.URLClassLoader
+import java.util.function.Supplier
 import java.util.jar.JarFile
-import kotlin.reflect.KProperty
 
 typealias PackageName = String
 typealias VersionName = String
@@ -46,10 +45,10 @@ sealed class Patch<C : PatchContext<*>>(
     val dependencies: Set<Patch<*>>,
     val compatiblePackages: Set<Package>?,
     options: Set<Option<*>>,
-    private val executeBlock: Patch<C>.(C) -> Unit,
+    private val executeBlock: (C) -> Unit,
     // Must be internal and nullable, so that Patcher.invoke can check,
     // if a patch has a finalizing block in order to not emit it twice.
-    internal var finalizeBlock: (Patch<C>.(C) -> Unit)?,
+    internal var finalizeBlock: ((C) -> Unit)?,
 ) {
     /**
      * The options of the patch.
@@ -57,35 +56,35 @@ sealed class Patch<C : PatchContext<*>>(
     val options = Options(options)
 
     /**
-     * Runs the execution block of the patch.
-     * Called by [Patcher].
+     * Calls the execution block of the patch.
+     * This function is called by [Patcher.invoke].
      *
      * @param context The [PatcherContext] to get the [PatchContext] from to execute the patch with.
      */
     internal abstract fun execute(context: PatcherContext)
 
     /**
-     * Runs the execution block of the patch.
+     * Calls the execution block of the patch.
      *
      * @param context The [PatchContext] to execute the patch with.
      */
     fun execute(context: C) = executeBlock(context)
 
     /**
-     * Runs the finalizing block of the patch.
-     * Called by [Patcher].
+     * Calls the finalizing block of the patch.
+     * This function is called by [Patcher.invoke].
      *
      * @param context The [PatcherContext] to get the [PatchContext] from to finalize the patch with.
      */
     internal abstract fun finalize(context: PatcherContext)
 
     /**
-     * Runs the finalizing block of the patch.
+     * Calls the finalizing block of the patch.
      *
      * @param context The [PatchContext] to finalize the patch with.
      */
     fun finalize(context: C) {
-        finalizeBlock?.invoke(this, context)
+        finalizeBlock?.invoke(context)
     }
 
     override fun toString() = name ?: "Patch"
@@ -127,8 +126,7 @@ internal fun Iterable<Patch<*>>.forEachRecursively(
  * If null, the patch is compatible with all packages.
  * @param dependencies Other patches this patch depends on.
  * @param options The options of the patch.
- * @param fingerprints The fingerprints that are resolved before the patch is executed.
- * @property extension An input stream of the extension resource this patch uses.
+ * @property extensionInputStream Getter for the extension input stream of the patch.
  * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
  * @param executeBlock The execution block of the patch.
  * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
@@ -143,10 +141,9 @@ class BytecodePatch internal constructor(
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    val fingerprints: Set<Fingerprint>,
-    val extension: InputStream?,
-    executeBlock: Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit,
-    finalizeBlock: (Patch<BytecodePatchContext>.(BytecodePatchContext) -> Unit)?,
+    val extensionInputStream: Supplier<InputStream>?,
+    executeBlock: (BytecodePatchContext) -> Unit,
+    finalizeBlock: ((BytecodePatchContext) -> Unit)?,
 ) : Patch<BytecodePatchContext>(
     name,
     description,
@@ -158,8 +155,7 @@ class BytecodePatch internal constructor(
     finalizeBlock,
 ) {
     override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
-        fingerprints.forEach { it.match(this) }
-
+        mergeExtension(this@BytecodePatch)
         execute(this)
     }
 
@@ -192,8 +188,8 @@ class RawResourcePatch internal constructor(
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    executeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
-    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit)?,
+    executeBlock: (ResourcePatchContext) -> Unit,
+    finalizeBlock: ((ResourcePatchContext) -> Unit)?,
 ) : Patch<ResourcePatchContext>(
     name,
     description,
@@ -235,8 +231,8 @@ class ResourcePatch internal constructor(
     compatiblePackages: Set<Package>?,
     dependencies: Set<Patch<*>>,
     options: Set<Option<*>>,
-    executeBlock: Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit,
-    finalizeBlock: (Patch<ResourcePatchContext>.(ResourcePatchContext) -> Unit)?,
+    executeBlock: (ResourcePatchContext) -> Unit,
+    finalizeBlock: ((ResourcePatchContext) -> Unit)?,
 ) : Patch<ResourcePatchContext>(
     name,
     description,
@@ -281,8 +277,8 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     protected var dependencies = mutableSetOf<Patch<*>>()
     protected val options = mutableSetOf<Option<*>>()
 
-    protected var executionBlock: (Patch<C>.(C) -> Unit) = { }
-    protected var finalizeBlock: (Patch<C>.(C) -> Unit)? = null
+    protected var executionBlock: ((C) -> Unit) = { }
+    protected var finalizeBlock: ((C) -> Unit)? = null
 
     /**
      * Add an option to the patch.
@@ -341,7 +337,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      *
      * @param block The execution block of the patch.
      */
-    fun execute(block: Patch<C>.(C) -> Unit) {
+    fun execute(block: C.() -> Unit) {
         executionBlock = block
     }
 
@@ -350,7 +346,7 @@ sealed class PatchBuilder<C : PatchContext<*>>(
      *
      * @param block The finalizing block of the patch.
      */
-    fun finalize(block: Patch<C>.(C) -> Unit) {
+    fun finalize(block: C.() -> Unit) {
         finalizeBlock = block
     }
 
@@ -379,8 +375,7 @@ private fun <B : PatchBuilder<*>> B.buildPatch(block: B.() -> Unit = {}) = apply
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
  * @param use Weather or not the patch should be used.
- * @property fingerprints The fingerprints that are resolved before the patch is executed.
- * @property extension An input stream of the extension resource this patch uses.
+ * @property extensionInputStream Getter for the extension input stream of the patch.
  * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
  *
  * @constructor Create a new [BytecodePatchBuilder] builder.
@@ -390,27 +385,9 @@ class BytecodePatchBuilder internal constructor(
     description: String?,
     use: Boolean,
 ) : PatchBuilder<BytecodePatchContext>(name, description, use) {
-    private val fingerprints = mutableSetOf<Fingerprint>()
-
-    /**
-     * Add the fingerprint to the patch.
-     *
-     * @return A wrapper for the fingerprint with the ability to delegate the match to the fingerprint.
-     */
-    operator fun Fingerprint.invoke() = InvokedFingerprint(also { fingerprints.add(it) })
-
-    class InvokedFingerprint internal constructor(private val fingerprint: Fingerprint) {
-        // The reason getValue isn't extending the Fingerprint class is
-        // because delegating makes only sense if the fingerprint was previously added to the patch by invoking it.
-        // It may be likely to forget invoking it. By wrapping the fingerprint into this class,
-        // the compiler will throw an error if the fingerprint was not invoked if attempting to delegate the match.
-        operator fun getValue(nothing: Nothing?, property: KProperty<*>) = fingerprint.match
-            ?: throw PatchException("No fingerprint match to delegate to \"${property.name}\".")
-    }
-
     // Must be internal for the inlined function "extendWith".
     @PublishedApi
-    internal var extension: InputStream? = null
+    internal var extensionInputStream: Supplier<InputStream>? = null
 
     // Inlining is necessary to get the class loader that loaded the patch
     // to load the extension from the resources.
@@ -421,8 +398,11 @@ class BytecodePatchBuilder internal constructor(
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun extendWith(extension: String) = apply {
-        this.extension = object {}.javaClass.classLoader.getResourceAsStream(extension)
-            ?: throw PatchException("Extension \"$extension\" not found")
+        val classLoader = object {}.javaClass.classLoader
+
+        extensionInputStream = Supplier {
+            classLoader.getResourceAsStream(extension) ?: throw PatchException("Extension \"$extension\" not found")
+        }
     }
 
     override fun build() = BytecodePatch(
@@ -432,8 +412,7 @@ class BytecodePatchBuilder internal constructor(
         compatiblePackages,
         dependencies,
         options,
-        fingerprints,
-        extension,
+        extensionInputStream,
         executionBlock,
         finalizeBlock,
     )

@@ -1,7 +1,22 @@
 public final class app/revanced/patcher/Fingerprint {
-	public final fun getMatch ()Lapp/revanced/patcher/Match;
-	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Z
-	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Z
+	public final fun getClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun getClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun getMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun getMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun getOriginalClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun getOriginalClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun getOriginalMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public final fun getOriginalMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public final fun getPatternMatch (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/Match$PatternMatch;
+	public final fun getPatternMatchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/Match$PatternMatch;
+	public final fun getStringMatches (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
+	public final fun getStringMatchesOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
+	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
+	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
+	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
+	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
+	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
+	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 }
 
 public final class app/revanced/patcher/FingerprintBuilder {
@@ -18,32 +33,27 @@ public final class app/revanced/patcher/FingerprintBuilder {
 
 public final class app/revanced/patcher/FingerprintKt {
 	public static final fun fingerprint (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/Fingerprint;
-	public static final fun fingerprint (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint;
 	public static synthetic fun fingerprint$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/Fingerprint;
-	public static synthetic fun fingerprint$default (Lapp/revanced/patcher/patch/BytecodePatchBuilder;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint;
 }
 
 public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
 }
 
 public final class app/revanced/patcher/Match {
-	public fun <init> (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lapp/revanced/patcher/Match$PatternMatch;Ljava/util/List;Lapp/revanced/patcher/patch/BytecodePatchContext;)V
-	public final fun getClassDef ()Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun getMethod ()Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun getMutableClass ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
-	public final fun getMutableMethod ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun getClassDef ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun getMethod ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun getOriginalClassDef ()Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun getOriginalMethod ()Lcom/android/tools/smali/dexlib2/iface/Method;
 	public final fun getPatternMatch ()Lapp/revanced/patcher/Match$PatternMatch;
 	public final fun getStringMatches ()Ljava/util/List;
 }
 
 public final class app/revanced/patcher/Match$PatternMatch {
-	public fun <init> (II)V
 	public final fun getEndIndex ()I
 	public final fun getStartIndex ()I
 }
 
 public final class app/revanced/patcher/Match$StringMatch {
-	public fun <init> (Ljava/lang/String;I)V
 	public final fun getIndex ()I
 	public final fun getString ()Ljava/lang/String;
 }
@@ -63,8 +73,8 @@ public final class app/revanced/patcher/Patcher : java/io/Closeable {
 }
 
 public final class app/revanced/patcher/PatcherConfig {
-	public fun <init> (Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;Z)V
-	public synthetic fun <init> (Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class app/revanced/patcher/PatcherContext : java/io/Closeable {
@@ -135,31 +145,24 @@ public final class app/revanced/patcher/extensions/InstructionExtensions {
 }
 
 public final class app/revanced/patcher/patch/BytecodePatch : app/revanced/patcher/patch/Patch {
-	public final fun getExtension ()Ljava/io/InputStream;
-	public final fun getFingerprints ()Ljava/util/Set;
+	public final fun getExtensionInputStream ()Ljava/util/function/Supplier;
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/patch/BytecodePatchBuilder : app/revanced/patcher/patch/PatchBuilder {
 	public synthetic fun build$revanced_patcher ()Lapp/revanced/patcher/patch/Patch;
 	public final fun extendWith (Ljava/lang/String;)Lapp/revanced/patcher/patch/BytecodePatchBuilder;
-	public final fun getExtension ()Ljava/io/InputStream;
-	public final fun invoke (Lapp/revanced/patcher/Fingerprint;)Lapp/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint;
-	public final fun setExtension (Ljava/io/InputStream;)V
-}
-
-public final class app/revanced/patcher/patch/BytecodePatchBuilder$InvokedFingerprint {
-	public final fun getValue (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Match;
+	public final fun getExtensionInputStream ()Ljava/util/function/Supplier;
+	public final fun setExtensionInputStream (Ljava/util/function/Supplier;)V
 }
 
 public final class app/revanced/patcher/patch/BytecodePatchContext : app/revanced/patcher/patch/PatchContext, java/io/Closeable {
 	public final fun classBy (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/ClassProxy;
-	public final fun classByType (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 	public fun close ()V
 	public synthetic fun get ()Ljava/lang/Object;
 	public fun get ()Ljava/util/Set;
 	public final fun getClasses ()Lapp/revanced/patcher/util/ProxyClassList;
-	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/util/MethodNavigator;
+	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun proxy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/ClassProxy;
 }
 
@@ -286,7 +289,7 @@ public final class app/revanced/patcher/patch/Options : java/util/Map, kotlin/jv
 }
 
 public abstract class app/revanced/patcher/patch/Patch {
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/util/Set;Ljava/util/Set;Ljava/util/Set;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ZLjava/util/Set;Ljava/util/Set;Ljava/util/Set;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun execute (Lapp/revanced/patcher/patch/PatchContext;)V
 	public final fun finalize (Lapp/revanced/patcher/patch/PatchContext;)V
 	public final fun getCompatiblePackages ()Ljava/util/Set;
@@ -303,13 +306,13 @@ public abstract class app/revanced/patcher/patch/PatchBuilder {
 	public final fun compatibleWith ([Ljava/lang/String;)V
 	public final fun compatibleWith ([Lkotlin/Pair;)V
 	public final fun dependsOn ([Lapp/revanced/patcher/patch/Patch;)V
-	public final fun execute (Lkotlin/jvm/functions/Function2;)V
-	public final fun finalize (Lkotlin/jvm/functions/Function2;)V
+	public final fun execute (Lkotlin/jvm/functions/Function1;)V
+	public final fun finalize (Lkotlin/jvm/functions/Function1;)V
 	protected final fun getCompatiblePackages ()Ljava/util/Set;
 	protected final fun getDependencies ()Ljava/util/Set;
 	protected final fun getDescription ()Ljava/lang/String;
-	protected final fun getExecutionBlock ()Lkotlin/jvm/functions/Function2;
-	protected final fun getFinalizeBlock ()Lkotlin/jvm/functions/Function2;
+	protected final fun getExecutionBlock ()Lkotlin/jvm/functions/Function1;
+	protected final fun getFinalizeBlock ()Lkotlin/jvm/functions/Function1;
 	protected final fun getName ()Ljava/lang/String;
 	protected final fun getOptions ()Ljava/util/Set;
 	protected final fun getUse ()Z
@@ -317,8 +320,8 @@ public abstract class app/revanced/patcher/patch/PatchBuilder {
 	public final fun invoke (Ljava/lang/String;[Ljava/lang/String;)Lkotlin/Pair;
 	protected final fun setCompatiblePackages (Ljava/util/Set;)V
 	protected final fun setDependencies (Ljava/util/Set;)V
-	protected final fun setExecutionBlock (Lkotlin/jvm/functions/Function2;)V
-	protected final fun setFinalizeBlock (Lkotlin/jvm/functions/Function2;)V
+	protected final fun setExecutionBlock (Lkotlin/jvm/functions/Function1;)V
+	protected final fun setFinalizeBlock (Lkotlin/jvm/functions/Function1;)V
 }
 
 public abstract interface class app/revanced/patcher/patch/PatchContext : java/util/function/Supplier {
@@ -395,18 +398,13 @@ public final class app/revanced/patcher/patch/ResourcePatchBuilder : app/revance
 }
 
 public final class app/revanced/patcher/patch/ResourcePatchContext : app/revanced/patcher/patch/PatchContext {
+	public final fun delete (Ljava/lang/String;)Z
+	public final fun document (Ljava/io/InputStream;)Lapp/revanced/patcher/util/Document;
+	public final fun document (Ljava/lang/String;)Lapp/revanced/patcher/util/Document;
 	public fun get ()Lapp/revanced/patcher/PatcherResult$PatchedResources;
 	public synthetic fun get ()Ljava/lang/Object;
 	public final fun get (Ljava/lang/String;Z)Ljava/io/File;
 	public static synthetic fun get$default (Lapp/revanced/patcher/patch/ResourcePatchContext;Ljava/lang/String;ZILjava/lang/Object;)Ljava/io/File;
-	public final fun getDocument ()Lapp/revanced/patcher/patch/ResourcePatchContext$DocumentOperatable;
-	public final fun stageDelete (Lkotlin/jvm/functions/Function1;)Z
-}
-
-public final class app/revanced/patcher/patch/ResourcePatchContext$DocumentOperatable {
-	public fun <init> (Lapp/revanced/patcher/patch/ResourcePatchContext;)V
-	public final fun get (Ljava/io/InputStream;)Lapp/revanced/patcher/util/Document;
-	public final fun get (Ljava/lang/String;)Lapp/revanced/patcher/util/Document;
 }
 
 public final class app/revanced/patcher/util/Document : java/io/Closeable, org/w3c/dom/Document {
@@ -482,11 +480,12 @@ public final class app/revanced/patcher/util/Document : java/io/Closeable, org/w
 }
 
 public final class app/revanced/patcher/util/MethodNavigator {
-	public final fun at (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/MethodNavigator;
-	public final fun at ([I)Lapp/revanced/patcher/util/MethodNavigator;
-	public static synthetic fun at$default (Lapp/revanced/patcher/util/MethodNavigator;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/util/MethodNavigator;
-	public final fun immutable ()Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun mutable ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun getValue (Ljava/lang/Void;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun original ()Lcom/android/tools/smali/dexlib2/iface/Method;
+	public final fun stop ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
+	public final fun to (ILkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/MethodNavigator;
+	public final fun to ([I)Lapp/revanced/patcher/util/MethodNavigator;
+	public static synthetic fun to$default (Lapp/revanced/patcher/util/MethodNavigator;ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/util/MethodNavigator;
 }
 
 public final class app/revanced/patcher/util/ProxyClassList : java/util/List, kotlin/jvm/internal/markers/KMutableList {

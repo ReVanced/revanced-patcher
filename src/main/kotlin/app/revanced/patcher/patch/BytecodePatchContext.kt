@@ -14,6 +14,7 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
@@ -33,7 +34,7 @@ import java.util.logging.Logger
 class BytecodePatchContext internal constructor(private val config: PatcherConfig) :
     PatchContext<Set<PatcherResult.PatchedDexFile>>,
     Closeable {
-    private val logger = Logger.getLogger(BytecodePatchContext::class.java.name)
+    private val logger = Logger.getLogger(this::javaClass.name)
 
     /**
      * [Opcodes] of the supplied [PatcherConfig.apkFile].
@@ -59,52 +60,37 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
-     * Merge the extensions for this set of patches.
+     * Merge the extension of [bytecodePatch] into the [BytecodePatchContext].
+     * If no extension is present, the function will return early.
+     *
+     * @param bytecodePatch The [BytecodePatch] to merge the extension of.
      */
-    internal fun Set<Patch<*>>.mergeExtensions() {
-        // Lookup map to check if a class exists by its type quickly.
-        val classesByType = mutableMapOf<String, ClassDef>().apply {
-            classes.forEach { classDef -> put(classDef.type, classDef) }
-        }
+    internal fun mergeExtension(bytecodePatch: BytecodePatch) {
+        bytecodePatch.extensionInputStream?.get()?.use { extensionStream ->
+            RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
+                val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
+                    logger.fine { "Adding class \"$classDef\"" }
 
-        forEachRecursively { patch ->
-            if (patch !is BytecodePatch) return@forEachRecursively
+                    classes += classDef
+                    lookupMaps.classesByType[classDef.type] = classDef
 
-            patch.extension?.use { extensionStream ->
-                RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
-                    val existingClass = classesByType[classDef.type] ?: run {
-                        logger.fine("Adding class \"$classDef\"")
+                    return@forEach
+                }
 
-                        classes += classDef
-                        classesByType[classDef.type] = classDef
+                logger.fine { "Class \"$classDef\" exists already. Adding missing methods and fields." }
 
-                        return@forEach
+                existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
+                    // If the class was merged, replace the original class with the merged class.
+                    if (mergedClass === existingClass) {
+                        return@let
                     }
 
-                    logger.fine("Class \"$classDef\" exists already. Adding missing methods and fields.")
-
-                    existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
-                        // If the class was merged, replace the original class with the merged class.
-                        if (mergedClass === existingClass) {
-                            return@let
-                        }
-
-                        classes -= existingClass
-                        classes += mergedClass
-                    }
+                    classes -= existingClass
+                    classes += mergedClass
                 }
             }
-        }
+        } ?: logger.fine("No extension to merge")
     }
-
-    /**
-     * Find a class by its type using a contains check.
-     *
-     * @param type The type of the class.
-     * @return A proxy for the first class that matches the type.
-     */
-    @Deprecated("Use classBy { type in it.type } instead.", ReplaceWith("classBy { type in it.type }"))
-    fun classByType(type: String) = classBy { type in it.type }
 
     /**
      * Find a class with a predicate.
@@ -122,9 +108,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A proxy for the class.
      */
-    fun proxy(classDef: ClassDef) = this@BytecodePatchContext.classes.proxyPool.find {
+    fun proxy(classDef: ClassDef) = classes.proxyPool.find {
         it.immutableClass.type == classDef.type
-    } ?: ClassProxy(classDef).also { this@BytecodePatchContext.classes.proxyPool.add(it) }
+    } ?: ClassProxy(classDef).also { classes.proxyPool.add(it) }
 
     /**
      * Navigate a method.
@@ -133,7 +119,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A [MethodNavigator] for the method.
      */
-    fun navigate(method: Method) = MethodNavigator(this@BytecodePatchContext, method)
+    fun navigate(method: MethodReference) = MethodNavigator(method)
 
     /**
      * Compile bytecode from the [BytecodePatchContext].
@@ -154,7 +140,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             }.apply {
                 MultiDexIO.writeDexFile(
                     true,
-                    if (config.multithreadingDexFileWriter) -1 else 1,
+                    -1,
                     this,
                     BasicDexFileNamer(),
                     object : DexFile {
@@ -164,7 +150,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },
                     DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
-                ) { _, entryName, _ -> logger.info("Compiled $entryName") }
+                ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
             }.listFiles(FileFilter { it.isFile })!!.map {
                 PatcherResult.PatchedDexFile(it.name, it.inputStream())
             }.toSet()
@@ -184,6 +170,11 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
          * Methods associated by strings referenced in it.
          */
         internal val methodsByStrings = MethodClassPairsLookupMap()
+
+        // Lookup map for fast checking if a class exists by its type.
+        val classesByType = mutableMapOf<String, ClassDef>().apply {
+            classes.forEach { classDef -> put(classDef.type, classDef) }
+        }
 
         init {
             classes.forEach { classDef ->
@@ -207,30 +198,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             }
         }
 
-        internal companion object {
-            /**
-             * Appends a string based on the parameter reference types of this method.
-             */
-            internal fun StringBuilder.appendParameters(parameters: Iterable<CharSequence>) {
-                // Maximum parameters to use in the signature key.
-                // Some apps have methods with an incredible number of parameters (over 100 parameters have been seen).
-                // To keep the signature map from becoming needlessly bloated,
-                // group together in the same map entry all methods with the same access/return and 5 or more parameters.
-                // The value of 5 was chosen based on local performance testing and is not set in stone.
-                val maxSignatureParameters = 5
-                // Must append a unique value before the parameters to distinguish this key includes the parameters.
-                // If this is not appended, then methods with no parameters
-                // will collide with different keys that specify access/return but omit the parameters.
-                append("p:")
-                parameters.forEachIndexed { index, parameter ->
-                    if (index >= maxSignatureParameters) return
-                    append(parameter.first())
-                }
-            }
-        }
-
         override fun close() {
             methodsByStrings.clear()
+            classesByType.clear()
         }
     }
 

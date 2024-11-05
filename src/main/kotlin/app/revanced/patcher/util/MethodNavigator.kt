@@ -12,11 +12,11 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import kotlin.reflect.KProperty
 
 /**
  * A navigator for methods.
  *
- * @param context The [BytecodePatchContext] to use.
  * @param startMethod The [Method] to start navigating from.
  *
  * @constructor Creates a new [MethodNavigator].
@@ -24,12 +24,16 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
  * @throws NavigateException If the method does not have an implementation.
  * @throws NavigateException If the instruction at the specified index is not a method reference.
  */
-class MethodNavigator internal constructor(private val context: BytecodePatchContext, private var startMethod: MethodReference) {
+context(BytecodePatchContext)
+class MethodNavigator internal constructor(
+    private var startMethod: MethodReference,
+) {
     private var lastNavigatedMethodReference = startMethod
 
-    private val lastNavigatedMethodInstructions get() = with(immutable()) {
-        instructionsOrNull ?: throw NavigateException("Method $definingClass.$name does not have an implementation.")
-    }
+    private val lastNavigatedMethodInstructions
+        get() = with(original()) {
+            instructionsOrNull ?: throw NavigateException("Method $this does not have an implementation.")
+        }
 
     /**
      * Navigate to the method at the specified index.
@@ -38,7 +42,7 @@ class MethodNavigator internal constructor(private val context: BytecodePatchCon
      *
      * @return This [MethodNavigator].
      */
-    fun at(vararg index: Int): MethodNavigator {
+    fun to(vararg index: Int): MethodNavigator {
         index.forEach {
             lastNavigatedMethodReference = lastNavigatedMethodInstructions.getMethodReferenceAt(it)
         }
@@ -52,7 +56,7 @@ class MethodNavigator internal constructor(private val context: BytecodePatchCon
      * @param index The index of the method to navigate to.
      * @param predicate The predicate to match.
      */
-    fun at(index: Int = 0, predicate: (Instruction) -> Boolean): MethodNavigator {
+    fun to(index: Int = 0, predicate: (Instruction) -> Boolean): MethodNavigator {
         lastNavigatedMethodReference = lastNavigatedMethodInstructions.asSequence()
             .filter(predicate).asIterable().getMethodReferenceAt(index)
 
@@ -76,15 +80,22 @@ class MethodNavigator internal constructor(private val context: BytecodePatchCon
      *
      * @return The last navigated method mutably.
      */
-    fun mutable() = context.classBy(matchesCurrentMethodReferenceDefiningClass)!!.mutableClass.firstMethodBySignature
+    fun stop() = classBy(matchesCurrentMethodReferenceDefiningClass)!!.mutableClass.firstMethodBySignature
         as MutableMethod
+
+    /**
+     * Get the last navigated method mutably.
+     *
+     * @return The last navigated method mutably.
+     */
+    operator fun getValue(nothing: Nothing?, property: KProperty<*>) = stop()
 
     /**
      * Get the last navigated method immutably.
      *
      * @return The last navigated method immutably.
      */
-    fun immutable() = context.classes.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
+    fun original(): Method = classes.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
 
     /**
      * Predicate to match the class defining the current method reference.
@@ -96,9 +107,10 @@ class MethodNavigator internal constructor(private val context: BytecodePatchCon
     /**
      * Find the first [lastNavigatedMethodReference] in the class.
      */
-    private val ClassDef.firstMethodBySignature get() = methods.first {
-        MethodUtil.methodSignaturesMatch(it, lastNavigatedMethodReference)
-    }
+    private val ClassDef.firstMethodBySignature
+        get() = methods.first {
+            MethodUtil.methodSignaturesMatch(it, lastNavigatedMethodReference)
+        }
 
     /**
      * An exception thrown when navigating fails.

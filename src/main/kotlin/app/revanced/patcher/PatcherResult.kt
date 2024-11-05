@@ -29,12 +29,12 @@ class PatcherResult internal constructor(
      * @param resourcesApk The compiled resources.apk file.
      * @param otherResources The directory containing other resources files.
      * @param doNotCompress List of files that should not be compressed.
-     * @param deleteResources List of predicates about resources that should be deleted.
+     * @param deleteResources List of resources that should be deleted.
      */
     class PatchedResources internal constructor(
         val resourcesApk: File?,
         val otherResources: File?,
         val doNotCompress: Set<String>,
-        val deleteResources: Set<(String) -> Boolean>,
+        val deleteResources: Set<String>,
     )
 }
