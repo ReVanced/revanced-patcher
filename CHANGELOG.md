@@ -1,3 +1,29 @@
+# [21.0.0](https://github.com/ReVanced/revanced-patcher/compare/v20.0.2...v21.0.0) (2024-11-05)
+
+
+### Bug Fixes
+
+* Match fingerprint before delegating the match property ([5d996de](https://github.com/ReVanced/revanced-patcher/commit/5d996def4d3de4e2bfc34562e5a6c7d89a8cddf0))
+* Merge extension only when patch executes ([#315](https://github.com/ReVanced/revanced-patcher/issues/315)) ([aa472eb](https://github.com/ReVanced/revanced-patcher/commit/aa472eb9857145b53b49f843406a9764fbb7e5ce))
+
+
+### Features
+
+* Improve Fingerprint API ([#316](https://github.com/ReVanced/revanced-patcher/issues/316)) ([0abf1c6](https://github.com/ReVanced/revanced-patcher/commit/0abf1c6c0279708fdef5cb66b141d07d17682693))
+* Improve various APIs  ([#317](https://github.com/ReVanced/revanced-patcher/issues/317)) ([b824978](https://github.com/ReVanced/revanced-patcher/commit/b8249789df8b90129f7b7ad0e523a8d0ceaab848))
+* Move fingerprint match members to fingerprint for ease of access by using context receivers ([0746c22](https://github.com/ReVanced/revanced-patcher/commit/0746c22743a9561bae2284d234b151f2f8511ca5))
+
+
+### Performance Improvements
+
+* Use smallest lookup map for strings ([1358d3f](https://github.com/ReVanced/revanced-patcher/commit/1358d3fa10cb8ba011b6b89cfe3684ecf9849d2f))
+
+
+### BREAKING CHANGES
+
+* Various APIs have been changed.
+* Many APIs have been changed.
+
 # [21.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0-dev.3...v21.0.0-dev.4) (2024-11-05)
 
 
