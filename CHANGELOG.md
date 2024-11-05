@@ -1,3 +1,10 @@
+# [21.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0-dev.2...v21.0.0-dev.3) (2024-11-05)
+
+
+### Features
+
+* Move fingerprint match members to fingerprint for ease of access by using context receivers ([0746c22](https://github.com/ReVanced/revanced-patcher/commit/0746c22743a9561bae2284d234b151f2f8511ca5))
+
 # [21.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0-dev.1...v21.0.0-dev.2) (2024-11-01)
 
 
