@@ -1,3 +1,10 @@
+# [21.0.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0-dev.3...v21.0.0-dev.4) (2024-11-05)
+
+
+### Performance Improvements
+
+* Use smallest lookup map for strings ([1358d3f](https://github.com/ReVanced/revanced-patcher/commit/1358d3fa10cb8ba011b6b89cfe3684ecf9849d2f))
+
 # [21.0.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0-dev.2...v21.0.0-dev.3) (2024-11-05)
 
 
