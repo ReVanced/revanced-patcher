@@ -108,9 +108,11 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A proxy for the class.
      */
-    fun proxy(classDef: ClassDef) = classes.proxyPool.find {
-        it.immutableClass.type == classDef.type
-    } ?: ClassProxy(classDef).also { classes.proxyPool.add(it) }
+    fun proxy(classDef: ClassDef) = synchronized(classes) {
+        classes.proxyPool.find {
+            it.immutableClass.type == classDef.type
+        } ?: ClassProxy(classDef).also { classes.proxyPool.add(it) }
+    }
 
     /**
      * Navigate a method.

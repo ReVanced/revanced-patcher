@@ -84,9 +84,11 @@ class Fingerprint internal constructor(
         }
         if (match != null) return match
 
-        classes.forEach { classDef ->
-            match = matchOrNull(classDef)
-            if (match != null) return match
+        synchronized(classes) {
+            classes.forEach { classDef ->
+                match = matchOrNull(classDef)
+                if (match != null) return match
+            }
         }
 
         return null

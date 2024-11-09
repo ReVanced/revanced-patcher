@@ -2,14 +2,15 @@ package app.revanced.patcher.util
 
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import java.util.*
 
 /**
  * A list of classes and proxies.
  *
  * @param classes The classes to be backed by proxies.
  */
-class ProxyClassList internal constructor(classes: MutableList<ClassDef>) : MutableList<ClassDef> by classes {
-    internal val proxyPool = mutableListOf<ClassProxy>()
+class ProxyClassList internal constructor(classes: MutableList<ClassDef>) : MutableList<ClassDef> by Collections.synchronizedList(classes) {
+    internal val proxyPool = Collections.synchronizedList(mutableListOf<ClassProxy>())
 
     /**
      * Replace all classes with their mutated versions.
