@@ -9,25 +9,25 @@ import java.util.*
  *
  * @param classes The classes to be backed by proxies.
  */
-class ProxyClassList internal constructor(classes: MutableList<ClassDef>) : MutableList<ClassDef> by Collections.synchronizedList(classes) {
+class ProxyClassList internal constructor(
+    classes: MutableList<ClassDef>,
+) : MutableList<ClassDef> by Collections.synchronizedList(classes) {
     internal val proxyPool = Collections.synchronizedList(mutableListOf<ClassProxy>())
 
     /**
      * Replace all classes with their mutated versions.
      */
     internal fun replaceClasses() {
-        synchronized(proxyPool) {
-            proxyPool.removeIf { proxy ->
-                // If the proxy is unused, return false to keep it in the proxies list.
-                if (!proxy.resolved) return@removeIf false
+        proxyPool.removeIf { proxy ->
+            // If the proxy is unused, return false to keep it in the proxies list.
+            if (!proxy.resolved) return@removeIf false
 
-                // If it has been used, replace the original class with the mutable class.
-                remove(proxy.immutableClass)
-                add(proxy.mutableClass)
+            // If it has been used, replace the original class with the mutable class.
+            remove(proxy.immutableClass)
+            add(proxy.mutableClass)
 
-                // Return true to remove the proxy from the proxies list.
-                return@removeIf true
-            }
+            // Return true to remove the proxy from the proxies list.
+            return@removeIf true
         }
     }
 }
