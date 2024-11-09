@@ -94,10 +94,8 @@ class Patcher(private val config: PatcherConfig) : Closeable {
                                 PatchResult(
                                     patch,
                                     PatchException(
-                                        """
-                                            The patch "$patch" depends on "$dependency", which raised an exception:
-                                            ${exception.stackTraceToString()}
-                                        """.trimIndent(),
+                                        "The patch \"$patch\" depends on \"$dependency\", which raised an exception:\n" +
+                                            exception.stackTraceToString(),
                                     ),
                                 )
                             }
@@ -166,10 +164,8 @@ class Patcher(private val config: PatcherConfig) : Closeable {
                             PatchResult(
                                 patch,
                                 PatchException(
-                                    """
-                                        The patch "$patch" raised an exception during finalization:
-                                        ${result.exception.stackTraceToString()}
-                                    """.trimIndent(),
+                                    "The patch \"$patch\" raised an exception during finalization:\n" +
+                                        result.exception.stackTraceToString(),
                                     result.exception,
                                 ),
                             ),
