@@ -99,16 +99,10 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * @return A proxy for the first class that matches the predicate.
      */
     fun classBy(predicate: (ClassDef) -> Boolean): ClassProxy? {
-        synchronized(classes.proxyPool) {
-            val proxy = classes.proxyPool.find { predicate(it.immutableClass) }
-            if (proxy != null) return proxy;
-        }
+        val proxy = synchronized(classes.proxyPool) { classes.proxyPool.find { predicate(it.immutableClass) } }
+        if (proxy != null) return proxy
 
-        val classDef: ClassDef?
-        synchronized(classes) {
-            classDef = classes.find(predicate)
-        }
-
+        val classDef = synchronized(classes) { classes.find(predicate) }
         if (classDef != null) {
             return proxy(classDef)
         }
@@ -123,13 +117,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A proxy for the class.
      */
-    fun proxy(classDef: ClassDef) : ClassProxy {
-        val proxyPool = classes.proxyPool
-        synchronized(proxyPool) {
-            return proxyPool.find {
-                it.immutableClass.type == classDef.type
-            } ?: ClassProxy(classDef).also { proxyPool.add(it) }
-        }
+    fun proxy(classDef: ClassDef) = synchronized(classes.proxyPool) {
+        classes.proxyPool.find { it.immutableClass.type == classDef.type }
+            ?: ClassProxy(classDef).also { classes.proxyPool.add(it) }
     }
 
     /**
