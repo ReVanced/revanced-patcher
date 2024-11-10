@@ -3,9 +3,12 @@ package app.revanced.patcher
 import app.revanced.patcher.patch.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.Closeable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
+import kotlin.time.measureTime
 
 /**
  * A Patcher.
@@ -58,123 +61,149 @@ class Patcher(private val config: PatcherConfig) : Closeable {
      *
      * @return A flow of [PatchResult]s.
      */
+    @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
     operator fun invoke() = channelFlow {
-        // Prevent decoding the app manifest twice if it is not needed.
-        if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
-            context.resourceContext.decodeResources(config.resourceMode)
-        }
-
-        logger.info("Initializing lookup maps")
-
-        // Accessing the lazy lookup maps to initialize them.
-        context.bytecodeContext.lookupMaps
-
-        logger.info("Executing patches")
-
-        val executedPatches = ConcurrentHashMap<Patch<*>, Deferred<PatchResult>>()
-
-        suspend operator fun Patch<*>.invoke(): Deferred<PatchResult> {
-            val patch = this
-
-            // If the patch was executed before or failed, return it's the result.
-            executedPatches[patch]?.let { deferredPatchResult ->
-                val patchResult = deferredPatchResult.await()
-
-                patchResult.exception ?: return deferredPatchResult
-
-                return CompletableDeferred(PatchResult(patch, PatchException("The patch '$patch' failed previously")))
+        coroutineScope {
+            launch(Dispatchers.Default) {
+                // Prevent decoding the app manifest twice if it is not needed.
+                if (config.resourceMode != ResourcePatchContext.ResourceMode.NONE) {
+                    context.resourceContext.decodeResources(config.resourceMode)
+                }
             }
 
-            return async(Dispatchers.IO) {
-                // Recursively execute all dependency patches.
-                val dependenciesResult = coroutineScope {
-                    val dependenciesJobs = dependencies.map { dependency ->
-                        async(Dispatchers.IO) {
-                            dependency().await().exception?.let { exception ->
-                                PatchResult(
-                                    patch,
-                                    PatchException(
-                                        "The patch \"$patch\" depends on \"$dependency\", which raised an exception:\n" +
-                                            exception.stackTraceToString(),
-                                    ),
-                                )
+            launch(Dispatchers.Default) {
+                logger.info("Initializing lookup maps")
+
+                // Accessing the lazy lookup maps to initialize them.
+                context.bytecodeContext.lookupMaps
+            }
+        }
+
+        logger.info("Executing patches")
+        // Dispatcher.Default.limitedParallelism(1)
+        newSingleThreadContext("Patcher").use { dispatcher ->
+
+            val executedPatches = HashMap<Patch<*>, Deferred<PatchResult>>()
+            val bytecodeLock = Mutex()
+
+            suspend fun Patch<*>.runBlock(block: suspend () -> Unit) {
+                if (this is BytecodePatch) bytecodeLock.withLock { block() } else withContext(
+                    Dispatchers.IO
+                ) { block() }
+            }
+
+            suspend operator fun Patch<*>.invoke(): Deferred<PatchResult> {
+                val patch = this
+
+                // If the patch was executed before or failed, return it's the result.
+                executedPatches[patch]?.let { deferredPatchResult ->
+                    val patchResult = deferredPatchResult.await()
+
+                    patchResult.exception ?: return deferredPatchResult
+
+                    return CompletableDeferred(
+                        PatchResult(
+                            patch,
+                            PatchException("The patch '$patch' failed previously")
+                        )
+                    )
+                }
+
+                return async(dispatcher) {
+                    // Recursively execute all dependency patches.
+                    val dependenciesResult = coroutineScope {
+                        val dependenciesJobs = dependencies.map { dependency ->
+                            async(dispatcher) {
+                                dependency().await().exception?.let { exception ->
+                                    PatchResult(
+                                        patch,
+                                        PatchException(
+                                            "The patch \"$patch\" depends on \"$dependency\", which raised an exception:\n" +
+                                                    exception.stackTraceToString(),
+                                        ),
+                                    )
+                                }
                             }
                         }
-                    }
 
-                    dependenciesJobs.awaitAll().firstOrNull { result -> result != null }?.let {
-                        dependenciesJobs.forEach(Deferred<*>::cancel)
+                        dependenciesJobs.awaitAll().firstOrNull { result -> result != null }?.let {
+                            dependenciesJobs.forEach(Deferred<*>::cancel)
 
-                        return@coroutineScope it
-                    }
-                }
-
-                if (dependenciesResult != null) {
-                    return@async dependenciesResult
-                }
-
-                // Execute the patch.
-                try {
-                    execute(context)
-
-                    PatchResult(patch)
-                } catch (exception: PatchException) {
-                    PatchResult(patch, exception)
-                } catch (exception: Exception) {
-                    PatchResult(patch, PatchException(exception))
-                }
-            }.also { executedPatches[patch] = it }
-        }
-
-        coroutineScope {
-            context.executablePatches.sortedBy { it.name }.map { patch ->
-                launch(Dispatchers.IO) {
-                    val patchResult = patch().await()
-
-                    // If an exception occurred or the patch has no finalize block, emit the result.
-                    if (patchResult.exception != null || patch.finalizeBlock == null) {
-                        send(patchResult)
-                    }
-                }
-            }.joinAll()
-        }
-
-        val succeededPatchesWithFinalizeBlock = executedPatches.values.map { it.await() }.filter {
-            it.exception == null && it.patch.finalizeBlock != null
-        }
-
-        coroutineScope {
-            succeededPatchesWithFinalizeBlock.asReversed().map { executionResult ->
-                launch(Dispatchers.IO) {
-                    val patch = executionResult.patch
-
-                    val result =
-                        try {
-                            patch.finalize(context)
-
-                            executionResult
-                        } catch (exception: PatchException) {
-                            PatchResult(patch, exception)
-                        } catch (exception: Exception) {
-                            PatchResult(patch, PatchException(exception))
+                            return@coroutineScope it
                         }
-
-                    if (result.exception != null) {
-                        send(
-                            PatchResult(
-                                patch,
-                                PatchException(
-                                    "The patch \"$patch\" raised an exception during finalization:\n" +
-                                        result.exception.stackTraceToString(),
-                                    result.exception,
-                                ),
-                            ),
-                        )
-                    } else if (patch in context.executablePatches) {
-                        send(result)
                     }
+
+                    if (dependenciesResult != null) {
+                        return@async dependenciesResult
+                    }
+
+                    // Execute the patch.
+                    try {
+                        runBlock { execute(context) }
+
+                        PatchResult(patch)
+                    } catch (exception: PatchException) {
+                        PatchResult(patch, exception)
+                    } catch (exception: Exception) {
+                        PatchResult(patch, PatchException(exception))
+                    }
+                }.also { executedPatches[patch] = it }
+            }
+
+            val time = measureTime {
+                coroutineScope {
+                    context.executablePatches.sortedBy { it.name }.map { patch ->
+                        launch(dispatcher) {
+                            val patchResult = patch().await()
+
+                            // If an exception occurred or the patch has no finalize block, emit the result.
+                            if (patchResult.exception != null || patch.finalizeBlock == null) {
+                                send(patchResult)
+                            }
+                        }
+                    }.joinAll()
                 }
-            }.joinAll()
+
+                val succeededPatchesWithFinalizeBlock =
+                    executedPatches.values.map { it.await() }.filter {
+                        it.exception == null && it.patch.finalizeBlock != null
+                    }
+
+                coroutineScope {
+                    succeededPatchesWithFinalizeBlock.asReversed().map { executionResult ->
+                        launch(dispatcher) {
+                            val patch = executionResult.patch
+
+                            val result =
+                                try {
+                                    patch.runBlock { patch.finalize(context) }
+
+                                    executionResult
+                                } catch (exception: PatchException) {
+                                    PatchResult(patch, exception)
+                                } catch (exception: Exception) {
+                                    PatchResult(patch, PatchException(exception))
+                                }
+
+                            if (result.exception != null) {
+                                send(
+                                    PatchResult(
+                                        patch,
+                                        PatchException(
+                                            "The patch \"$patch\" raised an exception during finalization:\n" +
+                                                    result.exception.stackTraceToString(),
+                                            result.exception,
+                                        ),
+                                    ),
+                                )
+                            } else if (patch in context.executablePatches) {
+                                send(result)
+                            }
+                        }
+                    }.joinAll()
+                }
+            }
+            logger.info("Patching completed in $time")
         }
     }
 
