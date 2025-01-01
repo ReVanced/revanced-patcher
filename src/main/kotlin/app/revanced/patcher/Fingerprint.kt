@@ -2,51 +2,53 @@
 
 package app.revanced.patcher
 
+import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
-import app.revanced.patcher.patch.BytecodePatchContext
-import app.revanced.patcher.patch.PatchException
+import app.revanced.patcher.patch.*
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import kotlin.collections.forEach
+
+internal fun parametersEqual(
+    parameters1: Iterable<CharSequence>,
+    parameters2: Iterable<CharSequence>,
+): Boolean {
+    if (parameters1.count() != parameters2.count()) return false
+    val iterator1 = parameters1.iterator()
+    parameters2.forEach {
+        if (!it.startsWith(iterator1.next())) return false
+    }
+    return true
+}
 
 /**
- * A fingerprint for a method. A fingerprint is a partial description of a method.
- * It is used to uniquely match a method by its characteristics.
- *
- * An example fingerprint for a public method that takes a single string parameter and returns void:
- * ```
- * fingerprint {
- *    accessFlags(AccessFlags.PUBLIC)
- *    returns("V")
- *    parameters("Ljava/lang/String;")
- * }
- * ```
+ * A fingerprint.
  *
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
  * @param parameters The parameters. Partial matches allowed and follow the same rules as [returnType].
- * @param opcodes A pattern of instruction opcodes. `null` can be used as a wildcard.
+ * @param filters A list of filters to match.
  * @param strings A list of the strings. Compared using [String.contains].
  * @param custom A custom condition for this fingerprint.
- * @param fuzzyPatternScanThreshold The threshold for fuzzy scanning the [opcodes] pattern.
  */
 class Fingerprint internal constructor(
     internal val accessFlags: Int?,
     internal val returnType: String?,
     internal val parameters: List<String>?,
-    internal val opcodes: List<Opcode?>?,
+    internal val filters: List<InstructionFilter>?,
     internal val strings: List<String>?,
     internal val custom: ((method: Method, classDef: ClassDef) -> Boolean)?,
-    private val fuzzyPatternScanThreshold: Int,
 ) {
     @Suppress("ktlint:standard:backing-property-naming")
     // Backing field needed for lazy initialization.
-    private var _matchOrNull: Match? = null
+    internal var _matchOrNull: Match? = null
 
     /**
      * The match for this [Fingerprint]. Null if unmatched.
@@ -146,18 +148,6 @@ class Fingerprint internal constructor(
             return null
         }
 
-        fun parametersEqual(
-            parameters1: Iterable<CharSequence>,
-            parameters2: Iterable<CharSequence>,
-        ): Boolean {
-            if (parameters1.count() != parameters2.count()) return false
-            val iterator1 = parameters1.iterator()
-            parameters2.forEach {
-                if (!it.startsWith(iterator1.next())) return false
-            }
-            return true
-        }
-
         // TODO: parseParameters()
         if (parameters != null && !parametersEqual(parameters, method.parameterTypes)) {
             return null
@@ -196,54 +186,68 @@ class Fingerprint internal constructor(
                 null
             }
 
-        val patternMatch = if (opcodes != null) {
-            val instructions = method.instructionsOrNull ?: return null
+        val filterMatch = if (filters != null) {
+            val instructions = method.instructionsOrNull?.toList() ?: return null
 
-            fun patternScan(): Match.PatternMatch? {
-                val fingerprintFuzzyPatternScanThreshold = fuzzyPatternScanThreshold
+            fun matchFilters() : List<Match.FilterMatch>? {
+                val lastMethodIndex = instructions.lastIndex
+                var filterMatches : MutableList<Match.FilterMatch>? = null
 
-                val instructionLength = instructions.count()
-                val patternLength = opcodes.size
+                var firstInstructionIndex = 0
+                firstFilterLoop@ while (true) {
+                    // Matched index of the first filter.
+                    var firstFilterIndex = -1
+                    var subIndex = firstInstructionIndex
 
-                for (index in 0 until instructionLength) {
-                    var patternIndex = 0
-                    var threshold = fingerprintFuzzyPatternScanThreshold
+                    for (filterIndex in filters.indices) {
+                        val filter = filters[filterIndex]
+                        val maxIndex = (subIndex + filter.maxInstructionsBefore)
+                            .coerceAtMost(lastMethodIndex)
+                        var filterMatched = false
 
-                    while (index + patternIndex < instructionLength) {
-                        val originalOpcode = instructions.elementAt(index + patternIndex).opcode
-                        val patternOpcode = opcodes.elementAt(patternIndex)
-
-                        if (patternOpcode != null && patternOpcode.ordinal != originalOpcode.ordinal) {
-                            // Reaching maximum threshold (0) means,
-                            // the pattern does not match to the current instructions.
-                            if (threshold-- == 0) break
+                        while (subIndex <= maxIndex) {
+                            val instruction = instructions[subIndex]
+                            if (filter.matches(classDef, method, instruction, subIndex)) {
+                                if (filterIndex == 0) {
+                                    firstFilterIndex = subIndex
+                                }
+                                if (filterMatches == null) {
+                                    filterMatches = ArrayList<Match.FilterMatch>(filters.size)
+                                }
+                                filterMatches += Match.FilterMatch(filter, subIndex, instruction)
+                                filterMatched = true
+                                subIndex++
+                                break
+                            }
+                            subIndex++
                         }
 
-                        if (patternIndex < patternLength - 1) {
-                            // If the entire pattern has not been scanned yet, continue the scan.
-                            patternIndex++
-                            continue
-                        }
+                        if (!filterMatched) {
+                            if (filterIndex == 0) {
+                                return null // First filter has no more matches to start from.
+                            }
 
-                        // The entire pattern has been scanned.
-                        return Match.PatternMatch(
-                            index,
-                            index + patternIndex,
-                        )
+                            // Try again with the first filter, starting from
+                            // the next possible first filter index.
+                            firstInstructionIndex = firstFilterIndex + 1
+                            filterMatches?.clear()
+                            continue@firstFilterLoop
+                        }
                     }
-                }
 
-                return null
+                    // All instruction filters matches.
+                    return filterMatches
+                }
             }
 
-            patternScan() ?: return null
+            matchFilters() ?: return null
         } else {
             null
         }
 
         _matchOrNull = Match(
             method,
-            patternMatch,
+            filterMatch,
             stringMatches,
             classDef,
         )
@@ -336,11 +340,11 @@ class Fingerprint internal constructor(
         get() = matchOrNull?.method
 
     /**
-     * The match for the opcode pattern.
+     * The match for the instruction filters.
      */
     context(BytecodePatchContext)
-    val patternMatchOrNull
-        get() = matchOrNull?.patternMatch
+    val filterMatchOrNull
+        get() = matchOrNull?.filterMatches
 
     /**
      * The matches for the strings.
@@ -397,8 +401,18 @@ class Fingerprint internal constructor(
      * @throws PatchException If the fingerprint has not been matched.
      */
     context(BytecodePatchContext)
+    @Deprecated("Instead use filterMatch")
     val patternMatch
         get() = match.patternMatch
+
+    /**
+     * Instruction filter matches.
+     *
+     * @throws PatchException If the fingerprint has not been matched.
+     */
+    context(BytecodePatchContext)
+    val filterMatch
+        get() = match.filterMatches ?: throw PatchException("Did not match $this")
 
     /**
      * The matches for the strings.
@@ -407,7 +421,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val stringMatches
-        get() = match.stringMatches
+        get() = match.stringMatches ?: throw PatchException("Did not match $this")
 }
 
 /**
@@ -421,7 +435,7 @@ class Fingerprint internal constructor(
 context(BytecodePatchContext)
 class Match internal constructor(
     val originalMethod: Method,
-    val patternMatch: PatternMatch?,
+    val filterMatches: List<FilterMatch>?,
     val stringMatches: List<StringMatch>?,
     val originalClassDef: ClassDef,
 ) {
@@ -441,14 +455,30 @@ class Match internal constructor(
      */
     val method by lazy { classDef.methods.first { MethodUtil.methodSignaturesMatch(it, originalMethod) } }
 
+    @Deprecated("Instead use filterMatch")
+    val patternMatch by lazy { PatternMatch(filterMatches!!.first().index, filterMatches.last().index) }
+
     /**
      * A match for an opcode pattern.
      * @param startIndex The index of the first opcode of the pattern in the method.
      * @param endIndex The index of the last opcode of the pattern in the method.
      */
+    @Deprecated("Instead use FilterMatch")
     class PatternMatch internal constructor(
         val startIndex: Int,
         val endIndex: Int,
+    )
+
+    /**
+     * A match for a [InstructionFilter].
+     * @param filter The filter that matched
+     * @param index The instruction index it matched with.
+     * @param instruction The instruction that matched.
+     */
+    class FilterMatch(
+        val filter : InstructionFilter,
+        val index: Int,
+        val instruction: Instruction
     )
 
     /**
@@ -466,20 +496,17 @@ class Match internal constructor(
  * @property accessFlags The exact access flags using values of [AccessFlags].
  * @property returnType The return type compared using [String.startsWith].
  * @property parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
- * @property opcodes An opcode pattern of the instructions. Wildcard or unknown opcodes can be specified by `null`.
+ * @property instructionFilters Filters to match the method instructions.
  * @property strings A list of the strings compared each using [String.contains].
  * @property customBlock A custom condition for this fingerprint.
- * @property fuzzyPatternScanThreshold The threshold for fuzzy pattern scanning.
  *
  * @constructor Create a new [FingerprintBuilder].
  */
-class FingerprintBuilder internal constructor(
-    private val fuzzyPatternScanThreshold: Int = 0,
-) {
+class FingerprintBuilder internal constructor() {
     private var accessFlags: Int? = null
     private var returnType: String? = null
     private var parameters: List<String>? = null
-    private var opcodes: List<Opcode?>? = null
+    private var instructionFilters: List<InstructionFilter>? = null
     private var strings: List<String>? = null
     private var customBlock: ((method: Method, classDef: ClassDef) -> Boolean)? = null
 
@@ -519,6 +546,12 @@ class FingerprintBuilder internal constructor(
         this.parameters = parameters.toList()
     }
 
+    private fun verifyNoFiltersSet() {
+        if (this.instructionFilters != null) {
+            throw PatchException("Instruction filters already set.")
+        }
+    }
+
     /**
      * Set the opcodes.
      *
@@ -526,7 +559,19 @@ class FingerprintBuilder internal constructor(
      * Wildcard or unknown opcodes can be specified by `null`.
      */
     fun opcodes(vararg opcodes: Opcode?) {
-        this.opcodes = opcodes.toList()
+        verifyNoFiltersSet()
+        this.instructionFilters = OpcodeFilter.listOfOpcodes(opcodes.toList())
+    }
+
+    /**
+     * Set the opcodes.
+     *
+     * @param opcodes An opcode pattern of instructions.
+     * Wildcard or unknown opcodes can be specified by `null`.
+     */
+    fun instructions(vararg instructionFilters: InstructionFilter) {
+        verifyNoFiltersSet()
+        this.instructionFilters = instructionFilters.toList()
     }
 
     /**
@@ -541,15 +586,18 @@ class FingerprintBuilder internal constructor(
      * @throws Exception If an unknown opcode is used.
      */
     fun opcodes(instructions: String) {
-        this.opcodes = instructions.trimIndent().split("\n").filter {
-            it.isNotBlank()
-        }.map {
-            // Remove any operands.
-            val name = it.split(" ", limit = 1).first().trim()
-            if (name == "null") return@map null
+        verifyNoFiltersSet()
+        this.instructionFilters = OpcodeFilter.listOfOpcodes(
+            instructions.trimIndent().split("\n").filter {
+                it.isNotBlank()
+            }.map {
+                // Remove any operands.
+                val name = it.split(" ", limit = 1).first().trim()
+                if (name == "null") return@map null
 
-            opcodesByName[name] ?: throw Exception("Unknown opcode: $name")
-        }
+                opcodesByName[name] ?: throw Exception("Unknown opcode: $name")
+            }
+        )
     }
 
     /**
@@ -574,10 +622,9 @@ class FingerprintBuilder internal constructor(
         accessFlags,
         returnType,
         parameters,
-        opcodes,
+        instructionFilters,
         strings,
         customBlock,
-        fuzzyPatternScanThreshold,
     )
 
     private companion object {
@@ -588,12 +635,10 @@ class FingerprintBuilder internal constructor(
 /**
  * Create a [Fingerprint].
  *
- * @param fuzzyPatternScanThreshold The threshold for fuzzy pattern scanning. Default is 0.
  * @param block The block to build the [Fingerprint].
  *
  * @return The created [Fingerprint].
  */
 fun fingerprint(
-    fuzzyPatternScanThreshold: Int = 0,
     block: FingerprintBuilder.() -> Unit,
-) = FingerprintBuilder(fuzzyPatternScanThreshold).apply(block).build()
+) = FingerprintBuilder().apply(block).build()
