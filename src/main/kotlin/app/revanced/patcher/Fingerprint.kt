@@ -16,20 +16,30 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 import kotlin.collections.forEach
 
-internal fun parametersEqual(
-    parameters1: Iterable<CharSequence>,
-    parameters2: Iterable<CharSequence>,
+internal fun parametersStartsWith(
+    targetMethodParameters: Iterable<CharSequence>,
+    fingerprintParameters: Iterable<CharSequence>,
 ): Boolean {
-    if (parameters1.count() != parameters2.count()) return false
-    val iterator1 = parameters1.iterator()
-    parameters2.forEach {
-        if (!it.startsWith(iterator1.next())) return false
+    if (fingerprintParameters.count() != targetMethodParameters.count()) return false
+    val fingerprintIterator = fingerprintParameters.iterator()
+    targetMethodParameters.forEach {
+        if (!it.startsWith(fingerprintIterator.next())) return false
     }
     return true
 }
 
 /**
- * A fingerprint.
+ * A fingerprint for a method. A fingerprint is a partial description of a method.
+ * It is used to uniquely match a method by its characteristics.
+ *
+ * An example fingerprint for a public method that takes a single string parameter and returns void:
+ * ```
+ * fingerprint {
+ *    accessFlags(AccessFlags.PUBLIC)
+ *    returns("V")
+ *    parameters("Ljava/lang/String;")
+ * }
+ * ```
  *
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
@@ -98,7 +108,8 @@ class Fingerprint internal constructor(
      * Match using a [ClassDef].
      *
      * @param classDef The class to match against.
-     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
+     * @return The [Match] if a match was found or if the
+     * fingerprint is already matched to a method, null otherwise.
      */
     context(BytecodePatchContext)
     fun matchOrNull(
@@ -149,7 +160,7 @@ class Fingerprint internal constructor(
         }
 
         // TODO: parseParameters()
-        if (parameters != null && !parametersEqual(parameters, method.parameterTypes)) {
+        if (parameters != null && !parametersStartsWith(method.parameterTypes, parameters)) {
             return null
         }
 
@@ -207,7 +218,7 @@ class Fingerprint internal constructor(
 
                         while (subIndex <= maxIndex) {
                             val instruction = instructions[subIndex]
-                            if (filter.matches(classDef, method, instruction, subIndex)) {
+                            if (filter.matches(method, instruction, subIndex)) {
                                 if (filterIndex == 0) {
                                     firstFilterIndex = subIndex
                                 }
@@ -340,6 +351,18 @@ class Fingerprint internal constructor(
         get() = matchOrNull?.method
 
     /**
+     * The match for the opcode pattern.
+     */
+    context(BytecodePatchContext)
+    val patternMatchOrNull : PatternMatch?
+        get() {
+            if (matchOrNull == null || matchOrNull!!.filterMatches == null) {
+                return null
+            }
+            return matchOrNull!!.patternMatch
+        }
+
+    /**
      * The match for the instruction filters.
      */
     context(BytecodePatchContext)
@@ -456,7 +479,10 @@ class Match internal constructor(
     val method by lazy { classDef.methods.first { MethodUtil.methodSignaturesMatch(it, originalMethod) } }
 
     @Deprecated("Instead use filterMatch")
-    val patternMatch by lazy { PatternMatch(filterMatches!!.first().index, filterMatches.last().index) }
+    val patternMatch by lazy {
+        if (filterMatches == null) throw PatchException("Did not match $this")
+        PatternMatch(filterMatches!!.first().index, filterMatches.last().index)
+    }
 
     /**
      * A match for an opcode pattern.

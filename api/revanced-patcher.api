@@ -1,19 +1,19 @@
 public final class app/revanced/patcher/AnyFilter : app/revanced/patcher/InstructionFilter {
 	public fun <init> (Ljava/util/List;I)V
 	public synthetic fun <init> (Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun getMaxInstructionsBefore ()I
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 }
 
 public final class app/revanced/patcher/FieldFilter : app/revanced/patcher/OpcodesFilter {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;I)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getDefiningClass ()Ljava/lang/String;
-	public fun getMaxInstructionsBefore ()I
-	public final fun getName ()Ljava/lang/String;
-	public final fun getType ()Ljava/lang/String;
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun <init> (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;I)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDefiningClass ()Lkotlin/jvm/functions/Function0;
+	public final fun getName ()Lkotlin/jvm/functions/Function0;
+	public final fun getType ()Lkotlin/jvm/functions/Function0;
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 }
 
 public final class app/revanced/patcher/Fingerprint {
@@ -28,6 +28,7 @@ public final class app/revanced/patcher/Fingerprint {
 	public final fun getOriginalMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/Method;
 	public final fun getOriginalMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/Method;
 	public final fun getPatternMatch (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/Match$PatternMatch;
+	public final fun getPatternMatchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/Match$PatternMatch;
 	public final fun getStringMatches (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
 	public final fun getStringMatchesOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
 	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
@@ -54,15 +55,17 @@ public final class app/revanced/patcher/FingerprintKt {
 	public static final fun fingerprint (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/Fingerprint;
 }
 
-public abstract interface class app/revanced/patcher/InstructionFilter {
+public abstract class app/revanced/patcher/InstructionFilter {
 	public static final field Companion Lapp/revanced/patcher/InstructionFilter$Companion;
 	public static final field METHOD_MAX_INSTRUCTIONS I
-	public abstract fun getMaxInstructionsBefore ()I
-	public abstract fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getMaxInstructionsBefore ()I
+	public abstract fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 }
 
 public final class app/revanced/patcher/InstructionFilter$Companion {
-	public static final field METHOD_MAX_INSTRUCTIONS I
 }
 
 public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
@@ -72,20 +75,20 @@ public final class app/revanced/patcher/LastInstructionFilter : app/revanced/pat
 	public fun <init> (Lapp/revanced/patcher/InstructionFilter;I)V
 	public synthetic fun <init> (Lapp/revanced/patcher/InstructionFilter;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getFilter ()Lapp/revanced/patcher/InstructionFilter;
-	public fun getMaxInstructionsBefore ()I
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 	public final fun setFilter (Lapp/revanced/patcher/InstructionFilter;)V
 }
 
 public final class app/revanced/patcher/LiteralFilter : app/revanced/patcher/OpcodesFilter {
-	public fun <init> (DILjava/util/List;)V
-	public synthetic fun <init> (DILjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (JILjava/util/List;)V
-	public synthetic fun <init> (JILjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getLiteral ()J
-	public fun getMaxInstructionsBefore ()I
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
-	public final fun setLiteral (J)V
+	public fun <init> (DLjava/util/List;I)V
+	public synthetic fun <init> (DLjava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (JLjava/util/List;I)V
+	public synthetic fun <init> (JLjava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlin/jvm/functions/Function0;Ljava/util/List;I)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getLiteral ()Lkotlin/jvm/functions/Function0;
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public final fun setLiteral (Lkotlin/jvm/functions/Function0;)V
 }
 
 public final class app/revanced/patcher/Match {
@@ -119,27 +122,21 @@ public final class app/revanced/patcher/MethodFilter : app/revanced/patcher/Opco
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;I)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getDefiningClass ()Ljava/lang/String;
-	public final fun getMethodName ()Ljava/lang/String;
-	public final fun getParameters ()Ljava/util/List;
-	public final fun getReturnType ()Ljava/lang/String;
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
-}
-
-public final class app/revanced/patcher/MethodFingerprintFilter : app/revanced/patcher/InstructionFilter {
-	public fun <init> (Lapp/revanced/patcher/Fingerprint;I)V
-	public synthetic fun <init> (Lapp/revanced/patcher/Fingerprint;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun getMaxInstructionsBefore ()I
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun <init> (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;I)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDefiningClass ()Lkotlin/jvm/functions/Function0;
+	public final fun getMethodName ()Lkotlin/jvm/functions/Function0;
+	public final fun getParameters ()Lkotlin/jvm/functions/Function0;
+	public final fun getReturnType ()Lkotlin/jvm/functions/Function0;
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 }
 
 public final class app/revanced/patcher/OpcodeFilter : app/revanced/patcher/InstructionFilter {
 	public static final field Companion Lapp/revanced/patcher/OpcodeFilter$Companion;
 	public fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;I)V
 	public synthetic fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun getMaxInstructionsBefore ()I
 	public final fun getOpcode ()Lcom/android/tools/smali/dexlib2/Opcode;
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 }
 
 public final class app/revanced/patcher/OpcodeFilter$Companion {
@@ -151,9 +148,8 @@ public class app/revanced/patcher/OpcodesFilter : app/revanced/patcher/Instructi
 	public synthetic fun <init> (Ljava/util/EnumSet;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/util/List;I)V
 	public synthetic fun <init> (Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun getMaxInstructionsBefore ()I
 	public final fun getOpcodes ()Ljava/util/EnumSet;
-	public fun matches (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 }
 
 public final class app/revanced/patcher/PackageMetadata {
