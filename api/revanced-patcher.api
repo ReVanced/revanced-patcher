@@ -37,8 +37,8 @@ public final class app/revanced/patcher/Fingerprint {
 	public final fun match (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 	public final fun matchOrNull ()Lapp/revanced/patcher/Match;
 	public final fun matchOrNull (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
+	public final fun matchOrNull (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
 	public final fun matchOrNull (Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
-	public final fun matchOrNull (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 	public final fun patchException ()Lapp/revanced/patcher/patch/PatchException;
 	public fun toString ()Ljava/lang/String;
 }
@@ -48,6 +48,7 @@ public final class app/revanced/patcher/FingerprintBuilder {
 	public final fun accessFlags (I)V
 	public final fun accessFlags ([Lcom/android/tools/smali/dexlib2/AccessFlags;)V
 	public final fun build ()Lapp/revanced/patcher/Fingerprint;
+	public final fun classFingerprint (Lapp/revanced/patcher/Fingerprint;)V
 	public final fun custom (Lkotlin/jvm/functions/Function2;)V
 	public final fun getName ()Ljava/lang/String;
 	public final fun instructions ([Lapp/revanced/patcher/InstructionFilter;)V

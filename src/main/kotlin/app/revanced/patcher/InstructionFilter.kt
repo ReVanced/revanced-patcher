@@ -253,7 +253,7 @@ class MethodFilter(
                 // Would be nice if this also checked all super classes,
                 // but doing so requires iteratively checking all superclasses
                 // up to the root Object class since class defs are mere Strings.
-                if (definingClass != "this" || referenceClass != method.definingClass) {
+                if (!(definingClass == "this" && referenceClass == method.definingClass)) {
                     return false
                 } // else, the method call is for 'this' class.
             }
@@ -343,7 +343,7 @@ class FieldFilter(
             val definingClass = definingClass()
 
             if (!referenceClass.endsWith(definingClass)) {
-                if (definingClass != "this" || referenceClass != method.definingClass) {
+                if (!(definingClass === "this" && referenceClass == method.definingClass)) {
                     return false
                 } // else, the method call is for 'this' class.
             }

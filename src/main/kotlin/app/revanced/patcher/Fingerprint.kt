@@ -58,6 +58,7 @@ internal fun parametersStartsWith(
  * ```
  *
  * @param name Human readable name used for [toString].
+ * @param classFingerprint Fingerprint that matches any method in the class this fingerprint matches to.
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
  * @param parameters The parameters. Partial matches allowed and follow the same rules as [returnType].
@@ -67,6 +68,7 @@ internal fun parametersStartsWith(
  */
 class Fingerprint internal constructor(
     internal val name: String,
+    internal val classFingerprint: Fingerprint? = null,
     internal val accessFlags: Int?,
     internal val returnType: String?,
     internal val parameters: List<String>?,
@@ -85,6 +87,11 @@ class Fingerprint internal constructor(
         if (_matchOrNull != null) return _matchOrNull
 
         val start = if (LOG_RESOLVING_SPEED) System.currentTimeMillis() else 0
+
+        if (classFingerprint != null) {
+            _matchOrNull = matchOrNull(classFingerprint.match().originalClassDef)
+            return _matchOrNull
+        }
 
         strings?.mapNotNull {
            BytecodePatchContext.lookupMaps.methodsByStrings[it]
@@ -129,7 +136,7 @@ class Fingerprint internal constructor(
         if (_matchOrNull != null) return _matchOrNull
 
         for (method in classDef.methods) {
-            val match = matchOrNull(method, classDef)
+            val match = matchOrNull(classDef, method)
             if (match != null) {
                 _matchOrNull = match
                 return match
@@ -151,7 +158,10 @@ class Fingerprint internal constructor(
     ): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        return matchOrNull(method, BytecodePatchContext.classBy { method.definingClass == it.type }!!.immutableClass)
+        return matchOrNull(
+            BytecodePatchContext.classBy { method.definingClass == it.type }!!.immutableClass,
+            method
+        )
     }
 
     /**
@@ -162,9 +172,14 @@ class Fingerprint internal constructor(
      * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
      */
     fun matchOrNull(
-        method: Method,
         classDef: ClassDef,
+        method: Method,
     ): Match? {
+        if (classFingerprint != null && classFingerprint.match().classDef != classDef) {
+            throw PatchException("Fingerprint $this declares a class fingerprint," +
+                    "but tried to match using a different class: $classDef ")
+        }
+
         if (_matchOrNull != null) return _matchOrNull
 
         if (returnType != null && !method.returnType.startsWith(returnType)) {
@@ -328,7 +343,7 @@ class Fingerprint internal constructor(
     fun match(
         method: Method,
         classDef: ClassDef,
-    ) = matchOrNull(method, classDef) ?: throw patchException()
+    ) = matchOrNull(classDef, method) ?: throw patchException()
 
     /**
      * The class the matching method is a member of, or null if this fingerprint did not match.
@@ -533,6 +548,7 @@ class Match internal constructor(
  * A builder for [Fingerprint].
  *
  * @property name Name of the fingerprint, and usually identical to the variable name.
+ * @property classFingerprint Fingerprint used to find the class this fingerprint resolves to.
  * @property accessFlags The exact access flags using values of [AccessFlags].
  * @property returnType The return type compared using [String.startsWith].
  * @property parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
@@ -543,12 +559,22 @@ class Match internal constructor(
  * @constructor Create a new [FingerprintBuilder].
  */
 class FingerprintBuilder(val name: String) {
+    private var classFingerprint: Fingerprint? = null
     private var accessFlags: Int? = null
     private var returnType: String? = null
     private var parameters: List<String>? = null
     private var instructionFilters: List<InstructionFilter>? = null
     private var strings: List<String>? = null
     private var customBlock: ((method: Method, classDef: ClassDef) -> Boolean)? = null
+
+    /**
+     * Sets the class (parent) fingerprint.
+     *
+     * @param classFingerprint Fingerprint that finds any other methods in the target class.
+     */
+    fun classFingerprint(classFingerprint: Fingerprint) {
+        this.classFingerprint = classFingerprint
+    }
 
     /**
      * Set the access flags.
@@ -660,6 +686,7 @@ class FingerprintBuilder(val name: String) {
 
     fun build() = Fingerprint(
         name,
+        classFingerprint,
         accessFlags,
         returnType,
         parameters,
