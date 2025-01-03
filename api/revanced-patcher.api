@@ -19,8 +19,8 @@ public final class app/revanced/patcher/FieldFilter : app/revanced/patcher/Opcod
 public final class app/revanced/patcher/Fingerprint {
 	public final fun getClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun getClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
-	public final fun getFilterMatchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
 	public final fun getFilterMatches (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
+	public final fun getFilterMatchesOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
 	public final fun getMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
 	public final fun getMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
 	public final fun getOriginalClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
@@ -106,11 +106,13 @@ public final class app/revanced/patcher/LiteralFilter : app/revanced/patcher/Opc
 public final class app/revanced/patcher/Match {
 	public final fun getClassDef ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun getFilterMatches ()Ljava/util/List;
+	public final fun getFilterMatchesOrNull ()Ljava/util/List;
 	public final fun getMethod ()Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
 	public final fun getOriginalClassDef ()Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun getOriginalMethod ()Lcom/android/tools/smali/dexlib2/iface/Method;
 	public final fun getPatternMatch ()Lapp/revanced/patcher/Match$PatternMatch;
 	public final fun getStringMatches ()Ljava/util/List;
+	public final fun getStringMatchesOrNull ()Ljava/util/List;
 }
 
 public final class app/revanced/patcher/Match$FilterMatch {

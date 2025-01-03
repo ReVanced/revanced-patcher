@@ -276,10 +276,10 @@ class Fingerprint internal constructor(
         }
 
         _matchOrNull = Match(
+            classDef,
             method,
             filterMatch,
             stringMatches,
-            classDef,
         )
 
         return _matchOrNull
@@ -388,7 +388,7 @@ class Fingerprint internal constructor(
      * The match for the instruction filters.
      */
     context(BytecodePatchContext)
-    val filterMatchOrNull
+    val filterMatchesOrNull
         get() = matchOrNull()?.filterMatches
 
     /**
@@ -457,7 +457,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val filterMatches
-        get() = match().filterMatches ?: throw PatchException("Did not match $this")
+        get() = match().filterMatches
 
     /**
      * The matches for the strings.
@@ -466,7 +466,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val stringMatches
-        get() = match().stringMatches ?: throw PatchException("Did not match $this")
+        get() = match().stringMatches
 }
 
 /**
@@ -479,10 +479,10 @@ class Fingerprint internal constructor(
  */
 context(BytecodePatchContext)
 class Match internal constructor(
-    val originalMethod: Method,
-    val filterMatches: List<FilterMatch>?,
-    val stringMatches: List<StringMatch>?,
     val originalClassDef: ClassDef,
+    val originalMethod: Method,
+    private val _filterMatches: List<FilterMatch>?,
+    private val _stringMatches: List<StringMatch>?,
 ) {
     /**
      * The mutable version of [originalClassDef].
@@ -502,9 +502,17 @@ class Match internal constructor(
 
     @Deprecated("Instead use filterMatches", ReplaceWith("filterMatches"))
     val patternMatch by lazy {
-        if (filterMatches == null) throw PatchException("Did not match $this")
-        PatternMatch(filterMatches.first().index, filterMatches.last().index)
+        if (_filterMatches == null) throw PatchException("Did not match $this")
+        PatternMatch(_filterMatches.first().index, _filterMatches.last().index)
     }
+
+    val filterMatches
+        get() = _filterMatches ?: throw PatchException("Fingerprint declared no filters")
+    val filterMatchesOrNull = _filterMatches
+
+    val stringMatches
+        get() = _stringMatches ?: throw PatchException("Fingerprint declared no strings")
+    val stringMatchesOrNull = _stringMatches
 
     /**
      * A match for an opcode pattern.
