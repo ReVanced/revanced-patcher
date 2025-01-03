@@ -28,36 +28,51 @@ import java.util.logging.Logger
 /**
  * A context for patches containing the current state of the bytecode.
  *
+ * Class is a singleton object because it's needed in various places
+ * where passing a context is difficult or messy.
+ *
  * @param config The [PatcherConfig] used to create this context.
  */
-@Suppress("MemberVisibilityCanBePrivate")
-class BytecodePatchContext internal constructor(private val config: PatcherConfig) :
-    PatchContext<Set<PatcherResult.PatchedDexFile>>,
-    Closeable {
-    private val logger = Logger.getLogger(this::javaClass.name)
+object BytecodePatchContext : PatchContext<Set<PatcherResult.PatchedDexFile>>, Closeable {
+    private val logger = Logger.getLogger(this::class.java.name)
+
+    private lateinit var config: PatcherConfig
 
     /**
      * [Opcodes] of the supplied [PatcherConfig.apkFile].
      */
-    internal val opcodes: Opcodes
+    internal lateinit var opcodes: Opcodes
+        private set
 
     /**
      * The list of classes.
      */
-    val classes = ProxyClassList(
-        MultiDexIO.readDexFile(
+    lateinit var classes: ProxyClassList
+        private set
+
+    /**
+     * The lookup maps for methods and the class they are a member of from [classes].
+     */
+    internal lateinit var lookupMaps: LookupMaps
+        private set
+
+    fun initContext(config: PatcherConfig) {
+        this.config = config
+
+        // Read the dex file, set opcodes and classes
+        val dexFile = MultiDexIO.readDexFile(
             true,
             config.apkFile,
             BasicDexFileNamer(),
             null,
             null,
-        ).also { opcodes = it.opcodes }.classes.toMutableList(),
-    )
+        )
+        opcodes = dexFile.opcodes
+        classes = ProxyClassList(dexFile.classes.toMutableList())
 
-    /**
-     * The lookup maps for methods and the class they are a member of from the [classes].
-     */
-    internal val lookupMaps by lazy { LookupMaps(classes) }
+        // Initialize lookup maps
+        lookupMaps = LookupMaps(classes)
+    }
 
     /**
      * Merge the extension of [bytecodePatch] into the [BytecodePatchContext].
@@ -79,7 +94,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
                 logger.fine { "Class \"$classDef\" exists already. Adding missing methods and fields." }
 
-                existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
+                existingClass.merge(classDef, this).let { mergedClass ->
                     // If the class was merged, replace the original class with the merged class.
                     if (mergedClass === existingClass) {
                         return@let
@@ -105,7 +120,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * Proxy the class to allow mutation.
      *
      * @param classDef The class to proxy.
-     *
      * @return A proxy for the class.
      */
     fun proxy(classDef: ClassDef) = classes.proxyPool.find {
@@ -116,7 +130,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * Navigate a method.
      *
      * @param method The method to navigate.
-     *
      * @return A [MethodNavigator] for the method.
      */
     fun navigate(method: MethodReference) = MethodNavigator(method)
@@ -167,7 +180,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      */
     internal class LookupMaps internal constructor(classes: List<ClassDef>) : Closeable {
         /**
-         * Methods associated by strings referenced in it.
+         * Methods associated by strings referenced in them.
          */
         internal val methodsByStrings = MethodClassPairsLookupMap()
 
@@ -182,13 +195,14 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     val methodClassPair: MethodClassPair = method to classDef
 
                     // Add strings contained in the method as the key.
-                    method.instructionsOrNull?.forEach instructions@{ instruction ->
-                        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) {
-                            return@instructions
+                    method.instructionsOrNull?.forEach { instruction ->
+                        if (instruction.opcode != Opcode.CONST_STRING &&
+                            instruction.opcode != Opcode.CONST_STRING_JUMBO
+                        ) {
+                            return@forEach
                         }
 
                         val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-
                         methodsByStrings[string] = methodClassPair
                     }
 

@@ -155,12 +155,12 @@ class BytecodePatch internal constructor(
     executeBlock,
     finalizeBlock,
 ) {
-    override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
-        mergeExtension(this@BytecodePatch)
-        execute(this)
+    override fun execute(context: PatcherContext) {
+        BytecodePatchContext.mergeExtension(this@BytecodePatch)
+        execute(BytecodePatchContext)
     }
 
-    override fun finalize(context: PatcherContext) = finalize(context.bytecodeContext)
+    override fun finalize(context: PatcherContext) = finalize(BytecodePatchContext)
 
     override fun toString() = name ?: "Bytecode${super.toString()}"
 }
@@ -553,7 +553,7 @@ class PatchResult internal constructor(val patch: Patch<*>, val exception: Patch
  *
  * @param byPatchesFile The patches associated by the patches file they were loaded from.
  */
-sealed class PatchLoader private constructor(
+sealed class PatchLoader(
     val byPatchesFile: Map<File, Set<Patch<*>>>,
 ) : Set<Patch<*>> by byPatchesFile.values.flatten().toSet() {
     /**
@@ -561,7 +561,7 @@ sealed class PatchLoader private constructor(
      * @param getBinaryClassNames A function that returns the binary names of all classes accessible by the class loader.
      * @param classLoader The [ClassLoader] to use for loading the classes.
      */
-    private constructor(
+    constructor(
         patchesFiles: Set<File>,
         getBinaryClassNames: (patchesFile: File) -> List<String>,
         classLoader: ClassLoader,

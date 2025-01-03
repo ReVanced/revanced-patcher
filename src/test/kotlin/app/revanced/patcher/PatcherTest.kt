@@ -34,7 +34,7 @@ internal object PatcherTest {
                 Logger.getAnonymousLogger(),
             )
 
-            every { context.bytecodeContext.classes } returns mockk(relaxed = true)
+            every { BytecodePatchContext.classes } returns mockk(relaxed = true)
             every { this@mockk() } answers { callOriginal() }
         }
     }
@@ -153,7 +153,7 @@ internal object PatcherTest {
                 val fingerprint by fingerprint { }
 
                 // Throws, because the fingerprint can't be matched.
-                fingerprint.patternMatch
+                fingerprint.filterMatches
             }
         }
 
@@ -165,7 +165,7 @@ internal object PatcherTest {
 
     @Test
     fun `matches fingerprint`() {
-        every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
+        every { BytecodePatchContext.classes } returns ProxyClassList(
             mutableListOf(
                 ImmutableClassDef(
                     "class",
@@ -207,20 +207,18 @@ internal object PatcherTest {
 
         patches()
 
-        with(patcher.context.bytecodeContext) {
-            assertAll(
-                "Expected fingerprints to match.",
-                { assertNotNull(fingerprint.originalClassDefOrNull) },
-                { assertNotNull(fingerprint2.originalClassDefOrNull) },
-                { assertNotNull(fingerprint3.originalClassDefOrNull) },
-            )
-        }
+        assertAll(
+            "Expected fingerprints to match.",
+            { assertNotNull(fingerprint.originalClassDefOrNull) },
+            { assertNotNull(fingerprint2.originalClassDefOrNull) },
+            { assertNotNull(fingerprint3.originalClassDefOrNull) },
+        )
     }
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
-        every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
+        every { BytecodePatchContext.lookupMaps } returns LookupMaps(BytecodePatchContext.classes)
+        every { with(BytecodePatchContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }
     }
