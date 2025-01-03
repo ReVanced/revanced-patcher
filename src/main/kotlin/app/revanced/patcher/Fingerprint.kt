@@ -527,7 +527,10 @@ class Match internal constructor(
         val filter : InstructionFilter,
         val index: Int,
         val instruction: Instruction
-    )
+    ) {
+        @Suppress("UNCHECKED_CAST")
+        fun <T> getInstruction(): T = instruction as T
+    }
 
     /**
      * A match for a string.

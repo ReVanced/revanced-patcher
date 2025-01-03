@@ -117,6 +117,7 @@ public final class app/revanced/patcher/Match$FilterMatch {
 	public final fun getFilter ()Lapp/revanced/patcher/InstructionFilter;
 	public final fun getIndex ()I
 	public final fun getInstruction ()Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;
+	public final fun getInstruction ()Ljava/lang/Object;
 }
 
 public final class app/revanced/patcher/Match$PatternMatch {
