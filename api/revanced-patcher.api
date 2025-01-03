@@ -19,8 +19,8 @@ public final class app/revanced/patcher/FieldFilter : app/revanced/patcher/Opcod
 public final class app/revanced/patcher/Fingerprint {
 	public final fun getClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun getClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
-	public final fun getFilterMatch (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
 	public final fun getFilterMatchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
+	public final fun getFilterMatches (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
 	public final fun getMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
 	public final fun getMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;
 	public final fun getOriginalClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
@@ -31,12 +31,15 @@ public final class app/revanced/patcher/Fingerprint {
 	public final fun getPatternMatchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/Match$PatternMatch;
 	public final fun getStringMatches (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
 	public final fun getStringMatchesOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;
+	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/Match;
 	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
 	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
+	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/Match;
 	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
 	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
+	public final fun patchException ()Lapp/revanced/patcher/patch/PatchException;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -111,7 +114,6 @@ public final class app/revanced/patcher/Match {
 }
 
 public final class app/revanced/patcher/Match$FilterMatch {
-	public fun <init> (Lapp/revanced/patcher/InstructionFilter;ILcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)V
 	public final fun getFilter ()Lapp/revanced/patcher/InstructionFilter;
 	public final fun getIndex ()I
 	public final fun getInstruction ()Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;

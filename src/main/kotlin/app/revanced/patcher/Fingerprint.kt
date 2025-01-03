@@ -14,8 +14,23 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import java.util.logging.Logger
 import kotlin.collections.forEach
+import kotlin.lazy
 import kotlin.reflect.KProperty
+
+private val logger = Logger.getLogger(Fingerprint::class.java.name)
+
+/**
+ * Enable to log resolving speed.
+ * Ideally this should be configurable using a patcher verbose parameter.
+ */
+private const val LOG_RESOLVING_SPEED = false
+
+/**
+ * Minimum resolving time to log a fingerprint.
+ */
+private const val LOG_RESOLVING_SPEED_MINIMUM_MS_TO_LOG = 50
 
 internal fun parametersStartsWith(
     targetMethodParameters: Iterable<CharSequence>,
@@ -64,44 +79,39 @@ class Fingerprint internal constructor(
     private var _matchOrNull: Match? = null
 
     /**
-     * The match for this [Fingerprint]. Null if unmatched.
+     * The match for this [Fingerprint], or Null if no matches exist.
      */
     context(BytecodePatchContext)
-    private val matchOrNull: Match?
-        get() = matchOrNull()
-
-    /**
-     * Match using [BytecodePatchContext.lookupMaps].
-     *
-     * Generally faster than the other [matchOrNull] overloads when there are many methods to check for a match.
-     *
-     * Fingerprints can be optimized for performance:
-     * - Slowest: Specify [custom] or [opcodes] and nothing else.
-     * - Fast: Specify [accessFlags], [returnType].
-     * - Faster: Specify [accessFlags], [returnType] and [parameters].
-     * - Fastest: Specify [strings], with at least one string being an exact (non-partial) match.
-     *
-     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
-     */
-    context(BytecodePatchContext)
-    internal fun matchOrNull(): Match? {
+    fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        var match = strings?.mapNotNull {
+        val start = if (LOG_RESOLVING_SPEED) System.currentTimeMillis() else 0
+
+        strings?.mapNotNull {
             lookupMaps.methodsByStrings[it]
         }?.minByOrNull { it.size }?.let { methodClasses ->
             methodClasses.forEach { (classDef, method) ->
                 val match = matchOrNull(classDef, method)
-                if (match != null) return@let match
+                if (match != null) {
+                    _matchOrNull = match
+                    return match
+                }
             }
-
-            null
         }
-        if (match != null) return match
 
         classes.forEach { classDef ->
-            match = matchOrNull(classDef)
-            if (match != null) return match
+            val match = matchOrNull(classDef)
+            if (match != null) {
+                _matchOrNull = match
+
+                if (LOG_RESOLVING_SPEED) {
+                    val time = System.currentTimeMillis() - start
+                    if (time >= LOG_RESOLVING_SPEED_MINIMUM_MS_TO_LOG) {
+                        logger.info("Resolved in ${time}ms: $this")
+                    }
+                }
+                return match
+            }
         }
 
         return null
@@ -122,7 +132,10 @@ class Fingerprint internal constructor(
 
         for (method in classDef.methods) {
             val match = matchOrNull(method, classDef)
-            if (match != null) return match
+            if (match != null) {
+                _matchOrNull = match
+                return match
+            }
         }
 
         return null
@@ -138,7 +151,11 @@ class Fingerprint internal constructor(
     context(BytecodePatchContext)
     fun matchOrNull(
         method: Method,
-    ) = matchOrNull(method, classBy { method.definingClass == it.type }!!.immutableClass)
+    ): Match? {
+        if (_matchOrNull != null) return _matchOrNull
+
+        return matchOrNull(method, classBy { method.definingClass == it.type }!!.immutableClass)
+    }
 
     /**
      * Match using a [Method].
@@ -171,36 +188,37 @@ class Fingerprint internal constructor(
             return null
         }
 
-        val stringMatches: List<Match.StringMatch>? =
-            if (strings != null) {
-                buildList {
-                    val instructions = method.instructionsOrNull ?: return null
+        val stringMatches: List<Match.StringMatch>? = if (strings == null) {
+            null
+        } else {
+            buildList {
+                val instructions = method.instructionsOrNull ?: return null
 
-                    val stringsList = strings.toMutableList()
+                val stringsList = strings.toMutableList()
 
-                    instructions.forEachIndexed { instructionIndex, instruction ->
-                        if (
-                            instruction.opcode != Opcode.CONST_STRING &&
-                            instruction.opcode != Opcode.CONST_STRING_JUMBO
-                        ) {
-                            return@forEachIndexed
-                        }
-
-                        val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                        val index = stringsList.indexOfFirst(string::contains)
-                        if (index == -1) return@forEachIndexed
-
-                        add(Match.StringMatch(string, instructionIndex))
-                        stringsList.removeAt(index)
+                instructions.forEachIndexed { instructionIndex, instruction ->
+                    if (
+                        instruction.opcode != Opcode.CONST_STRING &&
+                        instruction.opcode != Opcode.CONST_STRING_JUMBO
+                    ) {
+                        return@forEachIndexed
                     }
 
-                    if (stringsList.isNotEmpty()) return null
-                }
-            } else {
-                null
-            }
+                    val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+                    val index = stringsList.indexOfFirst(string::contains)
+                    if (index == -1) return@forEachIndexed
 
-        val filterMatch = if (filters != null) {
+                    add(Match.StringMatch(string, instructionIndex))
+                    stringsList.removeAt(index)
+                }
+
+                if (stringsList.isNotEmpty()) return null
+            }
+        }
+
+        val filterMatch = if (filters == null) {
+            null
+        } else {
             val instructions = method.instructionsOrNull?.toList() ?: return null
 
             fun matchFilters() : List<Match.FilterMatch>? {
@@ -255,8 +273,6 @@ class Fingerprint internal constructor(
             }
 
             matchFilters() ?: return null
-        } else {
-            null
         }
 
         _matchOrNull = Match(
@@ -269,9 +285,10 @@ class Fingerprint internal constructor(
         return _matchOrNull
     }
 
-    private val exception get() = PatchException("Failed to match the fingerprint: $this")
+    fun patchException() = PatchException("Failed to match the fingerprint: $this")
 
     override fun toString() = name
+
 
     /**
      * The match for this [Fingerprint].
@@ -279,8 +296,7 @@ class Fingerprint internal constructor(
      * @throws PatchException If the [Fingerprint] has not been matched.
      */
     context(BytecodePatchContext)
-    private val match
-        get() = matchOrNull ?: throw exception
+    fun match() = matchOrNull() ?: throw patchException()
 
     /**
      * Match using a [ClassDef].
@@ -292,7 +308,7 @@ class Fingerprint internal constructor(
     context(BytecodePatchContext)
     fun match(
         classDef: ClassDef,
-    ) = matchOrNull(classDef) ?: throw exception
+    ) = matchOrNull(classDef) ?: throw patchException()
 
     /**
      * Match using a [Method].
@@ -305,7 +321,7 @@ class Fingerprint internal constructor(
     context(BytecodePatchContext)
     fun match(
         method: Method,
-    ) = matchOrNull(method) ?: throw exception
+    ) = matchOrNull(method) ?: throw patchException()
 
     /**
      * Match using a [Method].
@@ -319,21 +335,21 @@ class Fingerprint internal constructor(
     fun match(
         method: Method,
         classDef: ClassDef,
-    ) = matchOrNull(method, classDef) ?: throw exception
+    ) = matchOrNull(method, classDef) ?: throw patchException()
 
     /**
      * The class the matching method is a member of.
      */
     context(BytecodePatchContext)
     val originalClassDefOrNull
-        get() = matchOrNull?.originalClassDef
+        get() = matchOrNull()?.originalClassDef
 
     /**
      * The matching method.
      */
     context(BytecodePatchContext)
     val originalMethodOrNull
-        get() = matchOrNull?.originalMethod
+        get() = matchOrNull()?.originalMethod
 
     /**
      * The mutable version of [originalClassDefOrNull].
@@ -343,7 +359,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val classDefOrNull
-        get() = matchOrNull?.classDef
+        get() = matchOrNull()?.classDef
 
     /**
      * The mutable version of [originalMethodOrNull].
@@ -353,7 +369,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val methodOrNull
-        get() = matchOrNull?.method
+        get() = matchOrNull()?.method
 
     /**
      * The match for the opcode pattern.
@@ -361,10 +377,11 @@ class Fingerprint internal constructor(
     context(BytecodePatchContext)
     val patternMatchOrNull : PatternMatch?
         get() {
-            if (matchOrNull == null || matchOrNull!!.filterMatches == null) {
+            val match = this.matchOrNull()
+            if (match == null || match.filterMatches == null) {
                 return null
             }
-            return matchOrNull!!.patternMatch
+            return match.patternMatch
         }
 
     /**
@@ -372,14 +389,14 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val filterMatchOrNull
-        get() = matchOrNull?.filterMatches
+        get() = matchOrNull()?.filterMatches
 
     /**
      * The matches for the strings.
      */
     context(BytecodePatchContext)
     val stringMatchesOrNull
-        get() = matchOrNull?.stringMatches
+        get() = matchOrNull()?.stringMatches
 
     /**
      * The class the matching method is a member of.
@@ -388,7 +405,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val originalClassDef
-        get() = match.originalClassDef
+        get() = match().originalClassDef
 
     /**
      * The matching method.
@@ -397,7 +414,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val originalMethod
-        get() = match.originalMethod
+        get() = match().originalMethod
 
     /**
      * The mutable version of [originalClassDef].
@@ -409,7 +426,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val classDef
-        get() = match.classDef
+        get() = match().classDef
 
     /**
      * The mutable version of [originalMethod].
@@ -421,7 +438,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val method
-        get() = match.method
+        get() = match().method
 
     /**
      * The match for the opcode pattern.
@@ -431,7 +448,7 @@ class Fingerprint internal constructor(
     context(BytecodePatchContext)
     @Deprecated("Instead use filterMatch")
     val patternMatch
-        get() = match.patternMatch
+        get() = match().patternMatch
 
     /**
      * Instruction filter matches.
@@ -439,8 +456,8 @@ class Fingerprint internal constructor(
      * @throws PatchException If the fingerprint has not been matched.
      */
     context(BytecodePatchContext)
-    val filterMatch
-        get() = match.filterMatches ?: throw PatchException("Did not match $this")
+    val filterMatches
+        get() = match().filterMatches ?: throw PatchException("Did not match $this")
 
     /**
      * The matches for the strings.
@@ -449,7 +466,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     val stringMatches
-        get() = match.stringMatches ?: throw PatchException("Did not match $this")
+        get() = match().stringMatches ?: throw PatchException("Did not match $this")
 }
 
 /**
@@ -483,10 +500,10 @@ class Match internal constructor(
      */
     val method by lazy { classDef.methods.first { MethodUtil.methodSignaturesMatch(it, originalMethod) } }
 
-    @Deprecated("Instead use filterMatch")
+    @Deprecated("Instead use filterMatches", ReplaceWith("filterMatches"))
     val patternMatch by lazy {
         if (filterMatches == null) throw PatchException("Did not match $this")
-        PatternMatch(filterMatches!!.first().index, filterMatches.last().index)
+        PatternMatch(filterMatches.first().index, filterMatches.last().index)
     }
 
     /**
@@ -506,7 +523,7 @@ class Match internal constructor(
      * @param index The instruction index it matched with.
      * @param instruction The instruction that matched.
      */
-    class FilterMatch(
+    class FilterMatch internal constructor(
         val filter : InstructionFilter,
         val index: Int,
         val instruction: Instruction
@@ -668,15 +685,33 @@ class FingerprintBuilder(val name: String) {
 class FingerprintDelegate(
     private val block: FingerprintBuilder.() -> Unit
 ) {
+    // Must cache the fingerprint, otherwise on every usage
+    // a new fingerprint is built and resolved.
+    private var fingerprint: Fingerprint? = null
+
+    private fun getFingerprint(name: String) : Fingerprint {
+        if (fingerprint == null) {
+            val builder = FingerprintBuilder(name)
+            builder.block()
+            fingerprint = builder.build()
+        }
+
+        return fingerprint!!
+    }
+
     // Called when you read the property, e.g. `val x by fingerprint { ... }`
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Fingerprint {
-        val name = property.name
-        val builder = FingerprintBuilder(name)
-        builder.block() // Apply the DSL block.
-        return builder.build()
+        return getFingerprint(property.name)
     }
 }
 
+/**
+ * Create a [Fingerprint].
+ *
+ * @param block The block to build the [Fingerprint].
+ *
+ * @return The created [Fingerprint].
+ */
 fun fingerprint(block: FingerprintBuilder.() -> Unit): FingerprintDelegate {
     return FingerprintDelegate(block)
 }
