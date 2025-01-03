@@ -74,19 +74,19 @@ class OpcodeFilter(
     }
 
     companion object {
-        fun listOfOpcodes(opcodes: Collection<Opcode?>): List<OpcodeFilter> {
-            var list = ArrayList<OpcodeFilter>(opcodes.size)
+        fun listOfOpcodes(opcodes: Collection<Opcode?>): List<InstructionFilter> {
+            var list = ArrayList<InstructionFilter>(opcodes.size)
 
             // First opcode can match anywhere.
             var instructionsBefore = METHOD_MAX_INSTRUCTIONS
             opcodes.forEach { opcode ->
-                if (opcode == null) {
-                    // Allow a non match or a missing instruction.
-                    instructionsBefore++
+                list += if (opcode == null) {
+                    // Null opcode matches anything.
+                    OpcodesFilter(null as List<Opcode>?, instructionsBefore)
                 } else {
-                    list += OpcodeFilter(opcode, instructionsBefore)
-                    instructionsBefore = 0
+                    OpcodeFilter(opcode, instructionsBefore)
                 }
+                instructionsBefore = 0
             }
 
             return list
