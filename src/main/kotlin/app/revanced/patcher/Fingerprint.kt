@@ -15,6 +15,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 import kotlin.collections.forEach
+import kotlin.reflect.KProperty
 
 internal fun parametersStartsWith(
     targetMethodParameters: Iterable<CharSequence>,
@@ -41,6 +42,7 @@ internal fun parametersStartsWith(
  * }
  * ```
  *
+ * @param name Human readable name used for [toString].
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
  * @param parameters The parameters. Partial matches allowed and follow the same rules as [returnType].
@@ -49,6 +51,7 @@ internal fun parametersStartsWith(
  * @param custom A custom condition for this fingerprint.
  */
 class Fingerprint internal constructor(
+    internal val name: String?,
     internal val accessFlags: Int?,
     internal val returnType: String?,
     internal val parameters: List<String>?,
@@ -267,6 +270,8 @@ class Fingerprint internal constructor(
     }
 
     private val exception get() = PatchException("Failed to match the fingerprint: $this")
+
+    override fun toString() = javaClass.name + "." + name
 
     /**
      * The match for this [Fingerprint].
@@ -519,6 +524,7 @@ class Match internal constructor(
 /**
  * A builder for [Fingerprint].
  *
+ * @property name Name of the fingerprint, and usually identical to the variable name.
  * @property accessFlags The exact access flags using values of [AccessFlags].
  * @property returnType The return type compared using [String.startsWith].
  * @property parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
@@ -528,7 +534,7 @@ class Match internal constructor(
  *
  * @constructor Create a new [FingerprintBuilder].
  */
-class FingerprintBuilder internal constructor() {
+class FingerprintBuilder(val name: String) {
     private var accessFlags: Int? = null
     private var returnType: String? = null
     private var parameters: List<String>? = null
@@ -644,7 +650,8 @@ class FingerprintBuilder internal constructor() {
         this.customBlock = customBlock
     }
 
-    internal fun build() = Fingerprint(
+    fun build() = Fingerprint(
+        name,
         accessFlags,
         returnType,
         parameters,
@@ -658,13 +665,18 @@ class FingerprintBuilder internal constructor() {
     }
 }
 
-/**
- * Create a [Fingerprint].
- *
- * @param block The block to build the [Fingerprint].
- *
- * @return The created [Fingerprint].
- */
-fun fingerprint(
-    block: FingerprintBuilder.() -> Unit,
-) = FingerprintBuilder().apply(block).build()
+class FingerprintDelegate(
+    private val block: FingerprintBuilder.() -> Unit
+) {
+    // Called when you read the property, e.g. `val x by fingerprint { ... }`
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Fingerprint {
+        val name = property.name
+        val builder = FingerprintBuilder(name)
+        builder.block() // Apply the DSL block.
+        return builder.build()
+    }
+}
+
+fun fingerprint(block: FingerprintBuilder.() -> Unit): FingerprintDelegate {
+    return FingerprintDelegate(block)
+}
