@@ -51,7 +51,7 @@ internal fun parametersStartsWith(
  * @param custom A custom condition for this fingerprint.
  */
 class Fingerprint internal constructor(
-    internal val name: String?,
+    internal val name: String,
     internal val accessFlags: Int?,
     internal val returnType: String?,
     internal val parameters: List<String>?,
@@ -61,7 +61,7 @@ class Fingerprint internal constructor(
 ) {
     @Suppress("ktlint:standard:backing-property-naming")
     // Backing field needed for lazy initialization.
-    internal var _matchOrNull: Match? = null
+    private var _matchOrNull: Match? = null
 
     /**
      * The match for this [Fingerprint]. Null if unmatched.
@@ -221,7 +221,7 @@ class Fingerprint internal constructor(
 
                         while (subIndex <= maxIndex) {
                             val instruction = instructions[subIndex]
-                            if (filter.matches(method, instruction, subIndex)) {
+                            if (filter.matches(this@BytecodePatchContext, method, instruction, subIndex)) {
                                 if (filterIndex == 0) {
                                     firstFilterIndex = subIndex
                                 }
@@ -271,7 +271,7 @@ class Fingerprint internal constructor(
 
     private val exception get() = PatchException("Failed to match the fingerprint: $this")
 
-    override fun toString() = javaClass.name + "." + name
+    override fun toString() = name
 
     /**
      * The match for this [Fingerprint].

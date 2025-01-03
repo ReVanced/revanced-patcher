@@ -23,8 +23,8 @@ abstract class InstructionFilter(
     val maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
 ) {
 
-    context(BytecodePatchContext)
     abstract fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
@@ -46,13 +46,13 @@ class AnyFilter(
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
 ) : InstructionFilter(maxInstructionsBefore) {
 
-    context(BytecodePatchContext)
     override fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        return filters.any { matches(method, instruction, methodIndex) }
+        return filters.any { matches(context, method, instruction, methodIndex) }
     }
 }
 
@@ -64,8 +64,8 @@ class OpcodeFilter(
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
 ) : InstructionFilter(maxInstructionsBefore) {
 
-    context(BytecodePatchContext)
     override fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
@@ -114,8 +114,8 @@ open class OpcodesFilter(
         maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
     ) : this(if (opcodes == null) null else EnumSet.copyOf(opcodes), maxInstructionsBefore)
 
-    context(BytecodePatchContext)
     override fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
@@ -151,13 +151,13 @@ class LiteralFilter(
         maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
     ) : this({ literal.toRawBits() }, opcodes, maxInstructionsBefore)
 
-    context(BytecodePatchContext)
     override fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(method, instruction, methodIndex)) {
+        if (!super.matches(context, method, instruction, methodIndex)) {
             return false
         }
 
@@ -172,20 +172,20 @@ class MethodFilter(
      * For calls to a method in the same class, use 'this' as the defining class.
      * Note: 'this' does not work for methods declared only in a superclass.
      */
-    val definingClass: (() -> String)? = null,
+    val definingClass: ((BytecodePatchContext) -> String)? = null,
     /**
      * Method name. Must be exact match of the method name.
      */
-    val methodName: (() -> String)? = null,
+    val methodName: ((BytecodePatchContext) -> String)? = null,
     /**
      * Parameters of the method call. Each parameter matches
      * using startsWith() and semantics are the same as [Fingerprint].
      */
-    val parameters: (() -> List<String>)? = null,
+    val parameters: ((BytecodePatchContext) -> List<String>)? = null,
     /**
      * Return type.  Matches using startsWith()
      */
-    val returnType: (() -> String)? = null,
+    val returnType: ((BytecodePatchContext) -> String)? = null,
     /**
      * Opcode types to match. By default this matches any method call opcode:
      * <code>Opcode.INVOKE_*</code>.
@@ -227,25 +227,25 @@ class MethodFilter(
         maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
     ) : this(
         if (definingClass != null) {
-            { definingClass } as (() -> String)
+            { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
         } else null, if (methodName != null) {
-            ({ methodName })
+            { methodName }
         } else null, if (parameters != null) {
-            ({ parameters })
+            { parameters }
         } else null, if (returnType != null) {
-            ({ returnType })
+            { returnType }
         } else null,
         opcodes,
         maxInstructionsBefore
     )
 
-    context(BytecodePatchContext)
     override fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(method, instruction, methodIndex)) {
+        if (!super.matches(context, method, instruction, methodIndex)) {
             return false
         }
 
@@ -254,7 +254,7 @@ class MethodFilter(
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
-            val definingClass = definingClass()
+            val definingClass = definingClass(context)
             if (!referenceClass.endsWith(definingClass)) {
                 // Check if 'this' defining class is used.
                 // Would be nice if this also checked all super classes,
@@ -265,13 +265,13 @@ class MethodFilter(
                 } // else, the method call is for 'this' class.
             }
         }
-        if (methodName != null && reference.name != methodName()) {
+        if (methodName != null && reference.name != methodName(context)) {
             return false
         }
-        if (returnType != null && !reference.returnType.startsWith(returnType())) {
+        if (returnType != null && !reference.returnType.startsWith(returnType(context))) {
             return false
         }
-        if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters())) {
+        if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters(context))) {
             return false
         }
 
@@ -286,15 +286,16 @@ class FieldFilter(
      * For calls to a method in the same class, use 'this' as the defining class.
      * Note: 'this' does not work for fields found in superclasses.
      */
-    val definingClass: (() -> String)? = null,
+
+    val definingClass: ((BytecodePatchContext) -> String)? = null,
     /**
      * Name of the field.  Must be a full match of the field name.
      */
-    val name: (() -> String)? = null,
+    val name: ((BytecodePatchContext) -> String)? = null,
     /**
      * Class type of field. Partial matches using startsWith() is allowed.
      */
-    val type: (() -> String)? = null,
+    val type: ((BytecodePatchContext) -> String)? = null,
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
 ) : OpcodesFilter(opcodes, maxInstructionsBefore) {
@@ -320,23 +321,25 @@ class FieldFilter(
         maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
     ) : this(
         if (definingClass != null) {
-            { definingClass } as (() -> String)
-        } else null, if (name != null) {
-            ({ name })
-        } else null, if (type != null) {
-            ({ type })
+            { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
+        } else null,
+        if (name != null) {
+            { name }
+        } else null,
+        if (type != null) {
+            { type }
         } else null,
         opcodes,
         maxInstructionsBefore
     )
 
-    context(BytecodePatchContext)
     override fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(method, instruction, methodIndex)) {
+        if (!super.matches(context, method, instruction, methodIndex)) {
             return false
         }
 
@@ -345,7 +348,7 @@ class FieldFilter(
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
-            val definingClass = definingClass()
+            val definingClass = definingClass(context)
 
             if (!referenceClass.endsWith(definingClass)) {
                 if (definingClass != "this" || referenceClass != method.definingClass) {
@@ -353,10 +356,10 @@ class FieldFilter(
                 } // else, the method call is for 'this' class.
             }
         }
-        if (name != null && reference.name != name()) {
+        if (name != null && reference.name != name(context)) {
             return false
         }
-        if (type != null && !reference.type.startsWith(type())) {
+        if (type != null && !reference.type.startsWith(type(context))) {
             return false
         }
 
@@ -372,14 +375,14 @@ class LastInstructionFilter(
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
 ) : InstructionFilter(maxInstructionsBefore) {
 
-    context(BytecodePatchContext)
     override fun matches(
+        context: BytecodePatchContext,
         method: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
         return methodIndex == method.instructions.count() - 1 && filter.matches(
-            method, instruction, methodIndex
+            context, method, instruction, methodIndex
         )
     }
 }
