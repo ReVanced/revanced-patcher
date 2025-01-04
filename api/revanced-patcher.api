@@ -178,8 +178,6 @@ public final class app/revanced/patcher/OpcodeFilter$Companion {
 }
 
 public class app/revanced/patcher/OpcodesFilter : app/revanced/patcher/InstructionFilter {
-	public fun <init> (Ljava/util/EnumSet;I)V
-	public synthetic fun <init> (Ljava/util/EnumSet;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ljava/util/List;I)V
 	public synthetic fun <init> (Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getOpcodes ()Ljava/util/EnumSet;

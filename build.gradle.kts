@@ -115,5 +115,6 @@ publishing {
 
 signing {
     useGpgCmd()
+    // NOTE: If doing local dev work then comment out or remove this sign task.
     sign(publishing.publications["revanced-patcher-publication"])
 }

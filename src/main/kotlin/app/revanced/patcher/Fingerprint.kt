@@ -81,7 +81,7 @@ class Fingerprint internal constructor(
     private var _matchOrNull: Match? = null
 
     /**
-     * The match for this [Fingerprint], or Null if no matches exist.
+     * The match for this [Fingerprint], or `null` if no matches exist.
      */
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
@@ -619,7 +619,10 @@ class FingerprintBuilder(val name: String) {
     }
 
     /**
-     * Set the opcodes.
+     * A pattern of opcodes.
+     *
+     * To use opcodes with other [InstructionFilter] objects, instead use
+     * [instructions] with individual opcodes declared using [OpcodeFilter].
      *
      * @param opcodes An opcode pattern of instructions.
      * Wildcard or unknown opcodes can be specified by `null`.
