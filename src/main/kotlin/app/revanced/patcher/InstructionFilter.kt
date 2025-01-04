@@ -10,6 +10,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import java.util.EnumSet
 import kotlin.collections.forEach
 
@@ -159,7 +160,7 @@ class LiteralFilter(
     }
 }
 
-class MethodFilter(
+class MethodFilter (
     /**
      * Defining class of the method call. Matches using endsWith().
      *
@@ -215,7 +216,13 @@ class MethodFilter(
          * Return type.  Matches using startsWith()
          */
         returnType: String? = null,
-
+        /**
+         * Opcode types to match. By default this matches any method call opcode:
+         * <code>Opcode.INVOKE_*</code>.
+         *
+         * If this filter must match specific types of method call, then specify the desired opcodes
+         * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to only match static calls.
+         */
         opcodes: List<Opcode>? = null,
         maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
     ) : this(
@@ -232,6 +239,34 @@ class MethodFilter(
         opcodes,
         maxInstructionsBefore
     )
+
+    constructor(
+        /**
+         * Defining class of the method call. Matches using endsWith().
+         *
+         * For calls to a method in the same class, use 'this' as the defining class.
+         * Note: 'this' does not work for methods declared only in a superclass.
+         */
+        definingClass: String? = null,
+        /**
+         * Method name. Must be exact match of the method name.
+         */
+        methodName: String? = null,
+        /**
+         * Parameters of the method call. Each parameter matches
+         * using startsWith() and semantics are the same as [Fingerprint].
+         */
+        parameters: List<String>? = null,
+        /**
+         * Return type.  Matches using startsWith()
+         */
+        returnType: String? = null,
+        /**
+         * Single opcode this filter must match to.
+         */
+        opcode: Opcode,
+        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    ) : this(definingClass, methodName, parameters , returnType, listOf(opcode), maxInstructionsBefore)
 
     override fun matches(
         method: Method,
@@ -269,6 +304,114 @@ class MethodFilter(
         }
 
         return true
+    }
+
+    companion object {
+        private val regex = Regex("""^(L[^;]+;)->([^(\s]+)\(([^)]*)\)(.+)$""")
+
+        /**
+         * Returns a filter for a JVM-style method signature. e.g.:
+         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
+         */
+        fun parseJvmMethodCall(
+            methodSignature: String,
+        ) = parseJvmMethodCall(methodSignature, null, METHOD_MAX_INSTRUCTIONS)
+
+        /**
+         * Returns a filter for a JVM-style method signature. e.g.:
+         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
+         *
+         * Does not support obfuscated method names or parameter/return types
+         */
+        fun parseJvmMethodCall(
+            methodSignature: String,
+            maxInstructionsBefore: Int
+        ) = parseJvmMethodCall(methodSignature, null, maxInstructionsBefore)
+
+        /**
+         * Returns a filter for a JVM-style method signature. e.g.:
+         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
+         *
+         * Does not support obfuscated method names or parameter/return types
+         */
+        fun parseJvmMethodCall(
+            methodSignature: String,
+            opcodes: List<Opcode>?,
+        ) = parseJvmMethodCall(methodSignature, opcodes, METHOD_MAX_INSTRUCTIONS)
+
+        /**
+         * Returns a filter for a JVM-style method signature. e.g.:
+         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
+         *
+         * Does not support obfuscated method names or parameter/return types
+         */
+        fun parseJvmMethodCall(
+            methodSignature: String,
+            opcodes: List<Opcode>?,
+            maxInstructionsBefore: Int
+        ): MethodFilter {
+            val matchResult = regex.matchEntire(methodSignature)
+                ?: throw IllegalArgumentException("Invalid method signature: $methodSignature")
+
+            val classDescriptor = matchResult.groupValues[1]
+            val methodName = matchResult.groupValues[2]
+            val paramDescriptorString = matchResult.groupValues[3]
+            val returnDescriptor = matchResult.groupValues[4]
+
+            val paramDescriptors = parseParameterDescriptors(paramDescriptorString)
+
+            return MethodFilter(
+                classDescriptor,
+                methodName,
+                paramDescriptors,
+                returnDescriptor,
+                opcodes,
+                maxInstructionsBefore
+            )
+        }
+
+        /**
+         * Parses a single JVM type descriptor or an array descriptor at the current position.
+         * For example: Lcom/example/SomeClass; or I or [I or [Lcom/example/SomeClass; etc.
+         */
+        private fun parseSingleType(params: String, startIndex: Int): Pair<String, Int> {
+            var i = startIndex
+
+            // Keep track of array dimensions '['
+            while (i < params.length && params[i] == '[') {
+                i++
+            }
+
+            return if (i < params.length && params[i] == 'L') {
+                // It's an object type starting with 'L', read until ';'
+                val semicolonPos = params.indexOf(';', i)
+                if (semicolonPos == -1) {
+                    throw IllegalArgumentException("Malformed object descriptor (missing semicolon) in: $params")
+                }
+                // Substring from startIndex up to and including the semicolon.
+                val typeDescriptor = params.substring(startIndex, semicolonPos + 1)
+                typeDescriptor to (semicolonPos + 1)
+            } else {
+                // It's either a primitive or we've already consumed the array part
+                // So just take one character (e.g. 'I', 'Z', 'B', etc.)
+                val typeDescriptor = params.substring(startIndex, i + 1)
+                typeDescriptor to (i + 1)
+            }
+        }
+
+        /**
+         * Parses the parameters (the part inside parentheses) into a list of JVM type descriptors.
+         */
+        private fun parseParameterDescriptors(paramString: String): List<String> {
+            val result = mutableListOf<String>()
+            var currentIndex = 0
+            while (currentIndex < paramString.length) {
+                val (type, nextIndex) = parseSingleType(paramString, currentIndex)
+                result.add(type)
+                currentIndex = nextIndex
+            }
+            return result
+        }
     }
 }
 
@@ -326,6 +469,26 @@ class FieldFilter(
         maxInstructionsBefore
     )
 
+    constructor(
+        /**
+         * Defining class of the field call. Matches using endsWith().
+         *
+         * For calls to a method in the same class, use 'this' as the defining class.
+         * Note: 'this' does not work for fields found in superclasses.
+         */
+        definingClass: String? = null,
+        /**
+         * Name of the field.  Must be a full match of the field name.
+         */
+        name: String? = null,
+        /**
+         * Class type of field. Partial matches using startsWith() is allowed.
+         */
+        type: String? = null,
+        opcode: Opcode,
+        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    ) : this(definingClass, name, type, listOf(opcode), maxInstructionsBefore)
+
     override fun matches(
         method: Method,
         instruction: Instruction,
@@ -356,6 +519,30 @@ class FieldFilter(
         }
 
         return true
+    }
+}
+
+/**
+ * Opcode type NEW_INSTANCE or NEW_ARRAY, with a non obfuscated class type.
+ */
+class NewInstanceFilter(
+    val type: String,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), maxInstructionsBefore) {
+
+    override fun matches(
+        method: Method,
+        instruction: Instruction,
+        methodIndex: Int
+    ): Boolean {
+        if (!super.matches(method, instruction, methodIndex)) {
+            return false
+        }
+
+        val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
+        if (reference == null) return false
+
+        return reference.type == type
     }
 }
 
