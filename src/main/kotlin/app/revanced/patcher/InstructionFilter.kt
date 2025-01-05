@@ -28,11 +28,8 @@ import kotlin.collections.forEach
  *
  * Variable space is allowed between each filter.
  *
- * By default [OpcodeFilter] and [OpcodesFilter] use a default [maxInstructionsBefore] of zero,
- * meaning the opcode must be immediately after the previous filter.
- *
- * All other filters use a default [maxInstructionsBefore] of [METHOD_MAX_INSTRUCTIONS] meaning
- * they can match anywhere after the previous filter.
+ * All filters use a default [maxInstructionsBefore] of [METHOD_MAX_INSTRUCTIONS]
+ * meaning they can match anywhere after the previous filter.
  */
 abstract class InstructionFilter(
     /**
@@ -46,8 +43,11 @@ abstract class InstructionFilter(
     /**
      * If this filter matches the method instruction.
      *
-     * method index can be ignored unless a filter has an unusual reason,
-     * such as checking for the last index of a method.
+     * @param method The enclosing method of [instruction].
+     * @param instruction The instruction to check for a match.
+     * @param methodIndex The index of [instruction] in the enclosing [method].
+     *                    The index can be ignored unless a filter has an unusual reason,
+     *                    such as matching only the last index of a method.
      */
     abstract fun matches(
         context: BytecodePatchContext,
@@ -66,7 +66,7 @@ abstract class InstructionFilter(
 }
 
 /**
- * Logical or operator, where the first filter that matches is the match result.
+ * Logical OR operator, where the first filter that matches is the match result.
  */
 class AnyFilter(
     private val filters: List<InstructionFilter>,
@@ -241,10 +241,10 @@ class MethodCallFilter (
     val returnType: ((BytecodePatchContext) -> String)? = null,
     /**
      * Opcode types to match. By default this matches any method call opcode:
-     * <code>Opcode.INVOKE_*</code>.
+     * `Opcode.INVOKE_*`.
      *
      * If this filter must match specific types of method call, then specify the desired opcodes
-     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to only match static calls.
+     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
      */
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
@@ -253,7 +253,6 @@ class MethodCallFilter (
     // Define both providers and literal strings.
     // Providers are used when the parameters are not known at declaration,
     // such as using another Fingerprint to find a class def or method name.
-    @Suppress("USELESS_CAST")
     constructor(
         /**
          * Defining class of the method call. Matches using endsWith().
@@ -277,14 +276,15 @@ class MethodCallFilter (
         returnType: String? = null,
         /**
          * Opcode types to match. By default this matches any method call opcode:
-         * <code>Opcode.INVOKE_*</code>.
+         * `Opcode.INVOKE_*`.
          *
          * If this filter must match specific types of method call, then specify the desired opcodes
-         * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to only match static calls.
+         * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
          */
         opcodes: List<Opcode>? = null,
         maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
     ) : this(
+        @Suppress("USELESS_CAST")
         if (definingClass != null) {
             { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
         } else null, if (methodName != null) {
@@ -500,7 +500,6 @@ class FieldCallFilter(
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
 ) : OpcodesFilter(opcodes, maxInstructionsBefore) {
 
-    @Suppress("USELESS_CAST")
     constructor(
         /**
          * Defining class of the field call. Matches using endsWith().
@@ -520,6 +519,7 @@ class FieldCallFilter(
         opcodes: List<Opcode>? = null,
         maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
     ) : this(
+        @Suppress("USELESS_CAST")
         if (definingClass != null) {
             { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
         } else null,
@@ -588,7 +588,7 @@ class FieldCallFilter(
 }
 
 /**
- * Opcode type NEW_INSTANCE or NEW_ARRAY, with a non obfuscated class type.
+ * Opcode type `NEW_INSTANCE` or `NEW_ARRAY` with a non obfuscated class type.
  */
 class NewInstanceFilter(
     val type: String,

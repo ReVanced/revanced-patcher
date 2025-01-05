@@ -32,12 +32,12 @@ import kotlin.reflect.KProperty
  * }
  * ```
  *
- * @param name Human readable name used for [toString].
+ * @param name Human readable fingerprint name used for [toString] and error stack traces.
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
  * @param parameters The parameters. Partial matches allowed and follow the same rules as [returnType].
- * @param filters A list of filters to match.
- * @param strings A list of the strings. Compared using [String.contains].
+ * @param filters A list of filters to match, declared in the same order the instructions appear in the method.
+ * @param strings A list of the strings that appear anywhere in the method. Compared using [String.contains].
  * @param custom A custom condition for this fingerprint.
  */
 class Fingerprint internal constructor(
@@ -112,7 +112,8 @@ class Fingerprint internal constructor(
      * The class is retrieved from the method.
      *
      * @param method The method to match against.
-     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
+     * @return The [Match] if a match was found or if the fingerprint is previously matched to a method,
+     * otherwise `null`.
      */
     context(BytecodePatchContext)
     fun matchOrNull(
@@ -128,7 +129,8 @@ class Fingerprint internal constructor(
      *
      * @param method The method to match against.
      * @param classDef The class the method is a member of.
-     * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
+     * @return The [Match] if a match was found or if the fingerprint is previously matched to a method,
+     * otherwise `null`.
      */
     context(BytecodePatchContext)
     fun matchOrNull(
