@@ -211,19 +211,14 @@ class LiteralFilter(
 }
 
 /**
- * Filters opcode method calls.
+ * Identifies method calls.
  *
  * `Null` parameters matches anything.
  *
  * By default any type of method call matches.
  * Specify opcodes if a specific type of method call is desired (such as only static calls).
- *
- * Fingerprints can be used to find obfuscated class/method names to filter with,
- * such as:
- * `MethodFilter(definingClass = { fingerprint.originalClassDef.type },
- *    methodName = { fingerprint.originalMethod.name })`
  */
-class MethodFilter (
+class MethodCallFilter (
     /**
      * Defining class of the method call. Matches using endsWith().
      *
@@ -241,7 +236,7 @@ class MethodFilter (
      */
     val parameters: ((BytecodePatchContext) -> List<String>)? = null,
     /**
-     * Return type.  Matches using startsWith()
+     * Return type. Matches using startsWith()
      */
     val returnType: ((BytecodePatchContext) -> String)? = null,
     /**
@@ -415,7 +410,7 @@ class MethodFilter (
             methodSignature: String,
             opcodes: List<Opcode>?,
             maxInstructionsBefore: Int
-        ): MethodFilter {
+        ): MethodCallFilter {
             val matchResult = regex.matchEntire(methodSignature)
                 ?: throw IllegalArgumentException("Invalid method signature: $methodSignature")
 
@@ -426,7 +421,7 @@ class MethodFilter (
 
             val paramDescriptors = parseParameterDescriptors(paramDescriptorString)
 
-            return MethodFilter(
+            return MethodCallFilter(
                 classDescriptor,
                 methodName,
                 paramDescriptors,
@@ -484,14 +479,8 @@ class MethodFilter (
 /**
  * Matches a field call, such as:
  * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
- *
- * Using filter:
- * `FieldFilter(type ="Landroid/view/View;", opcode = Opcode.IGET_OBJECT)`
- *
- * If the field is a call to the defining class, use `this` as the declaring class:
- * `FieldFilter(definingClass = "this", type ="Landroid/view/View;", opcode = Opcode.IGET_OBJECT)`
  */
-class FieldFilter(
+class FieldCallFilter(
     /**
      * Defining class of the field call. Matches using endsWith().
      *
@@ -500,7 +489,7 @@ class FieldFilter(
      */
     val definingClass: ((BytecodePatchContext) -> String)? = null,
     /**
-     * Name of the field.  Must be a full match of the field name.
+     * Name of the field. Must be a full match of the field name.
      */
     val name: ((BytecodePatchContext) -> String)? = null,
     /**
