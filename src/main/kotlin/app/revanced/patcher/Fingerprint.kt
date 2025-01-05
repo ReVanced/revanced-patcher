@@ -160,7 +160,7 @@ class Fingerprint internal constructor(
             buildList {
                 val instructions = method.instructionsOrNull ?: return null
 
-                val stringsList = strings.toMutableList()
+                var stringsList : MutableList<String>? = null
 
                 instructions.forEachIndexed { instructionIndex, instruction ->
                     if (
@@ -171,6 +171,9 @@ class Fingerprint internal constructor(
                     }
 
                     val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+                    if (stringsList == null) {
+                        stringsList = strings.toMutableList()
+                    }
                     val index = stringsList.indexOfFirst(string::contains)
                     if (index == -1) return@forEachIndexed
 
@@ -178,7 +181,7 @@ class Fingerprint internal constructor(
                     stringsList.removeAt(index)
                 }
 
-                if (stringsList.isNotEmpty()) return null
+                if (stringsList == null || stringsList.isNotEmpty()) return null
             }
         }
 
