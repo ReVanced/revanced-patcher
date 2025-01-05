@@ -179,7 +179,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         init {
             classes.forEach { classDef ->
                 classDef.methods.forEach { method ->
-                    val classMethodPair: ClassMethodPair = classDef to method
+                    val methodClassPair: MethodClassPair = method to classDef
 
                     // Add strings contained in the method as the key.
                     method.instructionsOrNull?.forEach { instruction ->
@@ -189,7 +189,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
                         val string = ((instruction as ReferenceInstruction).reference as StringReference).string
 
-                        methodsByStrings[string] = classMethodPair
+                        methodsByStrings[string] = methodClassPair
                     }
 
                     // In the future, the class type could be added to the lookup map.
@@ -213,22 +213,22 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 /**
  * A pair of a [Method] and the [ClassDef] it is a member of.
  */
-internal typealias ClassMethodPair = Pair<ClassDef, Method>
+internal typealias MethodClassPair = Pair<Method, ClassDef>
 
 /**
- * A list of [ClassMethodPair]s.
+ * A list of [MethodClassPair]s.
  */
-internal typealias MethodClassPairs = LinkedList<ClassMethodPair>
+internal typealias MethodClassPairs = LinkedList<MethodClassPair>
 
 /**
  * A lookup map for [MethodClassPairs]s.
- * The key is a string and the value is a list of [ClassMethodPair]s.
+ * The key is a string and the value is a list of [MethodClassPair]s.
  */
 internal class MethodClassPairsLookupMap : MutableMap<String, MethodClassPairs> by mutableMapOf() {
     /**
-     * Add a [ClassMethodPair] associated by any key.
-     * If the key does not exist, a new list is created and the [ClassMethodPair] is added to it.
+     * Add a [MethodClassPair] associated by any key.
+     * If the key does not exist, a new list is created and the [MethodClassPair] is added to it.
      */
-    internal operator fun set(key: String, classMethodPair: ClassMethodPair) =
-        apply { getOrPut(key) { MethodClassPairs() }.add(classMethodPair) }
+    internal operator fun set(key: String, methodClassPair: MethodClassPair) =
+        apply { getOrPut(key) { MethodClassPairs() }.add(methodClassPair) }
 }

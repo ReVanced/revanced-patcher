@@ -50,7 +50,6 @@ public final class app/revanced/patcher/FingerprintBuilder {
 	public final fun accessFlags (I)V
 	public final fun accessFlags ([Lcom/android/tools/smali/dexlib2/AccessFlags;)V
 	public final fun build ()Lapp/revanced/patcher/Fingerprint;
-	public final fun classFingerprint (Lapp/revanced/patcher/Fingerprint;)V
 	public final fun custom (Lkotlin/jvm/functions/Function2;)V
 	public final fun getName ()Ljava/lang/String;
 	public final fun instructions ([Lapp/revanced/patcher/InstructionFilter;)V

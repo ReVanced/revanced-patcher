@@ -130,8 +130,8 @@ class OpcodeFilter(
 
 
 /**
- * Matches multiple opcodes.
- * If using only a single opcode instead use [OpcodeFilter].
+ * Matches a single instruction from many kinds of opcodes.
+ * If matching only a single opcode instead use [OpcodeFilter].
  */
 open class OpcodesFilter private constructor(
     val opcodes: EnumSet<Opcode>?,
@@ -571,7 +571,7 @@ class FieldCallFilter(
             val definingClass = definingClass(context)
 
             if (!referenceClass.endsWith(definingClass)) {
-                if (!(definingClass === "this" && referenceClass == method.definingClass)) {
+                if (!(definingClass == "this" && referenceClass == method.definingClass)) {
                     return false
                 } // else, the method call is for 'this' class.
             }
