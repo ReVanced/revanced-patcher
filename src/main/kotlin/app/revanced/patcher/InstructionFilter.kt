@@ -3,6 +3,7 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.extensions.InstructionExtensions.instructions
+import app.revanced.patcher.util.parametersStartsWith
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
