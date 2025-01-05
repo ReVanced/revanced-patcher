@@ -5,6 +5,7 @@ package app.revanced.patcher
 import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.*
+import app.revanced.patcher.util.parametersStartsWith
 import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -18,31 +19,6 @@ import java.util.logging.Logger
 import kotlin.collections.forEach
 import kotlin.lazy
 import kotlin.reflect.KProperty
-
-private val logger = Logger.getLogger(Fingerprint::class.java.name)
-
-/**
- * Enable to log resolving speed.
- * Ideally this should be configurable using a patcher verbose parameter.
- */
-private const val LOG_RESOLVING_SPEED = false
-
-/**
- * Minimum resolving time to log a fingerprint.
- */
-private const val LOG_RESOLVING_SPEED_MINIMUM_MS_TO_LOG = 50
-
-internal fun parametersStartsWith(
-    targetMethodParameters: Iterable<CharSequence>,
-    fingerprintParameters: Iterable<CharSequence>,
-): Boolean {
-    if (fingerprintParameters.count() != targetMethodParameters.count()) return false
-    val fingerprintIterator = fingerprintParameters.iterator()
-    targetMethodParameters.forEach {
-        if (!it.startsWith(fingerprintIterator.next())) return false
-    }
-    return true
-}
 
 /**
  * A fingerprint for a method. A fingerprint is a partial description of a method.
@@ -86,7 +62,7 @@ class Fingerprint internal constructor(
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        val start = if (LOG_RESOLVING_SPEED) System.currentTimeMillis() else 0
+        val start = if (LOG_MATCHING_PERFORMANCE) System.currentTimeMillis() else 0
 
         if (classFingerprint != null) {
             _matchOrNull = matchOrNull(classFingerprint.match().originalClassDef)
@@ -110,9 +86,9 @@ class Fingerprint internal constructor(
             if (match != null) {
                 _matchOrNull = match
 
-                if (LOG_RESOLVING_SPEED) {
+                if (LOG_MATCHING_PERFORMANCE) {
                     val time = System.currentTimeMillis() - start
-                    if (time >= LOG_RESOLVING_SPEED_MINIMUM_MS_TO_LOG) {
+                    if (time >= LOG_MATCHING_PERFORMANCE_MINIMUM_MS) {
                         logger.info("Resolved in ${time}ms: $this")
                     }
                 }
@@ -462,6 +438,21 @@ class Fingerprint internal constructor(
      */
     val stringMatches
         get() = match().stringMatches
+
+    private companion object {
+        val logger = Logger.getLogger(Fingerprint::class.java.name)
+
+        /**
+         * Enable to log the runtime of fingerprints with slower matching speed.
+         * Ideally this should be configurable using a patcher verbose parameter.
+         */
+        const val LOG_MATCHING_PERFORMANCE = false
+
+        /**
+         * Minimum resolving time to log a fingerprint.
+         */
+        const val LOG_MATCHING_PERFORMANCE_MINIMUM_MS = 75
+    }
 }
 
 /**
