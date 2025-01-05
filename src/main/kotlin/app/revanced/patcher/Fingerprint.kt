@@ -15,7 +15,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
-import java.util.logging.Logger
 import kotlin.collections.forEach
 import kotlin.lazy
 import kotlin.reflect.KProperty
@@ -62,8 +61,6 @@ class Fingerprint internal constructor(
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        val start = if (LOG_MATCHING_PERFORMANCE) System.currentTimeMillis() else 0
-
         if (classFingerprint != null) {
             _matchOrNull = matchOrNull(classFingerprint.match().originalClassDef)
             return _matchOrNull
@@ -85,13 +82,6 @@ class Fingerprint internal constructor(
             val match = matchOrNull(classDef)
             if (match != null) {
                 _matchOrNull = match
-
-                if (LOG_MATCHING_PERFORMANCE) {
-                    val time = System.currentTimeMillis() - start
-                    if (time >= LOG_MATCHING_PERFORMANCE_MINIMUM_MS) {
-                        logger.info("Resolved in ${time}ms: $this")
-                    }
-                }
                 return match
             }
         }
@@ -438,21 +428,6 @@ class Fingerprint internal constructor(
      */
     val stringMatches
         get() = match().stringMatches
-
-    private companion object {
-        val logger = Logger.getLogger(Fingerprint::class.java.name)
-
-        /**
-         * Enable to log the runtime of fingerprints with slower matching speed.
-         * Ideally this should be configurable using a patcher verbose parameter.
-         */
-        const val LOG_MATCHING_PERFORMANCE = false
-
-        /**
-         * Minimum resolving time to log a fingerprint.
-         */
-        const val LOG_MATCHING_PERFORMANCE_MINIMUM_MS = 75
-    }
 }
 
 /**
