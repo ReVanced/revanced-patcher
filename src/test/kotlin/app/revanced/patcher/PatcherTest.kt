@@ -6,7 +6,6 @@ import app.revanced.patcher.util.ProxyClassList
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import io.mockk.*
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.returnType
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
@@ -35,13 +34,13 @@ internal object PatcherTest {
                 Logger.getAnonymousLogger(),
             )
 
-            every { BytecodePatchContext.classes } returns mockk(relaxed = true)
+            every { context.bytecodeContext.classes } returns mockk(relaxed = true)
             every { this@mockk() } answers { callOriginal() }
         }
     }
 
-    // FIXME
-//    @Test
+
+    @Test
     fun `executes patches in correct order`() {
         val executed = mutableListOf<String>()
 
@@ -72,8 +71,8 @@ internal object PatcherTest {
         )
     }
 
-    // FIXME
-//    @Test
+
+    @Test
     fun `handles execution of patches correctly when exceptions occur`() {
         val executed = mutableListOf<String>()
 
@@ -148,8 +147,7 @@ internal object PatcherTest {
         } produces listOf("1", "2", "-2")
     }
 
-    // FIXME
-//    @Test
+    @Test
     fun `throws if unmatched fingerprint match is delegated`() {
         val patch = bytecodePatch {
             execute {
@@ -157,7 +155,7 @@ internal object PatcherTest {
                 val fingerprint by fingerprint { }
 
                 // Throws, because the fingerprint can't be matched.
-                fingerprint.filterMatches
+                fingerprint.patternMatch
             }
         }
 
@@ -167,10 +165,9 @@ internal object PatcherTest {
         )
     }
 
-    // FIXME
-//    @Test
+    @Test
     fun `matches fingerprint`() {
-        every { BytecodePatchContext.classes } returns ProxyClassList(
+        every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
             mutableListOf(
                 ImmutableClassDef(
                     "class",
@@ -212,18 +209,20 @@ internal object PatcherTest {
 
         patches()
 
-        assertAll(
-            "Expected fingerprints to match.",
-            { assertNotNull(fingerprint.originalClassDefOrNull) },
-            { assertNotNull(fingerprint2.originalClassDefOrNull) },
-            { assertNotNull(fingerprint3.originalClassDefOrNull) },
-        )
+        with(patcher.context.bytecodeContext) {
+            assertAll(
+                "Expected fingerprints to match.",
+                { assertNotNull(fingerprint.originalClassDefOrNull) },
+                { assertNotNull(fingerprint2.originalClassDefOrNull) },
+                { assertNotNull(fingerprint3.originalClassDefOrNull) },
+            )
+        }
     }
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { BytecodePatchContext.lookupMaps } returns LookupMaps(BytecodePatchContext.classes)
-        every { with(BytecodePatchContext) { mergeExtension(any<BytecodePatch>()) } } just runs
+        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
+        every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }
     }

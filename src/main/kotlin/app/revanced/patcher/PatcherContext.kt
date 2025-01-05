@@ -34,9 +34,10 @@ class PatcherContext internal constructor(config: PatcherConfig): Closeable {
      */
     internal val resourceContext = ResourcePatchContext(packageMetadata, config)
 
-    init {
-        BytecodePatchContext.initContext(config)
-    }
+    /**
+     * The context for patches containing the current state of the bytecode.
+     */
+    internal val bytecodeContext = BytecodePatchContext(config)
 
-    override fun close() = BytecodePatchContext.close()
+    override fun close() = bytecodeContext.close()
 }

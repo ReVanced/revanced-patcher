@@ -28,51 +28,36 @@ import java.util.logging.Logger
 /**
  * A context for patches containing the current state of the bytecode.
  *
- * Class is a singleton object because it's needed in various places
- * where passing a context is difficult or messy.
- *
  * @param config The [PatcherConfig] used to create this context.
  */
-object BytecodePatchContext : PatchContext<Set<PatcherResult.PatchedDexFile>>, Closeable {
-    private val logger = Logger.getLogger(this::class.java.name)
-
-    private lateinit var config: PatcherConfig
+@Suppress("MemberVisibilityCanBePrivate")
+class BytecodePatchContext internal constructor(private val config: PatcherConfig) :
+    PatchContext<Set<PatcherResult.PatchedDexFile>>,
+    Closeable {
+    private val logger = Logger.getLogger(this::javaClass.name)
 
     /**
      * [Opcodes] of the supplied [PatcherConfig.apkFile].
      */
-    internal lateinit var opcodes: Opcodes
-        private set
+    internal val opcodes: Opcodes
 
     /**
      * The list of classes.
      */
-    lateinit var classes: ProxyClassList
-        private set
-
-    /**
-     * The lookup maps for methods and the class they are a member of from [classes].
-     */
-    internal lateinit var lookupMaps: LookupMaps
-        private set
-
-    fun initContext(config: PatcherConfig) {
-        this.config = config
-
-        // Read the dex file, set opcodes and classes
-        val dexFile = MultiDexIO.readDexFile(
+    val classes = ProxyClassList(
+        MultiDexIO.readDexFile(
             true,
             config.apkFile,
             BasicDexFileNamer(),
             null,
             null,
-        )
-        opcodes = dexFile.opcodes
-        classes = ProxyClassList(dexFile.classes.toMutableList())
+        ).also { opcodes = it.opcodes }.classes.toMutableList(),
+    )
 
-        // Initialize lookup maps
-        lookupMaps = LookupMaps(classes)
-    }
+    /**
+     * The lookup maps for methods and the class they are a member of from the [classes].
+     */
+    internal val lookupMaps by lazy { LookupMaps(classes) }
 
     /**
      * Merge the extension of [bytecodePatch] into the [BytecodePatchContext].
@@ -94,7 +79,7 @@ object BytecodePatchContext : PatchContext<Set<PatcherResult.PatchedDexFile>>, C
 
                 logger.fine { "Class \"$classDef\" exists already. Adding missing methods and fields." }
 
-                existingClass.merge(classDef, this).let { mergedClass ->
+                existingClass.merge(classDef, this@BytecodePatchContext).let { mergedClass ->
                     // If the class was merged, replace the original class with the merged class.
                     if (mergedClass === existingClass) {
                         return@let
@@ -120,6 +105,7 @@ object BytecodePatchContext : PatchContext<Set<PatcherResult.PatchedDexFile>>, C
      * Proxy the class to allow mutation.
      *
      * @param classDef The class to proxy.
+     *
      * @return A proxy for the class.
      */
     fun proxy(classDef: ClassDef) = classes.proxyPool.find {
@@ -130,6 +116,7 @@ object BytecodePatchContext : PatchContext<Set<PatcherResult.PatchedDexFile>>, C
      * Navigate a method.
      *
      * @param method The method to navigate.
+     *
      * @return A [MethodNavigator] for the method.
      */
     fun navigate(method: MethodReference) = MethodNavigator(method)
@@ -196,13 +183,12 @@ object BytecodePatchContext : PatchContext<Set<PatcherResult.PatchedDexFile>>, C
 
                     // Add strings contained in the method as the key.
                     method.instructionsOrNull?.forEach { instruction ->
-                        if (instruction.opcode != Opcode.CONST_STRING &&
-                            instruction.opcode != Opcode.CONST_STRING_JUMBO
-                        ) {
+                        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) {
                             return@forEach
                         }
 
                         val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+
                         methodsByStrings[string] = classMethodPair
                     }
 

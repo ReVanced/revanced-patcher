@@ -58,6 +58,7 @@ class Fingerprint internal constructor(
     /**
      * The match for this [Fingerprint], or `null` if no matches exist.
      */
+    context(BytecodePatchContext)
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
@@ -67,7 +68,7 @@ class Fingerprint internal constructor(
         }
 
         strings?.mapNotNull {
-           BytecodePatchContext.lookupMaps.methodsByStrings[it]
+            lookupMaps.methodsByStrings[it]
         }?.minByOrNull { it.size }?.let { methodClasses ->
             methodClasses.forEach { (classDef, method) ->
                 val match = matchOrNull(classDef, method)
@@ -78,7 +79,7 @@ class Fingerprint internal constructor(
             }
         }
 
-        BytecodePatchContext.classes.forEach { classDef ->
+        classes.forEach { classDef ->
             val match = matchOrNull(classDef)
             if (match != null) {
                 _matchOrNull = match
@@ -96,6 +97,7 @@ class Fingerprint internal constructor(
      * @return The [Match] if a match was found or if the
      * fingerprint is already matched to a method, null otherwise.
      */
+    context(BytecodePatchContext)
     fun matchOrNull(
         classDef: ClassDef,
     ): Match? {
@@ -119,15 +121,13 @@ class Fingerprint internal constructor(
      * @param method The method to match against.
      * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
      */
+    context(BytecodePatchContext)
     fun matchOrNull(
         method: Method,
     ): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        return matchOrNull(
-            BytecodePatchContext.classBy { method.definingClass == it.type }!!.immutableClass,
-            method
-        )
+        return matchOrNull(classBy { method.definingClass == it.type }!!.immutableClass, method)
     }
 
     /**
@@ -137,6 +137,7 @@ class Fingerprint internal constructor(
      * @param classDef The class the method is a member of.
      * @return The [Match] if a match was found or if the fingerprint is already matched to a method, null otherwise.
      */
+    context(BytecodePatchContext)
     fun matchOrNull(
         classDef: ClassDef,
         method: Method,
@@ -216,7 +217,7 @@ class Fingerprint internal constructor(
 
                         while (subIndex <= maxIndex) {
                             val instruction = instructions[subIndex]
-                            if (filter.matches(method, instruction, subIndex)) {
+                            if (filter.matches(this@BytecodePatchContext, method, instruction, subIndex)) {
                                 if (filterIndex == 0) {
                                     firstFilterIndex = subIndex
                                 }
@@ -273,6 +274,7 @@ class Fingerprint internal constructor(
      * @return The [Match] of this fingerprint.
      * @throws PatchException If the [Fingerprint] failed to match.
      */
+    context(BytecodePatchContext)
     fun match() = matchOrNull() ?: throw patchException()
 
     /**
@@ -282,6 +284,7 @@ class Fingerprint internal constructor(
      * @return The [Match] of this fingerprint.
      * @throws PatchException If the fingerprint failed to match.
      */
+    context(BytecodePatchContext)
     fun match(
         classDef: ClassDef,
     ) = matchOrNull(classDef) ?: throw patchException()
@@ -294,6 +297,7 @@ class Fingerprint internal constructor(
      * @return The [Match] of this fingerprint.
      * @throws PatchException If the fingerprint failed to match.
      */
+    context(BytecodePatchContext)
     fun match(
         method: Method,
     ) = matchOrNull(method) ?: throw patchException()
@@ -306,6 +310,7 @@ class Fingerprint internal constructor(
      * @return The [Match] of this fingerprint.
      * @throws PatchException If the fingerprint failed to match.
      */
+    context(BytecodePatchContext)
     fun match(
         method: Method,
         classDef: ClassDef,
@@ -314,12 +319,14 @@ class Fingerprint internal constructor(
     /**
      * The class the matching method is a member of, or null if this fingerprint did not match.
      */
+    context(BytecodePatchContext)
     val originalClassDefOrNull
         get() = matchOrNull()?.originalClassDef
 
     /**
      * The matching method, or null of this fingerprint did not match.
      */
+    context(BytecodePatchContext)
     val originalMethodOrNull
         get() = matchOrNull()?.originalMethod
 
@@ -329,6 +336,7 @@ class Fingerprint internal constructor(
      * Accessing this property allocates a [ClassProxy].
      * Use [originalClassDefOrNull] if mutable access is not required.
      */
+    context(BytecodePatchContext)
     val classDefOrNull
         get() = matchOrNull()?.classDef
 
@@ -338,12 +346,14 @@ class Fingerprint internal constructor(
      * Accessing this property allocates a [ClassProxy].
      * Use [originalMethodOrNull] if mutable access is not required.
      */
+    context(BytecodePatchContext)
     val methodOrNull
         get() = matchOrNull()?.method
 
     /**
      * The match for the opcode pattern, or null if this fingerprint did not match.
      */
+    context(BytecodePatchContext)
     @Deprecated("instead use filterMatchesOrNull")
     val patternMatchOrNull : PatternMatch?
         get() {
@@ -357,12 +367,14 @@ class Fingerprint internal constructor(
     /**
      * The match for the instruction filters, or null if this fingerprint did not match.
      */
+    context(BytecodePatchContext)
     val filterMatchesOrNull
         get() = matchOrNull()?.filterMatchesOrNull
 
     /**
      * The matches for the strings, or null if this fingerprint did not match.
      */
+    context(BytecodePatchContext)
     val stringMatchesOrNull
         get() = matchOrNull()?.stringMatchesOrNull
 
@@ -371,6 +383,7 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    context(BytecodePatchContext)
     val originalClassDef
         get() = match().originalClassDef
 
@@ -379,6 +392,7 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    context(BytecodePatchContext)
     val originalMethod
         get() = match().originalMethod
 
@@ -390,6 +404,7 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    context(BytecodePatchContext)
     val classDef
         get() = match().classDef
 
@@ -401,6 +416,7 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    context(BytecodePatchContext)
     val method
         get() = match().method
 
@@ -409,6 +425,7 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    context(BytecodePatchContext)
     @Deprecated("Instead use filterMatch")
     val patternMatch
         get() = match().patternMatch
@@ -418,6 +435,7 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    context(BytecodePatchContext)
     val filterMatches
         get() = match().filterMatches
 
@@ -426,6 +444,7 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    context(BytecodePatchContext)
     val stringMatches
         get() = match().stringMatches
 }
@@ -438,6 +457,7 @@ class Fingerprint internal constructor(
  * @param patternMatch The match for the opcode pattern.
  * @param stringMatches The matches for the strings.
  */
+context(BytecodePatchContext)
 class Match internal constructor(
     val originalClassDef: ClassDef,
     val originalMethod: Method,
@@ -450,7 +470,7 @@ class Match internal constructor(
      * Accessing this property allocates a [ClassProxy].
      * Use [originalClassDef] if mutable access is not required.
      */
-    val classDef by lazy { BytecodePatchContext.proxy(originalClassDef).mutableClass }
+    val classDef by lazy { proxy(originalClassDef).mutableClass }
 
     /**
      * The mutable version of [originalMethod].

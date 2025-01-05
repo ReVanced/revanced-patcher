@@ -99,7 +99,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
         logger.info("Initializing lookup maps")
 
         // Accessing the lazy lookup maps to initialize them.
-        BytecodePatchContext.lookupMaps
+        context.bytecodeContext.lookupMaps
 
         logger.info("Executing patches")
 
@@ -156,5 +156,5 @@ class Patcher(private val config: PatcherConfig) : Closeable {
      * @return The [PatcherResult] containing the patched APK files.
      */
     @OptIn(InternalApi::class)
-    fun get() = PatcherResult(BytecodePatchContext.get(), context.resourceContext.get())
+    fun get() = PatcherResult(context.bytecodeContext.get(), context.resourceContext.get())
 }
