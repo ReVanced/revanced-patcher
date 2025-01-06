@@ -115,5 +115,5 @@ publishing {
 
 signing {
     useGpgCmd()
-     sign(publishing.publications["revanced-patcher-publication"])
+    sign(publishing.publications["revanced-patcher-publication"])
 }

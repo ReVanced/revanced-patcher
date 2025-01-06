@@ -480,7 +480,7 @@ class MethodCallFilter (
  * Matches a field call, such as:
  * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
  */
-class FieldCallFilter(
+class FieldAccessFilter(
     /**
      * Defining class of the field call. Matches using endsWith().
      *
