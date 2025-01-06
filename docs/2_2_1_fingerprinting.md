@@ -65,29 +65,124 @@ It is used to uniquely match a method by its characteristics.
 Fingerprinting is used to match methods with a limited amount of known information.
 Methods with obfuscated names that change with each update are primary candidates for fingerprinting.
 The goal of fingerprinting is to uniquely identify a method by capturing various attributes, such as the return type,
-access flags, an opcode pattern, strings, and more.
+access flags, instructions, strings, and more.
 
-## ⛳️ Example fingerprint
+## 🔎 Example target Java code and bytecode
 
-An example fingerprint is shown below:
+```java
+package com.some.app.ads;
 
-```kt
+class AdsLoader {
+  private final static Map<String, String> a = new HashMap<>();
 
-package app.revanced.patches.ads.fingerprints
+  // Method to fingerprint    
+  public final boolean obfuscatedMethod(String parameter1, int parameter2) {
+    // Filter 1 target instruction.
+    String value1 = a.get(parameter1);
 
-fingerprint {
-    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-    returns("Z")
-    parameters("Z")
-    opcodes(Opcode.RETURN)
-    strings("pro")
-    custom { (method, classDef) -> classDef == "Lcom/some/app/ads/AdsLoader;" }
+    unrelatedMethod(value1);
+
+    // Filter 2 & 3 target instructions, and the instructions to modify.
+    if ("showBannerAds".equals(value1)) {
+      showBannerAds();
+    }
+
+    // Filter 4 target instruction.
+    return parameter2 != 1337;
+  }
+
+  private void showBannerAds() {
+    // ...
+  }
+
+  private void unrelatedMethod(String parameter) {
+    // ...
+  }
 }
 ```
 
-## 🔎 Reconstructing the original code from the example fingerprint from above
+```asm
+# Method to fingerprint
+.method public final obfuscatedMethod(Ljava/lang/String;I)Z
+    .registers 4
 
-The following code is reconstructed from the fingerprint to understand how a fingerprint is created.
+    # Filter 1 target instruction.
+    sget-object v0, Lapp/revanced/extension/shared/AdsLoader;->a:Ljava/util/Map;
+
+    invoke-interface {v0, p1}, Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object;
+
+    move-result-object p1
+
+    check-cast p1, Ljava/lang/String;
+
+    invoke-direct {p0, p1}, Lapp/revanced/extension/shared/AdsLoader;->unrelatedMethod(Ljava/lang/String;)V
+
+    const-string v0, "showBannerAds"
+
+    # Filter 2 target instruction.
+    invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    # Filter 3 target instruction.
+    move-result p1
+
+    if-eqz p1, :cond_16
+
+    invoke-direct {p0}, Lapp/revanced/extension/shared/AdsLoader;->showBannerAds()V
+
+    # Filter 4 target instruction.
+    :cond_16
+    const/16 p1, 0x539
+
+    if-eq p2, p1, :cond_1c
+
+    const/4 p1, 0x1
+
+    goto :goto_1d
+
+    :cond_1c
+    const/4 p1, 0x0
+
+    :goto_1d
+    return p1
+.end method
+```
+
+## ⛳️ Example fingerprint
+
+```kt
+package app.revanced.patches.ads.fingerprints
+
+val hideAdsFingerprint by fingerprint {
+  accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+  returns("Z")
+  parameters("Ljava/lang/String;", "I")
+  strings("showBannerAds")
+  instructions(
+    // Filter 1
+    FieldAccessFilter(
+      definingClass = "this",
+      type = "Ljava/util/Map;"
+    ),
+
+    // Filter 2
+    MethodCallFilter(
+      definingClass = "Ljava/lang/String;",
+      methodName = "equals",
+      parameters = listOf("Ljava/lang/Object;"),
+      returnType = "Z"
+    ),
+
+    // Filter 3
+    OpcodeFilter(Opcode.MOVE_RESULT),
+
+    // Filter 4
+    LiteralFilter(1337)
+  )
+  custom { method, classDef ->
+    classDef.type == "Lapp/revanced/extension/shared/AdsLoader;"
+  }
+}
+```
 
 The fingerprint contains the following information:
 
@@ -96,15 +191,45 @@ The fingerprint contains the following information:
   ```kt
   accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
   returns("Z")
-  parameters("Z")
+  parameters("Ljava/lang/String;", "I")
   ```
 
 - Method implementation:
 
   ```kt
-  opcodes(Opcode.RETURN)
+  instructions(
+      // Filter 1
+      FieldAccessFilter(
+          definingClass = "this",
+          type = "Ljava/util/Map;"
+      ),
+
+      // Filter 2
+      MethodCallFilter(
+          definingClass = "Ljava/lang/String;",
+          methodName = "equals",
+          parameters = listOf("Ljava/lang/Object;"),
+          returnType = "Z"
+      ),
+
+      // Filter 3
+      OpcodeFilter(Opcode.MOVE_RESULT),
+
+      // Filter 4
+      LiteralFilter(1337)
+  )
   strings("pro")
   ```
+
+  Notice the instruction filters do not declare every instruction in the target method,
+  and between each filter can exist 0 or more other instructions.  Instruction filters
+  must be declared in the same order the instructions appear in the target method.
+
+  If a method cannot be uniquely identified using the built in filters, but a fixed
+  pattern of opcodes can identify the method, then the opcode pattern can be
+  defined using the fingerprint `opcodes { }` declaration.  Opcode patterns do not
+  allow variable spacing between each opcode, and all opcodes all must appear exactly as declared.
+  In general opcode patterns should be avoided due to their fragility.
 
 - Package and class name:
 
@@ -114,25 +239,6 @@ The fingerprint contains the following information:
 
 With this information, the original code can be reconstructed:
 
-```java
-package com.some.app.ads;
-
-<accessFlags>
-
-class AdsLoader {
-    public final boolean <methodName>(boolean <parameter>)
-
-    {
-        // ...
-
-        var userStatus = "pro";
-
-        // ...
-
-        return <returnValue >;
-    }
-}
-```
 
 Using that fingerprint, this method can be matched uniquely from all other methods.
 
@@ -148,33 +254,38 @@ Using that fingerprint, this method can be matched uniquely from all other metho
 After declaring a fingerprint, it can be used in a patch to find the method it matches to:
 
 ```kt
-val fingerprint = fingerprint {
-    // ...
-}
+execute {
+  hideAdsFingerprint.let {
+    val filter3 = it.filterMatches[2]
 
-val patch = bytecodePatch {
-    execute {
-        fingerprint.method
-    }
+    val moveResultIndex = filter3.index
+    val moveResultRegister = filter3.getInstruction<OneRegisterInstruction>().registerA
+
+    // Changes the code to:
+    // if (false) {
+    //    showBannerAds();
+    // } 
+    it.method.addInstruction(moveResultIndex + 1, "const/4 v$moveResultRegister, 0x0")
+  }
 }
 ```
 
-The fingerprint won't be matched again, if it has already been matched once, for performance reasons.
-This makes it useful, to share fingerprints between multiple patches,
+For performance reasons, a fingerprint will always match only once.
+This makes it useful to share fingerprints between multiple patches,
 and let the first executing patch match the fingerprint:
 
 ```kt
 // Either of these two patches will match the fingerprint first and the other patch can reuse the match:
 val mainActivityPatch1 = bytecodePatch {
-    execute {
-        mainActivityOnCreateFingerprint.method
-    }
+  execute {
+    mainActivityOnCreateFingerprint.method
+  }
 }
 
 val mainActivityPatch2 = bytecodePatch {
-    execute {
-        mainActivityOnCreateFingerprint.method
-    }
+  execute {
+    mainActivityOnCreateFingerprint.method
+  }
 }
 ```
 
@@ -182,22 +293,6 @@ val mainActivityPatch2 = bytecodePatch {
 > If the fingerprint can not be matched to any method,
 > accessing certain properties of the fingerprint will raise an exception.
 > Instead, the `orNull` properties can be used to return `null` if no match is found.
-
-> [!TIP]
-> If a fingerprint has an opcode pattern, you can use the `fuzzyPatternScanThreshhold` parameter of the `opcode`
-> function to fuzzy match the pattern.  
-> `null` can be used as a wildcard to match any opcode:
->
-> ```kt
-> fingerprint(fuzzyPatternScanThreshhold = 2) {
->   opcodes(
->     Opcode.ICONST_0,
->     null,
->     Opcode.ICONST_1,
->     Opcode.IRETURN,
->    )
->}
-> ```
 
 The following properties can be accessed in a fingerprint:
 
@@ -234,7 +329,7 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
 
   ```kt
   execute {
-    val match = showAdsFingerprint(classes)
+    val match = showAdsFingerprint.match(classes)
   }
   ```
 
@@ -255,7 +350,7 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
   ```kt
   execute {
     // Match showAdsFingerprint in the class of the ads loader found by adsLoaderClassFingerprint.
-    val match = showAdsFingerprint.match(adsLoaderClassFingerprint.classDef)
+    val match = showAdsFingerprint.match(adsLoaderClassFingerprint.originalClassDef)
   }
   ```
 
@@ -269,7 +364,7 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
   ```kt
   execute {
     val currentPlanFingerprint = fingerprint {
-      strings("free", "trial")
+      strings("showads", "userId")
     }
 
     currentPlanFingerprint.match(adsFingerprint.method).let { match ->
