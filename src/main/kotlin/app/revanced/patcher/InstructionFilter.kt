@@ -2,6 +2,8 @@
 
 package app.revanced.patcher
 
+import app.revanced.patcher.InstructionFilter.Companion.METHOD_MAX_INSTRUCTIONS
+import app.revanced.patcher.MethodCallFilter.Companion.parseJvmMethodCall
 import app.revanced.patcher.extensions.InstructionExtensions.instructions
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.parametersStartsWith
@@ -65,12 +67,14 @@ abstract class InstructionFilter(
     }
 }
 
+
+
 /**
  * Logical OR operator, where the first filter that matches is the match result.
  */
 class AnyFilter(
     private val filters: List<InstructionFilter>,
-    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxInstructionsBefore: Int,
 ) : InstructionFilter(maxInstructionsBefore) {
 
     override fun matches(
@@ -83,13 +87,19 @@ class AnyFilter(
     }
 }
 
-
 /**
- * Single opcode.
+ * Logical OR operator, where the first filter that matches is the match result.
  */
+fun any(
+    filters: List<InstructionFilter>,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = AnyFilter(filters, maxInstructionsBefore)
+
+
+
 class OpcodeFilter(
     val opcode: Opcode,
-    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxInstructionsBefore: Int,
 ) : InstructionFilter(maxInstructionsBefore) {
 
     override fun matches(
@@ -100,6 +110,44 @@ class OpcodeFilter(
     ): Boolean {
         return instruction.opcode == opcode
     }
+}
+
+/**
+ * Single opcode.
+ */
+fun opcode(opcode: Opcode, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
+    OpcodeFilter(opcode, maxInstructionsBefore)
+
+
+
+/**
+ * Matches a single instruction from many kinds of opcodes.
+ * If matching only a single opcode instead use [OpcodeFilter].
+ */
+open class OpcodesFilter private constructor(
+    val opcodes: EnumSet<Opcode>?,
+    maxInstructionsBefore: Int,
+) : InstructionFilter(maxInstructionsBefore) {
+
+    protected constructor(
+        /**
+         * Value of `null` will match any opcode.
+         */
+        opcodes: List<Opcode>?,
+        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
+    ) : this(if (opcodes == null) null else EnumSet.copyOf(opcodes), maxInstructionsBefore)
+
+    override fun matches(
+        context: BytecodePatchContext,
+        method: Method,
+        instruction: Instruction,
+        methodIndex: Int
+    ): Boolean {
+        if (opcodes == null) {
+            return true // Match anything.
+        }
+        return opcodes.contains(instruction.opcode)
+    }
 
     companion object {
         /**
@@ -108,7 +156,7 @@ class OpcodeFilter(
          *
          * A value of `null` indicates to match any opcode.
          */
-        fun listOfOpcodes(opcodes: Collection<Opcode?>): List<InstructionFilter> {
+        internal fun listOfOpcodes(opcodes: Collection<Opcode?>): List<InstructionFilter> {
             var list = ArrayList<InstructionFilter>(opcodes.size)
 
             // First opcode can match anywhere.
@@ -129,72 +177,12 @@ class OpcodeFilter(
 }
 
 
-/**
- * Matches a single instruction from many kinds of opcodes.
- * If matching only a single opcode instead use [OpcodeFilter].
- */
-open class OpcodesFilter private constructor(
-    val opcodes: EnumSet<Opcode>?,
-    maxInstructionsBefore: Int,
-) : InstructionFilter(maxInstructionsBefore) {
 
-    constructor(
-        /**
-         * Value of `null` will match any opcode.
-         */
-        opcodes: List<Opcode>?,
-        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
-    ) : this(if (opcodes == null) null else EnumSet.copyOf(opcodes), maxInstructionsBefore)
-
-    override fun matches(
-        context: BytecodePatchContext,
-        method: Method,
-        instruction: Instruction,
-        methodIndex: Int
-    ): Boolean {
-        if (opcodes == null) {
-            return true // Match anything.
-        }
-        return opcodes.contains(instruction.opcode)
-    }
-}
-
-
-/**
- * Literal value, such as:
- * `const v1, 0x7f080318`
- *
- * that can be matched using:
- * `LiteralFilter(0x7f080318)`
- * or
- * `LiteralFilter(2131231512)`
- *
- * Use a lambda if the literal is not known at the declaration of this object such as:
- * `LiteralFilter({ OtherClass.findLiteralToUse() })`
- */
-class LiteralFilter(
+class LiteralFilter internal constructor(
     var literal: () -> Long,
     opcodes: List<Opcode>? = null,
-    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxInstructionsBefore: Int,
 ) : OpcodesFilter(opcodes, maxInstructionsBefore) {
-
-    /**
-     * Integer/Long literal.
-     */
-    constructor(
-        literal : Long,
-        opcodes: List<Opcode>? = null,
-        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-    ) : this({ literal }, opcodes, maxInstructionsBefore)
-
-    /**
-     * Floating point literal.
-     */
-    constructor(
-        literal : Double,
-        opcodes: List<Opcode>? = null,
-        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-    ) : this({ literal.toRawBits() }, opcodes, maxInstructionsBefore)
 
     override fun matches(
         context: BytecodePatchContext,
@@ -211,120 +199,54 @@ class LiteralFilter(
 }
 
 /**
- * Identifies method calls.
+ * Literal value, such as:
+ * `const v1, 0x7f080318`
  *
- * `Null` parameters matches anything.
- *
- * By default any type of method call matches.
- * Specify opcodes if a specific type of method call is desired (such as only static calls).
+ * that can be matched using:
+ * `LiteralFilter(0x7f080318)`
+ * or
+ * `LiteralFilter(2131231512)`
  */
-class MethodCallFilter (
-    /**
-     * Defining class of the method call. Matches using endsWith().
-     *
-     * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for methods declared only in a superclass.
-     */
-    val definingClass: ((BytecodePatchContext) -> String)? = null,
-    /**
-     * Method name. Must be exact match of the method name.
-     */
-    val methodName: ((BytecodePatchContext) -> String)? = null,
-    /**
-     * Parameters of the method call. Each parameter matches
-     * using startsWith() and semantics are the same as [Fingerprint].
-     */
-    val parameters: ((BytecodePatchContext) -> List<String>)? = null,
-    /**
-     * Return type. Matches using startsWith()
-     */
-    val returnType: ((BytecodePatchContext) -> String)? = null,
-    /**
-     * Opcode types to match. By default this matches any method call opcode:
-     * `Opcode.INVOKE_*`.
-     *
-     * If this filter must match specific types of method call, then specify the desired opcodes
-     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
-     */
+fun literal(
+    literal: () -> Long,
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralFilter(literal, opcodes, maxInstructionsBefore)
+
+/**
+ * Literal value, such as:
+ * `const v1, 0x7f080318`
+ *
+ * that can be matched using:
+ * `LiteralFilter(0x7f080318)`
+ * or
+ * `LiteralFilter(2131231512)`
+ */
+fun literal(
+    literal: Long,
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralFilter({ literal }, opcodes, maxInstructionsBefore)
+
+/**
+ * Floating point literal.
+ */
+fun literal(
+    literal: Double,
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralFilter({ literal.toRawBits() }, opcodes, maxInstructionsBefore)
+
+
+
+class MethodCallFilter internal constructor(
+    val definingClass: ((BytecodePatchContext) -> String)? = null,
+    val name: ((BytecodePatchContext) -> String)? = null,
+    val parameters: ((BytecodePatchContext) -> List<String>)? = null,
+    val returnType: ((BytecodePatchContext) -> String)? = null,
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int,
 ) : OpcodesFilter(opcodes, maxInstructionsBefore) {
-
-    // Define both providers and literal strings.
-    // Providers are used when the parameters are not known at declaration,
-    // such as using another Fingerprint to find a class def or method name.
-    constructor(
-        /**
-         * Defining class of the method call. Matches using endsWith().
-         *
-         * For calls to a method in the same class, use 'this' as the defining class.
-         * Note: 'this' does not work for methods declared only in a superclass.
-         */
-        definingClass: String? = null,
-        /**
-         * Method name. Must be exact match of the method name.
-         */
-        methodName: String? = null,
-        /**
-         * Parameters of the method call. Each parameter matches
-         * using startsWith() and semantics are the same as [Fingerprint].
-         */
-        parameters: List<String>? = null,
-        /**
-         * Return type.  Matches using startsWith()
-         */
-        returnType: String? = null,
-        /**
-         * Opcode types to match. By default this matches any method call opcode:
-         * `Opcode.INVOKE_*`.
-         *
-         * If this filter must match specific types of method call, then specify the desired opcodes
-         * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
-         */
-        opcodes: List<Opcode>? = null,
-        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-    ) : this(
-        @Suppress("USELESS_CAST")
-        if (definingClass != null) {
-            { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
-        } else null, if (methodName != null) {
-            { methodName }
-        } else null, if (parameters != null) {
-            { parameters }
-        } else null, if (returnType != null) {
-            { returnType }
-        } else null,
-        opcodes,
-        maxInstructionsBefore
-    )
-
-    constructor(
-        /**
-         * Defining class of the method call. Matches using endsWith().
-         *
-         * For calls to a method in the same class, use 'this' as the defining class.
-         * Note: 'this' does not work for methods declared only in a superclass.
-         */
-        definingClass: String? = null,
-        /**
-         * Method name. Must be exact match of the method name.
-         */
-        methodName: String? = null,
-        /**
-         * Parameters of the method call. Each parameter matches
-         * using startsWith() and semantics are the same as [Fingerprint].
-         */
-        parameters: List<String>? = null,
-        /**
-         * Return type.  Matches using startsWith()
-         */
-        returnType: String? = null,
-        /**
-         * Single opcode this filter must match to.
-         */
-        opcode: Opcode,
-        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-    ) : this(definingClass, methodName, parameters , returnType, listOf(opcode), maxInstructionsBefore)
 
     override fun matches(
         context: BytecodePatchContext,
@@ -352,7 +274,7 @@ class MethodCallFilter (
                 } // else, the method call is for 'this' class.
             }
         }
-        if (methodName != null && reference.name != methodName(context)) {
+        if (name != null && reference.name != name(context)) {
             return false
         }
         if (returnType != null && !reference.returnType.startsWith(returnType(context))) {
@@ -368,48 +290,10 @@ class MethodCallFilter (
     companion object {
         private val regex = Regex("""^(L[^;]+;)->([^(\s]+)\(([^)]*)\)(.+)$""")
 
-        /**
-         * Returns a filter for a copy pasted JVM-style method signature. e.g.:
-         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
-         *
-         * Does not support obfuscated method names or parameter/return types.
-         */
-        fun parseJvmMethodCall(
+        internal fun parseJvmMethodCall(
             methodSignature: String,
-        ) = parseJvmMethodCall(methodSignature, null, METHOD_MAX_INSTRUCTIONS)
-
-        /**
-         * Returns a filter for a copy pasted JVM-style method signature. e.g.:
-         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
-         *
-         * Does not support obfuscated method names or parameter/return types.
-         */
-        fun parseJvmMethodCall(
-            methodSignature: String,
-            maxInstructionsBefore: Int
-        ) = parseJvmMethodCall(methodSignature, null, maxInstructionsBefore)
-
-        /**
-         * Returns a filter for a copy pasted JVM-style method signature. e.g.:
-         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
-         *
-         * Does not support obfuscated method names or parameter/return types.
-         */
-        fun parseJvmMethodCall(
-            methodSignature: String,
-            opcodes: List<Opcode>?,
-        ) = parseJvmMethodCall(methodSignature, opcodes, METHOD_MAX_INSTRUCTIONS)
-
-        /**
-         * Returns a filter for a copy pasted JVM-style method signature. e.g.:
-         * Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;
-         *
-         * Does not support obfuscated method names or parameter/return types.
-         */
-        fun parseJvmMethodCall(
-            methodSignature: String,
-            opcodes: List<Opcode>?,
-            maxInstructionsBefore: Int
+            opcodes: List<Opcode>? = null,
+            maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
         ): MethodCallFilter {
             val matchResult = regex.matchEntire(methodSignature)
                 ?: throw IllegalArgumentException("Invalid method signature: $methodSignature")
@@ -422,10 +306,10 @@ class MethodCallFilter (
             val paramDescriptors = parseParameterDescriptors(paramDescriptorString)
 
             return MethodCallFilter(
-                classDescriptor,
-                methodName,
-                paramDescriptors,
-                returnDescriptor,
+                { classDescriptor },
+                { methodName },
+                { paramDescriptors },
+                { returnDescriptor },
                 opcodes,
                 maxInstructionsBefore
             )
@@ -477,81 +361,173 @@ class MethodCallFilter (
 }
 
 /**
- * Matches a field call, such as:
- * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
+ * Identifies method calls.
+ *
+ * `Null` parameters matches anything.
+ *
+ * By default any type of method call matches.
+ * Specify opcodes if a specific type of method call is desired (such as only static calls).
  */
-class FieldAccessFilter(
+fun methodCall(
     /**
-     * Defining class of the field call. Matches using endsWith().
+     * Defining class of the method call. Matches using endsWith().
      *
      * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for fields found in superclasses.
+     * Note: 'this' does not work for methods declared only in a superclass.
      */
-    val definingClass: ((BytecodePatchContext) -> String)? = null,
+    definingClass: ((BytecodePatchContext) -> String)? = null,
     /**
-     * Name of the field. Must be a full match of the field name.
+     * Method name. Must be exact match of the method name.
      */
-    val name: ((BytecodePatchContext) -> String)? = null,
+    name: ((BytecodePatchContext) -> String)? = null,
     /**
-     * Class type of field. Partial matches using startsWith() is allowed.
+     * Parameters of the method call. Each parameter matches
+     * using startsWith() and semantics are the same as [Fingerprint].
      */
-    val type: ((BytecodePatchContext) -> String)? = null,
+    parameters: ((BytecodePatchContext) -> List<String>)? = null,
+    /**
+     * Return type. Matches using startsWith()
+     */
+    returnType: ((BytecodePatchContext) -> String)? = null,
+    /**
+     * Opcode types to match. By default this matches any method call opcode:
+     * `Opcode.INVOKE_*`.
+     *
+     * If this filter must match specific types of method call, then specify the desired opcodes
+     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
+     */
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = MethodCallFilter(
+    definingClass,
+    name,
+    parameters,
+    returnType,
+    opcodes,
+    maxInstructionsBefore
+)
+
+fun methodCall(
+    /**
+     * Defining class of the method call. Matches using endsWith().
+     *
+     * For calls to a method in the same class, use 'this' as the defining class.
+     * Note: 'this' does not work for methods declared only in a superclass.
+     */
+    definingClass: String? = null,
+    /**
+     * Method name. Must be exact match of the method name.
+     */
+    name: String? = null,
+    /**
+     * Parameters of the method call. Each parameter matches
+     * using startsWith() and semantics are the same as [Fingerprint].
+     */
+    parameters: List<String>? = null,
+    /**
+     * Return type.  Matches using startsWith()
+     */
+    returnType: String? = null,
+    /**
+     * Opcode types to match. By default this matches any method call opcode:
+     * `Opcode.INVOKE_*`.
+     *
+     * If this filter must match specific types of method call, then specify the desired opcodes
+     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
+     */
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = MethodCallFilter(
+    if (definingClass != null) {
+        { definingClass }
+    } else null, if (name != null) {
+        { name }
+    } else null, if (parameters != null) {
+        { parameters }
+    } else null, if (returnType != null) {
+        { returnType }
+    } else null,
+    opcodes,
+    maxInstructionsBefore
+)
+
+fun methodCall(
+    /**
+     * Defining class of the method call. Matches using endsWith().
+     *
+     * For calls to a method in the same class, use 'this' as the defining class.
+     * Note: 'this' does not work for methods declared only in a superclass.
+     */
+    definingClass: String? = null,
+    /**
+     * Method name. Must be exact match of the method name.
+     */
+    name: String? = null,
+    /**
+     * Parameters of the method call. Each parameter matches
+     * using startsWith() and semantics are the same as [Fingerprint].
+     */
+    parameters: List<String>? = null,
+    /**
+     * Return type.  Matches using startsWith()
+     */
+    returnType: String? = null,
+    /**
+     * Opcode types to match. By default this matches any method call opcode:
+     * `Opcode.INVOKE_*`.
+     *
+     * If this filter must match specific types of method call, then specify the desired opcodes
+     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
+     */
+    opcode: Opcode,
+    maxInstructionsBefore: Int,
+) = MethodCallFilter(
+    if (definingClass != null) {
+        { definingClass }
+    } else null, if (name != null) {
+        { name }
+    } else null, if (parameters != null) {
+        { parameters }
+    } else null, if (returnType != null) {
+        { returnType }
+    } else null,
+    listOf(opcode),
+    maxInstructionsBefore
+)
+
+/**
+ * Method call for a copy pasted SMALI style method signature. e.g.:
+ * `Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;`
+ *
+ * Does not support obfuscated method names or parameter/return types.
+ */
+fun methodCall(
+    smaliString: String,
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmMethodCall(smaliString, opcodes, maxInstructionsBefore)
+
+/**
+ * Method call for a copy pasted SMALI style method signature. e.g.:
+ * `Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;`
+ *
+ * Does not support obfuscated method names or parameter/return types.
+ */
+fun methodCall(
+    smaliString: String,
+    opcode: Opcode,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmMethodCall(smaliString, listOf(opcode), maxInstructionsBefore)
+
+
+
+class FieldAccessFilter internal constructor(
+    val definingClass: ((BytecodePatchContext) -> String)? = null,
+    val name: ((BytecodePatchContext) -> String)? = null,
+    val type: ((BytecodePatchContext) -> String)? = null,
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int,
 ) : OpcodesFilter(opcodes, maxInstructionsBefore) {
-
-    constructor(
-        /**
-         * Defining class of the field call. Matches using endsWith().
-         *
-         * For calls to a method in the same class, use 'this' as the defining class.
-         * Note: 'this' does not work for fields found in superclasses.
-         */
-        definingClass: String? = null,
-        /**
-         * Name of the field.  Must be a full match of the field name.
-         */
-        name: String? = null,
-        /**
-         * Class type of field. Partial matches using startsWith() is allowed.
-         */
-        type: String? = null,
-        opcodes: List<Opcode>? = null,
-        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-    ) : this(
-        @Suppress("USELESS_CAST")
-        if (definingClass != null) {
-            { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
-        } else null,
-        if (name != null) {
-            { name }
-        } else null,
-        if (type != null) {
-            { type }
-        } else null,
-        opcodes,
-        maxInstructionsBefore
-    )
-
-    constructor(
-        /**
-         * Defining class of the field call. Matches using endsWith().
-         *
-         * For calls to a method in the same class, use 'this' as the defining class.
-         * Note: 'this' does not work for fields found in superclasses.
-         */
-        definingClass: String? = null,
-        /**
-         * Name of the field.  Must be a full match of the field name.
-         */
-        name: String? = null,
-        /**
-         * Class type of field. Partial matches using startsWith() is allowed.
-         */
-        type: String? = null,
-        opcode: Opcode,
-        maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-    ) : this(definingClass, name, type, listOf(opcode), maxInstructionsBefore)
 
     override fun matches(
         context: BytecodePatchContext,
@@ -588,11 +564,111 @@ class FieldAccessFilter(
 }
 
 /**
- * Opcode type `NEW_INSTANCE` or `NEW_ARRAY` with a non obfuscated class type.
+ * Matches a field call, such as:
+ * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
  */
-class NewInstanceFilter(
-    val type: String,
+fun fieldAccess(
+    /**
+     * Defining class of the field call. Matches using endsWith().
+     *
+     * For calls to a method in the same class, use 'this' as the defining class.
+     * Note: 'this' does not work for fields found in superclasses.
+     */
+    definingClass: ((BytecodePatchContext) -> String)? = null,
+    /**
+     * Name of the field. Must be a full match of the field name.
+     */
+    name: ((BytecodePatchContext) -> String)? = null,
+    /**
+     * Class type of field. Partial matches using startsWith() is allowed.
+     */
+    type: ((BytecodePatchContext) -> String)? = null,
+    /**
+     * Valid opcodes matches for this instruction.
+     * By default this matches any kind of field access
+     * (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
+     */
+    opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+)  = FieldAccessFilter(definingClass, name, type, opcodes, maxInstructionsBefore)
+
+/**
+ * Matches a field call, such as:
+ * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
+ */
+fun fieldAccess(
+    /**
+     * Defining class of the field call. Matches using endsWith().
+     *
+     * For calls to a method in the same class, use 'this' as the defining class.
+     * Note: 'this' does not work for fields found in superclasses.
+     */
+    definingClass: String? = null,
+    /**
+     * Name of the field.  Must be a full match of the field name.
+     */
+    name: String? = null,
+    /**
+     * Class type of field. Partial matches using startsWith() is allowed.
+     */
+    type: String? = null,
+    /**
+     * Valid opcodes matches for this instruction.
+     * By default this matches any kind of field access
+     * (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
+     */
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = fieldAccess(
+    @Suppress("USELESS_CAST")
+    if (definingClass != null) {
+        { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
+    } else null,
+    if (name != null) {
+        { name }
+    } else null,
+    if (type != null) {
+        { type }
+    } else null,
+    opcodes,
+    maxInstructionsBefore
+)
+
+/**
+ * Matches a field call, such as:
+ * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
+ */
+fun fieldAccess(
+    /**
+     * Defining class of the field call. Matches using endsWith().
+     *
+     * For calls to a method in the same class, use 'this' as the defining class.
+     * Note: 'this' does not work for fields found in superclasses.
+     */
+    definingClass: String? = null,
+    /**
+     * Name of the field.  Must be a full match of the field name.
+     */
+    name: String? = null,
+    /**
+     * Class type of field. Partial matches using startsWith() is allowed.
+     */
+    type: String? = null,
+    opcode: Opcode,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = fieldAccess(
+    definingClass,
+    name,
+    type,
+    listOf(opcode),
+    maxInstructionsBefore
+)
+
+
+
+class NewInstanceFilter internal constructor (
+    val type: String,
+    maxInstructionsBefore : Int,
 ) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), maxInstructionsBefore) {
 
     override fun matches(
@@ -613,11 +689,16 @@ class NewInstanceFilter(
 }
 
 /**
- * Filter wrapper that only matches the last instruction of a method.
+ * Opcode type `NEW_INSTANCE` or `NEW_ARRAY` with a non obfuscated class type.
  */
-class LastInstructionFilter(
+fun newInstance(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
+    NewInstanceFilter(type, maxInstructionsBefore)
+
+
+
+class LastInstructionFilter internal constructor(
     var filter : InstructionFilter,
-    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxInstructionsBefore: Int,
 ) : InstructionFilter(maxInstructionsBefore) {
 
     override fun matches(
@@ -631,3 +712,11 @@ class LastInstructionFilter(
         )
     }
 }
+
+/**
+ * Filter wrapper that only matches the last instruction of a method.
+ */
+fun lastInstruction(
+    filter : InstructionFilter,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = LastInstructionFilter(filter, maxInstructionsBefore)

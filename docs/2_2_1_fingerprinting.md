@@ -152,35 +152,33 @@ class AdsLoader {
 ```kt
 package app.revanced.patches.ads.fingerprints
 
-val hideAdsFingerprint by fingerprint {
-  accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-  returns("Z")
-  parameters("Ljava/lang/String;", "I")
-  strings("showBannerAds")
-  instructions(
-    // Filter 1
-    FieldAccessFilter(
-      definingClass = "this",
-      type = "Ljava/util/Map;"
-    ),
+val hideAdsFingerprint by fingerprint { 
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    returns("Z")
+    parameters("Ljava/lang/String;", "I")
+    instructions( 
+        // Filter 1
+        fieldAccess(
+            definingClass = "this",
+            type = "Ljava/util/Map;"
+        ),
 
-    // Filter 2
-    MethodCallFilter(
-      definingClass = "Ljava/lang/String;",
-      methodName = "equals",
-      parameters = listOf("Ljava/lang/Object;"),
-      returnType = "Z"
-    ),
+        // Filter 2 
+        methodCall(
+            definingClass = "Ljava/lang/String;",
+            name = "equals",
+        ),
 
-    // Filter 3
-    OpcodeFilter(Opcode.MOVE_RESULT),
+        // Filter 3
+        opcode(Opcode.MOVE_RESULT),
 
-    // Filter 4
-    LiteralFilter(1337)
-  )
-  custom { method, classDef ->
-    classDef.type == "Lapp/revanced/extension/shared/AdsLoader;"
-  }
+        // Filter 4
+        literal(1337)
+    )
+    strings("showBannerAds")
+    custom { method, classDef ->
+        classDef.type == "Lapp/revanced/extension/shared/AdsLoader;"
+    }
 }
 ```
 
@@ -197,28 +195,26 @@ The fingerprint contains the following information:
 - Method implementation:
 
   ```kt
-  instructions(
+  instructions( 
       // Filter 1
-      FieldAccessFilter(
+      fieldAccess(
           definingClass = "this",
           type = "Ljava/util/Map;"
       ),
 
-      // Filter 2
-      MethodCallFilter(
+      // Filter 2 
+      methodCall(
           definingClass = "Ljava/lang/String;",
-          methodName = "equals",
-          parameters = listOf("Ljava/lang/Object;"),
-          returnType = "Z"
+          name = "equals",
       ),
 
       // Filter 3
-      OpcodeFilter(Opcode.MOVE_RESULT),
+      opcode(Opcode.MOVE_RESULT),
 
       // Filter 4
-      LiteralFilter(1337)
+      literal(1337)
   )
-  strings("pro")
+  strings("showBannerAds")
   ```
 
   Notice the instruction filters do not declare every instruction in the target method,
@@ -256,16 +252,16 @@ After declaring a fingerprint, it can be used in a patch to find the method it m
 ```kt
 execute {
   hideAdsFingerprint.let {
-    val filter3 = it.filterMatches[2]
+    val filter3 = it.instructionMatches[2]
 
     val moveResultIndex = filter3.index
     val moveResultRegister = filter3.getInstruction<OneRegisterInstruction>().registerA
 
-    // Changes the code to:
+    // Changes the target code to:
     // if (false) {
     //    showBannerAds();
     // } 
-    it.method.addInstruction(moveResultIndex + 1, "const/4 v$moveResultRegister, 0x0")
+    it.method.addInstructions(moveResultIndex + 1, "const/4 v$moveResultRegister, 0x0")
   }
 }
 ```

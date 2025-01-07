@@ -224,38 +224,34 @@ internal object PatcherTest {
     fun `MethodFilter toString parsing`() {
         with(patcher.context.bytecodeContext) {
             var definingClass = "Landroid/view/View;"
-            var methodName = "inflate"
-            var parameters =
-                listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            var name = "inflate"
+            var parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
             var returnType = "Landroid/view/View;"
-            var methodSignature =
-                "$definingClass->$methodName(${parameters.joinToString("")})$returnType"
+            var methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
             var filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
             assertAll(
                 "toStringParsing matches",
                 { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(methodName == filter.methodName!!()) },
+                { assertTrue(name == filter.name!!()) },
                 { assertTrue(parameters == filter.parameters!!()) },
                 { assertTrue(returnType == filter.returnType!!()) },
             )
 
 
             definingClass = "Landroid/view/View;"
-            methodName = "inflate"
-            parameters =
-                listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            name = "inflate"
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
             returnType = "V"
-            methodSignature =
-                "$definingClass->$methodName(${parameters.joinToString("")})$returnType"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
             assertAll(
                 "toStringParsing matches",
                 { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(methodName == filter.methodName!!()) },
+                { assertTrue(name == filter.name!!()) },
                 { assertTrue(parameters == filter.parameters!!()) },
                 { assertTrue(returnType == filter.returnType!!()) },
             )
@@ -266,12 +262,10 @@ internal object PatcherTest {
     fun `MethodFilter toString bad input`() {
         with(patcher.context.bytecodeContext) {
             var definingClass = "Landroid/view/View" // Missing semicolon
-            var methodName = "inflate"
-            var parameters =
-                listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            var name = "inflate"
+            var parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
             var returnType = "Landroid/view/View;"
-            var methodSignature =
-                "$definingClass->$methodName(${parameters.joinToString("")})$returnType"
+            var methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
             assertThrows<IllegalArgumentException> {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)
@@ -279,13 +273,11 @@ internal object PatcherTest {
 
 
             definingClass = "Landroid/view/View;"
-            methodName = "inflate"
+            name = "inflate"
             // Missing semicolon
-            parameters =
-                listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup")
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup")
             returnType = "Landroid/view/View;"
-            methodSignature =
-                "$definingClass->$methodName(${parameters.joinToString("")})$returnType"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
             assertThrows<IllegalArgumentException> {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)
@@ -293,12 +285,10 @@ internal object PatcherTest {
 
 
             definingClass = "Landroid/view/View;"
-            methodName = "inflate"
-            parameters =
-                listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            name = "inflate"
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
             returnType = "" // Missing return type
-            methodSignature =
-                "$definingClass->$methodName(${parameters.joinToString("")})$returnType"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
             assertThrows<IllegalArgumentException> {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)
