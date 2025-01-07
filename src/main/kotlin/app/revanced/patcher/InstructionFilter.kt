@@ -2,6 +2,7 @@
 
 package app.revanced.patcher
 
+import android.R.attr.type
 import app.revanced.patcher.InstructionFilter.Companion.METHOD_MAX_INSTRUCTIONS
 import app.revanced.patcher.MethodCallFilter.Companion.parseJvmMethodCall
 import app.revanced.patcher.extensions.InstructionExtensions.instructions
@@ -619,10 +620,9 @@ fun fieldAccess(
      */
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = fieldAccess(
-    @Suppress("USELESS_CAST")
+) = FieldAccessFilter(
     if (definingClass != null) {
-        { context: BytecodePatchContext -> definingClass } as ((BytecodePatchContext) -> String)
+        { definingClass }
     } else null,
     if (name != null) {
         { name }
@@ -633,6 +633,7 @@ fun fieldAccess(
     opcodes,
     maxInstructionsBefore
 )
+
 
 /**
  * Matches a field call, such as:
