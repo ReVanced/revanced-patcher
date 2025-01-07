@@ -15,6 +15,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import java.util.EnumSet
 import kotlin.collections.forEach
@@ -180,7 +181,7 @@ open class OpcodesFilter private constructor(
 
 
 class LiteralFilter internal constructor(
-    var literal: () -> Long,
+    var literal: (BytecodePatchContext) -> Long,
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int,
 ) : OpcodesFilter(opcodes, maxInstructionsBefore) {
@@ -195,7 +196,7 @@ class LiteralFilter internal constructor(
             return false
         }
 
-        return (instruction as? WideLiteralInstruction)?.wideLiteral == literal()
+        return (instruction as? WideLiteralInstruction)?.wideLiteral == literal(context)
     }
 }
 
@@ -209,7 +210,7 @@ class LiteralFilter internal constructor(
  * `LiteralFilter(2131231512)`
  */
 fun literal(
-    literal: () -> Long,
+    literal: (BytecodePatchContext) -> Long,
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
 ) = LiteralFilter(literal, opcodes, maxInstructionsBefore)
@@ -237,6 +238,44 @@ fun literal(
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
 ) = LiteralFilter({ literal.toRawBits() }, opcodes, maxInstructionsBefore)
+
+
+
+class StringFilter internal constructor(
+    var string: (BytecodePatchContext) -> String,
+    maxInstructionsBefore: Int,
+) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), maxInstructionsBefore) {
+
+    override fun matches(
+        context: BytecodePatchContext,
+        method: Method,
+        instruction: Instruction,
+        methodIndex: Int
+    ): Boolean {
+        if (!super.matches(context, method, instruction, methodIndex)) {
+            return false
+        }
+
+        val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
+        return instructionString == string(context)
+    }
+}
+
+/**
+ * Literal String instruction.
+ */
+fun string(
+    string: (BytecodePatchContext) -> String,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = StringFilter(string, maxInstructionsBefore)
+
+/**
+ * Literal String instruction.
+ */
+fun string(
+    string: String,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
+) = StringFilter({ string }, maxInstructionsBefore)
 
 
 

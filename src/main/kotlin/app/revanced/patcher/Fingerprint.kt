@@ -60,7 +60,17 @@ class Fingerprint internal constructor(
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        strings?.mapNotNull {
+        // Use string instruction literals to resolve faster.
+        var stringLiterals =
+            if (strings != null) {
+                // Old deprecated string declaration.
+                strings
+            } else {
+                filters?.filterIsInstance<StringFilter>()
+                    ?.map { it.string(this@BytecodePatchContext) }
+            }
+
+        stringLiterals?.mapNotNull {
             lookupMaps.methodsByStrings[it]
         }?.minByOrNull { it.size }?.let { methodClasses ->
             methodClasses.forEach { (method, classDef) ->
@@ -368,6 +378,7 @@ class Fingerprint internal constructor(
      * The matches for the strings, or null if this fingerprint did not match.
      */
     context(BytecodePatchContext)
+    @Deprecated("Instead use string instructions and `instructionMatchesOrNull()`")
     val stringMatchesOrNull
         get() = matchOrNull()?.stringMatchesOrNull
 
@@ -438,6 +449,7 @@ class Fingerprint internal constructor(
      * @throws PatchException If the fingerprint has not been matched.
      */
     context(BytecodePatchContext)
+    @Deprecated("Instead use string instructions and `instructionMatches()`")
     val stringMatches
         get() = match().stringMatches
 }
@@ -484,8 +496,10 @@ class Match internal constructor(
         get() = _instructionMatches ?: throw PatchException("Fingerprint declared no instruction filters")
     val instructionMatchesOrNull = _instructionMatches
 
+    @Deprecated("Instead use string instructions and `instructionMatches()`")
     val stringMatches
         get() = _stringMatches ?: throw PatchException("Fingerprint declared no strings")
+    @Deprecated("Instead use string instructions and `instructionMatchesOrNull()`")
     val stringMatchesOrNull = _stringMatches
 
     /**
@@ -498,6 +512,15 @@ class Match internal constructor(
         val startIndex: Int,
         val endIndex: Int,
     )
+
+    /**
+     * A match for a string.
+     *
+     * @param string The string that matched.
+     * @param index The index of the instruction in the method.
+     */
+    @Deprecated("Instead use string instructions and `InstructionMatch`")
+    class StringMatch internal constructor(val string: String, val index: Int)
 
     /**
      * A match for a [InstructionFilter].
@@ -513,14 +536,6 @@ class Match internal constructor(
         @Suppress("UNCHECKED_CAST")
         fun <T> getInstruction(): T = instruction as T
     }
-
-    /**
-     * A match for a string.
-     *
-     * @param string The string that matched.
-     * @param index The index of the instruction in the method.
-     */
-    class StringMatch internal constructor(val string: String, val index: Int)
 }
 
 /**
@@ -646,6 +661,7 @@ class FingerprintBuilder(val name: String) {
      *
      * @param strings A list of strings compared each using [String.contains].
      */
+    @Deprecated("Instead use `instruction()` filters and `string()` instruction declarations")
     fun strings(vararg strings: String) {
         this.strings = strings.toList()
     }

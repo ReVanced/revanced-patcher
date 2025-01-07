@@ -82,7 +82,7 @@ class AdsLoader {
 
     unrelatedMethod(value1);
 
-    // Filter 2 & 3 target instructions, and the instructions to modify.
+    // Filter 2, 3, 4 target instructions, and the instructions to modify.
     if ("showBannerAds".equals(value1)) {
       showBannerAds();
     }
@@ -117,19 +117,20 @@ class AdsLoader {
 
     invoke-direct {p0, p1}, Lapp/revanced/extension/shared/AdsLoader;->unrelatedMethod(Ljava/lang/String;)V
 
+    # Filter 2 target instruction.
     const-string v0, "showBannerAds"
 
-    # Filter 2 target instruction.
+    # Filter 3 target instruction.
     invoke-virtual {v0, p1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
-    # Filter 3 target instruction.
+    # Filter 4 target instruction.
     move-result p1
 
     if-eqz p1, :cond_16
 
     invoke-direct {p0}, Lapp/revanced/extension/shared/AdsLoader;->showBannerAds()V
 
-    # Filter 4 target instruction.
+    # Filter 5 target instruction.
     :cond_16
     const/16 p1, 0x539
 
@@ -164,18 +165,20 @@ val hideAdsFingerprint by fingerprint {
         ),
 
         // Filter 2 
+        string("showBannerAds"),
+      
+        // Filter 3 
         methodCall(
             definingClass = "Ljava/lang/String;",
             name = "equals",
         ),
 
-        // Filter 3
+        // Filter 4
         opcode(Opcode.MOVE_RESULT),
 
-        // Filter 4
+        // Filter 5
         literal(1337)
     )
-    strings("showBannerAds")
     custom { method, classDef ->
         classDef.type == "Lapp/revanced/extension/shared/AdsLoader;"
     }
@@ -203,19 +206,21 @@ The fingerprint contains the following information:
       ),
 
       // Filter 2 
+      string("showBannerAds"),
+  
+      // Filter 3
       methodCall(
           definingClass = "Ljava/lang/String;",
           name = "equals",
       ),
 
-      // Filter 3
+      // Filter 4
       opcode(Opcode.MOVE_RESULT),
 
-      // Filter 4
+      // Filter 5
       literal(1337)
   )
-  strings("showBannerAds")
-  ```
+```
 
   Notice the instruction filters do not declare every instruction in the target method,
   and between each filter can exist 0 or more other instructions.  Instruction filters
@@ -252,7 +257,7 @@ After declaring a fingerprint, it can be used in a patch to find the method it m
 ```kt
 execute {
   hideAdsFingerprint.let {
-    val filter3 = it.instructionMatches[2]
+    val filter4 = it.instructionMatches[3]
 
     val moveResultIndex = filter3.index
     val moveResultRegister = filter3.getInstruction<OneRegisterInstruction>().registerA
@@ -353,19 +358,23 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
 - Match a **single method**, to extract certain information about it
 
   The match of a fingerprint contains useful information about the method,
-  such as the start and end index of an opcode pattern or the indices of the instructions with certain string
+  such as the start and end index of an instruction filters or the indices of the instructions with certain string
   references.
   A fingerprint can be leveraged to extract such information from a method instead of manually figuring it out:
 
   ```kt
   execute {
     val currentPlanFingerprint = fingerprint {
-      strings("showads", "userId")
+        instructions(
+            // literal strings, in the same order they appear in the target method. 
+            string("showads"),
+            string("userid")
+        ) 
     }
 
     currentPlanFingerprint.match(adsFingerprint.method).let { match ->
-      match.stringMatches.forEach { match ->
-        println("The index of the string '${match.string}' is ${match.index}")
+      match.instructionMatches.forEach { match ->
+        println("The index of the string is ${match.index}")
       }
     }
   }
