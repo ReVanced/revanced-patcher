@@ -712,7 +712,7 @@ fun fieldAccess(
 
 
 class NewInstanceFilter internal constructor (
-    val type: String,
+    var type: (BytecodePatchContext) -> String,
     maxInstructionsBefore : Int,
 ) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), maxInstructionsBefore) {
 
@@ -729,15 +729,22 @@ class NewInstanceFilter internal constructor (
         val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
         if (reference == null) return false
 
-        return reference.type == type
+        return reference.type == type(context)
     }
 }
+
+
+/**
+ * Opcode type `NEW_INSTANCE` or `NEW_ARRAY` with a non obfuscated class type.
+ */
+fun newInstancetype(type: (BytecodePatchContext) -> String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
+    NewInstanceFilter(type, maxInstructionsBefore)
 
 /**
  * Opcode type `NEW_INSTANCE` or `NEW_ARRAY` with a non obfuscated class type.
  */
 fun newInstance(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
-    NewInstanceFilter(type, maxInstructionsBefore)
+    NewInstanceFilter({ type }, maxInstructionsBefore)
 
 
 

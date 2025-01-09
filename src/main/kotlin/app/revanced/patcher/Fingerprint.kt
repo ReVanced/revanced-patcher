@@ -609,13 +609,33 @@ class FingerprintBuilder(val name: String) {
     /**
      * A pattern of opcodes, where each opcode must appear immediately after the previous.
      *
-     * To use opcodes with other [InstructionFilter] objects, instead use
-     * [instructions] with individual opcodes declared using [opcode].
+     * To use opcodes with other [InstructionFilter] objects,
+     * instead use [instructions] with individual opcodes declared using [opcode].
      *
-     * Unless absolutely necessary, it is recommended to instead use [instructions].
+     * This method is identical to declaring individual opcode filters
+     * with a max instructions before of zero.
+     *
+     * Unless absolutely necessary, it is recommended to instead use [instructions]
+     * with more fine grained filters.
+     *
+     * ```
+     * opcodes(
+     *    Opcode.INVOKE_VIRTUAL, // First opcode matches anywhere in the method.
+     *    Opcode.MOVE_RESULT_OBJECT, // Must match exactly after INVOKE_VIRTUAL.
+     *    Opcode.IPUT_OBJECT // Must match exactly after MOVE_RESULT_OBJECT.
+     * )
+     * ```
+     * is identical to:
+     * ```
+     * instructions(
+     *    opcode(Opcode.INVOKE_VIRTUAL), // First opcode matches anywhere in the method.
+     *    opcode(Opcode.MOVE_RESULT_OBJECT, maxInstructionsBefore = 0), // Must match exactly after INVOKE_VIRTUAL.
+     *    opcode(Opcode.IPUT_OBJECT, maxInstructionsBefore = 0) // Must match exactly after MOVE_RESULT_OBJECT.
+     * )
+     * ```
      *
      * @param opcodes An opcode pattern of instructions.
-     * Wildcard or unknown opcodes can be specified by `null`.
+     *                Wildcard or unknown opcodes can be specified by `null`.
      */
     fun opcodes(vararg opcodes: Opcode?) {
         verifyNoFiltersSet()
