@@ -585,6 +585,9 @@ class FingerprintBuilder(val name: String) {
     /**
      * Set the return type.
      *
+     * If [accessFlags] includes [AccessFlags.CONSTRUCTOR], then there is no need to
+     * set a return type set since constructors are always void return type.
+     *
      * @param returnType The return type compared using [String.startsWith].
      */
     fun returns(returnType: String) {
@@ -594,7 +597,8 @@ class FingerprintBuilder(val name: String) {
     /**
      * Set the parameters.
      *
-     * @param parameters The parameters of the method. Partial matches allowed and follow the same rules as [returnType].
+     * @param parameters The parameters of the method.
+     *                   Partial matches allowed and follow the same rules as [returnType].
      */
     fun parameters(vararg parameters: String) {
         this.parameters = parameters.toList()
@@ -602,7 +606,7 @@ class FingerprintBuilder(val name: String) {
 
     private fun verifyNoFiltersSet() {
         if (this.instructionFilters != null) {
-            throw PatchException("Instruction filters already set.")
+            throw PatchException("Instruction filters already set")
         }
     }
 
@@ -613,7 +617,7 @@ class FingerprintBuilder(val name: String) {
      * instead use [instructions] with individual opcodes declared using [opcode].
      *
      * This method is identical to declaring individual opcode filters
-     * with a max instructions before of zero.
+     * with [InstructionFilter.maxInstructionsBefore] set to zero.
      *
      * Unless absolutely necessary, it is recommended to instead use [instructions]
      * with more fine grained filters.
@@ -698,15 +702,26 @@ class FingerprintBuilder(val name: String) {
         this.customBlock = customBlock
     }
 
-    fun build() = Fingerprint(
-        name,
-        accessFlags,
-        returnType,
-        parameters,
-        instructionFilters,
-        strings,
-        customBlock,
-    )
+    fun build() : Fingerprint {
+        // If access flags include constructor then
+        // skip the return type check since it's always void.
+        if (returnType?.equals("V") == true && accessFlags != null
+            && AccessFlags.CONSTRUCTOR.isSet(accessFlags!!)
+        ) {
+            returnType = null
+        }
+
+        return Fingerprint(
+            name,
+            accessFlags,
+            returnType,
+            parameters,
+            instructionFilters,
+            strings,
+            customBlock,
+        )
+    }
+
 
     private companion object {
         val opcodesByName = Opcode.entries.associateBy { it.name }
