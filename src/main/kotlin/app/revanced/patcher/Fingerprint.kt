@@ -46,6 +46,7 @@ class Fingerprint internal constructor(
     internal val returnType: String?,
     internal val parameters: List<String>?,
     internal val filters: List<InstructionFilter>?,
+    @Deprecated("Instead use instruction filters")
     internal val strings: List<String>?,
     internal val custom: ((method: Method, classDef: ClassDef) -> Boolean)?,
 ) {
@@ -166,6 +167,7 @@ class Fingerprint internal constructor(
             return null
         }
 
+        // Legacy string declarations.
         val stringMatches: List<Match.StringMatch>? = if (strings == null) {
             null
         } else {
@@ -376,6 +378,8 @@ class Fingerprint internal constructor(
 
     /**
      * The matches for the strings, or null if this fingerprint did not match.
+     *
+     * This does not give matches for strings declared using [string] instruction filters.
      */
     context(BytecodePatchContext)
     @Deprecated("Instead use string instructions and `instructionMatchesOrNull()`")
@@ -444,7 +448,8 @@ class Fingerprint internal constructor(
         get() = match().instructionMatches
 
     /**
-     * The matches for the strings.
+     * The matches for the strings declared using `strings()`.
+     * This does not give matches for strings declared using [string] instruction filters.
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
@@ -460,7 +465,7 @@ class Fingerprint internal constructor(
  * @param originalClassDef The class the matching method is a member of.
  * @param originalMethod The matching method.
  * @param _instructionMatches The match for the instruction filters.
- * @param _stringMatches The matches for the strings.
+ * @param _stringMatches The matches for the strings declared using `strings()`.
  */
 context(BytecodePatchContext)
 class Match internal constructor(
@@ -602,10 +607,12 @@ class FingerprintBuilder(val name: String) {
     }
 
     /**
-     * A pattern of opcodes.
+     * A pattern of opcodes, where each opcode must appear immediately after the previous.
      *
      * To use opcodes with other [InstructionFilter] objects, instead use
-     * [instructions] with individual opcodes declared using [OpcodeFilter].
+     * [instructions] with individual opcodes declared using [opcode].
+     *
+     * Unless absolutely necessary, it is recommended to instead use [instructions].
      *
      * @param opcodes An opcode pattern of instructions.
      * Wildcard or unknown opcodes can be specified by `null`.
@@ -616,22 +623,10 @@ class FingerprintBuilder(val name: String) {
     }
 
     /**
-     * Set a pattern of opcodes, where each opcode must appear immediately after the previous opcode.
-     * Unless absolutely necessary, it is recommended not to use this function and instead use
-     * `instructions()`
+     * A pattern of opcodes from SMALI formatted text,
+     * where each opcode must appear immediately after the previous opcode.
      *
-     * @param opcodes An opcode pattern of instructions.
-     * Wildcard or unknown opcodes can be specified by `null`.
-     */
-    fun instructions(vararg instructionFilters: InstructionFilter) {
-        verifyNoFiltersSet()
-        this.instructionFilters = instructionFilters.toList()
-    }
-
-    /**
-     * Set a pattern of opcodes, where each opcode must appear immediately after the previous opcode.
-     * Unless absolutely necessary, it is recommended not to use this function and instead use
-     * `instructions()`
+     * Unless absolutely necessary, it is recommended to instead use [instructions].
      *
      * @param instructions A list of instructions or opcode names in SMALI format.
      * - Wildcard or unknown opcodes can be specified by `null`.
@@ -654,6 +649,14 @@ class FingerprintBuilder(val name: String) {
                 opcodesByName[name] ?: throw Exception("Unknown opcode: $name")
             }
         )
+    }
+
+    /**
+     * A list of instruction filters to match.
+     */
+    fun instructions(vararg instructionFilters: InstructionFilter) {
+        verifyNoFiltersSet()
+        this.instructionFilters = instructionFilters.toList()
     }
 
     /**
@@ -697,19 +700,15 @@ class FingerprintDelegate(
     // a new fingerprint is built and resolved.
     private var fingerprint: Fingerprint? = null
 
-    private fun getFingerprint(name: String) : Fingerprint {
+    // Called when you read the property, e.g. `val x by fingerprint { ... }`
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Fingerprint {
         if (fingerprint == null) {
-            val builder = FingerprintBuilder(name)
+            val builder = FingerprintBuilder(property.name)
             builder.block()
             fingerprint = builder.build()
         }
 
         return fingerprint!!
-    }
-
-    // Called when you read the property, e.g. `val x by fingerprint { ... }`
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): Fingerprint {
-        return getFingerprint(property.name)
     }
 }
 

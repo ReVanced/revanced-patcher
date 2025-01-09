@@ -2,7 +2,6 @@
 
 package app.revanced.patcher
 
-import android.R.attr.type
 import app.revanced.patcher.InstructionFilter.Companion.METHOD_MAX_INSTRUCTIONS
 import app.revanced.patcher.MethodCallFilter.Companion.parseJvmMethodCall
 import app.revanced.patcher.extensions.InstructionExtensions.instructions
@@ -480,11 +479,14 @@ fun methodCall(
 ) = MethodCallFilter(
     if (definingClass != null) {
         { definingClass }
-    } else null, if (name != null) {
+    } else null,
+    if (name != null) {
         { name }
-    } else null, if (parameters != null) {
+    } else null,
+    if (parameters != null) {
         { parameters }
-    } else null, if (returnType != null) {
+    } else null,
+    if (returnType != null) {
         { returnType }
     } else null,
     opcodes,
@@ -524,11 +526,14 @@ fun methodCall(
 ) = MethodCallFilter(
     if (definingClass != null) {
         { definingClass }
-    } else null, if (name != null) {
+    } else null,
+    if (name != null) {
         { name }
-    } else null, if (parameters != null) {
+    } else null,
+    if (parameters != null) {
         { parameters }
-    } else null, if (returnType != null) {
+    } else null,
+    if (returnType != null) {
         { returnType }
     } else null,
     listOf(opcode),
@@ -754,7 +759,7 @@ class LastInstructionFilter internal constructor(
 }
 
 /**
- * Filter wrapper that only matches the last instruction of a method.
+ * Filter wrapper that matches the last instruction of a method.
  */
 fun lastInstruction(
     filter : InstructionFilter,
