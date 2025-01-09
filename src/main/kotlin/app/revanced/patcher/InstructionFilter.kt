@@ -221,7 +221,7 @@ fun literal(
  * that can be matched using:
  * `LiteralFilter(0x7f080318)`
  * or
- * `LiteralFilter(2131231512)`
+ * `LiteralFilter(2131231512L)`
  */
 fun literal(
     literal: Long,
@@ -242,6 +242,7 @@ fun literal(
 
 class StringFilter internal constructor(
     var string: (BytecodePatchContext) -> String,
+    var partialMatch: Boolean,
     maxInstructionsBefore: Int,
 ) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), maxInstructionsBefore) {
 
@@ -256,7 +257,13 @@ class StringFilter internal constructor(
         }
 
         val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
-        return instructionString == string(context)
+        val filterString = string(context)
+
+        return if (partialMatch) {
+            instructionString.contains(filterString)
+        } else {
+            instructionString == filterString
+        }
     }
 }
 
@@ -265,16 +272,26 @@ class StringFilter internal constructor(
  */
 fun string(
     string: (BytecodePatchContext) -> String,
+    /**
+     * If [string] is a partial match.  For more precise matching,
+     * consider using [any] with multiple string declarations of an exact match.
+     */
+    partialMatch: Boolean = false,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = StringFilter(string, maxInstructionsBefore)
+) = StringFilter(string, partialMatch, maxInstructionsBefore)
 
 /**
  * Literal String instruction.
  */
 fun string(
     string: String,
+    /**
+     * If [string] is a partial match.  For more precise matching,
+     * consider using [any] with multiple string declarations of an exact match.
+     */
+    partialMatch: Boolean = false,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = StringFilter({ string }, maxInstructionsBefore)
+) = StringFilter({ string }, partialMatch, maxInstructionsBefore)
 
 
 
