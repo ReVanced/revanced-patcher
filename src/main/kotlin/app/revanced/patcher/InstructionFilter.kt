@@ -185,6 +185,8 @@ class LiteralFilter internal constructor(
     maxInstructionsBefore: Int,
 ) : OpcodesFilter(opcodes, maxInstructionsBefore) {
 
+    private var literalValue: Long? = null
+
     override fun matches(
         context: BytecodePatchContext,
         method: Method,
@@ -195,7 +197,13 @@ class LiteralFilter internal constructor(
             return false
         }
 
-        return (instruction as? WideLiteralInstruction)?.wideLiteral == literal(context)
+        if (instruction !is WideLiteralInstruction) return false
+
+        if (literalValue == null) {
+            literalValue = literal(context)
+        }
+
+        return instruction.wideLiteral == literalValue
     }
 }
 
@@ -273,8 +281,8 @@ class StringFilter internal constructor(
 fun string(
     string: (BytecodePatchContext) -> String,
     /**
-     * If [string] is a partial match.  For more precise matching,
-     * consider using [any] with multiple string declarations of an exact match.
+     * If [string] is a partial match, where the target string contains this string.
+     * For more precise matching, consider using [any] with multiple exact string declarations.
      */
     partialMatch: Boolean = false,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
@@ -286,8 +294,8 @@ fun string(
 fun string(
     string: String,
     /**
-     * If [string] is a partial match.  For more precise matching,
-     * consider using [any] with multiple string declarations of an exact match.
+     * If [string] is a partial match, where the target string contains this string.
+     * For more precise matching, consider using [any] with multiple exact string declarations.
      */
     partialMatch: Boolean = false,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
@@ -320,6 +328,7 @@ class MethodCallFilter internal constructor(
         if (definingClass != null) {
             val referenceClass = reference.definingClass
             val definingClass = definingClass(context)
+
             if (!referenceClass.endsWith(definingClass)) {
                 // Check if 'this' defining class is used.
                 // Would be nice if this also checked all super classes,
