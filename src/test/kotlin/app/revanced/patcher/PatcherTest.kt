@@ -437,6 +437,25 @@ internal object PatcherTest {
         }
     }
 
+    @Test
+    fun `NewInstance bad input`() {
+        with(patcher.context.bytecodeContext) {
+            assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
+                newInstance("Lcom/whatever/BadClassType")
+            }
+        }
+    }
+
+
+    @Test
+    fun `CheckCast bad input`() {
+        with(patcher.context.bytecodeContext) {
+            assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
+                checkCast("Lcom/whatever/BadClassType")
+            }
+        }
+    }
+
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
         every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)

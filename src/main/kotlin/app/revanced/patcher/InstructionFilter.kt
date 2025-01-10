@@ -823,8 +823,12 @@ fun newInstancetype(type: (BytecodePatchContext) -> String, maxInstructionsBefor
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun newInstance(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
-    NewInstanceFilter({ type }, maxInstructionsBefore)
+fun newInstance(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) : NewInstanceFilter {
+    if (!type.endsWith(";")) {
+        throw IllegalArgumentException("Class type does not end with a semicolon: $type")
+    }
+    return NewInstanceFilter({ type }, maxInstructionsBefore)
+}
 
 
 
@@ -863,8 +867,15 @@ fun checkCast(type: (BytecodePatchContext) -> String, maxInstructionsBefore: Int
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun checkCast(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
-    CheckCastFilter({ type }, maxInstructionsBefore)
+fun checkCast(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) : CheckCastFilter {
+    if (!type.endsWith(";")) {
+        throw IllegalArgumentException("Class type does not end with a semicolon: $type")
+    }
+
+    return CheckCastFilter({ type }, maxInstructionsBefore)
+}
+
+
 
 class LastInstructionFilter internal constructor(
     var filter : InstructionFilter,
