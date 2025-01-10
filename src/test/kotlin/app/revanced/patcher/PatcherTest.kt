@@ -240,9 +240,9 @@ internal object PatcherTest {
             )
 
 
-            definingClass = "Landroid/view/View;"
+            definingClass = "Landroid/view/View\$InnerClass;"
             name = "inflate"
-            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "Landroid/view/ViewGroup\$ViewInnerClass;", "J")
             returnType = "V"
             methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
@@ -273,8 +273,7 @@ internal object PatcherTest {
 
 
             definingClass = "Landroid/view/View;"
-            name = "inflate"
-            // Missing semicolon
+            name = "inflate" // Missing semicolon
             parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup")
             returnType = "Landroid/view/View;"
             methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"

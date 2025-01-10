@@ -70,10 +70,7 @@ abstract class InstructionFilter(
 
 
 
-/**
- * Logical OR operator, where the first filter that matches is the match result.
- */
-class AnyFilter(
+class AnyInstruction internal constructor(
     private val filters: List<InstructionFilter>,
     maxInstructionsBefore: Int,
 ) : InstructionFilter(maxInstructionsBefore) {
@@ -83,22 +80,24 @@ class AnyFilter(
         method: Method,
         instruction: Instruction,
         methodIndex: Int
-    ): Boolean {
-        return filters.any { matches(context, method, instruction, methodIndex) }
+    ) : Boolean {
+        return filters.any { filter ->
+            filter.matches(context, method, instruction, methodIndex)
+        }
     }
 }
 
 /**
- * Logical OR operator, where the first filter that matches is the match result.
+ * Logical OR operator where the first filter that matches satisfies this filter.
  */
-fun any(
-    filters: List<InstructionFilter>,
+fun anyInstruction(
+    vararg filters: InstructionFilter,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = AnyFilter(filters, maxInstructionsBefore)
+) = AnyInstruction(filters.asList(), maxInstructionsBefore)
 
 
 
-class OpcodeFilter(
+open class OpcodeFilter(
     val opcode: Opcode,
     maxInstructionsBefore: Int,
 ) : InstructionFilter(maxInstructionsBefore) {
@@ -573,10 +572,10 @@ fun methodCall(
  * Does not support obfuscated method names or parameter/return types.
  */
 fun methodCall(
-    smaliString: String,
+    smali: String,
     opcodes: List<Opcode>? = null,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
-) = parseJvmMethodCall(smaliString, opcodes, maxInstructionsBefore)
+) = parseJvmMethodCall(smali, opcodes, maxInstructionsBefore)
 
 /**
  * Method call for a copy pasted SMALI style method signature. e.g.:
@@ -585,10 +584,10 @@ fun methodCall(
  * Does not support obfuscated method names or parameter/return types.
  */
 fun methodCall(
-    smaliString: String,
+    smali: String,
     opcode: Opcode,
     maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
-) = parseJvmMethodCall(smaliString, listOf(opcode), maxInstructionsBefore)
+) = parseJvmMethodCall(smali, listOf(opcode), maxInstructionsBefore)
 
 
 
@@ -761,18 +760,50 @@ class NewInstanceFilter internal constructor (
 
 
 /**
- * Opcode type `NEW_INSTANCE` or `NEW_ARRAY` with a non obfuscated class type.
+ * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  */
 fun newInstancetype(type: (BytecodePatchContext) -> String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
     NewInstanceFilter(type, maxInstructionsBefore)
 
 /**
- * Opcode type `NEW_INSTANCE` or `NEW_ARRAY` with a non obfuscated class type.
+ * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  */
 fun newInstance(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
     NewInstanceFilter({ type }, maxInstructionsBefore)
 
 
+
+class CheckCastFilter internal constructor (
+    var type: (BytecodePatchContext) -> String,
+    maxInstructionsBefore : Int,
+) : OpcodeFilter(Opcode.CHECK_CAST, maxInstructionsBefore) {
+
+    override fun matches(
+        context: BytecodePatchContext,
+        method: Method,
+        instruction: Instruction,
+        methodIndex: Int
+    ): Boolean {
+        if (!super.matches(context, method, instruction, methodIndex)) {
+            return false
+        }
+
+        val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
+        return reference?.type == type(context)
+    }
+}
+
+/**
+ * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
+ */
+fun checkCast(type: (BytecodePatchContext) -> String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
+    CheckCastFilter(type, maxInstructionsBefore)
+
+/**
+ * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
+ */
+fun checkCast(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
+    CheckCastFilter({ type }, maxInstructionsBefore)
 
 class LastInstructionFilter internal constructor(
     var filter : InstructionFilter,

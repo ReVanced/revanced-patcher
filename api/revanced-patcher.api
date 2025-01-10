@@ -1,6 +1,11 @@
-public final class app/revanced/patcher/AnyFilter : app/revanced/patcher/InstructionFilter {
-	public fun <init> (Ljava/util/List;I)V
+public final class app/revanced/patcher/AnyInstruction : app/revanced/patcher/InstructionFilter {
 	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+}
+
+public final class app/revanced/patcher/CheckCastFilter : app/revanced/patcher/OpcodeFilter {
+	public final fun getType ()Lkotlin/jvm/functions/Function1;
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public final fun setType (Lkotlin/jvm/functions/Function1;)V
 }
 
 public final class app/revanced/patcher/FieldAccessFilter : app/revanced/patcher/OpcodesFilter {
@@ -75,8 +80,12 @@ public final class app/revanced/patcher/InstructionFilter$Companion {
 }
 
 public final class app/revanced/patcher/InstructionFilterKt {
-	public static final fun any (Ljava/util/List;I)Lapp/revanced/patcher/AnyFilter;
-	public static synthetic fun any$default (Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/AnyFilter;
+	public static final fun anyInstruction ([Lapp/revanced/patcher/InstructionFilter;I)Lapp/revanced/patcher/AnyInstruction;
+	public static synthetic fun anyInstruction$default ([Lapp/revanced/patcher/InstructionFilter;IILjava/lang/Object;)Lapp/revanced/patcher/AnyInstruction;
+	public static final fun checkCast (Ljava/lang/String;I)Lapp/revanced/patcher/CheckCastFilter;
+	public static final fun checkCast (Lkotlin/jvm/functions/Function1;I)Lapp/revanced/patcher/CheckCastFilter;
+	public static synthetic fun checkCast$default (Ljava/lang/String;IILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
+	public static synthetic fun checkCast$default (Lkotlin/jvm/functions/Function1;IILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
 	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun fieldAccess (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
@@ -175,7 +184,7 @@ public final class app/revanced/patcher/NewInstanceFilter : app/revanced/patcher
 	public final fun setType (Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class app/revanced/patcher/OpcodeFilter : app/revanced/patcher/InstructionFilter {
+public class app/revanced/patcher/OpcodeFilter : app/revanced/patcher/InstructionFilter {
 	public fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;I)V
 	public final fun getOpcode ()Lcom/android/tools/smali/dexlib2/Opcode;
 	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
