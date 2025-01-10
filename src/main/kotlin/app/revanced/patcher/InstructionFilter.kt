@@ -2,6 +2,7 @@
 
 package app.revanced.patcher
 
+import app.revanced.patcher.FieldAccessFilter.Companion.parseJvmFieldAccess
 import app.revanced.patcher.InstructionFilter.Companion.METHOD_MAX_INSTRUCTIONS
 import app.revanced.patcher.MethodCallFilter.Companion.parseJvmMethodCall
 import app.revanced.patcher.extensions.InstructionExtensions.instructions
@@ -631,6 +632,27 @@ class FieldAccessFilter internal constructor(
 
         return true
     }
+
+    internal companion object {
+        private val regex = Regex("""^(L[^;]+;)->([^:]+):(.+)$""")
+
+        internal fun parseJvmFieldAccess(
+            fieldSignature: String,
+            opcodes: List<Opcode>? = null,
+            maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
+        ): FieldAccessFilter {
+            val matchResult = regex.matchEntire(fieldSignature)
+                ?: throw IllegalArgumentException("Invalid field access smali: $fieldSignature")
+
+            return fieldAccess(
+                definingClass = matchResult.groupValues[1],
+                name = matchResult.groupValues[2],
+                type = matchResult.groupValues[3],
+                opcodes = opcodes,
+                maxInstructionsBefore = maxInstructionsBefore
+            )
+        }
+    }
 }
 
 /**
@@ -703,7 +725,6 @@ fun fieldAccess(
     maxInstructionsBefore
 )
 
-
 /**
  * Matches a field call, such as:
  * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
@@ -733,6 +754,30 @@ fun fieldAccess(
     listOf(opcode),
     maxInstructionsBefore
 )
+
+/**
+ * Field access for a copy pasted SMALI style field access call. e.g.:
+ * `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`
+ *
+ * Does not support obfuscated field names or field types.
+ */
+fun fieldAccess(
+    smali: String,
+    opcodes: List<Opcode>? = null,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmFieldAccess(smali, opcodes, maxInstructionsBefore)
+
+/**
+ * Field access for a copy pasted SMALI style field access call. e.g.:
+ * `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`
+ *
+ * Does not support obfuscated field names or field types.
+ */
+fun fieldAccess(
+    smali: String,
+    opcode: Opcode,
+    maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmFieldAccess(smali, listOf(opcode), maxInstructionsBefore)
 
 
 

@@ -221,7 +221,7 @@ internal object PatcherTest {
     }
 
     @Test
-    fun `MethodFilter toString parsing`() {
+    fun `MethodCallFilter smali parsing`() {
         with(patcher.context.bytecodeContext) {
             var definingClass = "Landroid/view/View;"
             var name = "inflate"
@@ -232,7 +232,6 @@ internal object PatcherTest {
             var filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
             assertAll(
-                "toStringParsing matches",
                 { assertTrue(definingClass == filter.definingClass!!()) },
                 { assertTrue(name == filter.name!!()) },
                 { assertTrue(parameters == filter.parameters!!()) },
@@ -249,7 +248,6 @@ internal object PatcherTest {
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
             assertAll(
-                "toStringParsing matches",
                 { assertTrue(definingClass == filter.definingClass!!()) },
                 { assertTrue(name == filter.name!!()) },
                 { assertTrue(parameters == filter.parameters!!()) },
@@ -259,7 +257,7 @@ internal object PatcherTest {
     }
 
     @Test
-    fun `MethodFilter toString bad input`() {
+    fun `MethodCallFilter smali bad input`() {
         with(patcher.context.bytecodeContext) {
             var definingClass = "Landroid/view/View" // Missing semicolon
             var name = "inflate"
@@ -291,6 +289,82 @@ internal object PatcherTest {
 
             assertThrows<IllegalArgumentException> {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)
+            }
+        }
+    }
+
+    @Test
+    fun `FieldAccess smali parsing`() {
+        with(patcher.context.bytecodeContext) {
+            var definingClass = "Ljava/lang/Boolean;"
+            var name = "TRUE"
+            var type = "Ljava/lang/Boolean;"
+            var fieldSignature = "$definingClass->$name:$type"
+
+            var filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+
+            assertAll(
+                { assertTrue(definingClass == filter.definingClass!!()) },
+                { assertTrue(name == filter.name!!()) },
+                { assertTrue(type == filter.type!!()) },
+            )
+
+
+            definingClass = "Landroid/view/View\$InnerClass;"
+            name = "arrayField"
+            type = "[Ljava/lang/Boolean;"
+            fieldSignature = "$definingClass->$name:$type"
+
+            filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+
+            assertAll(
+                { assertTrue(definingClass == filter.definingClass!!()) },
+                { assertTrue(name == filter.name!!()) },
+                { assertTrue(type == filter.type!!()) },
+            )
+        }
+    }
+
+    @Test
+    fun `FieldAccess smali bad input`() {
+        with(patcher.context.bytecodeContext) {
+            var definingClass = "Landroid/view/View" // Missing semicolon
+            var name = "fieldName"
+            var type = "Landroid/view/View;"
+            var fieldSignature = "$definingClass->$name:$type"
+
+            assertThrows<IllegalArgumentException> {
+                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+            }
+
+
+            definingClass = "Landroid/view/View" // Missing semicolon
+            name = "fieldName"
+            type = "Landroid/view/View;"
+            fieldSignature = "$definingClass->$name:$type"
+
+            assertThrows<IllegalArgumentException> {
+                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+            }
+
+
+            definingClass = "Landroid/view/View;"
+            name = "fieldName"
+            type = "Landroid/view/View"  // Missing semicolon
+            fieldSignature = "$definingClass->$name:$type"
+
+            assertThrows<IllegalArgumentException> {
+                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+            }
+
+
+            definingClass = "Landroid/view/View;"
+            name = "" // empty name
+            type = "Landroid/view/View;"
+            fieldSignature = "$definingClass->$name:$type"
+
+            assertThrows<IllegalArgumentException> {
+                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
             }
         }
     }

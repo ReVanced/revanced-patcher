@@ -86,11 +86,15 @@ public final class app/revanced/patcher/InstructionFilterKt {
 	public static final fun checkCast (Lkotlin/jvm/functions/Function1;I)Lapp/revanced/patcher/CheckCastFilter;
 	public static synthetic fun checkCast$default (Ljava/lang/String;IILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
 	public static synthetic fun checkCast$default (Lkotlin/jvm/functions/Function1;IILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
+	public static final fun fieldAccess (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
+	public static final fun fieldAccess (Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun fieldAccess (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
+	public static synthetic fun fieldAccess$default (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static synthetic fun fieldAccess$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun lastInstruction (Lapp/revanced/patcher/InstructionFilter;I)Lapp/revanced/patcher/LastInstructionFilter;
 	public static synthetic fun lastInstruction$default (Lapp/revanced/patcher/InstructionFilter;IILjava/lang/Object;)Lapp/revanced/patcher/LastInstructionFilter;
