@@ -253,30 +253,71 @@ internal object PatcherTest {
                 { assertTrue(parameters == filter.parameters!!()) },
                 { assertTrue(returnType == filter.returnType!!()) },
             )
+
+            definingClass = "Landroid/view/View\$InnerClass;"
+            name = "inflate"
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "Landroid/view/ViewGroup\$ViewInnerClass;", "J")
+            returnType = "I"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
+
+            filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
+
+            assertAll(
+                { assertTrue(definingClass == filter.definingClass!!()) },
+                { assertTrue(name == filter.name!!()) },
+                { assertTrue(parameters == filter.parameters!!()) },
+                { assertTrue(returnType == filter.returnType!!()) },
+            )
+
+            definingClass = "Landroid/view/View\$InnerClass;"
+            name = "inflate"
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "Landroid/view/ViewGroup\$ViewInnerClass;", "J")
+            returnType = "[I"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
+
+            filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
+
+            assertAll(
+                { assertTrue(definingClass == filter.definingClass!!()) },
+                { assertTrue(name == filter.name!!()) },
+                { assertTrue(parameters == filter.parameters!!()) },
+                { assertTrue(returnType == filter.returnType!!()) },
+            )
         }
     }
 
     @Test
     fun `MethodCallFilter smali bad input`() {
         with(patcher.context.bytecodeContext) {
-            var definingClass = "Landroid/view/View" // Missing semicolon
+            var definingClass = "Landroid/view/View;"
             var name = "inflate"
             var parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
             var returnType = "Landroid/view/View;"
             var methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<IllegalArgumentException>("Bad max instructions before") {
+                MethodCallFilter.parseJvmMethodCall(methodSignature, null, -1)
+            }
+
+
+            definingClass = "Landroid/view/View"
+            name = "inflate"
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            returnType = "Landroid/view/View;"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
+
+            assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)
             }
 
 
             definingClass = "Landroid/view/View;"
-            name = "inflate" // Missing semicolon
+            name = "inflate"
             parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup")
-            returnType = "Landroid/view/View;"
+            returnType = "Landroid/view/View"
             methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<IllegalArgumentException>("Return type missing semicolon") {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)
             }
 
@@ -284,10 +325,32 @@ internal object PatcherTest {
             definingClass = "Landroid/view/View;"
             name = "inflate"
             parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
-            returnType = "" // Missing return type
+            returnType = ""
             methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<IllegalArgumentException>("Empty return type") {
+                MethodCallFilter.parseJvmMethodCall(methodSignature)
+            }
+
+
+            definingClass = "Landroid/view/View;"
+            name = "inflate"
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            returnType = "Landroid/view/View"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
+
+            assertThrows<IllegalArgumentException>("Return type class missing semicolon") {
+                MethodCallFilter.parseJvmMethodCall(methodSignature)
+            }
+
+
+            definingClass = "Landroid/view/View;"
+            name = "inflate"
+            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
+            returnType = "Q"
+            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
+
+            assertThrows<IllegalArgumentException>("Bad primitive type") {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)
             }
         }
@@ -322,48 +385,61 @@ internal object PatcherTest {
                 { assertTrue(name == filter.name!!()) },
                 { assertTrue(type == filter.type!!()) },
             )
+
+            definingClass = "Landroid/view/View\$InnerClass;"
+            name = "primitiveField"
+            type = "I"
+            fieldSignature = "$definingClass->$name:$type"
+
+            filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+
+            assertAll(
+                { assertTrue(definingClass == filter.definingClass!!()) },
+                { assertTrue(name == filter.name!!()) },
+                { assertTrue(type == filter.type!!()) },
+            )
         }
     }
 
     @Test
     fun `FieldAccess smali bad input`() {
         with(patcher.context.bytecodeContext) {
-            var definingClass = "Landroid/view/View" // Missing semicolon
+            var definingClass = "Landroid/view/View"
             var name = "fieldName"
             var type = "Landroid/view/View;"
             var fieldSignature = "$definingClass->$name:$type"
 
-            assertThrows<IllegalArgumentException> {
-                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
-            }
-
-
-            definingClass = "Landroid/view/View" // Missing semicolon
-            name = "fieldName"
-            type = "Landroid/view/View;"
-            fieldSignature = "$definingClass->$name:$type"
-
-            assertThrows<IllegalArgumentException> {
+            assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
                 FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
             }
 
 
             definingClass = "Landroid/view/View;"
             name = "fieldName"
-            type = "Landroid/view/View"  // Missing semicolon
+            type = "Landroid/view/View"
             fieldSignature = "$definingClass->$name:$type"
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<IllegalArgumentException>("Type class missing semicolon") {
                 FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
             }
 
 
             definingClass = "Landroid/view/View;"
-            name = "" // empty name
+            name = ""
             type = "Landroid/view/View;"
             fieldSignature = "$definingClass->$name:$type"
 
-            assertThrows<IllegalArgumentException> {
+            assertThrows<IllegalArgumentException>("Empty field name") {
+                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+            }
+
+
+            definingClass = "Landroid/view/View;"
+            name = "fieldName"
+            type = "Q"
+            fieldSignature = "$definingClass->$name:$type"
+
+            assertThrows<IllegalArgumentException>("Bad primitive type") {
                 FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
             }
         }

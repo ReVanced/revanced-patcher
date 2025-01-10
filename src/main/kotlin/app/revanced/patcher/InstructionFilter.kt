@@ -44,6 +44,12 @@ abstract class InstructionFilter(
     val maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS
 ) {
 
+    init {
+        if (maxInstructionsBefore < 0) {
+            throw IllegalArgumentException("maxInstructionsBefore cannot be negative")
+        }
+    }
+
     /**
      * If this filter matches the method instruction.
      *
@@ -353,7 +359,7 @@ class MethodCallFilter internal constructor(
     }
 
     companion object {
-        private val regex = Regex("""^(L[^;]+;)->([^(\s]+)\(([^)]*)\)(.+)$""")
+        private val regex = Regex("""^(L[^;]+;)->([^(\s]+)\(([^)]*)\)(\[?L[^;]+;|\[?[BCSIJFDZV])${'$'}""")
 
         internal fun parseJvmMethodCall(
             methodSignature: String,
@@ -634,7 +640,7 @@ class FieldAccessFilter internal constructor(
     }
 
     internal companion object {
-        private val regex = Regex("""^(L[^;]+;)->([^:]+):(.+)$""")
+        private val regex = Regex("""^(L[^;]+;)->([^:]+):(\[?L[^;]+;|\[?[BCSIJFDZV])${'$'}""")
 
         internal fun parseJvmFieldAccess(
             fieldSignature: String,
