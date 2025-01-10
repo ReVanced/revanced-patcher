@@ -765,7 +765,7 @@ fun fieldAccess(
  * Field access for a copy pasted SMALI style field access call. e.g.:
  * `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`
  *
- * Does not support obfuscated field names or field types.
+ * Does not support obfuscated field names or obfuscated field types.
  */
 fun fieldAccess(
     smali: String,
@@ -777,7 +777,7 @@ fun fieldAccess(
  * Field access for a copy pasted SMALI style field access call. e.g.:
  * `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`
  *
- * Does not support obfuscated field names or field types.
+ * Does not support obfuscated field names or obfuscated field types.
  */
 fun fieldAccess(
     smali: String,
@@ -805,19 +805,23 @@ class NewInstanceFilter internal constructor (
         val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
         if (reference == null) return false
 
-        return reference.type == type(context)
+        return reference.type.endsWith(type(context))
     }
 }
 
 
 /**
  * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
+ *
+ * @param type Class type that matches the target instruction using [String.endsWith].
  */
 fun newInstancetype(type: (BytecodePatchContext) -> String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
     NewInstanceFilter(type, maxInstructionsBefore)
 
 /**
  * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
+ *
+ * @param type Class type that matches the target instruction using [String.endsWith].
  */
 fun newInstance(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
     NewInstanceFilter({ type }, maxInstructionsBefore)
@@ -840,18 +844,24 @@ class CheckCastFilter internal constructor (
         }
 
         val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
-        return reference?.type == type(context)
+        if (reference == null) return false
+
+        return reference.type.endsWith(type(context))
     }
 }
 
 /**
  * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
+ *
+ * @param type Class type that matches the target instruction using [String.endsWith].
  */
 fun checkCast(type: (BytecodePatchContext) -> String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
     CheckCastFilter(type, maxInstructionsBefore)
 
 /**
  * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
+ *
+ * @param type Class type that matches the target instruction using [String.endsWith].
  */
 fun checkCast(type: String, maxInstructionsBefore: Int = METHOD_MAX_INSTRUCTIONS) =
     CheckCastFilter({ type }, maxInstructionsBefore)

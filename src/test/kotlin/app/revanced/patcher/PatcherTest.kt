@@ -386,9 +386,24 @@ internal object PatcherTest {
                 { assertTrue(type == filter.type!!()) },
             )
 
+
             definingClass = "Landroid/view/View\$InnerClass;"
             name = "primitiveField"
             type = "I"
+            fieldSignature = "$definingClass->$name:$type"
+
+            filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+
+            assertAll(
+                { assertTrue(definingClass == filter.definingClass!!()) },
+                { assertTrue(name == filter.name!!()) },
+                { assertTrue(type == filter.type!!()) },
+            )
+
+
+            definingClass = "Landroid/view/View\$InnerClass;"
+            name = "primitiveField"
+            type = "[I"
             fieldSignature = "$definingClass->$name:$type"
 
             filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
@@ -404,43 +419,20 @@ internal object PatcherTest {
     @Test
     fun `FieldAccess smali bad input`() {
         with(patcher.context.bytecodeContext) {
-            var definingClass = "Landroid/view/View"
-            var name = "fieldName"
-            var type = "Landroid/view/View;"
-            var fieldSignature = "$definingClass->$name:$type"
-
             assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
-                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+                FieldAccessFilter.parseJvmFieldAccess("Landroid/view/View->fieldName:Landroid/view/View;")
             }
-
-
-            definingClass = "Landroid/view/View;"
-            name = "fieldName"
-            type = "Landroid/view/View"
-            fieldSignature = "$definingClass->$name:$type"
 
             assertThrows<IllegalArgumentException>("Type class missing semicolon") {
-                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+                FieldAccessFilter.parseJvmFieldAccess("Landroid/view/View;->fieldName:Landroid/view/View")
             }
-
-
-            definingClass = "Landroid/view/View;"
-            name = ""
-            type = "Landroid/view/View;"
-            fieldSignature = "$definingClass->$name:$type"
 
             assertThrows<IllegalArgumentException>("Empty field name") {
-                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+                FieldAccessFilter.parseJvmFieldAccess("Landroid/view/View;->:Landroid/view/View;")
             }
 
-
-            definingClass = "Landroid/view/View;"
-            name = "fieldName"
-            type = "Q"
-            fieldSignature = "$definingClass->$name:$type"
-
-            assertThrows<IllegalArgumentException>("Bad primitive type") {
-                FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
+            assertThrows<IllegalArgumentException>("Invalid primitive type") {
+                FieldAccessFilter.parseJvmFieldAccess("Landroid/view/View;->fieldName:Q")
             }
         }
     }
