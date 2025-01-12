@@ -87,7 +87,7 @@ class AdsLoader {
       showBannerAds();
     }
 
-    // Filter 4 target instruction.
+    // Filter 5 and 6 target instructions.
     return parameter2 != 1337;
   }
 
@@ -107,7 +107,7 @@ class AdsLoader {
     .registers 4
 
     # Filter 1 target instruction.
-    sget-object v0, Lapp/revanced/extension/shared/AdsLoader;->a:Ljava/util/Map;
+    sget-object v0, Lcom/some/app/ads/AdsLoader;->a:Ljava/util/Map;
 
     invoke-interface {v0, p1}, Ljava/util/Map;->get(Ljava/lang/Object;)Ljava/lang/Object;
 
@@ -115,7 +115,7 @@ class AdsLoader {
 
     check-cast p1, Ljava/lang/String;
 
-    invoke-direct {p0, p1}, Lapp/revanced/extension/shared/AdsLoader;->unrelatedMethod(Ljava/lang/String;)V
+    invoke-direct {p0, p1}, Lcom/some/app/ads/AdsLoader;->unrelatedMethod(Ljava/lang/String;)V
 
     # Filter 2 target instruction.
     const-string v0, "showBannerAds"
@@ -128,12 +128,13 @@ class AdsLoader {
 
     if-eqz p1, :cond_16
 
-    invoke-direct {p0}, Lapp/revanced/extension/shared/AdsLoader;->showBannerAds()V
+    invoke-direct {p0}, Lcom/some/app/ads/AdsLoader;->showBannerAds()V
 
     # Filter 5 target instruction.
     :cond_16
     const/16 p1, 0x539
 
+    # Filter 6 target instruction.
     if-eq p2, p1, :cond_1c
 
     const/4 p1, 0x1
@@ -151,12 +152,14 @@ class AdsLoader {
 ## ⛳️ Example fingerprint
 
 ```kt
-package app.revanced.patches.ads.fingerprints
-
-val hideAdsFingerprint by fingerprint { 
+val hideAdsFingerprint by fingerprint {
+    // Method signature:
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
+    // Last parameter is simply `L` since it's an obfuscated class.
     parameters("Ljava/lang/String;", "I", "L")
+    
+    // Method implementation:
     instructions( 
         // Filter 1
         fieldAccess(
@@ -174,57 +177,35 @@ val hideAdsFingerprint by fingerprint {
         ),
 
         // Filter 4
-        opcode(Opcode.MOVE_RESULT),
+        // maxInstructionsBefore = 0 means this must match immediately after the last filter.
+        opcode(Opcode.MOVE_RESULT, maxInstructionsBefore = 0),
 
         // Filter 5
-        literal(1337)
+        literal(1337),
+        
+        // Filter 6 
+        opcode(Opcode.IF_EQ),
     )
     custom { method, classDef ->
-        classDef.type == "Lapp/revanced/extension/shared/AdsLoader;"
+        classDef.type == "Lcom/some/app/ads/AdsLoader;"
     }
 }
 ```
 
-The fingerprint contains the following information:
-
-- Method signature:
-
-  ```kt
-  accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-  returns("Z")
-  parameters("Ljava/lang/String;", "I", "L")
-  ```
-
-- Method implementation:
-
-  ```kt
-  instructions( 
-      // Filter 1
-      fieldAccess(
-          definingClass = "this",
-          type = "Ljava/util/Map;"
-      ),
-
-      // Filter 2 
-      string("showBannerAds"),
-  
-      // Filter 3
-      methodCall(
-          definingClass = "Ljava/lang/String;",
-          name = "equals",
-      ),
-
-      // Filter 4
-      opcode(Opcode.MOVE_RESULT),
-
-      // Filter 5
-      literal(1337)
-  )
-```
-
   Notice the instruction filters do not declare every instruction in the target method,
   and between each filter can exist 0 or more other instructions.  Instruction filters
-  must be declared in the same order the instructions appear in the target method.
+  must be declared in the same order as the instructions appear in the target method.
+
+  If the distance between each instruction declaration can be approximated,
+  then the `maxInstructionsBefore` parameter can be used to restrict the instruction match to
+  a maximum distance from the last instruction.  A value of 0 for the first instruction filter
+  means the filter must be the first instruction of the target method. To restrict an instruction
+  filter to only match the last instruction of a method, use the `lastInstruction()` filter wrapper.
+
+  If a single instruction varies slightly between different app targets but otherwise the fingerprint
+  is still the same, the `anyInstruction()` wrapper can be used to specify variations of the
+  same instruction.  Such as:
+  `anyInstruction(string("string in early app target"), string("updated string in latest app target"))`
 
   If a method cannot be uniquely identified using the built in filters, but a fixed
   pattern of opcodes can identify the method, then the opcode pattern can be
@@ -233,40 +214,54 @@ The fingerprint contains the following information:
   Opcode patterns should be avoided whenever possible due to their fragility and 
   possibility of matching completely unrelated code.
 
-- Package and class name:
-
-  ```kt
-  custom { (method, classDef) -> classDef == "Lcom/some/app/ads/AdsLoader;" }
-  ```
-
-With this information, the original code can be reconstructed:
-
-
-Using that fingerprint, this method can be matched uniquely from all other methods.
-
 > [!TIP]
-> A fingerprint should contain information about a method likely to remain the same across updates.
-> A method's name is not included in the fingerprint because it will likely change with each update in an obfuscated
-> app.
-> In contrast, the return type, access flags, parameters, patterns of opcodes, and strings are likely to remain the
-> same.
+> A fingerprint should contain information about a method likely to remain stable across updates.
+> Names of obfuscated classes and methods should not be used since they can change between app updates.
 
 ## 🔨 How to use fingerprints
 
-After declaring a fingerprint, it can be used in a patch to find the method it matches to:
+After declaring a fingerprint it can be used in a patch to find the method it matches to:
 
 ```kt
 execute {
   hideAdsFingerprint.let {
-    val filter4 = it.instructionMatches[3]
-
-    val moveResultIndex = filter3.index
-    val moveResultRegister = filter3.getInstruction<OneRegisterInstruction>().registerA
-
     // Changes the target code to:
     // if (false) {
     //    showBannerAds();
-    // } 
+    // }
+    val filter4 = it.instructionMatches[3]
+    val moveResultIndex = filter3.index
+    val moveResultRegister = filter3.getInstruction<OneRegisterInstruction>().registerA
+     
+    it.method.addInstructions(moveResultIndex + 1, "const/4 v$moveResultRegister, 0x0")
+  }
+}
+```
+
+Be careful if making more than 1 modification to the same method.  Adding/removing instructions to
+a method can cause fingerprint match indexes to no longer be correct. The simplest solution is
+to modify the target method from the last match index to the first.
+
+Modifying the example above to also change the code `return parameter2 != 1337;` into: `return false;`: 
+
+```kt
+execute {
+  appFingerprint.let {
+    // Modify method from last indexes to first to preserve the correct fingerprint indexes.
+      
+    // Remove conditional branch and always return false.
+    val filter6 = it.instructionMatches[5]
+    it.method.removeInstruction(filter6.index)
+
+    
+    // Changes the target code to:
+    // if (false) {
+    //    showBannerAds();
+    // }
+    val filter4 = it.instructionMatches[3]
+    val moveResultIndex = filter3.index
+    val moveResultRegister = filter3.getInstruction<OneRegisterInstruction>().registerA
+     
     it.method.addInstructions(moveResultIndex + 1, "const/4 v$moveResultRegister, 0x0")
   }
 }
@@ -353,15 +348,10 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
 
   ```kt
   execute {
-    // Match showAdsFingerprint in the class of the ads loader found by adsLoaderClassFingerprint.
+    // Match showAdsFingerprint to the class of the ads loader found by adsLoaderClassFingerprint.
     val match = showAdsFingerprint.match(adsLoaderClassFingerprint.originalClassDef)
   }
   ```
-
-> [!WARNING]
-> If the fingerprint can not be matched to any method, calling `match` will raise an
-> exception.
-> Instead, the `orNull` overloads can be used to return `null` if no match is found.
 
 > [!TIP]
 > To see real-world examples of fingerprints,
