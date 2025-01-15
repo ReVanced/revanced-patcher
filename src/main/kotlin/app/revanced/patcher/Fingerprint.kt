@@ -821,15 +821,15 @@ abstract class InstructionFilter(
     /**
      * If this filter matches the method instruction.
      *
-     * @param method The enclosing method of [instruction].
+     * @param enclosingMethod The method of that contains [instruction].
      * @param instruction The instruction to check for a match.
-     * @param methodIndex The index of [instruction] in the enclosing [method].
+     * @param methodIndex The index of [instruction] in the enclosing [enclosingMethod].
      *                    The index can be ignored unless a filter has an unusual reason,
      *                    such as matching only the last index of a method.
      */
     abstract fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean
@@ -852,12 +852,12 @@ class AnyInstruction internal constructor(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ) : Boolean {
         return filters.any { filter ->
-            filter.matches(context, method, instruction, methodIndex)
+            filter.matches(context, enclosingMethod, instruction, methodIndex)
         }
     }
 }
@@ -879,7 +879,7 @@ open class OpcodeFilter(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
@@ -914,7 +914,7 @@ open class OpcodesFilter private constructor(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
@@ -963,11 +963,11 @@ class LiteralFilter internal constructor(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(context, method, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
             return false
         }
 
@@ -1030,11 +1030,11 @@ class StringFilter internal constructor(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(context, method, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
             return false
         }
 
@@ -1088,11 +1088,11 @@ class MethodCallFilter internal constructor(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(context, method, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
             return false
         }
 
@@ -1108,7 +1108,7 @@ class MethodCallFilter internal constructor(
                 // Would be nice if this also checked all super classes,
                 // but doing so requires iteratively checking all superclasses
                 // up to the root Object class since class defs are mere Strings.
-                if (!(definingClass == "this" && referenceClass == method.definingClass)) {
+                if (!(definingClass == "this" && referenceClass == enclosingMethod.definingClass)) {
                     return false
                 } // else, the method call is for 'this' class.
             }
@@ -1376,11 +1376,11 @@ class FieldAccessFilter internal constructor(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(context, method, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
             return false
         }
 
@@ -1392,7 +1392,7 @@ class FieldAccessFilter internal constructor(
             val definingClass = definingClass(context)
 
             if (!referenceClass.endsWith(definingClass)) {
-                if (!(definingClass == "this" && referenceClass == method.definingClass)) {
+                if (!(definingClass == "this" && referenceClass == enclosingMethod.definingClass)) {
                     return false
                 } // else, the method call is for 'this' class.
             }
@@ -1562,11 +1562,11 @@ class NewInstanceFilter internal constructor (
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(context, method, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
             return false
         }
 
@@ -1607,11 +1607,11 @@ class CheckCastFilter internal constructor (
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        if (!super.matches(context, method, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
             return false
         }
 
@@ -1652,12 +1652,12 @@ class LastInstructionFilter internal constructor(
 
     override fun matches(
         context: BytecodePatchContext,
-        method: Method,
+        enclosingMethod: Method,
         instruction: Instruction,
         methodIndex: Int
     ): Boolean {
-        return methodIndex == method.instructions.count() - 1 && filter.matches(
-            context, method, instruction, methodIndex
+        return methodIndex == enclosingMethod.instructions.count() - 1 && filter.matches(
+            context, enclosingMethod, instruction, methodIndex
         )
     }
 }
