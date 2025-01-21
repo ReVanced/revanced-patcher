@@ -649,7 +649,6 @@ class FingerprintBuilder(val name: String) {
      * @param opcodes An opcode pattern of instructions.
      *                Wildcard or unknown opcodes can be specified by `null`.
      */
-    @Deprecated("Instead use the more precise `instructions()` declarations")
     fun opcodes(vararg opcodes: Opcode?) {
         verifyNoFiltersSet()
         this.instructionFilters = OpcodesFilter.listOfOpcodes(opcodes.toList())
