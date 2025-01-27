@@ -22,6 +22,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.EnumSet
 import kotlin.collections.forEach
 import kotlin.lazy
@@ -210,7 +212,7 @@ class Fingerprint internal constructor(
         val instructionMatches = if (filters == null) {
             null
         } else {
-            val instructions = method.instructionsOrNull?.toList() ?: return null
+            val instructions = method.instructionsOrNull?.toMutableList() ?: return null
 
             fun matchFilters() : List<Match.InstructionMatch>? {
                 val lastMethodIndex = instructions.lastIndex
@@ -237,6 +239,10 @@ class Fingerprint internal constructor(
                                 if (instructionMatches == null) {
                                     instructionMatches = ArrayList<Match.InstructionMatch>(filters.size)
                                 }
+                                if (name == "mainActivityOnCreateSplashScreenImageViewFingerprint") {
+                                    println("Resolved: $subIndex to: $instruction filter: $filter")
+                                }
+
                                 instructionMatches += Match.InstructionMatch(filter, subIndex, instruction)
                                 instructionsMatched = true
                                 subIndex++
@@ -256,6 +262,14 @@ class Fingerprint internal constructor(
                             instructionMatches?.clear()
                             continue@firstFilterLoop
                         }
+                    }
+
+                    if (name == "mainActivityOnCreateSplashScreenImageViewFingerprint") {
+                        var builder = StringBuilder()
+                        var sw = StringWriter()
+                        Throwable().printStackTrace(PrintWriter(sw))
+                        builder.append('\n').append(sw)
+                        println(builder.toString())
                     }
 
                     // All instruction filters matches.
