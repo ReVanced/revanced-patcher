@@ -90,7 +90,7 @@ class Fingerprint internal constructor(
             }
         }
 
-        classes.forEach { classDef ->
+        classes.pool.values.forEach { classDef ->
             val match = matchOrNull(classDef)
             if (match != null) {
                 _matchOrNull = match

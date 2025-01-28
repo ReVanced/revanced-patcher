@@ -6,7 +6,7 @@ import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
-import app.revanced.patcher.util.ProxyClassList
+import app.revanced.patcher.util.PatchClasses
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -43,20 +43,20 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     /**
      * The list of classes.
      */
-    val classes = ProxyClassList(
+    val classes = PatchClasses(
         MultiDexIO.readDexFile(
             true,
             config.apkFile,
             BasicDexFileNamer(),
             null,
             null,
-        ).also { opcodes = it.opcodes }.classes.toMutableList(),
+        ).also { opcodes = it.opcodes }.classes.associateBy { it.type }.toMutableMap(),
     )
 
     /**
      * The lookup maps for methods and the class they are a member of from the [classes].
      */
-    internal val lookupMaps by lazy { LookupMaps(classes) }
+    internal val lookupMaps by lazy { LookupMaps(classes.pool.values) }
 
     /**
      * Merge the extension of [bytecodePatch] into the [BytecodePatchContext].
@@ -67,11 +67,10 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal fun mergeExtension(bytecodePatch: BytecodePatch) {
         bytecodePatch.extensionInputStream?.get()?.use { extensionStream ->
             RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
-                val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
+                val existingClass = classes.classBy(classDef.type) ?: run {
                     logger.fine { "Adding class \"$classDef\"" }
 
-                    classes += classDef
-                    lookupMaps.classesByType[classDef.type] = classDef
+                    classes.addClass(classDef)
 
                     return@forEach
                 }
@@ -84,8 +83,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                         return@let
                     }
 
-                    classes -= existingClass
-                    classes += mergedClass
+                    classes.addClass(mergedClass)
                 }
             }
         } ?: logger.fine("No extension to merge")
@@ -94,19 +92,50 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     /**
      * Find a class with a predicate.
      *
-     * @param predicate A predicate to match the class.
-     * @return A proxy for the first class that matches the predicate.
+     * @param classType The full classname.
+     * @return An immutable instance of the class type.
+     * @see mutableClassBy
      */
-    fun classBy(predicate: (ClassDef) -> Boolean) = classes.proxy(predicate)
+    fun classBy(classType: String) = classes.classBy(classType)
 
     /**
-     * Proxy the class to allow mutation.
+     * Find a class with a predicate.
      *
-     * @param classDef The class to proxy.
-     *
-     * @return A proxy for the class.
+     * @param predicate A predicate to match the class.
+     * @return An immutable instance of the class type.
+     * @see mutableClassBy
      */
-    fun proxy(classDef: ClassDef) = classes.proxy(classDef)
+    fun classBy(predicate: (ClassDef) -> Boolean) = classes.classBy(predicate)
+
+    /**
+     * Find a class with a predicate.
+     *
+     * @param classType The full classname.
+     * @return A mutable version of the class type.
+     */
+    fun mutableClassBy(classType: String) = classes.mutableClassBy(classType)
+
+    /**
+     * Find a class with a predicate.
+     *
+     * @param classDef An immutable class.
+     * @return A mutable version of the class definition.
+     */
+    fun mutableClassBy(classDef: ClassDef) = classes.mutableClassBy(classDef)
+
+    /**
+     * Find a class with a predicate.
+     *
+     * @param predicate A predicate to match the class.
+     * @return A mutable class that matches the predicate.
+     */
+    fun mutableClassBy(predicate: (ClassDef) -> Boolean) = classes.mutableClassBy(predicate)
+
+    /**
+     * @return The mutable instance of an immutable class.
+     */
+    @Deprecated("Instead use `mutableClassBy(String)`, `mutableClassBy(ClassDef)`, or `mutableClassBy(predicate)`")
+    fun proxy(classDef: ClassDef) = classes.mutableClassBy(classDef)
 
     /**
      * Navigate a method.
@@ -140,7 +169,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     this,
                     BasicDexFileNamer(),
                     object : DexFile {
-                        override fun getClasses() = this@BytecodePatchContext.classes.toSet()
+                        override fun getClasses() = this@BytecodePatchContext.classes.pool.values.toSet()
 
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },
@@ -156,25 +185,22 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     }
 
     /**
-     * A lookup map for methods and the class they are a member of and classes.
+     * A lookup map for strings and the methods they are a member of.
      *
      * @param classes The list of classes to create the lookup maps from.
      */
-    internal class LookupMaps internal constructor(classes: List<ClassDef>) : Closeable {
+    internal class LookupMaps internal constructor(classes: Collection<ClassDef>) : Closeable {
         /**
          * Methods associated by strings referenced in them.
          */
         internal val methodsByStrings = MethodClassPairsLookupMap()
 
-        // Lookup map for fast checking if a class exists by its type.
-        val classesByType = mutableMapOf<String, ClassDef>().apply {
-            classes.forEach { classDef -> put(classDef.type, classDef) }
-        }
-
         init {
             classes.forEach { classDef ->
                 classDef.methods.forEach { method ->
-                    val methodClassPair: MethodClassPair = method to classDef
+                    val methodClassPair: MethodClassPair by lazy {
+                        method to classDef
+                    }
 
                     // Add strings contained in the method as the key.
                     method.instructionsOrNull?.forEach { instruction ->
@@ -186,22 +212,18 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
                         methodsByStrings[string] = methodClassPair
                     }
-
-                    // In the future, the class type could be added to the lookup map.
-                    // This would require MethodFingerprint to be changed to include the class type.
                 }
             }
         }
 
         override fun close() {
             methodsByStrings.clear()
-            classesByType.clear()
         }
     }
 
     override fun close() {
         lookupMaps.close()
-        classes.clear()
+        classes.close()
     }
 }
 

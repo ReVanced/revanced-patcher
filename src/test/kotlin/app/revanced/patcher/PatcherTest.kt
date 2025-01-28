@@ -2,7 +2,7 @@ package app.revanced.patcher
 
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
-import app.revanced.patcher.util.ProxyClassList
+import app.revanced.patcher.util.PatchClasses
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import io.mockk.*
@@ -168,9 +168,9 @@ internal object PatcherTest {
 
     @Test
     fun `matches fingerprint`() {
-        every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
-            mutableListOf(
-                ImmutableClassDef(
+        every { patcher.context.bytecodeContext.classes } returns PatchClasses(
+            mutableMapOf(
+                "class" to ImmutableClassDef(
                     "class",
                     0,
                     null,
@@ -201,8 +201,8 @@ internal object PatcherTest {
         val patches = setOf(
             bytecodePatch {
                 execute {
-                    fingerprint.match(classes.first().methods.first())
-                    fingerprint2.match(classes.first())
+                    fingerprint.match(classes.pool.values.first().methods.first())
+                    fingerprint2.match(classes.pool.values.first())
                     fingerprint3.originalClassDef
                 }
             },
@@ -458,7 +458,7 @@ internal object PatcherTest {
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
+        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes.pool.values)
         every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }
