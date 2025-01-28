@@ -41,7 +41,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal val opcodes: Opcodes
 
     /**
-     * The list of classes.
+     * All classes for the target app and any extension classes.
      */
     val classes = PatchClasses(
         MultiDexIO.readDexFile(
@@ -50,7 +50,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
             BasicDexFileNamer(),
             null,
             null,
-        ).also { opcodes = it.opcodes }.classes.associateBy { it.type }.toMutableMap(),
+        ).also { opcodes = it.opcodes }.classes
     )
 
     /**

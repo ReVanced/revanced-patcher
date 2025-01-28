@@ -3,13 +3,12 @@ package app.revanced.patcher.util
 import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
 import com.android.tools.smali.dexlib2.iface.ClassDef
-import kotlin.collections.mutableMapOf
 
 @Deprecated("Instead use PatchClasses")
 typealias ProxyClassList = PatchClasses
 
 /**
- * A set of all classes for the target app and any extension classes.
+ * All classes for the target app and any extension classes.
  */
 class PatchClasses internal constructor(
     /**
@@ -17,10 +16,9 @@ class PatchClasses internal constructor(
      */
     internal val pool: MutableMap<String, ClassDef>
 ) {
-    /**
-     * Mutable classes. All instances are also found in [pool].
-     */
-    private val mutablePool = mutableMapOf<String, MutableClass>()
+
+    internal constructor(set: Set<ClassDef>) :
+            this(set.associateByTo(mutableMapOf()) { it.type })
 
     internal fun addClass(classDef: ClassDef) {
         pool[classDef.type] = classDef
@@ -28,7 +26,6 @@ class PatchClasses internal constructor(
 
     internal fun close() {
         pool.clear()
-        mutablePool.clear()
     }
 
     /**
@@ -61,33 +58,31 @@ class PatchClasses internal constructor(
      * @param classDefType The full classname.
      * @return A mutable version of the class type.
      */
-    fun mutableClassBy(classDefType: String) =
-        mutablePool[classDefType] ?: MutableClass(
-            pool.get(classDefType) ?: throw PatchException("Could not find class: $classDefType")
-        ).also {
-            mutablePool[classDefType] = it
-            pool[classDefType] = it
+    fun mutableClassBy(classDefType: String) : MutableClass {
+        var classDef = pool[classDefType] ?: throw PatchException("Could not find class: $classDefType")
+        if (classDef is MutableClass) {
+            return classDef
         }
+        classDef = MutableClass(classDef)
+        pool[classDefType] = classDef
+        return classDef
+    }
 
     /**
-     * Find a class with a predicate.
-     *
      * @param classDef An immutable class.
      * @return A mutable version of the class definition.
      */
     fun mutableClassBy(classDef: ClassDef) =
-        mutablePool[classDef.type] ?: MutableClass(classDef).also {
-            val classType = classDef.type
-            mutablePool[classType] = it
-            pool[classType] = it
-        }
+        if (classDef is MutableClass) classDef else mutableClassBy(classDef.type)
 
     /**
-     * Find a class with a predicate.
+     * Find a mutable class with a predicate.
      *
      * @param predicate A predicate to match the class.
      * @return A mutable class that matches the predicate.
      */
     fun mutableClassBy(predicate: (ClassDef) -> Boolean) =
-        mutablePool.values.find { predicate(it) } ?: pool.values.find(predicate)?.let { mutableClassBy(it) }
+        classBy(predicate)?.let {
+            if (it is MutableClass) it else mutableClassBy(it.type)
+        }
 }
