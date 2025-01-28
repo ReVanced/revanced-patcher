@@ -345,7 +345,7 @@ class Fingerprint internal constructor(
     /**
      * The mutable version of [originalClassDefOrNull].
      *
-     * Accessing this property allocates a [ClassProxy].
+     * Accessing this property allocates a new mutable instance.
      * Use [originalClassDefOrNull] if mutable access is not required.
      */
     context(BytecodePatchContext)
@@ -355,7 +355,7 @@ class Fingerprint internal constructor(
     /**
      * The mutable version of [originalMethodOrNull].
      *
-     * Accessing this property allocates a [ClassProxy].
+     * Accessing this property allocates a new mutable instance.
      * Use [originalMethodOrNull] if mutable access is not required.
      */
     context(BytecodePatchContext)
@@ -414,7 +414,7 @@ class Fingerprint internal constructor(
     /**
      * The mutable version of [originalClassDef].
      *
-     * Accessing this property allocates a [ClassProxy].
+     * Accessing this property allocates a new mutable instance.
      * Use [originalClassDef] if mutable access is not required.
      *
      * @throws PatchException If the fingerprint has not been matched.
@@ -426,7 +426,7 @@ class Fingerprint internal constructor(
     /**
      * The mutable version of [originalMethod].
      *
-     * Accessing this property allocates a [ClassProxy].
+     * Accessing this property allocates a new mutable instance.
      * Use [originalMethod] if mutable access is not required.
      *
      * @throws PatchException If the fingerprint has not been matched.
@@ -484,7 +484,7 @@ class Match internal constructor(
     /**
      * The mutable version of [originalClassDef].
      *
-     * Accessing this property allocates a [ClassProxy].
+     * Accessing this property allocates a new mutable instance.
      * Use [originalClassDef] if mutable access is not required.
      */
     val classDef by lazy { proxy(originalClassDef) }
@@ -492,7 +492,7 @@ class Match internal constructor(
     /**
      * The mutable version of [originalMethod].
      *
-     * Accessing this property allocates a [ClassProxy].
+     * Accessing this property allocates a new mutable instance.
      * Use [originalMethod] if mutable access is not required.
      */
     val method by lazy { classDef.methods.first { MethodUtil.methodSignaturesMatch(it, originalMethod) } }
