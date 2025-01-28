@@ -9,7 +9,6 @@ import app.revanced.patcher.MethodCallFilter.Companion.parseJvmMethodCall
 import app.revanced.patcher.extensions.InstructionExtensions.instructions
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -140,7 +139,7 @@ class Fingerprint internal constructor(
     ): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        return matchOrNull(classBy { method.definingClass == it.type }!!.immutableClass, method)
+        return matchOrNull(classBy { method.definingClass == it.type }!!, method)
     }
 
     /**
@@ -488,7 +487,7 @@ class Match internal constructor(
      * Accessing this property allocates a [ClassProxy].
      * Use [originalClassDef] if mutable access is not required.
      */
-    val classDef by lazy { proxy(originalClassDef).mutableClass }
+    val classDef by lazy { proxy(originalClassDef) }
 
     /**
      * The mutable version of [originalMethod].

@@ -80,7 +80,7 @@ class MethodNavigator internal constructor(
      *
      * @return The last navigated method mutably.
      */
-    fun stop() = classBy(matchesCurrentMethodReferenceDefiningClass)!!.mutableClass.firstMethodBySignature
+    fun stop() = classBy(matchesCurrentMethodReferenceDefiningClass)!!.firstMethodBySignature
         as MutableMethod
 
     /**

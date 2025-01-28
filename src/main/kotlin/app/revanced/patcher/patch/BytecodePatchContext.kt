@@ -7,7 +7,6 @@ import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
 import app.revanced.patcher.util.ProxyClassList
-import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -98,8 +97,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * @param predicate A predicate to match the class.
      * @return A proxy for the first class that matches the predicate.
      */
-    fun classBy(predicate: (ClassDef) -> Boolean) =
-        classes.proxyPool.find { predicate(it.immutableClass) } ?: classes.find(predicate)?.let { proxy(it) }
+    fun classBy(predicate: (ClassDef) -> Boolean) = classes.proxy(predicate)
 
     /**
      * Proxy the class to allow mutation.
