@@ -4,7 +4,7 @@ A handful of APIs are available to make patch development easier and more effici
 
 ## 📙 Overview
 
-1. 🔍 Find immutable classes with `classBy(Predicate)`
+1. 🔍 Find immutable classes with `classBy(String)`
 2. 👹 Create mutable replacements of classes with `mutableClassBy(ClassDef)`
 3. 🏃‍ Navigate method calls recursively by index with `navigate(Method)`
 4. 💾 Read and write resource files with `get(String, Boolean)` and `delete(String)`
@@ -12,51 +12,59 @@ A handful of APIs are available to make patch development easier and more effici
 
 ### 🧰 APIs
 
-#### 👹 `proxy(ClassDef)`
+#### 🔍 `classBy(String)`
 
-By default, the classes are immutable, meaning they cannot be modified.
-To make a class mutable, use the `proxy(ClassDef)` function.
-This function creates a lazy mutable copy of the class definition.
+The `classBy(String)` function is an alternative to finding immutable classes
+from a constant string or from a String field of a fingerprint match. 
+
+```kt
+execute {
+    // Find the superclass of a fingerprint return type
+    val superClassOfReturnType = classBy(match().originalMethod.returnType).superclass
+}
+```
+
+#### 👹 `mutableClassBy(ClassDef)`
+
+By default, the classes are immutable and they cannot be modified.
+To make a class mutable use the `mutableClassBy(ClassDef)` function.
 Accessing the property will replace the original class definition with the mutable copy,
 thus allowing you to make changes to the class. Subsequent accesses will return the same mutable copy.
 
 ```kt
 execute {
-    val mutableClass = proxy(classDef)
+    // Find a class by the return type of a fingerprint
+    val superClassOfReturnType = classBy(match().originalMethod.returnType).superclass
+
+    val mutableClass = mutableClassBy(superClassOfReturnType)
     mutableClass.methods.add(Method())
-}
-```
-
-#### 🔍 `classBy(Predicate)`
-
-The `classBy(Predicate)` function is an alternative to finding and creating mutable classes by a predicate.
-It automatically proxies the class definition, making it mutable.
-
-```kt
-execute {
-    // Alternative to proxy(classes.find { it.name == "Lcom/example/MyClass;" })?.classDef
-    val classDef = classBy { it.name == "Lcom/example/MyClass;" }?.classDef
 }
 ```
 
 #### 🏃‍ `navigate(Method).at(index)`
 
-The `navigate(Method)` function allows you to navigate method calls recursively by index.
+The `navigate(Method)` function allows navigating method calls by index,
+and provides an easier way to parse the method call classes in code. 
 
 ```kt
 execute {
-    // Sequentially navigate to the instructions at index 1 within 'someMethod'.
-    val method = navigate(someMethod).to(1).original() // original() returns the original immutable method.
+    // Navigate to the method at index 5 within 'someMethod'.
+    // original() returns the original immutable method.
+    val original = navigate(someMethod).to(5).original()
     
-    // Further navigate to the second occurrence where the instruction's opcode is 'INVOKEVIRTUAL'.
+    // Further navigate to the second occurrence of the opcode 'INVOKE_VIRTUAL'.
     // stop() returns the mutable copy of the method.
-    val method = navigate(someMethod).to(2) { instruction -> instruction.opcode == Opcode.INVOKEVIRTUAL }.stop()
+    val mutable = navigate(someMethod).to(2) { 
+        instruction -> instruction.opcode == Opcode.INVOKE_VIRTUAL
+    }.stop()
     
-    // Alternatively, to stop(), you can delegate the method to a variable.
-    val method by navigate(someMethod).to(1)
-    
-    // You can chain multiple calls to at() to navigate deeper into the method.
-    val method by navigate(someMethod).to(1).to(2, 3, 4).to(5)
+    // You can chain multiple to() calls together navigate multiple calls across different methods and classes.
+    //
+    // Navigate to:
+    // A. the method of the 5th instruction
+    // B. the method of the 10th instruction in method A
+    // C. the method of 2nd instruction of method B
+    val mutableDeep = navigate(someMethod).to(5, 10, 2).stop() // Mutable method Method C
 }
 ```
 
