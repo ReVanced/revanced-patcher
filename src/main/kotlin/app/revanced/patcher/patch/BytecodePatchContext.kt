@@ -108,9 +108,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return A proxy for the class.
      */
-    fun proxy(classDef: ClassDef) = classes.proxyPool.find {
-        it.immutableClass.type == classDef.type
-    } ?: ClassProxy(classDef).also { classes.proxyPool.add(it) }
+    fun proxy(classDef: ClassDef) = classes.proxy(classDef)
 
     /**
      * Navigate a method.
@@ -144,8 +142,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     this,
                     BasicDexFileNamer(),
                     object : DexFile {
-                        override fun getClasses() =
-                            this@BytecodePatchContext.classes.also(ProxyClassList::replaceClasses).toSet()
+                        override fun getClasses() = this@BytecodePatchContext.classes.toSet()
 
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },

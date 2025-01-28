@@ -92,14 +92,7 @@ class Fingerprint internal constructor(
         }
 
         classes.forEach { classDef ->
-            // Must use mutable class/method if it exists, otherwise if multiple patches
-            // modify the same method then the match indexes can be wrong.
-            // FIXME: This is too slow.
-            val classDefToUse = classes.proxyPool.find {
-                it.immutableClass.type == classDef.type
-            }?.mutableClass ?: classDef
-
-            val match = matchOrNull(classDefToUse)
+            val match = matchOrNull(classDef)
             if (match != null) {
                 _matchOrNull = match
                 return match

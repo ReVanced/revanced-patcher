@@ -11,19 +11,14 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 class ProxyClassList internal constructor(classes: MutableList<ClassDef>) : MutableList<ClassDef> by classes {
     internal val proxyPool = mutableListOf<ClassProxy>()
 
-    /**
-     * Replace all classes with their mutated versions.
-     */
-    internal fun replaceClasses() =
-        proxyPool.removeIf { proxy ->
-            // If the proxy is unused, return false to keep it in the proxies list.
-            if (!proxy.resolved) return@removeIf false
+    internal fun proxy(classDef: ClassDef) =
+        proxyPool.find {
+            it.immutableClass.type == classDef.type
+        } ?: ClassProxy(classDef).also {
+            proxyPool.add(it)
 
-            // If it has been used, replace the original class with the mutable class.
-            remove(proxy.immutableClass)
-            add(proxy.mutableClass)
-
-            // Return true to remove the proxy from the proxies list.
-            return@removeIf true
+            val index = indexOf(classDef)
+            if (index < 0) throw IllegalStateException("Could not find original class index")
+            set(index, it.mutableClass)
         }
 }
