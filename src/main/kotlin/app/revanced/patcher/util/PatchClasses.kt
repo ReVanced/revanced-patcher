@@ -18,7 +18,7 @@ class PatchClasses internal constructor(
 ) {
 
     internal constructor(set: Set<ClassDef>) :
-            this(set.associateByTo(mutableMapOf()) { it.type })
+            this(set.associateByTo(HashMap<String, ClassDef>(set.size * 3 / 2)) { it.type })
 
     internal fun addClass(classDef: ClassDef) {
         pool[classDef.type] = classDef
