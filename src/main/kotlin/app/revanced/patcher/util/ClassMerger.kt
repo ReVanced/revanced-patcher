@@ -181,7 +181,7 @@ internal object ClassMerger {
             callback(targetClass)
 
             targetClass.superclass ?: return
-            this.mutableClassBy { targetClass.superclass == it.type }?.let {
+            mutableClassByOrNull(targetClass.superclass!!)?.let {
                 traverseClassHierarchy(it, callback)
             }
         }

@@ -139,7 +139,7 @@ class Fingerprint internal constructor(
     ): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        return matchOrNull(classBy { method.definingClass == it.type }!!, method)
+        return matchOrNull(classBy(method.definingClass), method)
     }
 
     /**

@@ -67,7 +67,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal fun mergeExtension(bytecodePatch: BytecodePatch) {
         bytecodePatch.extensionInputStream?.get()?.use { extensionStream ->
             RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
-                val existingClass = classes.classBy(classDef.type) ?: run {
+                val existingClass = classes.classByOrNull(classDef.type) ?: run {
                     logger.fine { "Adding class \"$classDef\"" }
 
                     classes.addClass(classDef)
@@ -111,6 +111,23 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * Find a class with a predicate.
      *
      * @param classType The full classname.
+     * @return An immutable instance of the class type.
+     * @see mutableClassBy
+     */
+    fun classByOrNull(classType: String) = classes.classByOrNull(classType)
+
+    /**
+     * Find a class with a predicate.
+     *
+     * @param predicate A predicate to match the class.
+     * @return An immutable instance of the class type.
+     */
+    fun classByOrNull(predicate: (ClassDef) -> Boolean) = classes.classByOrNull(predicate)
+
+    /**
+     * Find a class with a predicate.
+     *
+     * @param classType The full classname.
      * @return A mutable version of the class type.
      */
     fun mutableClassBy(classType: String) = classes.mutableClassBy(classType)
@@ -130,6 +147,23 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      * @return A mutable class that matches the predicate.
      */
     fun mutableClassBy(predicate: (ClassDef) -> Boolean) = classes.mutableClassBy(predicate)
+
+    /**
+     * Mutable class from a full class name.
+     * Returns `null` if class is not available, such as a built in Android or Java library.
+     *
+     * @param classType The full classname.
+     * @return A mutable version of the class type.
+     */
+    fun mutableClassByOrNull(classType: String) = classes.mutableClassByOrNull(classType)
+
+    /**
+     * Find a mutable class with a predicate.
+     *
+     * @param predicate A predicate to match the class.
+     * @return A mutable class that matches the predicate.
+     */
+    fun mutableClassByOrNull(predicate: (ClassDef) -> Boolean) = classes.mutableClassByOrNull(predicate)
 
     /**
      * @return The mutable instance of an immutable class.

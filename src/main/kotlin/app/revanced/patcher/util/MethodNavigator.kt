@@ -95,7 +95,7 @@ class MethodNavigator internal constructor(
      *
      * @return The last navigated method immutably.
      */
-    fun original(): Method = classes.classBy(lastNavigatedMethodReference.definingClass)!!.firstMethodBySignature
+    fun original(): Method = classes.classBy(lastNavigatedMethodReference.definingClass).firstMethodBySignature
 
     /**
      * Find the first [lastNavigatedMethodReference] in the class.

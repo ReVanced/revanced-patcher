@@ -42,7 +42,15 @@ class PatchClasses internal constructor(
      * @return An immutable instance of the class type.
      * @see mutableClassBy
      */
-    fun classBy(classType: String) = pool[classType]
+    fun classByOrNull(classType: String) = pool[classType]
+
+    /**
+     * Find a class with a predicate.
+     *
+     * @param predicate A predicate to match the class.
+     * @return An immutable instance of the class type, or null if not found.
+     */
+    fun classByOrNull(predicate: (ClassDef) -> Boolean) = pool.values.find(predicate)
 
     /**
      * Find a class with a predicate.
@@ -50,7 +58,35 @@ class PatchClasses internal constructor(
      * @param predicate A predicate to match the class.
      * @return An immutable instance of the class type.
      */
-    fun classBy(predicate: (ClassDef) -> Boolean) = pool.values.find(predicate)
+    fun classBy(predicate: (ClassDef) -> Boolean) = classByOrNull(predicate)
+        ?: throw PatchException("Could not find any class match")
+
+    /**
+     * Find a class with a predicate.
+     *
+     * @param classType The full classname.
+     * @return An immutable instance of the class type.
+     * @see mutableClassBy
+     */
+    fun classBy(classType: String) = classByOrNull(classType)
+        ?: throw PatchException("Could not find class: $classType")
+
+    /**
+     * Mutable class from a full class name.
+     * Returns `null` if class is not available, such as a built in Android or Java library.
+     *
+     * @param classDefType The full classname.
+     * @return A mutable version of the class type.
+     */
+    fun mutableClassByOrNull(classDefType: String) : MutableClass? {
+        var classDef = pool[classDefType]
+        if (classDef == null) return null
+        if (classDef is MutableClass) return classDef
+
+        classDef = MutableClass(classDef)
+        pool[classDefType] = classDef
+        return classDef
+    }
 
     /**
      * Find a class with a predicate.
@@ -58,15 +94,19 @@ class PatchClasses internal constructor(
      * @param classDefType The full classname.
      * @return A mutable version of the class type.
      */
-    fun mutableClassBy(classDefType: String) : MutableClass {
-        var classDef = pool[classDefType] ?: throw PatchException("Could not find class: $classDefType")
-        if (classDef is MutableClass) {
-            return classDef
+    fun mutableClassBy(classDefType: String) = mutableClassByOrNull(classDefType)
+        ?: throw PatchException("Could not find class: $classDefType")
+
+    /**
+     * Find a mutable class with a predicate.
+     *
+     * @param predicate A predicate to match the class.
+     * @return A mutable class that matches the predicate.
+     */
+    fun mutableClassByOrNull(predicate: (ClassDef) -> Boolean) =
+        classByOrNull(predicate)?.let {
+            if (it is MutableClass) it else mutableClassBy(it.type)
         }
-        classDef = MutableClass(classDef)
-        pool[classDefType] = classDef
-        return classDef
-    }
 
     /**
      * @param classDef An immutable class.
@@ -81,8 +121,7 @@ class PatchClasses internal constructor(
      * @param predicate A predicate to match the class.
      * @return A mutable class that matches the predicate.
      */
-    fun mutableClassBy(predicate: (ClassDef) -> Boolean) =
-        classBy(predicate)?.let {
-            if (it is MutableClass) it else mutableClassBy(it.type)
-        }
+    fun mutableClassBy(predicate: (ClassDef) -> Boolean) = mutableClassByOrNull(predicate)
+        ?: throw PatchException("Could not find any class match")
+
 }

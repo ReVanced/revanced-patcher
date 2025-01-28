@@ -313,6 +313,8 @@ public final class app/revanced/patcher/patch/BytecodePatchBuilder : app/revance
 public final class app/revanced/patcher/patch/BytecodePatchContext : app/revanced/patcher/patch/PatchContext, java/io/Closeable {
 	public final fun classBy (Ljava/lang/String;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun classBy (Lkotlin/jvm/functions/Function1;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun classByOrNull (Ljava/lang/String;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun classByOrNull (Lkotlin/jvm/functions/Function1;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public fun close ()V
 	public synthetic fun get ()Ljava/lang/Object;
 	public fun get ()Ljava/util/Set;
@@ -320,6 +322,8 @@ public final class app/revanced/patcher/patch/BytecodePatchContext : app/revance
 	public final fun mutableClassBy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun mutableClassBy (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun mutableClassBy (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun mutableClassByOrNull (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun mutableClassByOrNull (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun navigate (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lapp/revanced/patcher/util/MethodNavigator;
 	public final fun proxy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 }
@@ -652,10 +656,14 @@ public final class app/revanced/patcher/util/MethodNavigator {
 public final class app/revanced/patcher/util/PatchClasses {
 	public final fun classBy (Ljava/lang/String;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun classBy (Lkotlin/jvm/functions/Function1;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun classByOrNull (Ljava/lang/String;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun classByOrNull (Lkotlin/jvm/functions/Function1;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun forEach (Lkotlin/jvm/functions/Function1;)V
 	public final fun mutableClassBy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun mutableClassBy (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun mutableClassBy (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun mutableClassByOrNull (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun mutableClassByOrNull (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 }
 
 public final class app/revanced/patcher/util/proxy/mutableTypes/MutableAnnotation : com/android/tools/smali/dexlib2/base/BaseAnnotation {
