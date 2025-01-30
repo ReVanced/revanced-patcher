@@ -80,8 +80,7 @@ public final class app/revanced/patcher/FingerprintKt {
 	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static synthetic fun fieldAccess$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun fingerprint (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/FingerprintDelegate;
-	public static final fun lastInstruction (Lapp/revanced/patcher/InstructionFilter;I)Lapp/revanced/patcher/LastInstructionFilter;
-	public static synthetic fun lastInstruction$default (Lapp/revanced/patcher/InstructionFilter;IILjava/lang/Object;)Lapp/revanced/patcher/LastInstructionFilter;
+	public static final fun lastInstruction (Lapp/revanced/patcher/InstructionFilter;)Lapp/revanced/patcher/LastInstructionFilter;
 	public static final fun literal (DLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
 	public static final fun literal (JLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
 	public static final fun literal (Lkotlin/jvm/functions/Function1;Ljava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
@@ -116,7 +115,7 @@ public abstract class app/revanced/patcher/InstructionFilter {
 	public fun <init> ()V
 	public fun <init> (I)V
 	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getMaxInstructionsBefore ()I
+	public final fun getMaxBefore ()I
 	public abstract fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
 }
 
