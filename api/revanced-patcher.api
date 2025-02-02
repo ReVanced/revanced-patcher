@@ -1,10 +1,10 @@
 public final class app/revanced/patcher/AnyInstruction : app/revanced/patcher/InstructionFilter {
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public final class app/revanced/patcher/CheckCastFilter : app/revanced/patcher/OpcodeFilter {
 	public final fun getType ()Lkotlin/jvm/functions/Function1;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 	public final fun setType (Lkotlin/jvm/functions/Function1;)V
 }
 
@@ -12,7 +12,7 @@ public final class app/revanced/patcher/FieldAccessFilter : app/revanced/patcher
 	public final fun getDefiningClass ()Lkotlin/jvm/functions/Function1;
 	public final fun getName ()Lkotlin/jvm/functions/Function1;
 	public final fun getType ()Lkotlin/jvm/functions/Function1;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public final class app/revanced/patcher/Fingerprint {
@@ -80,7 +80,6 @@ public final class app/revanced/patcher/FingerprintKt {
 	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static synthetic fun fieldAccess$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static final fun fingerprint (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/FingerprintDelegate;
-	public static final fun lastInstruction (Lapp/revanced/patcher/InstructionFilter;)Lapp/revanced/patcher/LastInstructionFilter;
 	public static final fun literal (DLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
 	public static final fun literal (JLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
 	public static final fun literal (Lkotlin/jvm/functions/Function1;Ljava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
@@ -115,8 +114,8 @@ public abstract class app/revanced/patcher/InstructionFilter {
 	public fun <init> ()V
 	public fun <init> (I)V
 	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getMaxBefore ()I
-	public abstract fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public final fun getMaxAfter ()I
+	public abstract fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public final class app/revanced/patcher/InstructionFilter$Companion {
@@ -125,15 +124,9 @@ public final class app/revanced/patcher/InstructionFilter$Companion {
 public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
 }
 
-public final class app/revanced/patcher/LastInstructionFilter : app/revanced/patcher/InstructionFilter {
-	public final fun getFilter ()Lapp/revanced/patcher/InstructionFilter;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
-	public final fun setFilter (Lapp/revanced/patcher/InstructionFilter;)V
-}
-
 public final class app/revanced/patcher/LiteralFilter : app/revanced/patcher/OpcodesFilter {
 	public final fun getLiteral ()Lkotlin/jvm/functions/Function1;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 	public final fun setLiteral (Lkotlin/jvm/functions/Function1;)V
 }
 
@@ -172,7 +165,7 @@ public final class app/revanced/patcher/MethodCallFilter : app/revanced/patcher/
 	public final fun getName ()Lkotlin/jvm/functions/Function1;
 	public final fun getParameters ()Lkotlin/jvm/functions/Function1;
 	public final fun getReturnType ()Lkotlin/jvm/functions/Function1;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public final class app/revanced/patcher/MethodCallFilter$Companion {
@@ -180,14 +173,14 @@ public final class app/revanced/patcher/MethodCallFilter$Companion {
 
 public final class app/revanced/patcher/NewInstanceFilter : app/revanced/patcher/OpcodesFilter {
 	public final fun getType ()Lkotlin/jvm/functions/Function1;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 	public final fun setType (Lkotlin/jvm/functions/Function1;)V
 }
 
 public class app/revanced/patcher/OpcodeFilter : app/revanced/patcher/InstructionFilter {
 	public fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;I)V
 	public final fun getOpcode ()Lcom/android/tools/smali/dexlib2/Opcode;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public class app/revanced/patcher/OpcodesFilter : app/revanced/patcher/InstructionFilter {
@@ -195,7 +188,7 @@ public class app/revanced/patcher/OpcodesFilter : app/revanced/patcher/Instructi
 	protected fun <init> (Ljava/util/List;I)V
 	public synthetic fun <init> (Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getOpcodes ()Ljava/util/EnumSet;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public final class app/revanced/patcher/OpcodesFilter$Companion {
@@ -247,7 +240,7 @@ public final class app/revanced/patcher/PatcherResult$PatchedResources {
 public final class app/revanced/patcher/StringFilter : app/revanced/patcher/OpcodesFilter {
 	public final fun getPartialMatch ()Z
 	public final fun getString ()Lkotlin/jvm/functions/Function1;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Z
+	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 	public final fun setPartialMatch (Z)V
 	public final fun setString (Lkotlin/jvm/functions/Function1;)V
 }

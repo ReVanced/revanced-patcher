@@ -6,7 +6,6 @@ import app.revanced.patcher.FieldAccessFilter.Companion.parseJvmFieldAccess
 import app.revanced.patcher.InstructionFilter.Companion.METHOD_MAX_INSTRUCTIONS
 import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.MethodCallFilter.Companion.parseJvmMethodCall
-import app.revanced.patcher.extensions.InstructionExtensions.instructions
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.*
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -223,13 +222,13 @@ class Fingerprint internal constructor(
 
                     for (filterIndex in filters.indices) {
                         val filter = filters[filterIndex]
-                        val maxIndex = (subIndex + filter.maxBefore)
+                        val maxIndex = (subIndex + filter.maxAfter)
                             .coerceAtMost(lastMethodIndex)
                         var instructionsMatched = false
 
                         while (subIndex <= maxIndex) {
                             val instruction = instructions[subIndex]
-                            if (filter.matches(this@BytecodePatchContext, method, instruction, subIndex)) {
+                            if (filter.matches(this@BytecodePatchContext, method, instruction)) {
                                 if (filterIndex == 0) {
                                     firstFilterIndex = subIndex
                                 }
@@ -624,7 +623,7 @@ class FingerprintBuilder(val name: String) {
      * instead use [instructions] with individual opcodes declared using [opcode].
      *
      * This method is identical to declaring individual opcode filters
-     * with [InstructionFilter.maxBefore] set to zero.
+     * with [InstructionFilter.maxAfter] set to zero.
      *
      * Unless absolutely necessary, it is recommended to instead use [instructions]
      * with more fine grained filters.
@@ -640,8 +639,8 @@ class FingerprintBuilder(val name: String) {
      * ```
      * instructions(
      *    opcode(Opcode.INVOKE_VIRTUAL), // First opcode matches anywhere in the method.
-     *    opcode(Opcode.MOVE_RESULT_OBJECT, maxBefore = 0), // Must match exactly after INVOKE_VIRTUAL.
-     *    opcode(Opcode.IPUT_OBJECT, maxBefore = 0) // Must match exactly after MOVE_RESULT_OBJECT.
+     *    opcode(Opcode.MOVE_RESULT_OBJECT, maxAfter = 0), // Must match exactly after INVOKE_VIRTUAL.
+     *    opcode(Opcode.IPUT_OBJECT, maxAfter = 0) // Must match exactly after MOVE_RESULT_OBJECT.
      * )
      * ```
      *
@@ -798,7 +797,7 @@ internal fun parametersStartsWith(
  *
  * Variable space is allowed between each filter.
  *
- * All filters use a default [maxBefore] of [METHOD_MAX_INSTRUCTIONS]
+ * All filters use a default [maxAfter] of [METHOD_MAX_INSTRUCTIONS]
  * meaning they can match anywhere after the previous filter.
  */
 abstract class InstructionFilter(
@@ -807,12 +806,12 @@ abstract class InstructionFilter(
      * A value of zero means this filter must match immediately after the prior filter,
      * or if this is the first filter then this may only match the first instruction of a method.
      */
-    val maxBefore: Int = METHOD_MAX_INSTRUCTIONS
+    val maxAfter: Int = METHOD_MAX_INSTRUCTIONS
 ) {
 
     init {
-        if (maxBefore < 0) {
-            throw IllegalArgumentException("maxBefore cannot be negative")
+        if (maxAfter < 0) {
+            throw IllegalArgumentException("maxAfter cannot be negative")
         }
     }
 
@@ -821,15 +820,11 @@ abstract class InstructionFilter(
      *
      * @param enclosingMethod The method of that contains [instruction].
      * @param instruction The instruction to check for a match.
-     * @param methodIndex The index of [instruction] in the enclosing [enclosingMethod].
-     *                    The index can be ignored unless a filter has an unusual reason,
-     *                    such as matching only the last index of a method.
      */
     abstract fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean
 
     companion object {
@@ -845,17 +840,16 @@ abstract class InstructionFilter(
 
 class AnyInstruction internal constructor(
     private val filters: List<InstructionFilter>,
-    maxBefore: Int,
-) : InstructionFilter(maxBefore) {
+    maxAfter: Int,
+) : InstructionFilter(maxAfter) {
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ) : Boolean {
         return filters.any { filter ->
-            filter.matches(context, enclosingMethod, instruction, methodIndex)
+            filter.matches(context, enclosingMethod, instruction)
         }
     }
 }
@@ -865,21 +859,20 @@ class AnyInstruction internal constructor(
  */
 fun anyInstruction(
     vararg filters: InstructionFilter,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = AnyInstruction(filters.asList(), maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = AnyInstruction(filters.asList(), maxAfter)
 
 
 
 open class OpcodeFilter(
     val opcode: Opcode,
-    maxBefore: Int,
-) : InstructionFilter(maxBefore) {
+    maxAfter: Int,
+) : InstructionFilter(maxAfter) {
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
         return instruction.opcode == opcode
     }
@@ -888,8 +881,8 @@ open class OpcodeFilter(
 /**
  * Single opcode.
  */
-fun opcode(opcode: Opcode, maxBefore: Int = METHOD_MAX_INSTRUCTIONS) =
-    OpcodeFilter(opcode, maxBefore)
+fun opcode(opcode: Opcode, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) =
+    OpcodeFilter(opcode, maxAfter)
 
 
 
@@ -899,22 +892,21 @@ fun opcode(opcode: Opcode, maxBefore: Int = METHOD_MAX_INSTRUCTIONS) =
  */
 open class OpcodesFilter private constructor(
     val opcodes: EnumSet<Opcode>?,
-    maxBefore: Int,
-) : InstructionFilter(maxBefore) {
+    maxAfter: Int,
+) : InstructionFilter(maxAfter) {
 
     protected constructor(
         /**
          * Value of `null` will match any opcode.
          */
         opcodes: List<Opcode>?,
-        maxBefore: Int = METHOD_MAX_INSTRUCTIONS
-    ) : this(if (opcodes == null) null else EnumSet.copyOf(opcodes), maxBefore)
+        maxAfter: Int = METHOD_MAX_INSTRUCTIONS
+    ) : this(if (opcodes == null) null else EnumSet.copyOf(opcodes), maxAfter)
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
         if (opcodes == null) {
             return true // Match anything.
@@ -954,18 +946,17 @@ open class OpcodesFilter private constructor(
 class LiteralFilter internal constructor(
     var literal: (BytecodePatchContext) -> Long,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int,
-) : OpcodesFilter(opcodes, maxBefore) {
+    maxAfter: Int,
+) : OpcodesFilter(opcodes, maxAfter) {
 
     private var literalValue: Long? = null
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction)) {
             return false
         }
 
@@ -991,8 +982,8 @@ class LiteralFilter internal constructor(
 fun literal(
     literal: (BytecodePatchContext) -> Long,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = LiteralFilter(literal, opcodes, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralFilter(literal, opcodes, maxAfter)
 
 /**
  * Literal value, such as:
@@ -1006,8 +997,8 @@ fun literal(
 fun literal(
     literal: Long,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = LiteralFilter({ literal }, opcodes, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralFilter({ literal }, opcodes, maxAfter)
 
 /**
  * Floating point literal.
@@ -1015,24 +1006,23 @@ fun literal(
 fun literal(
     literal: Double,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = LiteralFilter({ literal.toRawBits() }, opcodes, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralFilter({ literal.toRawBits() }, opcodes, maxAfter)
 
 
 
 class StringFilter internal constructor(
     var string: (BytecodePatchContext) -> String,
     var partialMatch: Boolean,
-    maxBefore: Int,
-) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), maxBefore) {
+    maxAfter: Int,
+) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), maxAfter) {
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction)) {
             return false
         }
 
@@ -1057,8 +1047,8 @@ fun string(
      * For more precise matching, consider using [any] with multiple exact string declarations.
      */
     partialMatch: Boolean = false,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = StringFilter(string, partialMatch, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = StringFilter(string, partialMatch, maxAfter)
 
 /**
  * Literal String instruction.
@@ -1070,8 +1060,8 @@ fun string(
      * For more precise matching, consider using [any] with multiple exact string declarations.
      */
     partialMatch: Boolean = false,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
-) = StringFilter({ string }, partialMatch, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = StringFilter({ string }, partialMatch, maxAfter)
 
 
 
@@ -1081,16 +1071,15 @@ class MethodCallFilter internal constructor(
     val parameters: ((BytecodePatchContext) -> List<String>)? = null,
     val returnType: ((BytecodePatchContext) -> String)? = null,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int,
-) : OpcodesFilter(opcodes, maxBefore) {
+    maxAfter: Int,
+) : OpcodesFilter(opcodes, maxAfter) {
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction)) {
             return false
         }
 
@@ -1130,7 +1119,7 @@ class MethodCallFilter internal constructor(
         internal fun parseJvmMethodCall(
             methodSignature: String,
             opcodes: List<Opcode>? = null,
-            maxBefore: Int = METHOD_MAX_INSTRUCTIONS
+            maxAfter: Int = METHOD_MAX_INSTRUCTIONS
         ): MethodCallFilter {
             val matchResult = regex.matchEntire(methodSignature)
                 ?: throw IllegalArgumentException("Invalid method signature: $methodSignature")
@@ -1148,7 +1137,7 @@ class MethodCallFilter internal constructor(
                 { paramDescriptors },
                 { returnDescriptor },
                 opcodes,
-                maxBefore
+                maxAfter
             )
         }
 
@@ -1234,14 +1223,14 @@ fun methodCall(
      * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
      */
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
 ) = MethodCallFilter(
     definingClass,
     name,
     parameters,
     returnType,
     opcodes,
-    maxBefore
+    maxAfter
 )
 
 fun methodCall(
@@ -1273,7 +1262,7 @@ fun methodCall(
      * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
      */
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
 ) = MethodCallFilter(
     if (definingClass != null) {
         { definingClass }
@@ -1288,7 +1277,7 @@ fun methodCall(
         { returnType }
     } else null,
     opcodes,
-    maxBefore
+    maxAfter
 )
 
 fun methodCall(
@@ -1320,7 +1309,7 @@ fun methodCall(
      * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
      */
     opcode: Opcode,
-    maxBefore: Int,
+    maxAfter: Int,
 ) = MethodCallFilter(
     if (definingClass != null) {
         { definingClass }
@@ -1335,7 +1324,7 @@ fun methodCall(
         { returnType }
     } else null,
     listOf(opcode),
-    maxBefore
+    maxAfter
 )
 
 /**
@@ -1347,8 +1336,8 @@ fun methodCall(
 fun methodCall(
     smali: String,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS
-) = parseJvmMethodCall(smali, opcodes, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmMethodCall(smali, opcodes, maxAfter)
 
 /**
  * Method call for a copy pasted SMALI style method signature. e.g.:
@@ -1359,8 +1348,8 @@ fun methodCall(
 fun methodCall(
     smali: String,
     opcode: Opcode,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS
-) = parseJvmMethodCall(smali, listOf(opcode), maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmMethodCall(smali, listOf(opcode), maxAfter)
 
 
 
@@ -1369,16 +1358,15 @@ class FieldAccessFilter internal constructor(
     val name: ((BytecodePatchContext) -> String)? = null,
     val type: ((BytecodePatchContext) -> String)? = null,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int,
-) : OpcodesFilter(opcodes, maxBefore) {
+    maxAfter: Int,
+) : OpcodesFilter(opcodes, maxAfter) {
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction)) {
             return false
         }
 
@@ -1411,7 +1399,7 @@ class FieldAccessFilter internal constructor(
         internal fun parseJvmFieldAccess(
             fieldSignature: String,
             opcodes: List<Opcode>? = null,
-            maxBefore: Int = METHOD_MAX_INSTRUCTIONS
+            maxAfter: Int = METHOD_MAX_INSTRUCTIONS
         ): FieldAccessFilter {
             val matchResult = regex.matchEntire(fieldSignature)
                 ?: throw IllegalArgumentException("Invalid field access smali: $fieldSignature")
@@ -1421,7 +1409,7 @@ class FieldAccessFilter internal constructor(
                 name = matchResult.groupValues[2],
                 type = matchResult.groupValues[3],
                 opcodes = opcodes,
-                maxBefore = maxBefore
+                maxAfter = maxAfter
             )
         }
     }
@@ -1453,8 +1441,8 @@ fun fieldAccess(
      * (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
      */
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
-)  = FieldAccessFilter(definingClass, name, type, opcodes, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+)  = FieldAccessFilter(definingClass, name, type, opcodes, maxAfter)
 
 /**
  * Matches a field call, such as:
@@ -1482,7 +1470,7 @@ fun fieldAccess(
      * (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
      */
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
 ) = FieldAccessFilter(
     if (definingClass != null) {
         { definingClass }
@@ -1494,7 +1482,7 @@ fun fieldAccess(
         { type }
     } else null,
     opcodes,
-    maxBefore
+    maxAfter
 )
 
 /**
@@ -1518,13 +1506,13 @@ fun fieldAccess(
      */
     type: String? = null,
     opcode: Opcode,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS,
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
 ) = fieldAccess(
     definingClass,
     name,
     type,
     listOf(opcode),
-    maxBefore
+    maxAfter
 )
 
 /**
@@ -1536,8 +1524,8 @@ fun fieldAccess(
 fun fieldAccess(
     smali: String,
     opcodes: List<Opcode>? = null,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS
-) = parseJvmFieldAccess(smali, opcodes, maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmFieldAccess(smali, opcodes, maxAfter)
 
 /**
  * Field access for a copy pasted SMALI style field access call. e.g.:
@@ -1548,23 +1536,22 @@ fun fieldAccess(
 fun fieldAccess(
     smali: String,
     opcode: Opcode,
-    maxBefore: Int = METHOD_MAX_INSTRUCTIONS
-) = parseJvmFieldAccess(smali, listOf(opcode), maxBefore)
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS
+) = parseJvmFieldAccess(smali, listOf(opcode), maxAfter)
 
 
 
 class NewInstanceFilter internal constructor (
     var type: (BytecodePatchContext) -> String,
-    maxBefore : Int,
-) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), maxBefore) {
+    maxAfter : Int,
+) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), maxAfter) {
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction)) {
             return false
         }
 
@@ -1581,35 +1568,34 @@ class NewInstanceFilter internal constructor (
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun newInstancetype(type: (BytecodePatchContext) -> String, maxBefore: Int = METHOD_MAX_INSTRUCTIONS) =
-    NewInstanceFilter(type, maxBefore)
+fun newInstancetype(type: (BytecodePatchContext) -> String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) =
+    NewInstanceFilter(type, maxAfter)
 
 /**
  * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun newInstance(type: String, maxBefore: Int = METHOD_MAX_INSTRUCTIONS) : NewInstanceFilter {
+fun newInstance(type: String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) : NewInstanceFilter {
     if (!type.endsWith(";")) {
         throw IllegalArgumentException("Class type does not end with a semicolon: $type")
     }
-    return NewInstanceFilter({ type }, maxBefore)
+    return NewInstanceFilter({ type }, maxAfter)
 }
 
 
 
 class CheckCastFilter internal constructor (
     var type: (BytecodePatchContext) -> String,
-    maxBefore : Int,
-) : OpcodeFilter(Opcode.CHECK_CAST, maxBefore) {
+    maxAfter : Int,
+) : OpcodeFilter(Opcode.CHECK_CAST, maxAfter) {
 
     override fun matches(
         context: BytecodePatchContext,
         enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
+        instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction, methodIndex)) {
+        if (!super.matches(context, enclosingMethod, instruction)) {
             return false
         }
 
@@ -1625,44 +1611,19 @@ class CheckCastFilter internal constructor (
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun checkCast(type: (BytecodePatchContext) -> String, maxBefore: Int = METHOD_MAX_INSTRUCTIONS) =
-    CheckCastFilter(type, maxBefore)
+fun checkCast(type: (BytecodePatchContext) -> String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) =
+    CheckCastFilter(type, maxAfter)
 
 /**
  * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun checkCast(type: String, maxBefore: Int = METHOD_MAX_INSTRUCTIONS) : CheckCastFilter {
+fun checkCast(type: String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) : CheckCastFilter {
     if (!type.endsWith(";")) {
         throw IllegalArgumentException("Class type does not end with a semicolon: $type")
     }
 
-    return CheckCastFilter({ type }, maxBefore)
+    return CheckCastFilter({ type }, maxAfter)
 }
 
-
-
-class LastInstructionFilter internal constructor(
-    var filter : InstructionFilter
-) : InstructionFilter(filter.maxBefore) {
-
-    override fun matches(
-        context: BytecodePatchContext,
-        enclosingMethod: Method,
-        instruction: Instruction,
-        methodIndex: Int
-    ): Boolean {
-        return methodIndex == enclosingMethod.instructions.count() - 1 && filter.matches(
-            context, enclosingMethod, instruction, methodIndex
-        )
-    }
-}
-
-/**
- * Wrapper that matches the last instruction of a method.
- * [InstructionFilter.maxBefore] used is the same as the filter parameter.
- */
-fun lastInstruction(
-    filter : InstructionFilter
-) = LastInstructionFilter(filter)

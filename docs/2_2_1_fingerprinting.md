@@ -177,8 +177,8 @@ val hideAdsFingerprint by fingerprint {
         ),
 
         // Filter 4
-        // maxBefore = 0 means this must match immediately after the last filter.
-        opcode(Opcode.MOVE_RESULT, maxBefore = 0),
+        // maxAfter = 0 means this must match immediately after the last filter.
+        opcode(Opcode.MOVE_RESULT, maxAfter = 0),
 
         // Filter 5
         literal(1337),
@@ -197,10 +197,9 @@ val hideAdsFingerprint by fingerprint {
   must be declared in the same order as the instructions appear in the target method.
 
   If the distance between each instruction declaration can be approximated,
-  then the `maxBefore` parameter can be used to restrict the instruction match to
+  then the `maxAfter` parameter can be used to restrict the instruction match to
   a maximum distance from the last instruction.  A value of 0 for the first instruction filter
-  means the filter must be the first instruction of the target method. To restrict an instruction
-  filter to only match the last instruction of a method, use the `lastInstruction()` filter wrapper.
+  means the filter must be the first instruction of the target method.
 
   If a single instruction varies slightly between different app targets but otherwise the fingerprint
   is still the same, the `anyInstruction()` wrapper can be used to specify variations of the
