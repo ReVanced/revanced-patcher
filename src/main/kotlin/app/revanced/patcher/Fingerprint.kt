@@ -22,6 +22,7 @@ import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 import java.util.EnumSet
 import kotlin.collections.forEach
+import kotlin.collections.isEmpty
 import kotlin.lazy
 import kotlin.reflect.KProperty
 
@@ -649,6 +650,8 @@ class FingerprintBuilder(val name: String) {
      */
     fun opcodes(vararg opcodes: Opcode?) {
         verifyNoFiltersSet()
+        if (opcodes.isEmpty()) throw IllegalArgumentException("One or more opcodes is required")
+
         this.instructionFilters = OpcodesFilter.listOfOpcodes(opcodes.toList())
     }
 
@@ -668,6 +671,8 @@ class FingerprintBuilder(val name: String) {
      */
     fun opcodes(instructions: String) {
         verifyNoFiltersSet()
+        if (instructions.isBlank()) throw IllegalArgumentException("No instructions declared (empty string)")
+
         this.instructionFilters = OpcodesFilter.listOfOpcodes(
             instructions.trimIndent().split("\n").filter {
                 it.isNotBlank()
@@ -676,7 +681,7 @@ class FingerprintBuilder(val name: String) {
                 val name = it.split(" ", limit = 1).first().trim()
                 if (name == "null") return@map null
 
-                opcodesByName[name] ?: throw Exception("Unknown opcode: $name")
+                opcodesByName[name] ?: throw IllegalArgumentException("Unknown opcode: $name")
             }
         )
     }
@@ -686,6 +691,8 @@ class FingerprintBuilder(val name: String) {
      */
     fun instructions(vararg instructionFilters: InstructionFilter) {
         verifyNoFiltersSet()
+        if (instructionFilters.isEmpty()) throw IllegalArgumentException("One or more instructions is required")
+
         this.instructionFilters = instructionFilters.toList()
     }
 
