@@ -16,6 +16,7 @@ public final class app/revanced/patcher/FieldAccessFilter : app/revanced/patcher
 }
 
 public final class app/revanced/patcher/Fingerprint {
+	public final fun clearMatch ()V
 	public final fun getClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun getClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun getInstructionMatches (Lapp/revanced/patcher/patch/BytecodePatchContext;)Ljava/util/List;

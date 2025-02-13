@@ -54,6 +54,15 @@ class Fingerprint internal constructor(
     private var _matchOrNull: Match? = null
 
     /**
+     * Clears the current match, forcing this fingerprint to resolve again.
+     * This method should only be used if this fingerprint is re-used after it's modified,
+     * and the prior match indexes are no longer correct.
+     */
+    fun clearMatch() {
+        _matchOrNull = null
+    }
+
+    /**
      * The match for this [Fingerprint], or `null` if no matches exist.
      */
     context(BytecodePatchContext)

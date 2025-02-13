@@ -239,7 +239,9 @@ execute {
 
 Be careful if making more than 1 modification to the same method.  Adding/removing instructions to
 a method can cause fingerprint match indexes to no longer be correct. The simplest solution is
-to modify the target method from the last match index to the first.
+to modify the target method from the last match index to the first.  Another solution is after modifying
+the target method to then call `clearMatch()` followed by `match()`, and then the instruction match indexes
+are up to date and correct.
 
 Modifying the example above to also change the code `return parameter2 != 1337;` into: `return false;`: 
 
