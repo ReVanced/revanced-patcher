@@ -13,6 +13,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -950,7 +951,7 @@ open class OpcodesFilter private constructor(
 
 
 
-class LiteralFilter internal constructor(
+class LiteralWideFilter internal constructor(
     var literal: (BytecodePatchContext) -> Long,
     opcodes: List<Opcode>? = null,
     maxAfter: Int,
@@ -977,6 +978,34 @@ class LiteralFilter internal constructor(
     }
 }
 
+class LiteralNarrowFilter internal constructor(
+    var literal: (BytecodePatchContext) -> Int,
+    opcodes: List<Opcode>? = null,
+    maxAfter: Int,
+) : OpcodesFilter(opcodes, maxAfter) {
+
+    private var literalValue: Int? = null
+
+    override fun matches(
+        context: BytecodePatchContext,
+        enclosingMethod: Method,
+        instruction: Instruction
+    ): Boolean {
+        if (!super.matches(context, enclosingMethod, instruction)) {
+            return false
+        }
+
+        if (instruction !is NarrowLiteralInstruction) return false
+
+        if (literalValue == null) {
+            literalValue = literal(context)
+        }
+
+        return instruction.narrowLiteral == literalValue
+    }
+}
+
+
 /**
  * Literal value, such as:
  * `const v1, 0x7f080318`
@@ -990,7 +1019,7 @@ fun literal(
     literal: (BytecodePatchContext) -> Long,
     opcodes: List<Opcode>? = null,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
-) = LiteralFilter(literal, opcodes, maxAfter)
+) = LiteralWideFilter(literal, opcodes, maxAfter)
 
 /**
  * Literal value, such as:
@@ -1005,16 +1034,37 @@ fun literal(
     literal: Long,
     opcodes: List<Opcode>? = null,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
-) = LiteralFilter({ literal }, opcodes, maxAfter)
+) = LiteralWideFilter({ literal }, opcodes, maxAfter)
 
 /**
- * Floating point literal.
+ * Integer point literal.
+ */
+fun literal(
+    literal: Int,
+    opcodes: List<Opcode>? = null,
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralNarrowFilter({ literal }, opcodes, maxAfter)
+
+/**
+ * Double point literal.
  */
 fun literal(
     literal: Double,
     opcodes: List<Opcode>? = null,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
-) = LiteralFilter({ literal.toRawBits() }, opcodes, maxAfter)
+) = LiteralWideFilter({ literal.toRawBits() }, opcodes, maxAfter)
+
+/**
+ * Floating point literal.
+ *
+ * Note: because float and double values are stored as a literal long value,
+ * using this for a float literal will fail. Instead use the float literal type.
+ */
+fun literal(
+    literal: Float,
+    opcodes: List<Opcode>? = null,
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
+) = LiteralNarrowFilter({ literal.toRawBits() }, opcodes, maxAfter)
 
 
 
