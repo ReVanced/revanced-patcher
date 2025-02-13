@@ -97,16 +97,16 @@ public final class app/revanced/patcher/InstructionFilterKt {
 	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
 	public static synthetic fun fieldAccess$default (Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
-	public static final fun literal (DLjava/util/List;I)Lapp/revanced/patcher/LiteralWideFilter;
-	public static final fun literal (FLjava/util/List;I)Lapp/revanced/patcher/LiteralNarrowFilter;
-	public static final fun literal (ILjava/util/List;I)Lapp/revanced/patcher/LiteralNarrowFilter;
-	public static final fun literal (JLjava/util/List;I)Lapp/revanced/patcher/LiteralWideFilter;
-	public static final fun literal (Lkotlin/jvm/functions/Function1;Ljava/util/List;I)Lapp/revanced/patcher/LiteralWideFilter;
-	public static synthetic fun literal$default (DLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralWideFilter;
-	public static synthetic fun literal$default (FLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralNarrowFilter;
-	public static synthetic fun literal$default (ILjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralNarrowFilter;
-	public static synthetic fun literal$default (JLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralWideFilter;
-	public static synthetic fun literal$default (Lkotlin/jvm/functions/Function1;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralWideFilter;
+	public static final fun literal (DLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (FLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (ILjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (JLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (Lkotlin/jvm/functions/Function1;Ljava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (DLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (FLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (ILjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (JLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (Lkotlin/jvm/functions/Function1;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
 	public static final fun methodCall (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/MethodCallFilter;
 	public static final fun methodCall (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/MethodCallFilter;
 	public static final fun methodCall (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/MethodCallFilter;
@@ -132,13 +132,7 @@ public final class app/revanced/patcher/InstructionFilterKt {
 public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
 }
 
-public final class app/revanced/patcher/LiteralNarrowFilter : app/revanced/patcher/OpcodesFilter {
-	public final fun getLiteral ()Lkotlin/jvm/functions/Function1;
-	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
-	public final fun setLiteral (Lkotlin/jvm/functions/Function1;)V
-}
-
-public final class app/revanced/patcher/LiteralWideFilter : app/revanced/patcher/OpcodesFilter {
+public final class app/revanced/patcher/LiteralFilter : app/revanced/patcher/OpcodesFilter {
 	public final fun getLiteral ()Lkotlin/jvm/functions/Function1;
 	public fun matches (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 	public final fun setLiteral (Lkotlin/jvm/functions/Function1;)V
