@@ -242,9 +242,6 @@ fun literal(
 
 /**
  * Double point literal.
- *
- * Note: because float and double values are stored as a literal long value,
- * using this for a float literal will fail. Instead use the float literal declaration.
  */
 fun literal(
     literal: Double,
@@ -296,7 +293,7 @@ fun string(
     string: (BytecodePatchContext) -> String,
     /**
      * If [string] is a partial match, where the target string contains this string.
-     * For more precise matching, consider using [any] with multiple exact string declarations.
+     * For more precise matching, consider using [anyInstruction] with multiple exact string declarations.
      */
     partialMatch: Boolean = false,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
@@ -309,7 +306,7 @@ fun string(
     string: String,
     /**
      * If [string] is a partial match, where the target string contains this string.
-     * For more precise matching, consider using [any] with multiple exact string declarations.
+     * For more precise matching, consider using [anyInstruction] with multiple exact string declarations.
      */
     partialMatch: Boolean = false,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
@@ -346,7 +343,7 @@ class MethodCallFilter internal constructor(
                 // Check if 'this' defining class is used.
                 // Would be nice if this also checked all super classes,
                 // but doing so requires iteratively checking all superclasses
-                // up to the root Object class since class defs are mere Strings.
+                // up to the root class since class defs are mere Strings.
                 if (!(definingClass == "this" && referenceClass == enclosingMethod.definingClass)) {
                     return false
                 } // else, the method call is for 'this' class.
@@ -395,21 +392,22 @@ class MethodCallFilter internal constructor(
 
         /**
          * Parses a single JVM type descriptor or an array descriptor at the current position.
-         * For example: Lcom/example/SomeClass; or I or [I or [Lcom/example/SomeClass; etc.
+         * For example: Lcom/example/SomeClass; or I or [I or [Lcom/example/SomeClass;
          */
         private fun parseSingleType(params: String, startIndex: Int): Pair<String, Int> {
             var i = startIndex
 
-            // Keep track of array dimensions '['
-            while (i < params.length && params[i] == '[') {
+            // Skip past array declaration, including multi-dimensional arrays.
+            val paramsLength = params.length
+            while (i < paramsLength && params[i] == '[') {
                 i++
             }
 
-            return if (i < params.length && params[i] == 'L') {
+            return if (i < paramsLength && params[i] == 'L') {
                 // It's an object type starting with 'L', read until ';'
                 val semicolonPos = params.indexOf(';', i)
-                if (semicolonPos == -1) {
-                    throw IllegalArgumentException("Malformed object descriptor (missing semicolon) in: $params")
+                if (semicolonPos < 0) {
+                    throw IllegalArgumentException("Malformed object descriptor (missing semicolon): $params")
                 }
                 // Substring from startIndex up to and including the semicolon.
                 val typeDescriptor = params.substring(startIndex, semicolonPos + 1)
@@ -423,16 +421,19 @@ class MethodCallFilter internal constructor(
         }
 
         /**
-         * Parses the parameters (the part inside parentheses) into a list of JVM type descriptors.
+         * Parses the parameters into a list of JVM type descriptors.
          */
         private fun parseParameterDescriptors(paramString: String): List<String> {
             val result = mutableListOf<String>()
             var currentIndex = 0
-            while (currentIndex < paramString.length) {
+            val stringLength = paramString.length
+
+            while (currentIndex < stringLength) {
                 val (type, nextIndex) = parseSingleType(paramString, currentIndex)
                 result.add(type)
                 currentIndex = nextIndex
             }
+
             return result
         }
     }
