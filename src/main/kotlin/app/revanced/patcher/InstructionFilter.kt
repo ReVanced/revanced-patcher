@@ -562,7 +562,7 @@ fun methodCall(
      * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
      */
     opcode: Opcode,
-    maxAfter: Int,
+    maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
 ) = MethodCallFilter(
     if (definingClass != null) {
         { definingClass }
