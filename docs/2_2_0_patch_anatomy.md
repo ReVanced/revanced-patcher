@@ -85,14 +85,14 @@ val disableAdsPatch = bytecodePatch(
     // Business logic of the patch to disable ads in the app.
     execute {
         // Fingerprint to find the method to patch.
-        val showAdsMatch by showAdsFingerprint {
+        val showAdsFingerprint by fingerprint {
             // More about fingerprints on the next page of the documentation.
         }
 
         // In the method that shows ads,
         // call DisableAdsPatch.shouldDisableAds() from the extension (precompiled DEX file)
         // to enable or disable ads.
-        showAdsMatch.method.addInstructions(
+        showAdsFingerprint.method.addInstructions(
             0,
             """
                 invoke-static {}, LDisableAdsPatch;->shouldDisableAds()Z
@@ -185,10 +185,7 @@ val patch = bytecodePatch(name = "Complex patch") {
     extendWith("complex-patch.rve")
 
     execute {
-        fingerprint.match().mutableMethod.addInstructions(
-          0,
-          "invoke-static { }, LComplexPatch;->doSomething()V"
-        )
+        fingerprint.method.addInstructions(0, "invoke-static { }, LComplexPatch;->doSomething()V")
     }
 }
 ```
