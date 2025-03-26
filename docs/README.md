@@ -70,4 +70,4 @@ This documentation contains the fundamentals of ReVanced Patcher and how to use 
    2. [🧩 Anatomy of a ReVanced patch](2_2_0_patch_anatomy)
       1. [🔎 Fingerprinting](2_2_1_fingerprinting.md)
    3. [📜 Project structure and conventions](3_structure_and_conventions.md)
-   4. [💪 Advanced APIs](4_apis.md)
+   4. [💪 Advanced APIs](4_0_0_apis)

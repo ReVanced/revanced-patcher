@@ -69,7 +69,8 @@ class Fingerprint internal constructor(
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        // Use string instruction literals to resolve faster.
+        // Use string declarations to first check only the methods
+        // that contain one or more of fingerprint string.
         var stringLiterals =
             if (strings != null) {
                 // Old deprecated string declaration.
@@ -91,6 +92,7 @@ class Fingerprint internal constructor(
             }
         }
 
+        // Check all classes.
         classes.pool.values.forEach { classDef ->
             val match = matchOrNull(classDef)
             if (match != null) {
@@ -197,7 +199,7 @@ class Fingerprint internal constructor(
                         stringsList = strings.toMutableList()
                     }
                     val index = stringsList.indexOfFirst(string::contains)
-                    if (index == -1) return@forEachIndexed
+                    if (index < 0) return@forEachIndexed
 
                     add(Match.StringMatch(string, instructionIndex))
                     stringsList.removeAt(index)
@@ -224,8 +226,7 @@ class Fingerprint internal constructor(
 
                     for (filterIndex in filters.indices) {
                         val filter = filters[filterIndex]
-                        val maxIndex = (subIndex + filter.maxAfter)
-                            .coerceAtMost(lastMethodIndex)
+                        val maxIndex = (subIndex + filter.maxAfter).coerceAtMost(lastMethodIndex)
                         var instructionsMatched = false
 
                         while (subIndex <= maxIndex) {

@@ -337,7 +337,7 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
 
   ```kt
   execute {
-    val adsLoaderClass = classes.single { it.name == "Lcom/some/app/ads/Loader;" }
+    val adsLoaderClass = classBy("Lcom/some/app/ads/Loader;")
 
     val match = showAdsFingerprint.match(adsLoaderClass)
   }
