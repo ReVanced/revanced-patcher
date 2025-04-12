@@ -4,6 +4,7 @@ import org.w3c.dom.Document
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
+import java.io.StringWriter
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -23,6 +24,22 @@ class Document internal constructor(
         readerCount.merge(file, 1, Int::plus)
     }
 
+    private fun fixSurrogatePairs(xml: String): String {
+        val regex = """&#(\d+);&#(\d+);""".toRegex()
+        return regex.replace(xml) { match ->
+            val high = match.groupValues[1].toInt()
+            val low = match.groupValues[2].toInt()
+
+            // Convert surrogate pairs into a single Unicode code point
+            if (Character.isSurrogatePair(high.toChar(), low.toChar())) {
+                val codePoint = Character.toCodePoint(high.toChar(), low.toChar())
+                "&#$codePoint;"
+            } else {
+                match.value // Fallback (should not happen)
+            }
+        }
+    }
+
     override fun close() {
         file?.let {
             if (readerCount[it]!! > 1) {
@@ -34,10 +51,16 @@ class Document internal constructor(
                 readerCount.remove(it)
             }
 
+            val writer = StringWriter()
+
+            TransformerFactory.newInstance()
+                .newTransformer()
+                .transform(DOMSource(this), StreamResult(writer))
+
+            val fixedXml = fixSurrogatePairs(writer.toString())
+
             it.outputStream().use { stream ->
-                TransformerFactory.newInstance()
-                    .newTransformer()
-                    .transform(DOMSource(this), StreamResult(stream))
+                stream.write(fixedXml.toByteArray(Charsets.UTF_8))
             }
         }
     }

@@ -23,6 +23,7 @@ tasks {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     google()
     maven {
