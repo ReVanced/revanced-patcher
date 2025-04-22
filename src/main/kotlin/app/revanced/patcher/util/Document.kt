@@ -4,7 +4,9 @@ import org.w3c.dom.Document
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
+import java.io.StringWriter
 import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
@@ -35,14 +37,19 @@ class Document internal constructor(
             }
 
             it.outputStream().buffered().use { stream ->
-                TransformerFactory.newInstance()
-                    .newTransformer()
-                    .transform(DOMSource(this), StreamResult(stream))
+                val transformer = TransformerFactory.newInstance().newTransformer()
+                // Set to UTF-16 but encode as UTF-8 to prevent surrogate pairs from being escaped to broken numeric character references.
+                if (isAndroid) {
+                    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-16")
+                    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
+                }
+                transformer.transform(DOMSource(this), StreamResult(stream))
             }
         }
     }
 
     private companion object {
         private val readerCount = mutableMapOf<File, Int>()
+        private val isAndroid = System.getProperty("java.runtime.name").equals("Android Runtime")
     }
 }
