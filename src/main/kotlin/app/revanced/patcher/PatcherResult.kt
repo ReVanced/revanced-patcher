@@ -19,9 +19,9 @@ class PatcherResult internal constructor(
      * A dex file.
      *
      * @param name The original name of the dex file.
-     * @param stream The dex file as [InputStream].
+     * @param file The dex file as [File].
      */
-    class PatchedDexFile internal constructor(val name: String, val stream: InputStream)
+    class PatchedDexFile internal constructor(val name: String, val file: File)
 
     /**
      * The resources of a patched apk.

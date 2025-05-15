@@ -88,8 +88,8 @@ public final class app/revanced/patcher/PatcherResult {
 }
 
 public final class app/revanced/patcher/PatcherResult$PatchedDexFile {
+	public final fun getFile ()Ljava/io/File;
 	public final fun getName ()Ljava/lang/String;
-	public final fun getStream ()Ljava/io/InputStream;
 }
 
 public final class app/revanced/patcher/PatcherResult$PatchedResources {

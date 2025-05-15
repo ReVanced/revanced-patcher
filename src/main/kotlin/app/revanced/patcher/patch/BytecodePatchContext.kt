@@ -152,7 +152,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
                 ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
             }.listFiles(FileFilter { it.isFile })!!.map {
-                PatcherResult.PatchedDexFile(it.name, it.inputStream())
+                PatcherResult.PatchedDexFile(it.name, it)
             }.toSet()
 
         System.gc()
