@@ -74,7 +74,11 @@ val showAdsFingerprint by fingerprint {
     // Method signature.
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
-    // Last parameter is simply `L` since it's an obfuscated class.
+    // Declared parameters are matched using String.startsWith()
+    // Non obfuscated classes should be declared using the full class name.
+    // While obfuscated class names must be declared only using the object type
+    // Since obfuscated names change between releases.
+    // Last parameter is simply `L` since it's an obfuscated class object.
     parameters("Ljava/lang/String;", "I", "L")
     
     // Method implementation:
