@@ -73,17 +73,17 @@ access flags, instructions, strings, and more.
 package com.some.app.ads;
 
 class AdsLoader {
-  private final static Map<String, String> a = new HashMap<>();
+  private final static Map<String, String> m = new HashMap<>();
 
   // Method to fingerprint    
   public final boolean obfuscatedMethod(String parameter1, int parameter2, ObfuscatedClass parameter3) {
     // Filter 1 target instruction.
-    String value1 = a.get(parameter1);
+    String string = m.get(parameter1);
 
-    unrelatedMethod(value1);
+    unrelatedMethod(string);
 
     // Filter 2, 3, 4 target instructions, and the instructions to modify.
-    if ("showBannerAds".equals(value1)) {
+    if ("showBannerAds".equals(string)) {
       showBannerAds();
     }
 
@@ -102,7 +102,7 @@ class AdsLoader {
 ```
 
 ```asm
-# Method to fingerprint
+# Method to fingerprint.
 .method public final obfuscatedMethod(Ljava/lang/String;ILObfuscatedClass;)Z
     .registers 4
 
@@ -161,29 +161,29 @@ val hideAdsFingerprint by fingerprint {
     
     // Method implementation:
     instructions( 
-        // Filter 1
+        // Filter 1.
         fieldAccess(
             definingClass = "this",
             type = "Ljava/util/Map;"
         ),
 
-        // Filter 2 
+        // Filter 2.
         string("showBannerAds"),
       
-        // Filter 3 
+        // Filter 3.
         methodCall(
             definingClass = "Ljava/lang/String;",
             name = "equals",
         ),
 
-        // Filter 4
+        // Filter 4.
         // maxAfter = 0 means this must match immediately after the last filter.
         opcode(Opcode.MOVE_RESULT, maxAfter = 0),
 
-        // Filter 5
+        // Filter 5.
         literal(1337),
         
-        // Filter 6 
+        // Filter 6.
         opcode(Opcode.IF_EQ),
     )
     custom { method, classDef ->
