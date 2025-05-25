@@ -206,7 +206,7 @@ class AdsLoader {
   instruction of the target method.
 
   If a single instruction varies slightly between different app targets but otherwise the fingerprint
-  is still the same, the `anyInstruction()` wrapper can be used to specify variations of the same
+  is still the same, the `anyInstruction()` wrapper can be used to specify the different expected
   instruction. Such as:
   ```
   anyInstruction(
@@ -216,7 +216,7 @@ class AdsLoader {
   ```
 
   To simplify some filter declarations, `methodCall` and `fieldAccess` can be declared using
-  un-obfuscated smali statements.  Such as: 
+  copy-pasted un-obfuscated smali statements. Such as: 
   ```
   methodCall(smali = "Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;")
   fieldAccess(smali = "Landroid/os/Build;->MODEL:Ljava/lang/String;")
@@ -268,7 +268,6 @@ execute {
     // Remove conditional branch and always return false.
     val filter6 = it.instructionMatches[5]
     it.method.removeInstruction(filter6.index)
-
     
     // Changes the target code to:
     // if (false) {
@@ -283,21 +282,26 @@ execute {
 }
 ```
 
-For performance reasons, a fingerprint will always match only once.
-This makes it useful to share fingerprints between multiple patches,
-and let the first executing patch match the fingerprint:
+For performance reasons, a fingerprint will always match only once (unless `clearMatch()` is called).
+This makes it useful to share fingerprints between multiple patches, and the fingerprint matches on
+the first usage of it.
 
 ```kt
-// Either of these two patches will match the fingerprint first and the other patch can reuse the match:
 val mainActivityPatch1 = bytecodePatch {
-  execute {
-    mainActivityOnCreateFingerprint.method
-  }
+   execute {
+     mainActivityOnCreateFingerprint.method.apply {
+       // Modifications made here.
+     }
+   }
 }
 
 val mainActivityPatch2 = bytecodePatch {
   execute {
-    mainActivityOnCreateFingerprint.method
+    mainActivityOnCreateFingerprint.method.apply {
+      // More modifications made here.
+      // Fingerprint does not match again, and the match result indexes are still the same as
+      // found in mainActivityPatch1.  
+    }
   }
 }
 ```
@@ -309,11 +313,11 @@ val mainActivityPatch2 = bytecodePatch {
 
 The following properties can be accessed in a fingerprint:
 
-- `originalClassDef`: The immutable class definition the fingerprint matches to.
+- `originalClassDef`: The immutable class definition the fingerprint matches to. If no match is found, an exception is raised.
 - `originalClassDefOrNull`: The immutable class definition the fingerprint matches to, or null.
-- `originalMethod`: The immutable method the fingerprint matches to.
+- `originalMethod`: The immutable method the fingerprint matches to. If no match is found, an exception is raised.
 - `originalMethodOrNull`: The immutable method the fingerprint matches to, or null.
-- `classDef`: The mutable class the fingerprint matches to.
+- `classDef`: The mutable class the fingerprint matches to. If no match is found, an exception is raised.
 - `classDefOrNull`: The mutable class the fingerprint matches to, or null.
 - `method`: The mutable method the fingerprint matches to. If no match is found, an exception is raised.
 - `methodOrNull`: The mutable method the fingerprint matches to, or null.
@@ -324,21 +328,20 @@ The mutable copies can be modified. They are lazy properties, so they are only c
 and only then will effectively replace the `original` method or class definition when accessed.
 
 > [!TIP]
-> If only read-only access to the class or method is needed,
-> the `originalClassDef` and `originalMethod` properties should be used,
-> to avoid making a mutable copy of the class or method.
+> If only read-only access to the class or method is needed, the `originalClassDef` and
+> `originalMethod` properties should be used, to avoid making a mutable copy of the class or method.
 
 ## 🏹 Manually matching fingerprints
 
-By default, a fingerprint is matched automatically against all classes
-when one of the fingerprint's properties is accessed.
+By default, a fingerprint is matched automatically against all classes when one of the
+fingerprint's properties is accessed.
 
 Instead, the fingerprint can be matched manually using various overloads of a fingerprint's `match` function:
 
 - In a **list of classes**, if the fingerprint can match in a known subset of classes
 
-  If you have a known list of classes you know the fingerprint can match in,
-  you can match the fingerprint on the list of classes:
+  If you have a known list of classes you know the fingerprint can match in, you can match the
+  fingerprint on the list of classes:
 
   ```kt
   execute {
@@ -348,7 +351,8 @@ Instead, the fingerprint can be matched manually using various overloads of a fi
 
 - In a **single class**, if the fingerprint can match in a single known class
 
-  If you know the fingerprint can match a method in a specific class, you can match the fingerprint in the class:
+  If you know the fingerprint can match a method in a specific class, you can match the fingerprint
+  in the class:
 
   ```kt
   execute {
