@@ -67,7 +67,7 @@ Methods with obfuscated names that change with each update are primary candidate
 The goal of fingerprinting is to uniquely identify a method by capturing various attributes, such as the return type,
 access flags, instructions, strings, and more.
 
-## 🔎 Example target Java code and bytecode
+## 🔎 Example target Java and Smali code
 
 ```java
 package com.some.app.ads;
