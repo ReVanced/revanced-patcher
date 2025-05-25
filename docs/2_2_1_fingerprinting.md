@@ -196,24 +196,29 @@ class AdsLoader {
 .end method
 ```
 
-  Notice the fingerprint filters do not declare every instruction in the target method,
-  and between each filter, zero or more other instructions can exist.  Instruction filters
-  must be declared in the same order as the instructions appear in the target method.
+  Notice the fingerprint filters do not declare every instruction in the target method, and between
+  each filter, zero or more other instructions can exist.  Instruction filters must be declared in
+  the same order as the instructions appear in the target method.
 
-  If the distance between each instruction declaration can be approximated,
-  then the `maxAfter` parameter can be used to restrict the instruction match to
-  a maximum distance from the last instruction.  A value of 0 for the first instruction filter
-  means the filter must be the first instruction of the target method.
+  If the distance between each instruction declaration can be approximated, then the `maxAfter`
+  parameter can be used to restrict the instruction match to a maximum distance from the last
+  instruction.  A value of 0 for the first instruction filter means the filter must be the first
+  instruction of the target method.
 
   If a single instruction varies slightly between different app targets but otherwise the fingerprint
-  is still the same, the `anyInstruction()` wrapper can be used to specify variations of the
-  same instruction.  Such as:
-  `anyInstruction(string("string in early app target"), string("updated string in latest app target"))`
+  is still the same, the `anyInstruction()` wrapper can be used to specify variations of the same
+  instruction. Such as:
+  ```
+  anyInstruction(string("string in early app target"),
+  string("updated string in latest app target"))
+  ```
 
-  To simplify some filter declarations, `methodCall` and `fieldAccess` can be
-  declared using un-obfuscated smali statements.  Such as: 
-  `methodCall(smali = "Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;")`
-  `fieldAccess(smali = "Landroid/os/Build;->MODEL:Ljava/lang/String;")`
+  To simplify some filter declarations, `methodCall` and `fieldAccess` can be declared using
+  un-obfuscated smali statements.  Such as: 
+  ```
+  methodCall(smali = "Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;")`
+  `fieldAccess(smali = "Landroid/os/Build;->MODEL:Ljava/lang/String;")
+  ```
 
   If a method cannot be uniquely identified using the built in filters, but a fixed
   pattern of opcodes can identify the method, then the opcode pattern can be
