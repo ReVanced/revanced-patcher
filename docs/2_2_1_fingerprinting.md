@@ -229,8 +229,8 @@ class AdsLoader {
   possible due to their fragility and possibility of matching completely unrelated code.
 
 > [!TIP]
-> A fingerprint should contain information about a method likely to remain stable across updates.
-> Names of obfuscated classes and methods should not be used since they can change between app updates.
+> A fingerprint should contain information about a method that is unlikely to change between updates.
+> Obfuscated class and method names should never be used.
 
 ## 🔨 How to use fingerprints
 
