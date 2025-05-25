@@ -209,23 +209,24 @@ class AdsLoader {
   is still the same, the `anyInstruction()` wrapper can be used to specify variations of the same
   instruction. Such as:
   ```
-  anyInstruction(string("string in early app target"),
-  string("updated string in latest app target"))
+  anyInstruction(
+    string("string in early app target, but not found in later target"),
+    string("updated string in latest app target, but not found in earlier target")
+  )
   ```
 
   To simplify some filter declarations, `methodCall` and `fieldAccess` can be declared using
   un-obfuscated smali statements.  Such as: 
   ```
-  methodCall(smali = "Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;")`
-  `fieldAccess(smali = "Landroid/os/Build;->MODEL:Ljava/lang/String;")
+  methodCall(smali = "Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;")
+  fieldAccess(smali = "Landroid/os/Build;->MODEL:Ljava/lang/String;")
   ```
 
-  If a method cannot be uniquely identified using the built in filters, but a fixed
-  pattern of opcodes can identify the method, then the opcode pattern can be
-  defined using the fingerprint `opcodes()` declaration.  Opcode patterns do not
-  allow variable spacing between each opcode, and all opcodes all must appear exactly as declared.
-  Opcode patterns should be avoided whenever possible due to their fragility and 
-  possibility of matching completely unrelated code.
+  If a method cannot be uniquely identified using the built in filters, but a fixed pattern of
+  opcodes can identify the method, then the opcode pattern can be defined using the fingerprint
+  `opcodes()` declaration.  Opcode patterns do not allow variable spacing between each opcode, and
+  all opcodes all must appear exactly as declared. Opcode patterns should be avoided whenever
+  possible due to their fragility and possibility of matching completely unrelated code.
 
 > [!TIP]
 > A fingerprint should contain information about a method likely to remain stable across updates.
