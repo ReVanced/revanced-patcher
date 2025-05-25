@@ -67,7 +67,50 @@ Methods with obfuscated names that change with each update are primary candidate
 The goal of fingerprinting is to uniquely identify a method by capturing various attributes, such as the return type,
 access flags, instructions, strings, and more.
 
-## 🔎 Example target Java and Smali code
+## ⛳️ Example fingerprint
+
+```kt
+val hideAdsFingerprint by fingerprint {
+    // Method signature:
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    returns("Z")
+    // Last parameter is simply `L` since it's an obfuscated class.
+    parameters("Ljava/lang/String;", "I", "L")
+    
+    // Method implementation:
+    instructions( 
+        // Filter 1.
+        fieldAccess(
+            definingClass = "this",
+            type = "Ljava/util/Map;"
+        ),
+
+        // Filter 2.
+        string("showBannerAds"),
+      
+        // Filter 3.
+        methodCall(
+            definingClass = "Ljava/lang/String;",
+            name = "equals",
+        ),
+
+        // Filter 4.
+        // maxAfter = 0 means this must match immediately after the last filter.
+        opcode(Opcode.MOVE_RESULT, maxAfter = 0),
+
+        // Filter 5.
+        literal(1337),
+        
+        // Filter 6.
+        opcode(Opcode.IF_EQ),
+    )
+    custom { method, classDef ->
+        classDef.type == "Lcom/some/app/ads/AdsLoader;"
+    }
+}
+```
+
+## 🔎 Example target app in Java and Smali
 
 ```java
 package com.some.app.ads;
@@ -149,50 +192,7 @@ class AdsLoader {
 .end method
 ```
 
-## ⛳️ Example fingerprint
-
-```kt
-val hideAdsFingerprint by fingerprint {
-    // Method signature:
-    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-    returns("Z")
-    // Last parameter is simply `L` since it's an obfuscated class.
-    parameters("Ljava/lang/String;", "I", "L")
-    
-    // Method implementation:
-    instructions( 
-        // Filter 1.
-        fieldAccess(
-            definingClass = "this",
-            type = "Ljava/util/Map;"
-        ),
-
-        // Filter 2.
-        string("showBannerAds"),
-      
-        // Filter 3.
-        methodCall(
-            definingClass = "Ljava/lang/String;",
-            name = "equals",
-        ),
-
-        // Filter 4.
-        // maxAfter = 0 means this must match immediately after the last filter.
-        opcode(Opcode.MOVE_RESULT, maxAfter = 0),
-
-        // Filter 5.
-        literal(1337),
-        
-        // Filter 6.
-        opcode(Opcode.IF_EQ),
-    )
-    custom { method, classDef ->
-        classDef.type == "Lcom/some/app/ads/AdsLoader;"
-    }
-}
-```
-
-  Notice the instruction filters do not declare every instruction in the target method,
+  Notice the fingerprint filters do not declare every instruction in the target method,
   and between each filter can exist 0 or more other instructions.  Instruction filters
   must be declared in the same order as the instructions appear in the target method.
 
