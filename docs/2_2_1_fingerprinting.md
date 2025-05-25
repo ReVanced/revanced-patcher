@@ -70,8 +70,8 @@ access flags, instructions, strings, and more.
 ## ⛳️ Example fingerprint
 
 ```kt
-val hideAdsFingerprint by fingerprint {
-    // Method signature:
+val showAdsFingerprint by fingerprint {
+    // Method signature.
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
     // Last parameter is simply `L` since it's an obfuscated class.
@@ -118,7 +118,7 @@ package com.some.app.ads;
 class AdsLoader {
   private final static Map<String, String> m = new HashMap<>();
 
-  // Method to fingerprint    
+  // Method to fingerprint.
   public final boolean obfuscatedMethod(String parameter1, int parameter2, ObfuscatedClass parameter3) {
     // Filter 1 target instruction.
     String string = m.get(parameter1);
@@ -223,7 +223,7 @@ After declaring a fingerprint it can be used in a patch to find the method it ma
 
 ```kt
 execute {
-  hideAdsFingerprint.let {
+  showAdsFingerprint.let {
     // Changes the target code to:
     // if (false) {
     //    showBannerAds();
