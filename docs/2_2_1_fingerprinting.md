@@ -197,7 +197,7 @@ class AdsLoader {
 ```
 
   Notice the fingerprint filters do not declare every instruction in the target method,
-  and between each filter can exist 0 or more other instructions.  Instruction filters
+  and between each filter, zero or more other instructions can exist.  Instruction filters
   must be declared in the same order as the instructions appear in the target method.
 
   If the distance between each instruction declaration can be approximated,
