@@ -210,6 +210,10 @@ class AdsLoader {
   same instruction.  Such as:
   `anyInstruction(string("string in early app target"), string("updated string in latest app target"))`
 
+  To simplify some filter declarations, `methodCall` and `fieldReference` can be
+  declared using un-obfuscated smali statements.  Such as: 
+  `methodCall(smali = "Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;")`
+
   If a method cannot be uniquely identified using the built in filters, but a fixed
   pattern of opcodes can identify the method, then the opcode pattern can be
   defined using the fingerprint `opcodes()` declaration.  Opcode patterns do not
