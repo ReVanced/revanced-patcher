@@ -14,11 +14,11 @@ class PatchClasses internal constructor(
     /**
      * Pool of both immutable and mutable classes.
      */
-    internal val pool: MutableMap<String, ClassDef>
+    internal val pool: MutableMap<CharSequence, ClassDef>
 ) {
 
     internal constructor(set: Set<ClassDef>) :
-            this(set.associateByTo(HashMap<String, ClassDef>(set.size * 3 / 2)) { it.type })
+            this(set.associateByTo(HashMap<CharSequence, ClassDef>(set.size * 3 / 2)) { it.type })
 
     internal fun addClass(classDef: ClassDef) {
         pool[classDef.type] = classDef
@@ -42,7 +42,7 @@ class PatchClasses internal constructor(
      * @return An immutable instance of the class type.
      * @see mutableClassBy
      */
-    fun classByOrNull(classType: String) = pool[classType]
+    fun classByOrNull(classType: CharSequence) = pool[classType]
 
     /**
      * Find a class with a predicate.
@@ -68,7 +68,7 @@ class PatchClasses internal constructor(
      * @return An immutable instance of the class type.
      * @see mutableClassBy
      */
-    fun classBy(classType: String) = classByOrNull(classType)
+    fun classBy(classType: CharSequence) = classByOrNull(classType)
         ?: throw PatchException("Could not find class: $classType")
 
     /**
@@ -78,7 +78,7 @@ class PatchClasses internal constructor(
      * @param classDefType The full classname.
      * @return A mutable version of the class type.
      */
-    fun mutableClassByOrNull(classDefType: String) : MutableClass? {
+    fun mutableClassByOrNull(classDefType: CharSequence) : MutableClass? {
         var classDef = pool[classDefType]
         if (classDef == null) return null
         if (classDef is MutableClass) return classDef
@@ -94,7 +94,7 @@ class PatchClasses internal constructor(
      * @param classDefType The full classname.
      * @return A mutable version of the class type.
      */
-    fun mutableClassBy(classDefType: String) = mutableClassByOrNull(classDefType)
+    fun mutableClassBy(classDefType: CharSequence) = mutableClassByOrNull(classDefType)
         ?: throw PatchException("Could not find class: $classDefType")
 
     /**
