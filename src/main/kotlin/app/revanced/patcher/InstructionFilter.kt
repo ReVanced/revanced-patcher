@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package app.revanced.patcher
 
 import app.revanced.patcher.FieldAccessFilter.Companion.parseJvmFieldAccess
@@ -14,7 +16,6 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import java.util.EnumSet
-import kotlin.collections.forEach
 
 /**
  * Matches method [Instruction] objects, similar to how [Fingerprint] matches entire fingerprints.
@@ -175,7 +176,7 @@ open class OpcodesFilter private constructor(
 
 
 class LiteralFilter internal constructor(
-    var literal: (BytecodePatchContext) -> Long,
+    var literal: () -> Long,
     opcodes: List<Opcode>? = null,
     maxAfter: Int,
 ) : OpcodesFilter(opcodes, maxAfter) {
@@ -194,7 +195,7 @@ class LiteralFilter internal constructor(
         if (instruction !is WideLiteralInstruction) return false
 
         if (literalValue == null) {
-            literalValue = literal(context)
+            literalValue = literal()
         }
 
         return instruction.wideLiteral == literalValue
@@ -211,7 +212,7 @@ class LiteralFilter internal constructor(
  * `LiteralFilter(2131231512)`
  */
 fun literal(
-    literal: (BytecodePatchContext) -> Long,
+    literal: () -> Long,
     opcodes: List<Opcode>? = null,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
 ) = LiteralFilter(literal, opcodes, maxAfter)
@@ -261,7 +262,7 @@ fun literal(
 
 
 class StringFilter internal constructor(
-    var string: (BytecodePatchContext) -> String,
+    var string: () -> String,
     var partialMatch: Boolean,
     maxAfter: Int,
 ) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), maxAfter) {
@@ -276,7 +277,7 @@ class StringFilter internal constructor(
         }
 
         val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
-        val filterString = string(context)
+        val filterString = string()
 
         return if (partialMatch) {
             instructionString.contains(filterString)
@@ -290,7 +291,7 @@ class StringFilter internal constructor(
  * Literal String instruction.
  */
 fun string(
-    string: (BytecodePatchContext) -> String,
+    string: () -> String,
     /**
      * If [string] is a partial match, where the target string contains this string.
      * For more precise matching, consider using [anyInstruction] with multiple exact string declarations.
@@ -315,10 +316,10 @@ fun string(
 
 
 class MethodCallFilter internal constructor(
-    val definingClass: ((BytecodePatchContext) -> String)? = null,
-    val name: ((BytecodePatchContext) -> String)? = null,
-    val parameters: ((BytecodePatchContext) -> List<String>)? = null,
-    val returnType: ((BytecodePatchContext) -> String)? = null,
+    val definingClass: (() -> String)? = null,
+    val name: (() -> String)? = null,
+    val parameters: (() -> List<String>)? = null,
+    val returnType: (() -> String)? = null,
     opcodes: List<Opcode>? = null,
     maxAfter: Int,
 ) : OpcodesFilter(opcodes, maxAfter) {
@@ -337,7 +338,7 @@ class MethodCallFilter internal constructor(
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
-            val definingClass = definingClass(context)
+            val definingClass = definingClass()
 
             if (!referenceClass.endsWith(definingClass)) {
                 // Check if 'this' defining class is used.
@@ -349,13 +350,13 @@ class MethodCallFilter internal constructor(
                 } // else, the method call is for 'this' class.
             }
         }
-        if (name != null && reference.name != name(context)) {
+        if (name != null && reference.name != name()) {
             return false
         }
-        if (returnType != null && !reference.returnType.startsWith(returnType(context))) {
+        if (returnType != null && !reference.returnType.startsWith(returnType())) {
             return false
         }
-        if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters(context))) {
+        if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters())) {
             return false
         }
 
@@ -454,20 +455,20 @@ fun methodCall(
      * For calls to a method in the same class, use 'this' as the defining class.
      * Note: 'this' does not work for methods declared only in a superclass.
      */
-    definingClass: ((BytecodePatchContext) -> String)? = null,
+    definingClass: (() -> String)? = null,
     /**
      * Method name. Must be exact match of the method name.
      */
-    name: ((BytecodePatchContext) -> String)? = null,
+    name: (() -> String)? = null,
     /**
      * Parameters of the method call. Each parameter matches
      * using startsWith() and semantics are the same as [Fingerprint].
      */
-    parameters: ((BytecodePatchContext) -> List<String>)? = null,
+    parameters: (() -> List<String>)? = null,
     /**
      * Return type. Matches using startsWith()
      */
-    returnType: ((BytecodePatchContext) -> String)? = null,
+    returnType: (() -> String)? = null,
     /**
      * Opcode types to match. By default this matches any method call opcode:
      * `Opcode.INVOKE_*`.
@@ -607,9 +608,9 @@ fun methodCall(
 
 
 class FieldAccessFilter internal constructor(
-    val definingClass: ((BytecodePatchContext) -> String)? = null,
-    val name: ((BytecodePatchContext) -> String)? = null,
-    val type: ((BytecodePatchContext) -> String)? = null,
+    val definingClass: (() -> String)? = null,
+    val name: (() -> String)? = null,
+    val type: (() -> String)? = null,
     opcodes: List<Opcode>? = null,
     maxAfter: Int,
 ) : OpcodesFilter(opcodes, maxAfter) {
@@ -628,7 +629,7 @@ class FieldAccessFilter internal constructor(
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
-            val definingClass = definingClass(context)
+            val definingClass = definingClass()
 
             if (!referenceClass.endsWith(definingClass)) {
                 if (!(definingClass == "this" && referenceClass == enclosingMethod.definingClass)) {
@@ -636,10 +637,10 @@ class FieldAccessFilter internal constructor(
                 } // else, the method call is for 'this' class.
             }
         }
-        if (name != null && reference.name != name(context)) {
+        if (name != null && reference.name != name()) {
             return false
         }
-        if (type != null && !reference.type.startsWith(type(context))) {
+        if (type != null && !reference.type.startsWith(type())) {
             return false
         }
 
@@ -679,15 +680,15 @@ fun fieldAccess(
      * For calls to a method in the same class, use 'this' as the defining class.
      * Note: 'this' does not work for fields found in superclasses.
      */
-    definingClass: ((BytecodePatchContext) -> String)? = null,
+    definingClass: (() -> String)? = null,
     /**
      * Name of the field. Must be a full match of the field name.
      */
-    name: ((BytecodePatchContext) -> String)? = null,
+    name: (() -> String)? = null,
     /**
      * Class type of field. Partial matches using startsWith() is allowed.
      */
-    type: ((BytecodePatchContext) -> String)? = null,
+    type: (() -> String)? = null,
     /**
      * Valid opcodes matches for this instruction.
      * By default this matches any kind of field access
@@ -795,7 +796,7 @@ fun fieldAccess(
 
 
 class NewInstanceFilter internal constructor (
-    var type: (BytecodePatchContext) -> String,
+    var type: () -> String,
     maxAfter : Int,
 ) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), maxAfter) {
 
@@ -811,7 +812,7 @@ class NewInstanceFilter internal constructor (
         val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
         if (reference == null) return false
 
-        return reference.type.endsWith(type(context))
+        return reference.type.endsWith(type())
     }
 }
 
@@ -821,7 +822,7 @@ class NewInstanceFilter internal constructor (
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun newInstancetype(type: (BytecodePatchContext) -> String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) =
+fun newInstancetype(type: () -> String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) =
     NewInstanceFilter(type, maxAfter)
 
 /**
@@ -839,7 +840,7 @@ fun newInstance(type: String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) : NewInst
 
 
 class CheckCastFilter internal constructor (
-    var type: (BytecodePatchContext) -> String,
+    var type: () -> String,
     maxAfter : Int,
 ) : OpcodeFilter(Opcode.CHECK_CAST, maxAfter) {
 
@@ -855,7 +856,7 @@ class CheckCastFilter internal constructor (
         val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
         if (reference == null) return false
 
-        return reference.type.endsWith(type(context))
+        return reference.type.endsWith(type())
     }
 }
 
@@ -864,7 +865,7 @@ class CheckCastFilter internal constructor (
  *
  * @param type Class type that matches the target instruction using [String.endsWith].
  */
-fun checkCast(type: (BytecodePatchContext) -> String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) =
+fun checkCast(type: () -> String, maxAfter: Int = METHOD_MAX_INSTRUCTIONS) =
     CheckCastFilter(type, maxAfter)
 
 /**

@@ -77,7 +77,7 @@ class Fingerprint internal constructor(
                 strings
             } else {
                 filters?.filterIsInstance<StringFilter>()
-                    ?.map { it.string(this@BytecodePatchContext) }
+                    ?.map { it.string() }
             }
 
         stringLiterals?.mapNotNull {
