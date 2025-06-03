@@ -654,15 +654,15 @@ public final class app/revanced/patcher/util/MethodNavigator {
 }
 
 public final class app/revanced/patcher/util/PatchClasses {
-	public final fun classBy (Ljava/lang/CharSequence;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun classBy (Ljava/lang/String;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun classBy (Lkotlin/jvm/functions/Function1;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun classByOrNull (Ljava/lang/CharSequence;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public final fun classByOrNull (Ljava/lang/String;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun classByOrNull (Lkotlin/jvm/functions/Function1;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public final fun forEach (Lkotlin/jvm/functions/Function1;)V
 	public final fun mutableClassBy (Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
-	public final fun mutableClassBy (Ljava/lang/CharSequence;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun mutableClassBy (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun mutableClassBy (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
-	public final fun mutableClassByOrNull (Ljava/lang/CharSequence;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
+	public final fun mutableClassByOrNull (Ljava/lang/String;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 	public final fun mutableClassByOrNull (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/util/proxy/mutableTypes/MutableClass;
 }
 
