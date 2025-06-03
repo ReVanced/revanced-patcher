@@ -5,7 +5,6 @@ package app.revanced.patcher
 import app.revanced.patcher.FieldAccessFilter.Companion.parseJvmFieldAccess
 import app.revanced.patcher.InstructionFilter.Companion.METHOD_MAX_INSTRUCTIONS
 import app.revanced.patcher.MethodCallFilter.Companion.parseJvmMethodCall
-import app.revanced.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -54,7 +53,6 @@ abstract class InstructionFilter(
      * @param instruction The instruction to check for a match.
      */
     abstract fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean
@@ -76,12 +74,11 @@ class AnyInstruction internal constructor(
 ) : InstructionFilter(maxAfter) {
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ) : Boolean {
         return filters.any { filter ->
-            filter.matches(context, enclosingMethod, instruction)
+            filter.matches(enclosingMethod, instruction)
         }
     }
 }
@@ -102,7 +99,6 @@ open class OpcodeFilter(
 ) : InstructionFilter(maxAfter) {
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
@@ -136,7 +132,6 @@ open class OpcodesFilter private constructor(
     ) : this(if (opcodes == null) null else EnumSet.copyOf(opcodes), maxAfter)
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
@@ -184,11 +179,10 @@ class LiteralFilter internal constructor(
     private var literalValue: Long? = null
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction)) {
+        if (!super.matches(enclosingMethod, instruction)) {
             return false
         }
 
@@ -268,11 +262,10 @@ class StringFilter internal constructor(
 ) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), maxAfter) {
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction)) {
+        if (!super.matches(enclosingMethod, instruction)) {
             return false
         }
 
@@ -325,11 +318,10 @@ class MethodCallFilter internal constructor(
 ) : OpcodesFilter(opcodes, maxAfter) {
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction)) {
+        if (!super.matches(enclosingMethod, instruction)) {
             return false
         }
 
@@ -616,11 +608,10 @@ class FieldAccessFilter internal constructor(
 ) : OpcodesFilter(opcodes, maxAfter) {
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction)) {
+        if (!super.matches(enclosingMethod, instruction)) {
             return false
         }
 
@@ -801,11 +792,10 @@ class NewInstanceFilter internal constructor (
 ) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), maxAfter) {
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction)) {
+        if (!super.matches(enclosingMethod, instruction)) {
             return false
         }
 
@@ -845,11 +835,10 @@ class CheckCastFilter internal constructor (
 ) : OpcodeFilter(Opcode.CHECK_CAST, maxAfter) {
 
     override fun matches(
-        context: BytecodePatchContext,
         enclosingMethod: Method,
         instruction: Instruction
     ): Boolean {
-        if (!super.matches(context, enclosingMethod, instruction)) {
+        if (!super.matches(enclosingMethod, instruction)) {
             return false
         }
 

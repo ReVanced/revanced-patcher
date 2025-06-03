@@ -13,9 +13,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
-import kotlin.collections.forEach
-import kotlin.collections.isEmpty
-import kotlin.lazy
 import kotlin.reflect.KProperty
 
 /**
@@ -231,7 +228,7 @@ class Fingerprint internal constructor(
 
                         while (subIndex <= maxIndex) {
                             val instruction = instructions[subIndex]
-                            if (filter.matches(this@BytecodePatchContext, method, instruction)) {
+                            if (filter.matches(method, instruction)) {
                                 if (filterIndex == 0) {
                                     firstFilterIndex = subIndex
                                 }
@@ -489,7 +486,7 @@ class Match internal constructor(
      * Accessing this property allocates a new mutable instance.
      * Use [originalClassDef] if mutable access is not required.
      */
-    val classDef by lazy { proxy(originalClassDef) }
+    val classDef by lazy { mutableClassBy(originalClassDef) }
 
     /**
      * The mutable version of [originalMethod].
