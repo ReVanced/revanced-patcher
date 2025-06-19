@@ -34,7 +34,7 @@ class Document internal constructor(
                 readerCount.remove(it)
             }
 
-            it.outputStream().use { stream ->
+            it.outputStream().buffered().use { stream ->
                 TransformerFactory.newInstance()
                     .newTransformer()
                     .transform(DOMSource(this), StreamResult(stream))
