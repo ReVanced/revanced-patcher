@@ -1,3 +1,21 @@
+# [21.1.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.1...v21.1.0-dev.2) (2025-06-20)
+
+
+### Bug Fixes
+
+* Add back missing log by naming logger correctly ([#332](https://github.com/ReVanced/revanced-patcher/issues/332)) ([e4e66b0](https://github.com/ReVanced/revanced-patcher/commit/e4e66b0d8bb0986b79fb150b9c15da35b8e11561))
+* Support UTF-8 chars when compiling instructions in Smali in non UTF-8 environments ([#331](https://github.com/ReVanced/revanced-patcher/issues/331)) ([bb8771b](https://github.com/ReVanced/revanced-patcher/commit/bb8771bb8b8ab1724d957e56f4de88c02684d87b))
+
+
+### Features
+
+* Use option name as key for simplicity and consistency ([754b02e](https://github.com/ReVanced/revanced-patcher/commit/754b02e4ca66ec10764d5205c6643f2d86d0c6a2))
+
+
+### Performance Improvements
+
+* Use a buffered writer to reduce IO overhead ([#347](https://github.com/ReVanced/revanced-patcher/issues/347)) ([99f4318](https://github.com/ReVanced/revanced-patcher/commit/99f431897eb9e607987fd5d09b879d7eda442f3e))
+
 # [21.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0...v21.1.0-dev.1) (2024-12-07)
 
 
