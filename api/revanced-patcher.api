@@ -171,9 +171,12 @@ public final class app/revanced/patcher/patch/BytecodePatchContext : app/revance
 public final class app/revanced/patcher/patch/Option {
 	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/reflect/KType;Lkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Object;Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;ZLkotlin/reflect/KType;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Ljava/util/Map;Ljava/lang/String;ZLkotlin/reflect/KType;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Object;Ljava/util/Map;Ljava/lang/String;ZLkotlin/reflect/KType;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getDefault ()Ljava/lang/Object;
 	public final fun getDescription ()Ljava/lang/String;
 	public final fun getKey ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
 	public final fun getRequired ()Z
 	public final fun getTitle ()Ljava/lang/String;
 	public final fun getType ()Lkotlin/reflect/KType;
