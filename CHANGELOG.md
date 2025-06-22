@@ -1,3 +1,10 @@
+# [21.1.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.2...v21.1.0-dev.3) (2025-06-20)
+
+
+### Bug Fixes
+
+* Encode XML files as UTF-8 to fix compilation of resources ([#339](https://github.com/ReVanced/revanced-patcher/issues/339)) ([4f2ef3c](https://github.com/ReVanced/revanced-patcher/commit/4f2ef3c47cea76a26c464cfb45d4bb57fe7198b5))
+
 # [21.1.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.1...v21.1.0-dev.2) (2025-06-20)
 
 
