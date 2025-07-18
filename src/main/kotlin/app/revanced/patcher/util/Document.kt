@@ -40,7 +40,7 @@ class Document internal constructor(
             if (isAndroid) {
                 transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-16")
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
-                it.bufferedWriter().use { writer ->
+                it.bufferedWriter(charset = Charsets.UTF_8).use { writer ->
                     transformer.transform(DOMSource(this), StreamResult(writer))
                 }
             } else {
@@ -51,7 +51,6 @@ class Document internal constructor(
 
     private companion object {
         private val readerCount = mutableMapOf<File, Int>()
-        private val isAndroid =
-            System.getProperty("java.runtime.name") == "Android Runtime"
+        private val isAndroid = System.getProperty("java.runtime.name") == "Android Runtime"
     }
 }
