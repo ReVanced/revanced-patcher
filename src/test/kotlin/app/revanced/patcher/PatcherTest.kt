@@ -34,7 +34,7 @@ internal object PatcherTest {
                 Logger.getAnonymousLogger(),
             )
 
-            every { context.bytecodeContext.classes } returns mockk(relaxed = true)
+            every { context.bytecodeContext!!.classes } returns mockk(relaxed = true)
             every { this@mockk() } answers { callOriginal() }
         }
     }
@@ -165,7 +165,7 @@ internal object PatcherTest {
 
     @Test
     fun `matches fingerprint`() {
-        every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
+        every { patcher.context.bytecodeContext!!.classes } returns ProxyClassList(
             mutableListOf(
                 ImmutableClassDef(
                     "class",
@@ -207,7 +207,7 @@ internal object PatcherTest {
 
         patches()
 
-        with(patcher.context.bytecodeContext) {
+        with(patcher.context.bytecodeContext!!) {
             assertAll(
                 "Expected fingerprints to match.",
                 { assertNotNull(fingerprint.originalClassDefOrNull) },
@@ -219,8 +219,8 @@ internal object PatcherTest {
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
-        every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
+        every { patcher.context.bytecodeContext!!.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext!!.classes)
+        every { with(patcher.context.bytecodeContext!!) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }
     }

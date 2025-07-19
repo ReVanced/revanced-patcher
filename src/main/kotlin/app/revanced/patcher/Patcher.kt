@@ -28,6 +28,9 @@ class Patcher(private val config: PatcherConfig) : Closeable {
      * @param patches The patches to add.
      */
     operator fun plusAssign(patches: Set<Patch<*>>) {
+        // Filter out bytecode patches if bytecodeContext is null
+        val patches = patches.filterNotTo(mutableSetOf()) { (context.bytecodeContext == null && it is BytecodePatch) }
+
         // Add all patches to the executablePatches set.
         context.executablePatches += patches
 
@@ -99,7 +102,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
         logger.info("Initializing lookup maps")
 
         // Accessing the lazy lookup maps to initialize them.
-        context.bytecodeContext.lookupMaps
+        context.bytecodeContext?.lookupMaps
 
         logger.info("Executing patches")
 
@@ -156,5 +159,5 @@ class Patcher(private val config: PatcherConfig) : Closeable {
      * @return The [PatcherResult] containing the patched APK files.
      */
     @OptIn(InternalApi::class)
-    fun get() = PatcherResult(context.bytecodeContext.get(), context.resourceContext.get())
+    fun get() = PatcherResult(context.bytecodeContext?.get() ?: setOf(), context.resourceContext.get())
 }
