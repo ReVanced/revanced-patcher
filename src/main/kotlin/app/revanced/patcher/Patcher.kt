@@ -99,7 +99,9 @@ class Patcher(private val config: PatcherConfig) : Closeable {
             context.resourceContext.decodeResources(config.resourceMode)
         }
 
-        logger.info("Initializing lookup maps")
+        if (context.bytecodeContext != null) {
+            logger.info("Initializing lookup maps")
+        }
 
         // Accessing the lazy lookup maps to initialize them.
         context.bytecodeContext?.lookupMaps
