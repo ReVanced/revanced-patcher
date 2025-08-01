@@ -1,3 +1,10 @@
+# [21.1.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.3...v21.1.0-dev.4) (2025-07-18)
+
+
+### Bug Fixes
+
+* Correctly save XML files in UTF-8 by using a bufferedWriter ([#356](https://github.com/ReVanced/revanced-patcher/issues/356)) ([33fadcb](https://github.com/ReVanced/revanced-patcher/commit/33fadcbd0c7076b848bdca4d62a9c684d5781232))
+
 # [21.1.0-dev.3](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.2...v21.1.0-dev.3) (2025-06-20)
 
 
