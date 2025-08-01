@@ -8,7 +8,7 @@ mockk = "1.14.5"
 multidexlib2 = "3.0.3.r3"
 # Tracking https://github.com/google/smali/issues/64.
 #noinspection GradleDependency
-smali = "3.0.8"
+smali = "3.0.9"
 xpp3 = "1.1.4c"
 
 [libraries]
