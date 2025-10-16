@@ -155,12 +155,12 @@ class BytecodePatch internal constructor(
     executeBlock,
     finalizeBlock,
 ) {
-    override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
+    override fun execute(context: PatcherContext) = with(context.bytecodeContext!!) {
         mergeExtension(this@BytecodePatch)
         execute(this)
     }
 
-    override fun finalize(context: PatcherContext) = finalize(context.bytecodeContext)
+    override fun finalize(context: PatcherContext) = finalize(context.bytecodeContext!!)
 
     override fun toString() = name ?: "Bytecode${super.toString()}"
 }
