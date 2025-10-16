@@ -5,6 +5,7 @@ import java.io.Closeable
 import java.io.File
 import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
@@ -34,15 +35,22 @@ class Document internal constructor(
                 readerCount.remove(it)
             }
 
-            it.outputStream().use { stream ->
-                TransformerFactory.newInstance()
-                    .newTransformer()
-                    .transform(DOMSource(this), StreamResult(stream))
+            val transformer = TransformerFactory.newInstance().newTransformer()
+            // Set to UTF-16 to prevent surrogate pairs from being escaped to invalid numeric character references, but save as UTF-8.
+            if (isAndroid) {
+                transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-16")
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
+                it.bufferedWriter(charset = Charsets.UTF_8).use { writer ->
+                    transformer.transform(DOMSource(this), StreamResult(writer))
+                }
+            } else {
+                transformer.transform(DOMSource(this), StreamResult(it))
             }
         }
     }
 
     private companion object {
         private val readerCount = mutableMapOf<File, Int>()
+        private val isAndroid = System.getProperty("java.runtime.name") == "Android Runtime"
     }
 }
