@@ -2,7 +2,7 @@
 android = "4.1.1.4"
 apktool-lib = "2.10.1.1"
 binary-compatibility-validator = "0.18.1"
-kotlin = "2.0.20"
+kotlin = "2.2.20"
 kotlinx-coroutines-core = "1.10.2"
 mockk = "1.14.5"
 multidexlib2 = "3.0.3.r3"
