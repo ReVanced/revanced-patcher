@@ -1,3 +1,24 @@
+# [21.1.0](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0...v21.1.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* Add back missing log by naming logger correctly ([#332](https://github.com/ReVanced/revanced-patcher/issues/332)) ([e4e66b0](https://github.com/ReVanced/revanced-patcher/commit/e4e66b0d8bb0986b79fb150b9c15da35b8e11561))
+* Correctly save XML files in UTF-8 by using a bufferedWriter ([#356](https://github.com/ReVanced/revanced-patcher/issues/356)) ([33fadcb](https://github.com/ReVanced/revanced-patcher/commit/33fadcbd0c7076b848bdca4d62a9c684d5781232))
+* Encode XML files as UTF-8 to fix compilation of resources ([#339](https://github.com/ReVanced/revanced-patcher/issues/339)) ([4f2ef3c](https://github.com/ReVanced/revanced-patcher/commit/4f2ef3c47cea76a26c464cfb45d4bb57fe7198b5))
+* Support UTF-8 chars when compiling instructions in Smali in non UTF-8 environments ([#331](https://github.com/ReVanced/revanced-patcher/issues/331)) ([bb8771b](https://github.com/ReVanced/revanced-patcher/commit/bb8771bb8b8ab1724d957e56f4de88c02684d87b))
+
+
+### Features
+
+* Add identity hash code to unnamed patches ([88a3252](https://github.com/ReVanced/revanced-patcher/commit/88a325257494939a79fb30dd51d60c5c52546755))
+* Use option name as key for simplicity and consistency ([754b02e](https://github.com/ReVanced/revanced-patcher/commit/754b02e4ca66ec10764d5205c6643f2d86d0c6a2))
+
+
+### Performance Improvements
+
+* Use a buffered writer to reduce IO overhead ([#347](https://github.com/ReVanced/revanced-patcher/issues/347)) ([99f4318](https://github.com/ReVanced/revanced-patcher/commit/99f431897eb9e607987fd5d09b879d7eda442f3e))
+
 # [21.1.0-dev.5](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.4...v21.1.0-dev.5) (2025-10-16)
 
 # [21.1.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.3...v21.1.0-dev.4) (2025-07-18)
