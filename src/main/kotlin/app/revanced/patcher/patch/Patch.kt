@@ -87,8 +87,7 @@ sealed class Patch<C : PatchContext<*>>(
         finalizeBlock?.invoke(context)
     }
 
-    override fun toString() = name ?: 
-        "Patch@${System.identityHashCode(this)}"
+    override fun toString() = name ?: "Patch@${System.identityHashCode(this)}"
 }
 
 internal fun Patch<*>.anyRecursively(
@@ -529,11 +528,11 @@ fun resourcePatch(
 /**
  * An exception thrown when patching.
  *
- * @param errorMessage The exception message.
- * @param cause The corresponding [Throwable].
+ * @param message The exception message.
+ * @param cause The cause of the exception.
  */
-class PatchException(errorMessage: String?, cause: Throwable?) : Exception(errorMessage, cause) {
-    constructor(errorMessage: String) : this(errorMessage, null)
+class PatchException(message: String?, cause: Throwable?) : Exception(message, cause) {
+    constructor(message: String) : this(message, null)
     constructor(cause: Throwable) : this(cause.message, cause)
 }
 
@@ -543,6 +542,7 @@ class PatchException(errorMessage: String?, cause: Throwable?) : Exception(error
  * @param patch The [Patch] that was executed.
  * @param exception The [PatchException] thrown, if any.
  */
+@Deprecated("This class is not used anymore. Instead a callback is used")
 class PatchResult internal constructor(val patch: Patch<*>, val exception: PatchException? = null)
 
 /**
@@ -553,36 +553,47 @@ class PatchResult internal constructor(val patch: Patch<*>, val exception: Patch
  *
  * @param byPatchesFile The patches associated by the patches file they were loaded from.
  */
-sealed class PatchLoader private constructor(
+sealed class PatchLoader(
     val byPatchesFile: Map<File, Set<Patch<*>>>,
 ) : Set<Patch<*>> by byPatchesFile.values.flatten().toSet() {
     /**
      * @param patchesFiles A set of JAR or DEX files to load the patches from.
      * @param getBinaryClassNames A function that returns the binary names of all classes accessible by the class loader.
      * @param classLoader The [ClassLoader] to use for loading the classes.
+     * @param onLoadPatchesException The callback for patches that could not be loaded.
      */
-    private constructor(
+    constructor(
         patchesFiles: Set<File>,
         getBinaryClassNames: (patchesFile: File) -> List<String>,
         classLoader: ClassLoader,
-    ) : this(classLoader.loadPatches(patchesFiles.associateWith { getBinaryClassNames(it).toSet() }))
+        onLoadPatchesException: (message: String, cause: Throwable) -> Unit
+    ) : this(
+        classLoader.loadPatches(
+            patchesFiles.associateWith { getBinaryClassNames(it).toSet() },
+            onLoadPatchesException
+        )
+    )
 
     /**
      * A [PatchLoader] for JAR files.
      *
      * @param patchesFiles The JAR files to load the patches from.
+     * @param onLoadPatchesException The callback for patches that could not be loaded.
      *
      * @constructor Create a new [PatchLoader] for JAR files.
      */
-    class Jar(patchesFiles: Set<File>) :
-        PatchLoader(
-            patchesFiles,
-            { file ->
-                JarFile(file).entries().toList().filter { it.name.endsWith(".class") }
-                    .map { it.name.substringBeforeLast('.').replace('/', '.') }
-            },
-            URLClassLoader(patchesFiles.map { it.toURI().toURL() }.toTypedArray()),
-        )
+    class Jar internal constructor(
+        patchesFiles: Set<File>,
+        onLoadPatchesException: (message: String, cause: Throwable) -> Unit
+    ) : PatchLoader(
+        patchesFiles,
+        { file ->
+            JarFile(file).entries().toList().filter { it.name.endsWith(".class") }
+                .map { it.name.substringBeforeLast('.').replace('/', '.') }
+        },
+        URLClassLoader(patchesFiles.map { it.toURI().toURL() }.toTypedArray()),
+        onLoadPatchesException
+    )
 
     /**
      * A [PatchLoader] for [Dex] files.
@@ -590,25 +601,30 @@ sealed class PatchLoader private constructor(
      * @param patchesFiles The DEX files to load the patches from.
      * @param optimizedDexDirectory The directory to store optimized DEX files in.
      * This parameter is deprecated and has no effect since API level 26.
+     * @param onLoadPatchesException The callback for patches that could not be loaded.
      *
      * @constructor Create a new [PatchLoader] for [Dex] files.
      */
-    class Dex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null) :
-        PatchLoader(
-            patchesFiles,
-            { patchBundle ->
-                MultiDexIO.readDexFile(true, patchBundle, BasicDexFileNamer(), null, null).classes
-                    .map { classDef ->
-                        classDef.type.substring(1, classDef.length - 1)
-                    }
-            },
-            DexClassLoader(
-                patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
-                optimizedDexDirectory?.absolutePath,
-                null,
-                this::class.java.classLoader,
-            ),
-        )
+    class Dex internal constructor(
+        patchesFiles: Set<File>,
+        optimizedDexDirectory: File? = null,
+        onLoadPatchesException: (message: String, cause: Throwable) -> Unit
+    ) : PatchLoader(
+        patchesFiles,
+        { patchBundle ->
+            MultiDexIO.readDexFile(true, patchBundle, BasicDexFileNamer(), null, null).classes
+                .map { classDef ->
+                    classDef.type.substring(1, classDef.length - 1)
+                }
+        },
+        DexClassLoader(
+            patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
+            optimizedDexDirectory?.absolutePath,
+            null,
+            this::class.java.classLoader,
+        ),
+        onLoadPatchesException
+    )
 
     // Companion object required for unit tests.
     private companion object {
@@ -640,19 +656,24 @@ sealed class PatchLoader private constructor(
          *
          * @param binaryClassNamesByPatchesFile The binary class name of the classes to load the patches from
          * associated by the patches file.
+         * @param onLoadPatchesException The callback for patches that could not be loaded.
          *
          * @return The loaded patches associated by the patches file.
          */
-        private fun ClassLoader.loadPatches(binaryClassNamesByPatchesFile: Map<File, Set<String>>) =
-            binaryClassNamesByPatchesFile.mapValues { (_, binaryClassNames) ->
-                binaryClassNames.asSequence().map {
-                    loadClass(it)
-                }.flatMap {
-                    it.patchFields + it.patchMethods
-                }.filter {
-                    it.name != null
-                }.toSet()
-            }
+        private fun ClassLoader.loadPatches(
+            binaryClassNamesByPatchesFile: Map<File, Set<String>>,
+            onLoadPatchesException: (message: String, cause: Throwable) -> Unit
+        ) = binaryClassNamesByPatchesFile.mapValues { (_, binaryClassNames) ->
+            binaryClassNames.asSequence().mapNotNull {
+                runCatching { loadClass(it) }.onFailure { exception ->
+                    onLoadPatchesException("Failed to load patch class $it", exception)
+                }.getOrNull()
+            }.flatMap {
+                it.patchFields + it.patchMethods
+            }.filter {
+                it.name != null
+            }.toSet()
+        }
 
         private fun Member.canAccess(): Boolean {
             if (this is Method && parameterCount != 0) return false
@@ -668,11 +689,22 @@ sealed class PatchLoader private constructor(
  * Patches with no name are not loaded.
  *
  * @param patchesFiles The JAR files to load the patches from.
+ * @param onLoadPatchesException The callback for patches that could not be loaded.
  *
  * @return The loaded patches.
  */
-fun loadPatchesFromJar(patchesFiles: Set<File>) =
-    PatchLoader.Jar(patchesFiles)
+fun loadPatchesFromJar(
+    patchesFiles: Set<File>,
+    onLoadPatchesException: ((message: String, cause: Throwable) -> Unit)? = null
+) = PatchLoader.Jar(patchesFiles, onLoadPatchesException ?: { message, cause -> })
+
+@Deprecated(
+    "Use the function with the onLoadPatchesException overload",
+    replaceWith = ReplaceWith("loadPatchesFromJar(patchesFiles, null)")
+)
+fun loadPatchesFromJar(
+    patchesFiles: Set<File>
+) = loadPatchesFromJar(patchesFiles, null)
 
 /**
  * Loads patches from DEX files declared as public static fields
@@ -680,8 +712,21 @@ fun loadPatchesFromJar(patchesFiles: Set<File>) =
  * Patches with no name are not loaded.
  *
  * @param patchesFiles The DEX files to load the patches from.
+ * @param onLoadPatchesException The callback for patches that could not be loaded.
  *
  * @return The loaded patches.
  */
-fun loadPatchesFromDex(patchesFiles: Set<File>, optimizedDexDirectory: File? = null) =
-    PatchLoader.Dex(patchesFiles, optimizedDexDirectory)
+fun loadPatchesFromDex(
+    patchesFiles: Set<File>,
+    optimizedDexDirectory: File? = null,
+    onLoadPatchesException: ((message: String, cause: Throwable) -> Unit)? = null
+) = PatchLoader.Dex(patchesFiles, optimizedDexDirectory, onLoadPatchesException ?: { message, cause -> })
+
+@Deprecated(
+    "Use the function with the onLoadPatchesException overload",
+    replaceWith = ReplaceWith("loadPatchesFromJar(patchesFiles, optimizedDexDirectory, null)")
+)
+fun loadPatchesFromDex(
+    patchesFiles: Set<File>,
+    optimizedDexDirectory: File? = null,
+) = loadPatchesFromDex(patchesFiles, optimizedDexDirectory, null)
