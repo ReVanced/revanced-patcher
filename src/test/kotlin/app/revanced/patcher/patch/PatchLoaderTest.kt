@@ -71,6 +71,7 @@ internal object PatchLoaderTest {
             patchLoaderCompanionObject,
             TEST_PATCHES_CLASS_LOADER,
             mapOf(File("patchesFile") to setOf(TEST_PATCHES_CLASS)),
+            null
         ).values.first()
 
         assertEquals(

@@ -342,8 +342,12 @@ public final class app/revanced/patcher/patch/PatchKt {
 	public static final fun bytecodePatch (Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/BytecodePatch;
 	public static synthetic fun bytecodePatch$default (Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/BytecodePatch;
 	public static final fun loadPatchesFromDex (Ljava/util/Set;Ljava/io/File;)Lapp/revanced/patcher/patch/PatchLoader$Dex;
+	public static final fun loadPatchesFromDex (Ljava/util/Set;Ljava/io/File;Lkotlin/jvm/functions/Function2;)Lapp/revanced/patcher/patch/PatchLoader$Dex;
 	public static synthetic fun loadPatchesFromDex$default (Ljava/util/Set;Ljava/io/File;ILjava/lang/Object;)Lapp/revanced/patcher/patch/PatchLoader$Dex;
+	public static synthetic fun loadPatchesFromDex$default (Ljava/util/Set;Ljava/io/File;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lapp/revanced/patcher/patch/PatchLoader$Dex;
 	public static final fun loadPatchesFromJar (Ljava/util/Set;)Lapp/revanced/patcher/patch/PatchLoader$Jar;
+	public static final fun loadPatchesFromJar (Ljava/util/Set;Lkotlin/jvm/functions/Function2;)Lapp/revanced/patcher/patch/PatchLoader$Jar;
+	public static synthetic fun loadPatchesFromJar$default (Ljava/util/Set;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lapp/revanced/patcher/patch/PatchLoader$Jar;
 	public static final fun rawResourcePatch (Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/RawResourcePatch;
 	public static synthetic fun rawResourcePatch$default (Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lapp/revanced/patcher/patch/RawResourcePatch;
 	public static final fun resourcePatch (Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/patch/ResourcePatch;
@@ -352,7 +356,7 @@ public final class app/revanced/patcher/patch/PatchKt {
 
 public abstract class app/revanced/patcher/patch/PatchLoader : java/util/Set, kotlin/jvm/internal/markers/KMappedMarker {
 	public synthetic fun <init> (Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Ljava/util/Set;Lkotlin/jvm/functions/Function1;Ljava/lang/ClassLoader;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/util/Set;Lkotlin/jvm/functions/Function1;Ljava/lang/ClassLoader;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun add (Lapp/revanced/patcher/patch/Patch;)Z
 	public synthetic fun add (Ljava/lang/Object;)Z
 	public fun addAll (Ljava/util/Collection;)Z
@@ -373,12 +377,9 @@ public abstract class app/revanced/patcher/patch/PatchLoader : java/util/Set, ko
 }
 
 public final class app/revanced/patcher/patch/PatchLoader$Dex : app/revanced/patcher/patch/PatchLoader {
-	public fun <init> (Ljava/util/Set;Ljava/io/File;)V
-	public synthetic fun <init> (Ljava/util/Set;Ljava/io/File;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class app/revanced/patcher/patch/PatchLoader$Jar : app/revanced/patcher/patch/PatchLoader {
-	public fun <init> (Ljava/util/Set;)V
 }
 
 public final class app/revanced/patcher/patch/PatchResult {
