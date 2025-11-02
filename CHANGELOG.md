@@ -1,3 +1,5 @@
+# [21.1.0-dev.5](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.4...v21.1.0-dev.5) (2025-10-16)
+
 # [21.1.0-dev.4](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.3...v21.1.0-dev.4) (2025-07-18)
 
 
