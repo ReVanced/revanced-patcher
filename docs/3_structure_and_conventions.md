@@ -103,4 +103,4 @@ Patches are organized in a specific way. The file structure looks as follows:
 
 The next page discusses useful APIs for patch development.
 
-Continue: [💪 Advanced APIs](4_0_0_apis)
+Continue: [💪 Advanced APIs](4_apis)
