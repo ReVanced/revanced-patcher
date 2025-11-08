@@ -206,7 +206,7 @@ class AdsLoader {
   instruction of the target method.
 
   If a single instruction varies slightly between different app targets but otherwise the fingerprint
-  is still the same, the `anyInstruction()` wrapper can be used to specify the different expected
+  is still the same, the `anyInstruction()` filter can be used to specify the different expected
   instruction. Such as:
   ```
   anyInstruction(
