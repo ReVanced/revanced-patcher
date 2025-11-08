@@ -70,7 +70,7 @@ access flags, instructions, strings, and more.
 ## ⛳️ Example fingerprint
 
 ```kt
-val showAdsFingerprint by fingerprint {
+val showAdsFingerprint = fingerprint {
     // Method signature.
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")

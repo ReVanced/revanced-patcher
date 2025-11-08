@@ -85,7 +85,7 @@ val disableAdsPatch = bytecodePatch(
     // Business logic of the patch to disable ads in the app.
     execute {
         // Fingerprint to find the method to patch.
-        val showAdsFingerprint by fingerprint {
+        val showAdsFingerprint = fingerprint {
             // More about fingerprints on the next page of the documentation.
         }
 
