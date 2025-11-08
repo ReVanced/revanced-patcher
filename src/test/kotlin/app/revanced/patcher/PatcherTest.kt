@@ -153,7 +153,7 @@ internal object PatcherTest {
         val patch = bytecodePatch {
             execute {
                 // Fingerprint can never match.
-                val fingerprint by fingerprint { }
+                val fingerprint = fingerprint { }
 
                 // Throws, because the fingerprint can't be matched.
                 fingerprint.patternMatch
@@ -194,9 +194,9 @@ internal object PatcherTest {
             ),
         )
 
-        val fingerprint by fingerprint { returns("V") }
-        val fingerprint2 by fingerprint { returns("V") }
-        val fingerprint3 by fingerprint { returns("V") }
+        val fingerprint = fingerprint { returns("V") }
+        val fingerprint2 = fingerprint { returns("V") }
+        val fingerprint3 = fingerprint { returns("V") }
 
         val patches = setOf(
             bytecodePatch {

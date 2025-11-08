@@ -40,16 +40,14 @@ public final class app/revanced/patcher/Fingerprint {
 	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
 	public final fun matchOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lapp/revanced/patcher/Match;
 	public final fun patchException ()Lapp/revanced/patcher/patch/PatchException;
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/revanced/patcher/FingerprintBuilder {
-	public fun <init> (Ljava/lang/String;)V
+	public fun <init> ()V
 	public final fun accessFlags (I)V
 	public final fun accessFlags ([Lcom/android/tools/smali/dexlib2/AccessFlags;)V
 	public final fun build ()Lapp/revanced/patcher/Fingerprint;
 	public final fun custom (Lkotlin/jvm/functions/Function2;)V
-	public final fun getName ()Ljava/lang/String;
 	public final fun instructions ([Lapp/revanced/patcher/InstructionFilter;)V
 	public final fun opcodes (Ljava/lang/String;)V
 	public final fun opcodes ([Lcom/android/tools/smali/dexlib2/Opcode;)V
@@ -58,13 +56,8 @@ public final class app/revanced/patcher/FingerprintBuilder {
 	public final fun strings ([Ljava/lang/String;)V
 }
 
-public final class app/revanced/patcher/FingerprintDelegate {
-	public fun <init> (Lkotlin/jvm/functions/Function1;)V
-	public final fun getValue (Ljava/lang/Object;Lkotlin/reflect/KProperty;)Lapp/revanced/patcher/Fingerprint;
-}
-
 public final class app/revanced/patcher/FingerprintKt {
-	public static final fun fingerprint (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/FingerprintDelegate;
+	public static final fun fingerprint (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/Fingerprint;
 }
 
 public abstract class app/revanced/patcher/InstructionFilter {
