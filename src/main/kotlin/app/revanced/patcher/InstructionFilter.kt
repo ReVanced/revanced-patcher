@@ -15,6 +15,8 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import java.util.EnumSet
+import kotlin.text.endsWith
+import kotlin.text.substring
 
 /**
  * Matches method [Instruction] objects, similar to how [Fingerprint] matches entire fingerprints.
@@ -255,9 +257,16 @@ fun literal(
 
 
 
+enum class StringMatchType {
+    EQUALS,
+    CONTAINS,
+    STARTS_WITH,
+    ENDS_WITH
+}
+
 class StringFilter internal constructor(
     var string: () -> String,
-    var partialMatch: Boolean,
+    var matchType: StringMatchType,
     maxAfter: Int,
 ) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), maxAfter) {
 
@@ -272,10 +281,11 @@ class StringFilter internal constructor(
         val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
         val filterString = string()
 
-        return if (partialMatch) {
-            instructionString.contains(filterString)
-        } else {
-            instructionString == filterString
+        return when (matchType) {
+            StringMatchType.EQUALS -> instructionString == filterString
+            StringMatchType.CONTAINS -> instructionString.contains(filterString)
+            StringMatchType.STARTS_WITH -> instructionString.startsWith(filterString)
+            StringMatchType.ENDS_WITH -> instructionString.endsWith(filterString)
         }
     }
 }
@@ -289,9 +299,9 @@ fun string(
      * If [string] is a partial match, where the target string contains this string.
      * For more precise matching, consider using [anyInstruction] with multiple exact string declarations.
      */
-    partialMatch: Boolean = false,
+    matchType: StringMatchType = StringMatchType.EQUALS,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
-) = StringFilter(string, partialMatch, maxAfter)
+) = StringFilter(string, matchType, maxAfter)
 
 /**
  * Literal String instruction.
@@ -299,12 +309,12 @@ fun string(
 fun string(
     string: String,
     /**
-     * If [string] is a partial match, where the target string contains this string.
-     * For more precise matching, consider using [anyInstruction] with multiple exact string declarations.
+     * How to compare [string] against the string constant opcode. For more precise matching
+     * of multiple strings, consider using [anyInstruction] with multiple exact string declarations.
      */
-    partialMatch: Boolean = false,
+    matchType: StringMatchType = StringMatchType.EQUALS,
     maxAfter: Int = METHOD_MAX_INSTRUCTIONS,
-) = StringFilter({ string }, partialMatch, maxAfter)
+) = StringFilter({ string }, matchType, maxAfter)
 
 
 

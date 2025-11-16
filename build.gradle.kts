@@ -61,6 +61,14 @@ kotlin {
     }
 }
 
+tasks.withType<Test> {
+    testLogging {
+        // Uncomment to show println and exception stack traces in unit tests.
+        // showStandardStreams = true
+    }
+}
+
+
 java {
     targetCompatibility = JavaVersion.VERSION_11
 

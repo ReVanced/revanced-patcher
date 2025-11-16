@@ -1,11 +1,22 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.BytecodePatch
 import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchException
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.ResourcePatchContext
+import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.PatchClasses
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
-import io.mockk.*
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21c
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
@@ -14,6 +25,7 @@ import org.junit.jupiter.api.assertThrows
 import java.util.logging.Logger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -221,6 +233,57 @@ internal object PatcherTest {
     }
 
     @Test
+    fun `String filter patcomparison types`() {
+        val method = ImmutableMethod(
+            "class",
+            "method",
+            emptyList(),
+            "V",
+            0,
+            null,
+            null,
+            null,
+        )
+
+        val instruction1 = ImmutableInstruction21c(
+            Opcode.CONST_STRING,
+            0,
+            ImmutableStringReference("12345")
+        )
+
+        val instruction2 = ImmutableInstruction21c(
+            Opcode.CONST_STRING,
+            0,
+            ImmutableStringReference("345")
+        )
+
+        with(string("12345")) {
+            assertTrue(matches(method, instruction1))
+            assertFalse(matches(method, instruction2))
+        }
+
+        with(string("234", matchType = StringMatchType.CONTAINS)) {
+            assertTrue(matches(method, instruction1))
+            assertFalse(matches(method, instruction2))
+        }
+
+        with(string("123", matchType = StringMatchType.STARTS_WITH)) {
+            assertTrue(matches(method, instruction1))
+            assertFalse(matches(method, instruction2))
+        }
+
+        with(string("345", matchType = StringMatchType.ENDS_WITH)) {
+            assertTrue(matches(method, instruction1))
+            assertTrue(matches(method, instruction2))
+        }
+
+        with(string("123", matchType = StringMatchType.ENDS_WITH)) {
+            assertFalse(matches(method, instruction1))
+            assertFalse(matches(method, instruction2))
+        }
+    }
+
+    @Test
     fun `MethodCallFilter smali parsing`() {
         with(patcher.context.bytecodeContext) {
             var definingClass = "Landroid/view/View;"
@@ -231,13 +294,10 @@ internal object PatcherTest {
 
             var filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(parameters == filter.parameters!!()) },
-                { assertTrue(returnType == filter.returnType!!()) },
-            )
-
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(parameters, filter.parameters!!())
+            assertEquals(returnType, filter.returnType!!())
 
             definingClass = "Landroid/view/View\$InnerClass;"
             name = "inflate"
@@ -247,12 +307,10 @@ internal object PatcherTest {
 
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(parameters == filter.parameters!!()) },
-                { assertTrue(returnType == filter.returnType!!()) },
-            )
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(parameters, filter.parameters!!())
+            assertEquals(returnType, filter.returnType!!())
 
             definingClass = "Landroid/view/View\$InnerClass;"
             name = "inflate"
@@ -262,12 +320,10 @@ internal object PatcherTest {
 
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(parameters == filter.parameters!!()) },
-                { assertTrue(returnType == filter.returnType!!()) },
-            )
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(parameters, filter.parameters!!())
+            assertEquals(returnType, filter.returnType!!())
 
             definingClass = "Landroid/view/View\$InnerClass;"
             name = "inflate"
@@ -277,12 +333,10 @@ internal object PatcherTest {
 
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(parameters == filter.parameters!!()) },
-                { assertTrue(returnType == filter.returnType!!()) },
-            )
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(parameters, filter.parameters!!())
+            assertEquals(returnType, filter.returnType!!())
         }
     }
 
@@ -366,11 +420,9 @@ internal object PatcherTest {
 
             var filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(type == filter.type!!()) },
-            )
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(type, filter.type!!())
 
 
             definingClass = "Landroid/view/View\$InnerClass;"
@@ -380,11 +432,9 @@ internal object PatcherTest {
 
             filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(type == filter.type!!()) },
-            )
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(type, filter.type!!())
 
 
             definingClass = "Landroid/view/View\$InnerClass;"
@@ -394,11 +444,9 @@ internal object PatcherTest {
 
             filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(type == filter.type!!()) },
-            )
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(type, filter.type!!())
 
 
             definingClass = "Landroid/view/View\$InnerClass;"
@@ -408,11 +456,9 @@ internal object PatcherTest {
 
             filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertAll(
-                { assertTrue(definingClass == filter.definingClass!!()) },
-                { assertTrue(name == filter.name!!()) },
-                { assertTrue(type == filter.type!!()) },
-            )
+            assertEquals(definingClass, filter.definingClass!!())
+            assertEquals(name, filter.name!!())
+            assertEquals(type, filter.type!!())
         }
     }
 

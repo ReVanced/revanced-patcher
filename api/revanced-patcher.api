@@ -116,10 +116,10 @@ public final class app/revanced/patcher/InstructionFilterKt {
 	public static synthetic fun newInstancetype$default (Lkotlin/jvm/functions/Function0;IILjava/lang/Object;)Lapp/revanced/patcher/NewInstanceFilter;
 	public static final fun opcode (Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/OpcodeFilter;
 	public static synthetic fun opcode$default (Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/OpcodeFilter;
-	public static final fun string (Ljava/lang/String;ZI)Lapp/revanced/patcher/StringFilter;
-	public static final fun string (Lkotlin/jvm/functions/Function0;ZI)Lapp/revanced/patcher/StringFilter;
-	public static synthetic fun string$default (Ljava/lang/String;ZIILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
-	public static synthetic fun string$default (Lkotlin/jvm/functions/Function0;ZIILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
+	public static final fun string (Ljava/lang/String;Lapp/revanced/patcher/StringMatchType;I)Lapp/revanced/patcher/StringFilter;
+	public static final fun string (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/StringMatchType;I)Lapp/revanced/patcher/StringFilter;
+	public static synthetic fun string$default (Ljava/lang/String;Lapp/revanced/patcher/StringMatchType;IILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
+	public static synthetic fun string$default (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/StringMatchType;IILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
 }
 
 public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
@@ -239,11 +239,21 @@ public final class app/revanced/patcher/PatcherResult$PatchedResources {
 }
 
 public final class app/revanced/patcher/StringFilter : app/revanced/patcher/OpcodesFilter {
-	public final fun getPartialMatch ()Z
+	public final fun getMatchType ()Lapp/revanced/patcher/StringMatchType;
 	public final fun getString ()Lkotlin/jvm/functions/Function0;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
-	public final fun setPartialMatch (Z)V
+	public final fun setMatchType (Lapp/revanced/patcher/StringMatchType;)V
 	public final fun setString (Lkotlin/jvm/functions/Function0;)V
+}
+
+public final class app/revanced/patcher/StringMatchType : java/lang/Enum {
+	public static final field CONTAINS Lapp/revanced/patcher/StringMatchType;
+	public static final field ENDS_WITH Lapp/revanced/patcher/StringMatchType;
+	public static final field EQUALS Lapp/revanced/patcher/StringMatchType;
+	public static final field STARTS_WITH Lapp/revanced/patcher/StringMatchType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lapp/revanced/patcher/StringMatchType;
+	public static fun values ()[Lapp/revanced/patcher/StringMatchType;
 }
 
 public final class app/revanced/patcher/extensions/ExtensionsKt {
