@@ -200,6 +200,8 @@ class AdsLoader {
   each filter, zero or more other instructions can exist.  Instruction filters must be declared in
   the same order as the instructions appear in the target method.
 
+  // TODO: Update this to reflect InstructionLocation object and its usage.
+
   If the distance between each instruction declaration can be approximated, then the `maxAfter`
   parameter can be used to restrict the instruction match to a maximum distance from the last
   instruction.  A value of 0 for the first instruction filter means the filter must be the first

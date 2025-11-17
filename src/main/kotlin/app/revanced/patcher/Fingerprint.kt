@@ -27,7 +27,6 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
  * }
  * ```
  *
- * @param name Human readable fingerprint name used for [toString] and error stack traces.
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
  * @param parameters The parameters. Partial matches allowed and follow the same rules as [returnType].
@@ -66,7 +65,7 @@ class Fingerprint internal constructor(
 
         // Use string declarations to first check only the methods
         // that contain one or more of fingerprint string.
-        var stringLiterals =
+        val stringLiterals =
             if (strings != null) {
                 // Old deprecated string declaration.
                 strings
@@ -214,6 +213,8 @@ class Fingerprint internal constructor(
                 var instructionMatches : MutableList<Match.InstructionMatch>? = null
 
                 var firstInstructionIndex = 0
+                var lastMatchIndex = -1
+
                 firstFilterLoop@ while (true) {
                     // Matched index of the first filter.
                     var firstFilterIndex = -1
@@ -221,12 +222,18 @@ class Fingerprint internal constructor(
 
                     for (filterIndex in filters.indices) {
                         val filter = filters[filterIndex]
-                        val maxIndex = (subIndex + filter.maxAfter).coerceAtMost(lastMethodIndex)
+                        val location = filter.location
                         var instructionsMatched = false
 
-                        while (subIndex <= maxIndex) {
+                        while (subIndex <= lastMethodIndex &&
+                            location.indexIsValidForMatching(
+                                lastMatchIndex, subIndex
+                            )
+                        ) {
                             val instruction = instructions[subIndex]
                             if (filter.matches(method, instruction)) {
+                                lastMatchIndex = subIndex
+
                                 if (filterIndex == 0) {
                                     firstFilterIndex = subIndex
                                 }
@@ -617,7 +624,8 @@ class FingerprintBuilder() {
      * instead use [instructions] with individual opcodes declared using [opcode].
      *
      * This method is identical to declaring individual opcode filters
-     * with [InstructionFilter.maxAfter] set to zero.
+     * with [InstructionFilter.location] set to [InstructionLocation.MatchAfterImmediately]
+     * for all but the first opcode.
      *
      * Unless absolutely necessary, it is recommended to instead use [instructions]
      * with more fine grained filters.

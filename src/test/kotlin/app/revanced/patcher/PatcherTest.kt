@@ -343,22 +343,11 @@ internal object PatcherTest {
     @Test
     fun `MethodCallFilter smali bad input`() {
         with(patcher.context.bytecodeContext) {
-            var definingClass = "Landroid/view/View;"
+            var definingClass = "Landroid/view/View"
             var name = "inflate"
             var parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
             var returnType = "Landroid/view/View;"
             var methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
-
-            assertThrows<IllegalArgumentException>("Bad max instructions before") {
-                MethodCallFilter.parseJvmMethodCall(methodSignature, null, -1)
-            }
-
-
-            definingClass = "Landroid/view/View"
-            name = "inflate"
-            parameters = listOf("[Ljava/lang/String;", "I", "Z", "F", "J", "Landroid/view/ViewGroup;")
-            returnType = "Landroid/view/View;"
-            methodSignature = "$definingClass->$name(${parameters.joinToString("")})$returnType"
 
             assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
                 MethodCallFilter.parseJvmMethodCall(methodSignature)

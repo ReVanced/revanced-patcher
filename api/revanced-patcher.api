@@ -1,4 +1,5 @@
 public final class app/revanced/patcher/AnyInstruction : app/revanced/patcher/InstructionFilter {
+	public fun getLocation ()Lapp/revanced/patcher/InstructionLocation;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
@@ -60,66 +61,88 @@ public final class app/revanced/patcher/FingerprintKt {
 	public static final fun fingerprint (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/Fingerprint;
 }
 
-public abstract class app/revanced/patcher/InstructionFilter {
-	public static final field Companion Lapp/revanced/patcher/InstructionFilter$Companion;
-	public static final field METHOD_MAX_INSTRUCTIONS I
-	public fun <init> ()V
-	public fun <init> (I)V
-	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getMaxAfter ()I
+public abstract interface class app/revanced/patcher/InstructionFilter {
+	public abstract fun getLocation ()Lapp/revanced/patcher/InstructionLocation;
 	public abstract fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
-public final class app/revanced/patcher/InstructionFilter$Companion {
+public final class app/revanced/patcher/InstructionFilter$DefaultImpls {
+	public static fun getLocation (Lapp/revanced/patcher/InstructionFilter;)Lapp/revanced/patcher/InstructionLocation;
 }
 
 public final class app/revanced/patcher/InstructionFilterKt {
-	public static final fun anyInstruction ([Lapp/revanced/patcher/InstructionFilter;I)Lapp/revanced/patcher/AnyInstruction;
-	public static synthetic fun anyInstruction$default ([Lapp/revanced/patcher/InstructionFilter;IILjava/lang/Object;)Lapp/revanced/patcher/AnyInstruction;
-	public static final fun checkCast (Ljava/lang/String;I)Lapp/revanced/patcher/CheckCastFilter;
-	public static final fun checkCast (Lkotlin/jvm/functions/Function0;I)Lapp/revanced/patcher/CheckCastFilter;
-	public static synthetic fun checkCast$default (Ljava/lang/String;IILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
-	public static synthetic fun checkCast$default (Lkotlin/jvm/functions/Function0;IILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
-	public static final fun fieldAccess (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/FieldAccessFilter;
-	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/FieldAccessFilter;
-	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
-	public static final fun fieldAccess (Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
-	public static final fun fieldAccess (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;I)Lapp/revanced/patcher/FieldAccessFilter;
-	public static synthetic fun fieldAccess$default (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
-	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
-	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
-	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
-	public static synthetic fun fieldAccess$default (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
-	public static final fun literal (DLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
-	public static final fun literal (FLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
-	public static final fun literal (ILjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
-	public static final fun literal (JLjava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
-	public static final fun literal (Lkotlin/jvm/functions/Function0;Ljava/util/List;I)Lapp/revanced/patcher/LiteralFilter;
-	public static synthetic fun literal$default (DLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
-	public static synthetic fun literal$default (FLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
-	public static synthetic fun literal$default (ILjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
-	public static synthetic fun literal$default (JLjava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
-	public static synthetic fun literal$default (Lkotlin/jvm/functions/Function0;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
-	public static final fun methodCall (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/MethodCallFilter;
-	public static final fun methodCall (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/MethodCallFilter;
-	public static final fun methodCall (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/MethodCallFilter;
-	public static final fun methodCall (Ljava/lang/String;Ljava/util/List;I)Lapp/revanced/patcher/MethodCallFilter;
-	public static final fun methodCall (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;I)Lapp/revanced/patcher/MethodCallFilter;
-	public static synthetic fun methodCall$default (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
-	public static synthetic fun methodCall$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
-	public static synthetic fun methodCall$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
-	public static synthetic fun methodCall$default (Ljava/lang/String;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
-	public static synthetic fun methodCall$default (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;IILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
-	public static final fun newInstance (Ljava/lang/String;I)Lapp/revanced/patcher/NewInstanceFilter;
-	public static synthetic fun newInstance$default (Ljava/lang/String;IILjava/lang/Object;)Lapp/revanced/patcher/NewInstanceFilter;
-	public static final fun newInstancetype (Lkotlin/jvm/functions/Function0;I)Lapp/revanced/patcher/NewInstanceFilter;
-	public static synthetic fun newInstancetype$default (Lkotlin/jvm/functions/Function0;IILjava/lang/Object;)Lapp/revanced/patcher/NewInstanceFilter;
-	public static final fun opcode (Lcom/android/tools/smali/dexlib2/Opcode;I)Lapp/revanced/patcher/OpcodeFilter;
-	public static synthetic fun opcode$default (Lcom/android/tools/smali/dexlib2/Opcode;IILjava/lang/Object;)Lapp/revanced/patcher/OpcodeFilter;
-	public static final fun string (Ljava/lang/String;Lapp/revanced/patcher/StringMatchType;I)Lapp/revanced/patcher/StringFilter;
-	public static final fun string (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/StringMatchType;I)Lapp/revanced/patcher/StringFilter;
-	public static synthetic fun string$default (Ljava/lang/String;Lapp/revanced/patcher/StringMatchType;IILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
-	public static synthetic fun string$default (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/StringMatchType;IILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
+	public static final fun anyInstruction ([Lapp/revanced/patcher/InstructionFilter;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/AnyInstruction;
+	public static synthetic fun anyInstruction$default ([Lapp/revanced/patcher/InstructionFilter;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/AnyInstruction;
+	public static final fun checkCast (Ljava/lang/String;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/CheckCastFilter;
+	public static final fun checkCast (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/CheckCastFilter;
+	public static synthetic fun checkCast$default (Ljava/lang/String;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
+	public static synthetic fun checkCast$default (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/CheckCastFilter;
+	public static final fun fieldAccess (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static final fun fieldAccess (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static final fun fieldAccess (Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static final fun fieldAccess (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static synthetic fun fieldAccess$default (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static synthetic fun fieldAccess$default (Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static synthetic fun fieldAccess$default (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/FieldAccessFilter;
+	public static final fun literal (DLjava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (FLjava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (ILjava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (JLjava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun literal (Lkotlin/jvm/functions/Function0;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (DLjava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (FLjava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (ILjava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (JLjava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static synthetic fun literal$default (Lkotlin/jvm/functions/Function0;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/LiteralFilter;
+	public static final fun methodCall (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/MethodCallFilter;
+	public static final fun methodCall (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/MethodCallFilter;
+	public static final fun methodCall (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/MethodCallFilter;
+	public static final fun methodCall (Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/MethodCallFilter;
+	public static final fun methodCall (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/MethodCallFilter;
+	public static synthetic fun methodCall$default (Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
+	public static synthetic fun methodCall$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
+	public static synthetic fun methodCall$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
+	public static synthetic fun methodCall$default (Ljava/lang/String;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
+	public static synthetic fun methodCall$default (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/MethodCallFilter;
+	public static final fun newInstance (Ljava/lang/String;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/NewInstanceFilter;
+	public static synthetic fun newInstance$default (Ljava/lang/String;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/NewInstanceFilter;
+	public static final fun newInstancetype (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/NewInstanceFilter;
+	public static synthetic fun newInstancetype$default (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/NewInstanceFilter;
+	public static final fun opcode (Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/OpcodeFilter;
+	public static synthetic fun opcode$default (Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/OpcodeFilter;
+	public static final fun string (Ljava/lang/String;Lapp/revanced/patcher/StringMatchType;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/StringFilter;
+	public static final fun string (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/StringMatchType;Lapp/revanced/patcher/InstructionLocation;)Lapp/revanced/patcher/StringFilter;
+	public static synthetic fun string$default (Ljava/lang/String;Lapp/revanced/patcher/StringMatchType;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
+	public static synthetic fun string$default (Lkotlin/jvm/functions/Function0;Lapp/revanced/patcher/StringMatchType;Lapp/revanced/patcher/InstructionLocation;ILjava/lang/Object;)Lapp/revanced/patcher/StringFilter;
+}
+
+public abstract interface class app/revanced/patcher/InstructionLocation {
+	public abstract fun indexIsValidForMatching (II)Z
+}
+
+public final class app/revanced/patcher/InstructionLocation$MatchAfterAnywhere : app/revanced/patcher/InstructionLocation {
+	public fun <init> ()V
+	public fun indexIsValidForMatching (II)Z
+}
+
+public final class app/revanced/patcher/InstructionLocation$MatchAfterImmediately : app/revanced/patcher/InstructionLocation {
+	public fun <init> ()V
+	public fun indexIsValidForMatching (II)Z
+}
+
+public final class app/revanced/patcher/InstructionLocation$MatchAfterWithin : app/revanced/patcher/InstructionLocation {
+	public fun <init> (I)V
+	public final fun getMatchDistance ()I
+	public fun indexIsValidForMatching (II)Z
+	public final fun setMatchDistance (I)V
+}
+
+public final class app/revanced/patcher/InstructionLocation$MatchFirst : app/revanced/patcher/InstructionLocation {
+	public fun <init> ()V
+	public fun indexIsValidForMatching (II)Z
 }
 
 public abstract interface annotation class app/revanced/patcher/InternalApi : java/lang/annotation/Annotation {
@@ -179,15 +202,16 @@ public final class app/revanced/patcher/NewInstanceFilter : app/revanced/patcher
 }
 
 public class app/revanced/patcher/OpcodeFilter : app/revanced/patcher/InstructionFilter {
-	public fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;I)V
+	public fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;)V
+	public fun getLocation ()Lapp/revanced/patcher/InstructionLocation;
 	public final fun getOpcode ()Lcom/android/tools/smali/dexlib2/Opcode;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public class app/revanced/patcher/OpcodesFilter : app/revanced/patcher/InstructionFilter {
 	public static final field Companion Lapp/revanced/patcher/OpcodesFilter$Companion;
-	protected fun <init> (Ljava/util/List;I)V
-	public synthetic fun <init> (Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun <init> (Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)V
+	public fun getLocation ()Lapp/revanced/patcher/InstructionLocation;
 	public final fun getOpcodes ()Ljava/util/EnumSet;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
