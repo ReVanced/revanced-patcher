@@ -223,11 +223,20 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @param classes The list of classes to create the lookup maps from.
      */
-    internal class LookupMaps internal constructor(classes: Collection<ClassDef>) : Closeable {
+    internal class LookupMaps(classes: Collection<ClassDef>) : Closeable {
         /**
          * Methods associated by strings referenced in them.
          */
-        internal val methodsByStrings = MethodClassPairsLookupMap()
+        private val methodsByStrings = HashMap<String, LinkedList<MethodClassPair>>()
+
+        /**
+         * All methods that contain at least 1 string.
+         */
+        internal val allMethodsWithStrings by lazy {
+            methodsByStrings.toSortedMap().values
+                .flatMap { it }
+                .distinctBy { it.first }
+        }
 
         init {
             classes.forEach { classDef ->
@@ -238,16 +247,20 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
                     // Add strings contained in the method as the key.
                     method.instructionsOrNull?.forEach { instruction ->
-                        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) {
+                        val opcode = instruction.opcode
+                        if (opcode != Opcode.CONST_STRING && opcode != Opcode.CONST_STRING_JUMBO) {
                             return@forEach
                         }
 
                         val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-
-                        methodsByStrings[string] = methodClassPair
+                        methodsByStrings.getOrPut(string) { LinkedList() }.add(methodClassPair)
                     }
                 }
             }
+        }
+
+        fun getMethodClassPairsForString(stringLiteral: String): List<MethodClassPair>? {
+            return methodsByStrings[stringLiteral]
         }
 
         override fun close() {
@@ -266,20 +279,3 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
  */
 internal typealias MethodClassPair = Pair<Method, ClassDef>
 
-/**
- * A list of [MethodClassPair]s.
- */
-internal typealias MethodClassPairs = LinkedList<MethodClassPair>
-
-/**
- * A lookup map for [MethodClassPairs]s.
- * The key is a string and the value is a list of [MethodClassPair]s.
- */
-internal class MethodClassPairsLookupMap : MutableMap<String, MethodClassPairs> by mutableMapOf() {
-    /**
-     * Add a [MethodClassPair] associated by any key.
-     * If the key does not exist, a new list is created and the [MethodClassPair] is added to it.
-     */
-    internal operator fun set(key: String, methodClassPair: MethodClassPair) =
-        apply { getOrPut(key) { MethodClassPairs() }.add(methodClassPair) }
-}

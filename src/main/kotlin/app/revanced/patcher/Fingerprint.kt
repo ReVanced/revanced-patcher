@@ -74,10 +74,20 @@ class Fingerprint internal constructor(
                     ?.map { it.string() }
             }
 
-        stringLiterals?.mapNotNull {
-            lookupMaps.methodsByStrings[it]
-        }?.minByOrNull { it.size }?.let { methodClasses ->
-            methodClasses.forEach { (method, classDef) ->
+        if (stringLiterals != null) {
+            stringLiterals.mapNotNull {
+                lookupMaps.getMethodClassPairsForString(it)
+            }.minByOrNull { it.size }?.forEach { (method, classDef) ->
+                val match = matchOrNull(classDef, method)
+                if (match != null) {
+                    _matchOrNull = match
+                    return match
+                }
+            }
+
+            // Fingerprint has partial strings.
+            // Search all methods that contain strings.
+           lookupMaps.allMethodsWithStrings.forEach { (method, classDef) ->
                 val match = matchOrNull(classDef, method)
                 if (match != null) {
                     _matchOrNull = match
