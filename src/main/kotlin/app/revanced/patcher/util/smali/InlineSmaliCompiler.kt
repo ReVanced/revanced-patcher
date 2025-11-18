@@ -1,7 +1,7 @@
 package app.revanced.patcher.util.smali
 
-import app.revanced.patcher.extensions.InstructionExtensions.instructions
-import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
+import app.revanced.patcher.dex.mutable.MutableMethod
+import app.revanced.patcher.extensions.instructions
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction

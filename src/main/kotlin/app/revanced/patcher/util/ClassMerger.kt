@@ -7,12 +7,12 @@ import app.revanced.patcher.util.ClassMerger.Utils.filterNotAny
 import app.revanced.patcher.util.ClassMerger.Utils.isPublic
 import app.revanced.patcher.util.ClassMerger.Utils.toPublic
 import app.revanced.patcher.util.ClassMerger.Utils.traverseClassHierarchy
-import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
-import app.revanced.patcher.util.proxy.mutableTypes.MutableClass.Companion.toMutable
-import app.revanced.patcher.util.proxy.mutableTypes.MutableField
-import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
-import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
-import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
+import app.revanced.patcher.dex.mutable.MutableClassDef
+import app.revanced.patcher.dex.mutable.MutableClassDef.Companion.toMutable
+import app.revanced.patcher.dex.mutable.MutableField
+import app.revanced.patcher.dex.mutable.MutableField.Companion.toMutable
+import app.revanced.patcher.dex.mutable.MutableMethod
+import app.revanced.patcher.dex.mutable.MutableMethod.Companion.toMutable
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.util.MethodUtil
@@ -175,18 +175,18 @@ internal object ClassMerger {
          * @param callback function that is called for every class in the hierarchy
          */
         fun BytecodePatchContext.traverseClassHierarchy(
-            targetClass: MutableClass,
-            callback: MutableClass.() -> Unit,
+            targetClass: MutableClassDef,
+            callback: MutableClassDef.() -> Unit,
         ) {
             callback(targetClass)
 
             targetClass.superclass ?: return
-            this.classBy { targetClass.superclass == it.type }?.mutableClass?.let {
+            classDefs.find { targetClass.superclass == it.type }?.mutable()?.let {
                 traverseClassHierarchy(it, callback)
             }
         }
 
-        fun ClassDef.asMutableClass() = if (this is MutableClass) this else this.toMutable()
+        fun ClassDef.asMutableClass() = if (this is MutableClassDef) this else this.toMutable()
 
         /**
          * Check if the [AccessFlags.PUBLIC] flag is set.

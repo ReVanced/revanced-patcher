@@ -2,7 +2,6 @@ package app.revanced.patcher
 
 import app.revanced.patcher.patch.*
 import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
-import app.revanced.patcher.util.ProxyClassList
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import io.mockk.*
@@ -34,7 +33,7 @@ internal object PatcherTest {
                 Logger.getAnonymousLogger(),
             )
 
-            every { context.bytecodeContext.classes } returns mockk(relaxed = true)
+            every { context.bytecodeContext.classDefs } returns mockk(relaxed = true)
             every { this@mockk() } answers { callOriginal() }
         }
     }
@@ -165,7 +164,7 @@ internal object PatcherTest {
 
     @Test
     fun `matches fingerprint`() {
-        every { patcher.context.bytecodeContext.classes } returns ProxyClassList(
+        every { patcher.context.bytecodeContext.classDefs } returns ProxyClassDefSet(
             mutableListOf(
                 ImmutableClassDef(
                     "class",
@@ -198,8 +197,8 @@ internal object PatcherTest {
         val patches = setOf(
             bytecodePatch {
                 execute {
-                    fingerprint.match(classes.first().methods.first())
-                    fingerprint2.match(classes.first())
+                    fingerprint.match(classDefs.first().methods.first())
+                    fingerprint2.match(classDefs.first())
                     fingerprint3.originalClassDef
                 }
             },
@@ -219,7 +218,7 @@ internal object PatcherTest {
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes)
+        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classDefs)
         every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }

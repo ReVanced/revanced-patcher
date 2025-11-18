@@ -3,11 +3,11 @@ package app.revanced.patcher.patch
 import app.revanced.patcher.InternalApi
 import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherResult
-import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
+import app.revanced.patcher.dex.mutable.MutableClassDef
+import app.revanced.patcher.dex.mutable.MutableClassDef.Companion.toMutable
+import app.revanced.patcher.extensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
-import app.revanced.patcher.util.ProxyClassList
-import app.revanced.patcher.util.proxy.ClassProxy
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -21,7 +21,6 @@ import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
 import java.io.Closeable
-import java.io.FileFilter
 import java.util.*
 import java.util.logging.Logger
 
@@ -44,20 +43,18 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     /**
      * The list of classes.
      */
-    val classes = ProxyClassList(
-        MultiDexIO.readDexFile(
-            true,
-            config.apkFile,
-            BasicDexFileNamer(),
-            null,
-            null,
-        ).also { opcodes = it.opcodes }.classes.toMutableList(),
-    )
+    val classDefs = MultiDexIO.readDexFile(
+        true,
+        config.apkFile,
+        BasicDexFileNamer(),
+        null,
+        null,
+    ).also { opcodes = it.opcodes }.classes.toMutableSet()
 
     /**
-     * The lookup maps for methods and the class they are a member of from the [classes].
+     * The lookup maps for methods and the class they are a member of from the [classDefs].
      */
-    internal val lookupMaps by lazy { LookupMaps(classes) }
+    internal val lookupMaps by lazy { LookupMaps(classDefs) }
 
     /**
      * Merge the extension of [bytecodePatch] into the [BytecodePatchContext].
@@ -71,7 +68,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                 val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
                     logger.fine { "Adding class \"$classDef\"" }
 
-                    classes += classDef
+                    classDefs += classDef
                     lookupMaps.classesByType[classDef.type] = classDef
 
                     return@forEach
@@ -85,32 +82,21 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                         return@let
                     }
 
-                    classes -= existingClass
-                    classes += mergedClass
+                    classDefs -= existingClass
+                    classDefs += mergedClass
                 }
             }
         } ?: logger.fine("No extension to merge")
     }
 
     /**
-     * Find a class with a predicate.
+     * Convert a [ClassDef] to a [MutableClassDef].
+     * If the [ClassDef] is already a [MutableClassDef], it is returned as is.
      *
-     * @param predicate A predicate to match the class.
-     * @return A proxy for the first class that matches the predicate.
+     * @return The mutable version of the [ClassDef].
      */
-    fun classBy(predicate: (ClassDef) -> Boolean) =
-        classes.proxyPool.find { predicate(it.immutableClass) } ?: classes.find(predicate)?.let { proxy(it) }
-
-    /**
-     * Proxy the class to allow mutation.
-     *
-     * @param classDef The class to proxy.
-     *
-     * @return A proxy for the class.
-     */
-    fun proxy(classDef: ClassDef) = classes.proxyPool.find {
-        it.immutableClass.type == classDef.type
-    } ?: ClassProxy(classDef).also { classes.proxyPool.add(it) }
+    fun ClassDef.mutable(): MutableClassDef =
+        this as? MutableClassDef ?: also(classDefs::remove).toMutable().also(classDefs::add)
 
     /**
      * Navigate a method.
@@ -145,13 +131,13 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     BasicDexFileNamer(),
                     object : DexFile {
                         override fun getClasses() =
-                            this@BytecodePatchContext.classes.also(ProxyClassList::replaceClasses).toSet()
+                            this@BytecodePatchContext.classDefs.toSet()
 
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },
                     DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
                 ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
-            }.listFiles(FileFilter { it.isFile })!!.map {
+            }.listFiles { it.isFile }!!.map {
                 PatcherResult.PatchedDexFile(it.name, it.inputStream())
             }.toSet()
 
@@ -163,9 +149,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     /**
      * A lookup map for methods and the class they are a member of and classes.
      *
-     * @param classes The list of classes to create the lookup maps from.
+     * @param classDefs The list of classes to create the lookup maps from.
      */
-    internal class LookupMaps internal constructor(classes: List<ClassDef>) : Closeable {
+    internal class LookupMaps internal constructor(classDefs: Set<ClassDef>) : Closeable {
         /**
          * Methods associated by strings referenced in it.
          */
@@ -173,11 +159,11 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
         // Lookup map for fast checking if a class exists by its type.
         val classesByType = mutableMapOf<String, ClassDef>().apply {
-            classes.forEach { classDef -> put(classDef.type, classDef) }
+            classDefs.forEach { classDef -> put(classDef.type, classDef) }
         }
 
         init {
-            classes.forEach { classDef ->
+            classDefs.forEach { classDef ->
                 classDef.methods.forEach { method ->
                     val methodClassPair: MethodClassPair = method to classDef
 
@@ -206,7 +192,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
     override fun close() {
         lookupMaps.close()
-        classes.clear()
+        classDefs.clear()
     }
 }
 

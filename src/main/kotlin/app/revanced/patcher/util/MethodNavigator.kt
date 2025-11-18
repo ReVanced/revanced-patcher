@@ -2,10 +2,9 @@
 
 package app.revanced.patcher.util
 
-import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.BytecodePatchContext
-import app.revanced.patcher.util.MethodNavigator.NavigateException
-import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
+import app.revanced.patcher.dex.mutable.MutableMethod
+import app.revanced.patcher.extensions.instructionsOrNull
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -80,7 +79,7 @@ class MethodNavigator internal constructor(
      *
      * @return The last navigated method mutably.
      */
-    fun stop() = classBy(matchesCurrentMethodReferenceDefiningClass)!!.mutableClass.firstMethodBySignature
+    fun stop() = classDefs.find(matchesCurrentMethodReferenceDefiningClass)!!.mutable().firstMethodBySignature
         as MutableMethod
 
     /**
@@ -95,7 +94,7 @@ class MethodNavigator internal constructor(
      *
      * @return The last navigated method immutably.
      */
-    fun original(): Method = classes.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
+    fun original(): Method = classDefs.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
 
     /**
      * Predicate to match the class defining the current method reference.

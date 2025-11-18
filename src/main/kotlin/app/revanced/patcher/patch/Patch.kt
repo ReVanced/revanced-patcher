@@ -15,6 +15,7 @@ import java.lang.reflect.Modifier
 import java.net.URLClassLoader
 import java.util.function.Supplier
 import java.util.jar.JarFile
+import kotlin.properties.ReadOnlyProperty
 
 typealias PackageName = String
 typealias VersionName = String
@@ -87,8 +88,7 @@ sealed class Patch<C : PatchContext<*>>(
         finalizeBlock?.invoke(context)
     }
 
-    override fun toString() = name ?: 
-        "Patch@${System.identityHashCode(this)}"
+    override fun toString() = name ?: "Patch@${System.identityHashCode(this)}"
 }
 
 internal fun Patch<*>.anyRecursively(
@@ -438,6 +438,21 @@ fun bytecodePatch(
 ) = BytecodePatchBuilder(name, description, use).buildPatch(block) as BytecodePatch
 
 /**
+ * Create a [ReadOnlyProperty] that creates a new [BytecodePatch] with the name of the property.
+ *
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [ReadOnlyProperty] that creates a new [BytecodePatch].
+ */
+fun gettingBytecodePatch(
+    description: String? = null,
+    use: Boolean = true,
+    block: BytecodePatchBuilder.() -> Unit = {},
+) = ReadOnlyProperty<Any?, BytecodePatch> { _, property -> bytecodePatch(property.name, description, use, block) }
+
+/**
  * A [RawResourcePatch] builder.
  *
  * @param name The name of the patch.
@@ -480,6 +495,21 @@ fun rawResourcePatch(
     use: Boolean = true,
     block: RawResourcePatchBuilder.() -> Unit = {},
 ) = RawResourcePatchBuilder(name, description, use).buildPatch(block) as RawResourcePatch
+
+/**
+ * Create a [ReadOnlyProperty] that creates a new [RawResourcePatch] with the name of the property.
+ *
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [ReadOnlyProperty] that creates a new [RawResourcePatch].
+ */
+fun gettingRawResourcePatch(
+    description: String? = null,
+    use: Boolean = true,
+    block: RawResourcePatchBuilder.() -> Unit = {},
+) = ReadOnlyProperty<Any?, RawResourcePatch> { _, property -> rawResourcePatch(property.name, description, use, block) }
 
 /**
  * A [ResourcePatch] builder.
@@ -525,6 +555,21 @@ fun resourcePatch(
     use: Boolean = true,
     block: ResourcePatchBuilder.() -> Unit = {},
 ) = ResourcePatchBuilder(name, description, use).buildPatch(block) as ResourcePatch
+
+/**
+ * Create a [ReadOnlyProperty] that creates a new [ResourcePatch] with the name of the property.
+ *
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [ReadOnlyProperty] that creates a new [ResourcePatch].
+ */
+fun gettingResourcePatch(
+    description: String? = null,
+    use: Boolean = true,
+    block: ResourcePatchBuilder.() -> Unit = {},
+) = ReadOnlyProperty<Any?, ResourcePatch> { _, property -> resourcePatch(property.name, description, use, block) }
 
 /**
  * An exception thrown when patching.
