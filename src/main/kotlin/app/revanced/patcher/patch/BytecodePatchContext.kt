@@ -1,6 +1,7 @@
 package app.revanced.patcher.patch
 
 import app.revanced.patcher.InternalApi
+import app.revanced.patcher.Matcher
 import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.dex.mutable.MutableClassDef
@@ -8,7 +9,6 @@ import app.revanced.patcher.dex.mutable.MutableClassDef.Companion.toMutable
 import app.revanced.patcher.extensions.instructionsOrNull
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
-import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
@@ -21,8 +21,9 @@ import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
 import java.io.Closeable
-import java.util.*
+import java.io.IOException
 import java.util.logging.Logger
+
 
 /**
  * A context for patches containing the current state of the bytecode.
@@ -54,7 +55,8 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     /**
      * The lookup maps for methods and the class they are a member of from the [classDefs].
      */
-    internal val lookupMaps by lazy { LookupMaps(classDefs) }
+    internal val lookupMaps by lazy { _lookupMaps ?: LookupMaps().also { _lookupMaps = it } }
+    private var _lookupMaps: LookupMaps? = null // For freeing up memory when compiling.
 
     /**
      * Merge the extension of [bytecodePatch] into the [BytecodePatchContext].
@@ -69,7 +71,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     logger.fine { "Adding class \"$classDef\"" }
 
                     classDefs += classDef
-                    lookupMaps.classesByType[classDef.type] = classDef
+                    lookupMaps += classDef
 
                     return@forEach
                 }
@@ -117,7 +119,8 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         logger.info("Compiling patched dex files")
 
         // Free up memory before compiling the dex files.
-        lookupMaps.close()
+        close()
+        System.gc()
 
         val patchedDexFileResults =
             config.patchedFiles.resolve("dex").also {
@@ -146,75 +149,39 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         return patchedDexFileResults
     }
 
-    /**
-     * A lookup map for methods and the class they are a member of and classes.
-     *
-     * @param classDefs The list of classes to create the lookup maps from.
-     */
-    internal class LookupMaps internal constructor(classDefs: Set<ClassDef>) : Closeable {
-        /**
-         * Methods associated by strings referenced in it.
-         */
-        internal val methodsByStrings = MethodClassPairsLookupMap()
-
-        // Lookup map for fast checking if a class exists by its type.
-        val classesByType = mutableMapOf<String, ClassDef>().apply {
-            classDefs.forEach { classDef -> put(classDef.type, classDef) }
-        }
-
-        init {
-            classDefs.forEach { classDef ->
-                classDef.methods.forEach { method ->
-                    val methodClassPair: MethodClassPair = method to classDef
-
-                    // Add strings contained in the method as the key.
-                    method.instructionsOrNull?.forEach instructions@{ instruction ->
-                        if (instruction.opcode != Opcode.CONST_STRING && instruction.opcode != Opcode.CONST_STRING_JUMBO) {
-                            return@instructions
-                        }
-
-                        val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-
-                        methodsByStrings[string] = methodClassPair
-                    }
-
-                    // In the future, the class type could be added to the lookup map.
-                    // This would require MethodFingerprint to be changed to include the class type.
-                }
-            }
-        }
-
-        override fun close() {
-            methodsByStrings.clear()
-            classesByType.clear()
-        }
-    }
+    internal val matchers =Map<String, Matcher<*>>
 
     override fun close() {
-        lookupMaps.close()
-        classDefs.clear()
+        try {
+            classDefs.clear()
+            _lookupMaps = null
+        } catch (e: IOException) {
+            logger.warning("Failed to clear BytecodePatchContext: ${e.message}")
+        }
     }
-}
 
-/**
- * A pair of a [Method] and the [ClassDef] it is a member of.
- */
-internal typealias MethodClassPair = Pair<Method, ClassDef>
+    internal inner class LookupMaps {
+        private val _classesByType = mutableMapOf<String, ClassDef>()
+        val classesByType: Map<String, ClassDef> = _classesByType
 
-/**
- * A list of [MethodClassPair]s.
- */
-internal typealias MethodClassPairs = LinkedList<MethodClassPair>
+        private val _methodsByStrings = mutableMapOf<String, MutableList<Method>>()
+        val methodsByStrings: Map<String, List<Method>> = _methodsByStrings
 
-/**
- * A lookup map for [MethodClassPairs]s.
- * The key is a string and the value is a list of [MethodClassPair]s.
- */
-internal class MethodClassPairsLookupMap : MutableMap<String, MethodClassPairs> by mutableMapOf() {
-    /**
-     * Add a [MethodClassPair] associated by any key.
-     * If the key does not exist, a new list is created and the [MethodClassPair] is added to it.
-     */
-    internal operator fun set(key: String, methodClassPair: MethodClassPair) =
-        apply { getOrPut(key) { MethodClassPairs() }.add(methodClassPair) }
+        init {
+            classDefs.forEach(::plusAssign)
+        }
+
+        operator fun plusAssign(classDef: ClassDef) {
+            classDef.methods.asSequence().forEach { method ->
+                method.instructionsOrNull?.asSequence()
+                    ?.filterIsInstance<ReferenceInstruction>()
+                    ?.map { it.reference }
+                    ?.filterIsInstance<StringReference>()
+                    ?.map { it.string }
+                    ?.forEach { string -> _methodsByStrings.getOrPut(string) { mutableListOf() } += method }
+            }
+
+            _classesByType[classDef.type] = classDef
+        }
+    }
 }
