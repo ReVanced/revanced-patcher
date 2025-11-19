@@ -3,191 +3,16 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.Match.PatternMatch
-import app.revanced.patcher.extensions.InstructionExtensions.instructions
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.*
 import com.android.tools.smali.dexlib2.AccessFlags
-import com.android.tools.smali.dexlib2.HiddenApiRestriction
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.Annotation
 import com.android.tools.smali.dexlib2.iface.ClassDef
-import com.android.tools.smali.dexlib2.iface.ExceptionHandler
-import com.android.tools.smali.dexlib2.iface.Field
 import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.iface.MethodImplementation
-import com.android.tools.smali.dexlib2.iface.TryBlock
-import com.android.tools.smali.dexlib2.iface.instruction.DualReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.Reference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
-
-
-fun ClassDef.methods(predicate: Iterable<Method>.() -> Boolean) =
-    methods.predicate()
-
-fun ClassDef.directMethods(predicate: Iterable<Method>.() -> Boolean) =
-    directMethods.predicate()
-
-fun ClassDef.virtualMethods(predicate: Iterable<Method>.() -> Boolean) =
-    virtualMethods.predicate()
-
-fun ClassDef.fields(predicate: Iterable<Field>.() -> Boolean) =
-    fields.predicate()
-
-fun ClassDef.instanceFields(predicate: Iterable<Field>.() -> Boolean) =
-    this.instanceFields.predicate()
-
-fun ClassDef.staticFields(predicate: Iterable<Field>.() -> Boolean) =
-    this.staticFields.predicate()
-
-fun ClassDef.interfaces(predicate: Iterable<String>.() -> Boolean) =
-    interfaces.predicate()
-
-fun ClassDef.annotations(predicate: Iterable<Annotation>.() -> Boolean) =
-    annotations.predicate()
-
-
-// TODO: Do we need this??
-fun Iterable<Method>.anyMethod(predicate: Method.() -> Boolean) =
-    any(predicate)
-
-fun Iterable<Field>.anyField(predicate: Field.() -> Boolean) =
-    any(predicate)
-
-fun Iterable<String>.anyInterface(predicate: String.() -> Boolean) =
-    any(predicate)
-
-fun Iterable<Annotation>.anyAnnotation(predicate: Annotation.() -> Boolean) =
-    any(predicate)
-
-fun Method.implementation(predicate: MethodImplementation.() -> Boolean) =
-    implementation?.predicate() ?: false
-
-fun Method.parameters(predicate: Iterable<CharSequence>.() -> Boolean) =
-    parameters.predicate()
-
-fun Method.parameterTypes(predicate: Iterable<CharSequence>.() -> Boolean) =
-    parameterTypes.predicate()
-
-fun Method.annotations(predicate: Iterable<Annotation>.() -> Boolean) =
-    annotations.predicate()
-
-fun Method.hiddenApiRestrictions(predicate: Iterable<HiddenApiRestriction>.() -> Boolean) =
-    hiddenApiRestrictions.predicate()
-
-fun Iterable<CharSequence>.anyParameter(predicate: CharSequence.() -> Boolean) =
-    any(predicate)
-
-fun Iterable<HiddenApiRestriction>.anyHiddenApiRestriction(predicate: HiddenApiRestriction.() -> Boolean) =
-    any(predicate)
-
-fun MethodImplementation.instructions(predicate: Iterable<Instruction>.() -> Boolean) =
-    instructions.predicate()
-
-fun MethodImplementation.tryBlocks(predicate: Iterable<TryBlock<out ExceptionHandler>>.() -> Boolean) =
-    tryBlocks.predicate()
-
-fun MethodImplementation.debugItems(predicate: Iterable<Any>.() -> Boolean) =
-    debugItems.predicate()
-
-fun Iterable<Instruction>.anyInstruction(predicate: Instruction.() -> Boolean) =
-    any(predicate)
-
-@Suppress("UNCHECKED_CAST")
-fun <T : Reference> Instruction.reference(predicate: T.() -> Boolean) =
-    ((this as? ReferenceInstruction)?.reference as? T)?.predicate() ?: false
-
-@Suppress("UNCHECKED_CAST")
-fun <T : Reference> Instruction.reference2(predicate: T.() -> Boolean) =
-    ((this as? DualReferenceInstruction)?.reference2 as? T)?.predicate() ?: false
-
-abstract class Matcher<T> : MutableList<T.() -> Boolean> by mutableListOf() {
-    var matchIndex = -1
-        protected set
-
-    abstract operator fun invoke(haystack: Iterable<T>): Boolean
-}
-
-class SequentialMatcher<T> internal constructor() : Matcher<T>() {
-    override operator fun invoke(haystack: Iterable<T>) = true
-}
-
-fun <T> matchSequentially() = SequentialMatcher<T>()
-fun <T> sequentialMatcher(builder: MutableList<T.() -> Boolean>.() -> Unit) =
-    SequentialMatcher<T>().apply(builder)
-
-fun <T> Iterable<T>.matchSequentially(builder: MutableList<T.() -> Boolean>.() -> Unit) =
-    sequentialMatcher(builder)(this)
-
-object BytecodeContext {
-    lateinit var classes: Sequence<ClassDef>
-}
-
-fun BytecodeContext.findClassDef(predicate: ClassDef.() -> Boolean) =
-    classes.find(predicate)
-
-fun BytecodeContext.findMethod(predicate: Method.() -> Boolean) =
-    classes.flatMap { it.methods.asSequence() }.find(predicate)
-
-fun BytecodeContext.run() {
-    val returnsStringMatcher = sequentialMatcher<Instruction> {
-        add { opcode == Opcode.CONST_STRING }
-        add { opcode == Opcode.RETURN }
-    }
-
-    // Static matching.
-    val matched = returnsStringMatcher(classes.first().methods.first().instructions)
-    val matchIndex = returnsStringMatcher.matchIndex
-
-    val someMethodWithStrings = findMethod {
-        parameters {
-            // Inline matcher.
-            matchSequentially {
-                add { this == "Ljava/lang/String;" }
-            }
-
-        } && returnsStringMatcher.apply { // Dynamically mutable.
-            // Can reference definingClass.
-            add { reference<TypeReference> { type == definingClass } }
-            add { opcode == Opcode.RETURN }
-        }(instructions)
-    }
-
-    // New index after findMethod is called, since we decided to reuse the instance,
-    // this is useful as a filter you can run on many methods.
-    returnsStringMatcher.matchIndex
-
-    val classDefWithExampleMethodAndField = findClassDef {
-        methods {
-            matchSequentially {
-                add { name == "exampleMethod" }
-            }
-        } && fields {
-            matchSequentially {
-                add { name === "exampleField" }
-                add { name === "exampleField2" }
-            } && anyField { name == "exampleField3" }
-        }
-    }
-
-    // Raw API:
-
-    val classDefWithExampleMethodAndFieldRaw = findClassDef {
-        matchSequentially<Method>().apply {
-            add { name == "exampleMethod" }
-        }(methods) && matchSequentially<Method>().apply {
-            add { name == "exampleMethod2" }
-        }(methods) && object : Matcher<Field>() {
-            override fun invoke(haystack: Iterable<Field>): Boolean {
-                this.matchIndex = 1
-                return true
-            }
-        }(fields)
-    }
-}
 
 /**
  * A fingerprint for a method. A fingerprint is a partial description of a method.
@@ -262,7 +87,7 @@ class Fingerprint internal constructor(
 
             // Fingerprint has partial strings.
             // Search all methods that contain strings.
-            lookupMaps.allMethodsWithStrings.forEach { (method, classDef) ->
+           lookupMaps.allMethodsWithStrings.forEach { (method, classDef) ->
                 val match = matchOrNull(classDef, method)
                 if (match != null) {
                     _matchOrNull = match
@@ -363,7 +188,7 @@ class Fingerprint internal constructor(
             buildList {
                 val instructions = method.instructionsOrNull ?: return null
 
-                var stringsList: MutableList<String>? = null
+                var stringsList : MutableList<String>? = null
 
                 instructions.forEachIndexed { instructionIndex, instruction ->
                     if (
@@ -393,9 +218,9 @@ class Fingerprint internal constructor(
         } else {
             val instructions = method.instructionsOrNull?.toList() ?: return null
 
-            fun matchFilters(): List<Match.InstructionMatch>? {
+            fun matchFilters() : List<Match.InstructionMatch>? {
                 val lastMethodIndex = instructions.lastIndex
-                var instructionMatches: MutableList<Match.InstructionMatch>? = null
+                var instructionMatches : MutableList<Match.InstructionMatch>? = null
 
                 var firstInstructionIndex = 0
                 var lastMatchIndex = -1
@@ -553,7 +378,7 @@ class Fingerprint internal constructor(
      */
     context(BytecodePatchContext)
     @Deprecated("instead use instructionMatchesOrNull")
-    val patternMatchOrNull: PatternMatch?
+    val patternMatchOrNull : PatternMatch?
         get() {
             val match = this.matchOrNull()
             if (match == null || match.instructionMatchesOrNull == null) {
@@ -697,7 +522,6 @@ class Match internal constructor(
     @Deprecated("Instead use string instructions and `instructionMatches()`")
     val stringMatches
         get() = _stringMatches ?: throw PatchException("Fingerprint declared no strings")
-
     @Deprecated("Instead use string instructions and `instructionMatchesOrNull()`")
     val stringMatchesOrNull = _stringMatches
 
@@ -728,7 +552,7 @@ class Match internal constructor(
      * @param instruction The instruction that matched.
      */
     class InstructionMatch internal constructor(
-        val filter: InstructionFilter,
+        val filter : InstructionFilter,
         val index: Int,
         val instruction: Instruction
     ) {
@@ -902,7 +726,7 @@ class FingerprintBuilder() {
         this.customBlock = customBlock
     }
 
-    fun build(): Fingerprint {
+    fun build() : Fingerprint {
         // If access flags include constructor then
         // skip the return type check since it's always void.
         if (returnType?.equals("V") == true && accessFlags != null
