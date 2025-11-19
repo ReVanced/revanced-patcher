@@ -15,7 +15,6 @@ import com.android.tools.smali.dexlib2.iface.ExceptionHandler
 import com.android.tools.smali.dexlib2.iface.Field
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodImplementation
-import com.android.tools.smali.dexlib2.iface.MethodParameter
 import com.android.tools.smali.dexlib2.iface.TryBlock
 import com.android.tools.smali.dexlib2.iface.instruction.DualReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -29,95 +28,70 @@ import com.android.tools.smali.dexlib2.util.MethodUtil
 fun ClassDef.methods(predicate: Iterable<Method>.() -> Boolean) =
     methods.predicate()
 
-fun ClassDef.anyMethod(predicate: Method.() -> Boolean) =
-    methods.any(predicate)
-
 fun ClassDef.directMethods(predicate: Iterable<Method>.() -> Boolean) =
     directMethods.predicate()
-
-fun ClassDef.anyDirectMethod(predicate: Method.() -> Boolean) =
-    directMethods.any(predicate)
 
 fun ClassDef.virtualMethods(predicate: Iterable<Method>.() -> Boolean) =
     virtualMethods.predicate()
 
-fun ClassDef.anyVirtualMethod(predicate: Method.() -> Boolean) =
-    virtualMethods.any(predicate)
-
 fun ClassDef.fields(predicate: Iterable<Field>.() -> Boolean) =
     fields.predicate()
 
-fun ClassDef.anyField(predicate: Field.() -> Boolean) =
-    fields.any(predicate)
-
 fun ClassDef.instanceFields(predicate: Iterable<Field>.() -> Boolean) =
-    instanceFields.predicate()
-
-fun ClassDef.anyInstanceField(predicate: Field.() -> Boolean) =
-    instanceFields.any(predicate)
+    this.instanceFields.predicate()
 
 fun ClassDef.staticFields(predicate: Iterable<Field>.() -> Boolean) =
-    staticFields.predicate()
-
-fun ClassDef.anyStaticField(predicate: Field.() -> Boolean) =
-    staticFields.any(predicate)
+    this.staticFields.predicate()
 
 fun ClassDef.interfaces(predicate: Iterable<String>.() -> Boolean) =
     interfaces.predicate()
 
-fun ClassDef.anyInterface(predicate: String.() -> Boolean) =
-    interfaces.any(predicate)
-
 fun ClassDef.annotations(predicate: Iterable<Annotation>.() -> Boolean) =
     annotations.predicate()
 
-fun ClassDef.anyAnnotation(predicate: Annotation.() -> Boolean) =
-    annotations.any(predicate)
+
+// TODO: Do we need this??
+fun Iterable<Method>.anyMethod(predicate: Method.() -> Boolean) =
+    any(predicate)
+
+fun Iterable<Field>.anyField(predicate: Field.() -> Boolean) =
+    any(predicate)
+
+fun Iterable<String>.anyInterface(predicate: String.() -> Boolean) =
+    any(predicate)
+
+fun Iterable<Annotation>.anyAnnotation(predicate: Annotation.() -> Boolean) =
+    any(predicate)
 
 fun Method.implementation(predicate: MethodImplementation.() -> Boolean) =
     implementation?.predicate() ?: false
 
-fun Method.parameters(predicate: Iterable<MethodParameter>.() -> Boolean) =
+fun Method.parameters(predicate: Iterable<CharSequence>.() -> Boolean) =
     parameters.predicate()
-
-fun Method.anyParameter(predicate: MethodParameter.() -> Boolean) =
-    parameters.any(predicate)
 
 fun Method.parameterTypes(predicate: Iterable<CharSequence>.() -> Boolean) =
     parameterTypes.predicate()
 
-fun Method.anyParameterType(predicate: CharSequence.() -> Boolean) =
-    parameterTypes.any(predicate)
-
 fun Method.annotations(predicate: Iterable<Annotation>.() -> Boolean) =
     annotations.predicate()
-
-fun Method.anyAnnotation(predicate: Annotation.() -> Boolean) =
-    annotations.any(predicate)
 
 fun Method.hiddenApiRestrictions(predicate: Iterable<HiddenApiRestriction>.() -> Boolean) =
     hiddenApiRestrictions.predicate()
 
-fun Method.anyHiddenApiRestriction(predicate: HiddenApiRestriction.() -> Boolean) =
-    hiddenApiRestrictions.any(predicate)
+fun Iterable<CharSequence>.anyParameter(predicate: CharSequence.() -> Boolean) =
+    any(predicate)
+
+fun Iterable<HiddenApiRestriction>.anyHiddenApiRestriction(predicate: HiddenApiRestriction.() -> Boolean) =
+    any(predicate)
 
 fun MethodImplementation.instructions(predicate: Iterable<Instruction>.() -> Boolean) =
     instructions.predicate()
 
-fun MethodImplementation.anyInstruction(predicate: Instruction.() -> Boolean) =
-    instructions.any(predicate)
-
 fun MethodImplementation.tryBlocks(predicate: Iterable<TryBlock<out ExceptionHandler>>.() -> Boolean) =
     tryBlocks.predicate()
 
-fun MethodImplementation.anyTryBlock(predicate: TryBlock<out ExceptionHandler>.() -> Boolean) =
-    tryBlocks.any(predicate)
-
 fun MethodImplementation.debugItems(predicate: Iterable<Any>.() -> Boolean) =
     debugItems.predicate()
-
-fun MethodImplementation.anyDebugItem(predicate: Any.() -> Boolean) =
-    debugItems.any(predicate)
 
 fun Iterable<Instruction>.anyInstruction(predicate: Instruction.() -> Boolean) =
     any(predicate)
@@ -169,7 +143,7 @@ fun BytecodeContext.run() {
     val matchIndex = returnsStringMatcher.matchIndex
 
     val someMethodWithStrings = findMethod {
-        parameterTypes {
+        parameters {
             // Inline matcher.
             matchSequentially {
                 add { this == "Ljava/lang/String;" }
@@ -201,15 +175,17 @@ fun BytecodeContext.run() {
 
     // Raw API:
 
-    val classDefWithExampleMethodAndFieldRaw = findMethod {
-        name.startsWith("obfuscated_") && parameterTypes.matchSequentially {
-            add { this == "Ljava/lang/String;" }
-            add { endsWith("Type;") }
-            add { startsWith("Z") }
-        } && instructions.matchSequentially {
-            add { opcode == Opcode.CONST_STRING }
-            add { opcode == Opcode.RETURN }
-        }
+    val classDefWithExampleMethodAndFieldRaw = findClassDef {
+        matchSequentially<Method>().apply {
+            add { name == "exampleMethod" }
+        }(methods) && matchSequentially<Method>().apply {
+            add { name == "exampleMethod2" }
+        }(methods) && object : Matcher<Field>() {
+            override fun invoke(haystack: Iterable<Field>): Boolean {
+                this.matchIndex = 1
+                return true
+            }
+        }(fields)
     }
 }
 
