@@ -14,7 +14,6 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import java.util.EnumSet
-import kotlin.text.endsWith
 
 /**
  * Simple interface to control how much space is allowed between a previous
@@ -402,7 +401,7 @@ fun literal(
 ) = LiteralFilter({ literal }, opcodes, location)
 
 /**
- * Integer point literal.
+ * Integer literal.
  */
 fun literal(
     literal: Int,
@@ -411,7 +410,7 @@ fun literal(
 ) = LiteralFilter({ literal.toLong() }, opcodes, location)
 
 /**
- * Double point literal.
+ * Double literal. Automatically compares hex value as a double.
  */
 fun literal(
     literal: Double,
@@ -420,7 +419,7 @@ fun literal(
 ) = LiteralFilter({ literal.toRawBits() }, opcodes, location)
 
 /**
- * Floating point literal.
+ * Floating point literal. Automatically compares hex value as a floating point.
  */
 fun literal(
     literal: Float,
@@ -454,7 +453,7 @@ class MethodCallFilter internal constructor(
             val referenceClass = reference.definingClass
             val definingClass = definingClass()
 
-            if (!referenceClass.endsWith(definingClass)) {
+            if (!StringComparisonType.ENDS_WITH.compare(referenceClass, definingClass)) {
                 // Check if 'this' defining class is used.
                 // Would be nice if this also checked all super classes,
                 // but doing so requires iteratively checking all superclasses
@@ -467,7 +466,7 @@ class MethodCallFilter internal constructor(
         if (name != null && reference.name != name()) {
             return false
         }
-        if (returnType != null && !reference.returnType.startsWith(returnType())) {
+        if (returnType != null && !StringComparisonType.STARTS_WITH.compare(reference.returnType, returnType())) {
             return false
         }
         if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters())) {
@@ -606,14 +605,14 @@ fun methodCall(
 
 fun methodCall(
     /**
-     * Defining class of the method call. Matches using endsWith().
+     * Defining class of the method call. Matches using [StringComparisonType.ENDS_WITH].
      *
      * For calls to a method in the same class, use 'this' as the defining class.
      * Note: 'this' does not work for methods declared only in a superclass.
      */
     definingClass: String? = null,
     /**
-     * Method name. Must be exact match of the method name.
+     * Method name. Must be exact match of the method name ([StringComparisonType.EQUALS]).
      */
     name: String? = null,
     /**
@@ -622,7 +621,7 @@ fun methodCall(
      */
     parameters: List<String>? = null,
     /**
-     * Return type.  Matches using startsWith()
+     * Return type. Matches using [StringComparisonType.STARTS_WITH].
      */
     returnType: String? = null,
     /**
@@ -656,23 +655,23 @@ fun methodCall(
 
 fun methodCall(
     /**
-     * Defining class of the method call. Matches using endsWith().
+     * Defining class of the method call. Matches using [StringComparisonType.ENDS_WITH].
      *
      * For calls to a method in the same class, use 'this' as the defining class.
      * Note: 'this' does not work for methods declared only in a superclass.
      */
     definingClass: String? = null,
     /**
-     * Method name. Must be exact match of the method name.
+     * Method name. Must be exact match of the method name ([StringComparisonType.EQUALS]).
      */
     name: String? = null,
     /**
-     * Parameters of the method call. Each parameter matches
-     * using startsWith() and semantics are the same as [Fingerprint].
+     * Parameters of the method call. Each parameter matches using [StringComparisonType.STARTS_WITH]
+     * and semantics are the same as [Fingerprint] parameters.
      */
     parameters: List<String>? = null,
     /**
-     * Return type.  Matches using startsWith()
+     * Return type. Matches using [StringComparisonType.STARTS_WITH].
      */
     returnType: String? = null,
     /**

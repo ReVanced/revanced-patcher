@@ -651,8 +651,8 @@ class FingerprintBuilder() {
      * ```
      * instructions(
      *    opcode(Opcode.INVOKE_VIRTUAL), // First opcode matches anywhere in the method.
-     *    opcode(Opcode.MOVE_RESULT_OBJECT, maxAfter = 0), // Must match exactly after INVOKE_VIRTUAL.
-     *    opcode(Opcode.IPUT_OBJECT, maxAfter = 0) // Must match exactly after MOVE_RESULT_OBJECT.
+     *    opcode(Opcode.MOVE_RESULT_OBJECT, MatchAfterImmediately()), // Must match exactly after INVOKE_VIRTUAL.
+     *    opcode(Opcode.IPUT_OBJECT, MatchAfterImmediately()) // Must match exactly after MOVE_RESULT_OBJECT.
      * )
      * ```
      *
