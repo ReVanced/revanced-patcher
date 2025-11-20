@@ -164,27 +164,25 @@ internal object PatcherTest {
 
     @Test
     fun `matches fingerprint`() {
-        every { patcher.context.bytecodeContext.classDefs } returns ProxyClassDefSet(
-            mutableListOf(
-                ImmutableClassDef(
-                    "class",
-                    0,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    listOf(
-                        ImmutableMethod(
-                            "class",
-                            "method",
-                            emptyList(),
-                            "V",
-                            0,
-                            null,
-                            null,
-                            null,
-                        ),
+        every { patcher.context.bytecodeContext.classDefs } returns mutableSetOf(
+            ImmutableClassDef(
+                "class",
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                listOf(
+                    ImmutableMethod(
+                        "class",
+                        "method",
+                        emptyList(),
+                        "V",
+                        0,
+                        null,
+                        null,
+                        null,
                     ),
                 ),
             ),

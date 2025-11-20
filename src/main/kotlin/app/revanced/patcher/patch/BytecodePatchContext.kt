@@ -1,7 +1,6 @@
 package app.revanced.patcher.patch
 
 import app.revanced.patcher.InternalApi
-import app.revanced.patcher.Matcher
 import app.revanced.patcher.PatcherConfig
 import app.revanced.patcher.PatcherResult
 import app.revanced.patcher.dex.mutable.MutableClassDef
@@ -67,7 +66,7 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     internal fun mergeExtension(bytecodePatch: BytecodePatch) {
         bytecodePatch.extensionInputStream?.get()?.use { extensionStream ->
             RawDexIO.readRawDexFile(extensionStream, 0, null).classes.forEach { classDef ->
-                val existingClass = lookupMaps.classesByType[classDef.type] ?: run {
+                val existingClass = lookupMaps.classDefsByType[classDef.type] ?: run {
                     logger.fine { "Adding class \"$classDef\"" }
 
                     classDefs += classDef
@@ -85,7 +84,10 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     }
 
                     classDefs -= existingClass
+                    lookupMaps -= existingClass
+
                     classDefs += mergedClass
+                    lookupMaps += mergedClass
                 }
             }
         } ?: logger.fine("No extension to merge")
@@ -97,8 +99,13 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
      *
      * @return The mutable version of the [ClassDef].
      */
-    fun ClassDef.mutable(): MutableClassDef =
-        this as? MutableClassDef ?: also(classDefs::remove).toMutable().also(classDefs::add)
+    fun ClassDef.mutable(): MutableClassDef = this as? MutableClassDef ?: also {
+        classDefs -= this
+        lookupMaps -= this
+    }.toMutable().also {
+        classDefs += it
+        lookupMaps += it
+    }
 
     /**
      * Navigate a method.
@@ -149,8 +156,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
         return patchedDexFileResults
     }
 
-    internal val matchers =Map<String, Matcher<*>>
-
     override fun close() {
         try {
             classDefs.clear()
@@ -161,27 +166,48 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     }
 
     internal inner class LookupMaps {
-        private val _classesByType = mutableMapOf<String, ClassDef>()
-        val classesByType: Map<String, ClassDef> = _classesByType
+        private val _classDefsByType = mutableMapOf<String, ClassDef>()
+        val classDefsByType: Map<String, ClassDef> = _classDefsByType
 
         private val _methodsByStrings = mutableMapOf<String, MutableList<Method>>()
         val methodsByStrings: Map<String, List<Method>> = _methodsByStrings
+
+        private val _methodsWithString = methodsByStrings.values.flatten().toMutableSet()
+        val methodsWithString: Set<Method> = _methodsWithString
 
         init {
             classDefs.forEach(::plusAssign)
         }
 
-        operator fun plusAssign(classDef: ClassDef) {
-            classDef.methods.asSequence().forEach { method ->
-                method.instructionsOrNull?.asSequence()
-                    ?.filterIsInstance<ReferenceInstruction>()
-                    ?.map { it.reference }
-                    ?.filterIsInstance<StringReference>()
-                    ?.map { it.string }
-                    ?.forEach { string -> _methodsByStrings.getOrPut(string) { mutableListOf() } += method }
-            }
+        private fun ClassDef.forEachString(action: (Method, String) -> Unit) = methods.asSequence().forEach { method ->
+            method.instructionsOrNull?.asSequence()
+                ?.filterIsInstance<ReferenceInstruction>()
+                ?.map { it.reference }
+                ?.filterIsInstance<StringReference>()
+                ?.map { it.string }
+                ?.forEach { string ->
+                    action(method, string)
+                }
+        }
 
-            _classesByType[classDef.type] = classDef
+        operator fun plusAssign(classDef: ClassDef) {
+            _classDefsByType[classDef.type] = classDef
+
+            classDef.forEachString { method, string ->
+                _methodsWithString += method
+                _methodsByStrings.getOrPut(string) { mutableListOf() } += method
+            }
+        }
+
+        operator fun minusAssign(classDef: ClassDef) {
+            _classDefsByType -= classDef.type
+
+            classDef.forEachString { method, string ->
+                _methodsWithString.remove(method)
+
+                if (_methodsByStrings[string]?.also { it -= method }?.isEmpty() == true)
+                    _methodsByStrings -= string
+            }
         }
     }
 }

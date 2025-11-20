@@ -4,8 +4,10 @@ package app.revanced.patcher
 
 import app.revanced.patcher.Matcher.MatchContext
 import app.revanced.patcher.dex.mutable.MutableMethod
+import app.revanced.patcher.extensions.instructions
 import app.revanced.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.HiddenApiRestriction
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.*
 import com.android.tools.smali.dexlib2.iface.Annotation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -65,7 +67,7 @@ fun BytecodePatchContext.firstClassDefMutable(predicate: MatchPredicate<ClassDef
 
 fun BytecodePatchContext.firstClassDefOrNull(
     type: String, predicate: (MatchPredicate<ClassDef>)? = null
-) = lookupMaps.classesByType[type]?.takeIf {
+) = lookupMaps.classDefsByType[type]?.takeIf {
     predicate == null || with(predicate) { with(MatchContext()) { it.match() } }
 }
 
@@ -81,18 +83,19 @@ fun BytecodePatchContext.firstClassDefMutable(
     type: String, predicate: (MatchPredicate<ClassDef>)? = null
 ) = requireNotNull(firstClassDefMutableOrNull(type, predicate))
 
-fun BytecodePatchContext.firstMethodOrNull(predicate: MatchPredicate<Method>) = with(predicate) {
+fun Iterable<ClassDef>.firstMethodOrNull(predicate: MatchPredicate<Method>) = with(predicate) {
     with(MatchContext()) {
-        classDefs.asSequence().flatMap { it.methods.asSequence() }.firstOrNull { it.match() }
+        this@firstMethodOrNull.asSequence().flatMap { it.methods.asSequence() }.firstOrNull { it.match() }
     }
 }
 
-fun BytecodePatchContext.firstMethod(predicate: MatchPredicate<Method>) = requireNotNull(firstMethodOrNull(predicate))
+fun Iterable<ClassDef>.firstMethod(predicate: MatchPredicate<Method>) = requireNotNull(firstMethodOrNull(predicate))
 
-fun BytecodePatchContext.firstMethodMutableOrNull(predicate: MatchPredicate<Method>): MutableMethod? {
+context(BytecodePatchContext)
+fun Iterable<ClassDef>.firstMethodMutableOrNull(predicate: MatchPredicate<Method>): MutableMethod? {
     with(predicate) {
         with(MatchContext()) {
-            classDefs.forEach { classDef ->
+            this@firstMethodMutableOrNull.forEach { classDef ->
                 classDef.methods.firstOrNull { it.match() }?.let { method ->
                     return classDef.mutable().methods.first { MethodUtil.methodSignaturesMatch(it, method) }
                 }
@@ -102,6 +105,20 @@ fun BytecodePatchContext.firstMethodMutableOrNull(predicate: MatchPredicate<Meth
 
     return null
 }
+
+context(BytecodePatchContext)
+fun Iterable<ClassDef>.firstMethodMutable(predicate: MatchPredicate<Method>) =
+    requireNotNull(firstMethodMutableOrNull(predicate))
+
+fun BytecodePatchContext.firstMethodOrNull(predicate: MatchPredicate<Method>) =
+    classDefs.firstMethodOrNull(predicate)
+
+fun BytecodePatchContext.firstMethod(predicate: MatchPredicate<Method>) =
+    requireNotNull(firstMethodOrNull(predicate))
+
+
+fun BytecodePatchContext.firstMethodMutableOrNull(predicate: MatchPredicate<Method>) =
+    classDefs.firstMethodMutableOrNull(predicate)
 
 fun BytecodePatchContext.firstMethodMutable(predicate: MatchPredicate<Method>) =
     requireNotNull(firstMethodMutableOrNull(predicate))
@@ -216,19 +233,21 @@ abstract class Matcher<T, U> : MutableList<U> by mutableListOf() {
 
     abstract operator fun invoke(haystack: Iterable<T>): Boolean
 
-    class MatchContext internal constructor() : MutableMap<String, Any> by mutableMapOf()
+    class MatchContext internal constructor() : MutableMap<String, Any> by mutableMapOf() {
+        inline fun <reified V : Any> remember(key: String, defaultValue: () -> V) =
+            get(key) as? V ?: defaultValue().also { put(key, it) }
+    }
 }
 
-
-fun <T> slidingWindowMatcher(builder: MutableList<T.() -> Boolean>.() -> Unit) =
-    SlidingWindowMatcher<T>().apply(builder)
+fun <T> slidingWindowMatcher(build: SlidingWindowMatcher<T>.() -> Unit) =
+    SlidingWindowMatcher<T>().apply(build)
 
 context(MatchContext)
-fun <T> Iterable<T>.matchSlidingWindow(key: String, builder: MutableList<T.() -> Boolean>.() -> Unit) =
-    (getOrPut(key) { slidingWindowMatcher(builder) } as Matcher<T, T.() -> Boolean>)(this)
+fun <T> Iterable<T>.matchSlidingWindow(key: String, build: SlidingWindowMatcher<T>.() -> Unit) =
+    remember(key) { slidingWindowMatcher(build) }(this)
 
-fun <T> Iterable<T>.matchSlidingWindow(builder: MutableList<T.() -> Boolean>.() -> Unit) =
-    slidingWindowMatcher(builder)(this)
+fun <T> Iterable<T>.matchSlidingWindow(build: SlidingWindowMatcher<T>.() -> Unit) =
+    slidingWindowMatcher(build)(this)
 
 class SlidingWindowMatcher<T>() : Matcher<T, T.() -> Boolean>() {
     override operator fun invoke(haystack: Iterable<T>): Boolean {
@@ -255,149 +274,124 @@ class SlidingWindowMatcher<T>() : Matcher<T, T.() -> Boolean>() {
     }
 }
 
-fun findStringsMatcher(builder: MutableList<String>.() -> Unit) =
-    FindStringsMatcher().apply(builder)
+fun findStringsMatcher(build: MutableList<String>.() -> Unit) =
+    FindStringsMatcher().apply(build)
 
 class FindStringsMatcher() : Matcher<Instruction, String>() {
-    val matchedStrings = mutableMapOf<String, Int>()
-    var needles = toMutableSet() // Reduce O(n²) to O(log n) by removing from the set
+    private val _matchedStrings = mutableListOf<Pair<String, Int>>()
+    val matchedStrings: List<Pair<String, Int>> = _matchedStrings
 
     override fun invoke(haystack: Iterable<Instruction>): Boolean {
-        needles = toMutableSet() // Reset needles for each invocation
-        // (or do not use the set if set is too small for performance)
+        _matchedStrings.clear()
+        val remaining = indices.toMutableList()
 
-        val foundStrings = mutableMapOf<String, Int>()
+        haystack.forEachIndexed { hayIndex, instruction ->
+            val string = ((instruction as? ReferenceInstruction)?.reference as? StringReference)?.string
+                ?: return@forEachIndexed
 
-        haystack.forEachIndexed { index, instruction ->
-            if (instruction !is ReferenceInstruction) return@forEachIndexed
-            val reference = instruction.reference
-            if (reference !is StringReference) return@forEachIndexed
-            val string = reference.string
+            val index = remaining.firstOrNull { this[it] in string } ?: return@forEachIndexed
 
-            if (needles.removeIf { it in string }) {
-                foundStrings[string] = index
-            }
+            _matchedStrings += this[index] to hayIndex
+            remaining -= index
         }
 
-        return if (foundStrings.size == size) {
-            matchedStrings += foundStrings
-
-            true
-        } else {
-            false
-        }
+        return remaining.isEmpty()
     }
 }
 
-fun BytecodePatchContext.findStringIndices() {
-    val match = findStringsMatcher {
-        add("fullstring1")
-        add("fullstring2")
-        add("partialString")
+fun BytecodePatchContext.a() {
+    val match = indexedMatcher<Instruction> {
+        first { opcode == Opcode.OR_INT_2ADDR }
+        after { opcode == Opcode.RETURN_VOID }
+        after(atLeast = 2, atMost = 5) { opcode == Opcode.MOVE_RESULT_OBJECT }
+        opcode(Opcode.RETURN_VOID)
     }
 
-    firstMethod("fullstring", "fullstring") {
-        implementation {
-            match(instructions)
-        }
+    val myMethod = firstMethod {
+        implementation { match(instructions) }
     }
 
-    match.matchedStrings.forEach { (key, value) ->
-        println("Found string '$key' at index $value")
-    }
-
-    firstMethod {
-        implementation {
-            // Uncached usage
-            instructions.matchSlidingWindow {
-
-            } || instructions.matchSlidingWindow("cached usage") {
-
-            }
-        }
-    }
+    match._indices // Mapped in same order as defined
 }
 
-fun BytecodePatchContext.anotherExample() {
-    val desiredStringIndices = listOf("fullstring1", "fullstring2", "partialString")
-    val matchedIndices = mutableMapOf<String, Int>()
+fun IndexedMatcher<Instruction>.opcode(opcode: Opcode) {
+    after { this.opcode == opcode }
+}
 
-    firstMethod("fullstring", "fullstring") {
-        val remaining = desiredStringIndices.toMutableSet()
-        val foundMap = mutableMapOf<String, Int>()
+context(MatchContext)
+fun Method.instructions(key: String, build: IndexedMatcher<Instruction>.() -> Unit) =
+    instructions.matchIndexed("instructions", build)
 
-        implementation {
 
-            instructions.withIndex().forEach { (index, instruction) ->
-                val string = (instruction as? ReferenceInstruction)?.reference
-                    .let { it as? StringReference }?.string
-                    ?: return@forEach
+fun <T> indexedMatcher(build: IndexedMatcher<T>.() -> Unit) =
+    IndexedMatcher<T>().apply(build)
 
-                val iterator = remaining.iterator()
-                while (iterator.hasNext()) {
-                    val desired = iterator.next()
-                    if (desired in string) {
-                        foundMap[desired] = index
-                        iterator.remove()
+context(MatchContext)
+fun <T> Iterable<T>.matchIndexed(key: String, build: IndexedMatcher<T>.() -> Unit) =
+    remember<IndexedMatcher<T>>(key) { indexedMatcher(build) }(this)
+
+class IndexedMatcher<T>() : Matcher<T, T.() -> Boolean>() {
+    private val _indices: MutableList<Int> = mutableListOf()
+    val indices: List<Int> = _indices
+
+    private var lastMatchedIndex = -1
+    private var currentIndex = -1
+
+    override fun invoke(haystack: Iterable<T>): Boolean {
+        val hayList = haystack as? List<T> ?: haystack.toList()
+
+        _indices.clear()
+
+        var firstNeedleIndex = 0
+
+        while (firstNeedleIndex <= hayList.lastIndex) {
+            lastMatchedIndex = -1
+
+            val tempIndices = mutableListOf<Int>()
+
+            var matchedAll = true
+            var subIndex = firstNeedleIndex
+
+            for (predicateIndex in _indices.indices) {
+                var predicateMatched = false
+
+                while (subIndex <= hayList.lastIndex) {
+                    currentIndex = subIndex
+                    val element = hayList[subIndex]
+                    if (this[predicateIndex](element)) {
+                        tempIndices.add(subIndex)
+                        lastMatchedIndex = subIndex
+                        predicateMatched = true
+                        subIndex++
+                        break
                     }
+                    subIndex++
                 }
 
-                if (remaining.isEmpty()) return@forEach
-            }
-
-            if (remaining.isEmpty()) {
-                matchedIndices.putAll(foundMap)
-                true
-            } else {
-                false
-            }
-        }
-    }
-}
-
-fun BytecodePatchContext.wrapperExample() {
-    fun Method.captureStrings(
-        desiredStringIndices: Set<String>,
-        out: MutableMap<String, Int>
-    ): Boolean {
-        val remaining = desiredStringIndices.toMutableSet()
-        val foundMap = mutableMapOf<String, Int>()
-
-        return implementation {
-            instructions.withIndex().forEach { (index, instruction) ->
-                val string = (instruction as? ReferenceInstruction)?.reference
-                    .let { it as? StringReference }?.string
-                    ?: return@forEach
-
-                val iterator = remaining.iterator()
-                while (iterator.hasNext()) {
-                    val desired = iterator.next()
-                    if (desired in string) {
-                        foundMap[desired] = index
-                        iterator.remove()
-                    }
+                if (!predicateMatched) {
+                    // Restart from next possible first match
+                    firstNeedleIndex = if (tempIndices.isNotEmpty()) tempIndices[0] + 1 else firstNeedleIndex + 1
+                    matchedAll = false
+                    break
                 }
-
-                if (remaining.isEmpty()) return@forEach
             }
 
-            if (remaining.isEmpty()) {
-                out += foundMap
-                true
-            } else {
-                false
+            if (matchedAll) {
+                _indices.addAll(tempIndices)
+                return true
             }
         }
+
+        return false
     }
 
-    val desiredStringIndices = setOf("fullstring1", "fullstring2", "partialString")
-    val matchedIndices = mutableMapOf<String, Int>()
-
-    val method = firstMethod {
-        name == "desiredMethodName" && captureStrings(desiredStringIndices, matchedIndices)
+    fun first(predicate: T.() -> Boolean) = add {
+        if (lastMatchedIndex != -1) false
+        else predicate()
     }
 
-    for ((key, value) in matchedIndices) {
-        println("Found string '$key' at index $value in method '$method'")
+    fun after(atLeast: Int = 1, atMost: Int = 1, predicate: T.() -> Boolean) = add {
+        val distance = currentIndex - lastMatchedIndex
+        if (distance in atLeast..atMost) predicate() else false
     }
 }
