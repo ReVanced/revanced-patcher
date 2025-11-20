@@ -1,7 +1,6 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.patch.PatchResult
@@ -532,7 +531,6 @@ internal object PatcherTest {
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes.pool.values)
         every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }
