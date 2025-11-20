@@ -505,6 +505,31 @@ internal object PatcherTest {
         }
     }
 
+    @Test
+    fun `Instruction location match after`() {
+        with(patcher.context.bytecodeContext) {
+            assertThrows<IllegalArgumentException> {
+                InstructionLocation.MatchAfterWithin(-1)
+            }
+
+            assertThrows<IllegalArgumentException> {
+                InstructionLocation.MatchAfterAtLeast(-1)
+                    .indexIsValidForMatching(-1, 0)
+            }
+
+            assertThrows<IllegalArgumentException> {
+                InstructionLocation.MatchAfterRange(-1, 0)
+            }
+
+            assertThrows<IllegalArgumentException> {
+                InstructionLocation.MatchAfterRange(0, -1)
+            }
+
+            InstructionLocation.MatchAfterRange(0, 0)
+            InstructionLocation.MatchAfterRange(0, 1)
+        }
+    }
+
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
         every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes.pool.values)

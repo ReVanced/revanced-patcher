@@ -42,10 +42,8 @@ fun interface InstructionLocation {
      */
     class MatchFirst() : InstructionLocation {
         override fun indexIsValidForMatching(previouslyMatchedIndex: Int, currentIndex: Int) : Boolean {
-            if (previouslyMatchedIndex >= 0) {
-                throw IllegalArgumentException(
-                    "MatchFirst can only be used for the first instruction filter"
-                )
+            require(previouslyMatchedIndex < 0) {
+                "MatchFirst can only be used for the first instruction filter"
             }
             return true
         }
@@ -63,10 +61,8 @@ fun interface InstructionLocation {
      */
     class MatchAfterImmediately() : InstructionLocation {
         override fun indexIsValidForMatching(previouslyMatchedIndex: Int, currentIndex: Int) : Boolean {
-            if (previouslyMatchedIndex < 0) {
-                throw IllegalArgumentException(
-                    "MatchAfterImmediately cannot be used for the first instruction filter"
-                )
+            require(previouslyMatchedIndex >= 0) {
+                "MatchAfterImmediately cannot be used for the first instruction filter"
             }
             return currentIndex - 1 == previouslyMatchedIndex
         }
@@ -98,6 +94,63 @@ fun interface InstructionLocation {
                 "MatchAfterImmediately cannot be used for the first instruction filter"
             }
             return currentIndex - previouslyMatchedIndex - 1 <= matchDistance
+        }
+    }
+
+    /**
+     * Instruction index can occur only after a minimum number of unmatched instructions from the
+     * previous instruction match. Or if this is used with the first filter of a fingerprint then
+     * this can only match starting from a given instruction index.
+     *
+     * @param minimumDistanceFromLastInstruction The minimum number of unmatched instructions that
+     * must exist between this instruction and the last matched instruction. A value of 0 is
+     * functionally identical to [MatchAfterImmediately].
+     */
+    class MatchAfterAtLeast(var minimumDistanceFromLastInstruction: Int) : InstructionLocation {
+        init {
+            require(minimumDistanceFromLastInstruction >= 0) {
+                "minimumDistanceFromLastInstruction must >= 0"
+            }
+        }
+
+        override fun indexIsValidForMatching(previouslyMatchedIndex: Int, currentIndex: Int) : Boolean {
+            return currentIndex - previouslyMatchedIndex - 1 >= minimumDistanceFromLastInstruction
+        }
+    }
+
+    /**
+     * Functionally combines both [MatchAfterAtLeast] and [MatchAfterWithin] to give a bounded range
+     * where the next instruction can match relative to the previous matched instruction.
+     *
+     * Unlike [MatchAfterImmediately] or [MatchAfterWithin], this can also be used for the first filter
+     * to constrain matching to a specific range starting from index 0.
+     *
+     * @param minimumDistanceFromLastInstruction The minimum number of unmatched instructions that
+     *                                           must exist between this instruction and the last matched
+     *                                           instruction.
+     * @param maximumDistanceFromLastInstruction The maximum number of unmatched instructions
+     *                                           that can exist between this instruction and the last
+     *                                           matched instruction.
+     */
+    class MatchAfterRange(
+        minimumDistanceFromLastInstruction: Int,
+        maximumDistanceFromLastInstruction: Int
+    ) : InstructionLocation {
+
+        private val minMatcher = MatchAfterAtLeast(minimumDistanceFromLastInstruction)
+        private val maxMatcher = MatchAfterWithin(maximumDistanceFromLastInstruction)
+
+        init {
+            require(minimumDistanceFromLastInstruction <= maximumDistanceFromLastInstruction) {
+                "minimumDistanceFromLastInstruction must be <= maximumDistanceFromLastInstruction"
+            }
+        }
+
+        override fun indexIsValidForMatching(previouslyMatchedIndex: Int, currentIndex: Int): Boolean {
+            // For the first filter, previouslyMatchedIndex will be -1, and both delegates
+            // will correctly enforce their own semantics starting from index 0.
+            return minMatcher.indexIsValidForMatching(previouslyMatchedIndex, currentIndex) &&
+                    maxMatcher.indexIsValidForMatching(previouslyMatchedIndex, currentIndex)
         }
     }
 }
@@ -374,49 +427,6 @@ fun literal(
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = LiteralFilter({ literal.toRawBits().toLong() }, opcodes, location)
-
-
-/**
- * String comparison type.
- */
-enum class StringComparisonType {
-    EQUALS,
-    CONTAINS,
-    STARTS_WITH,
-    ENDS_WITH;
-
-    /**
-     * @param targetString The target string to search
-     * @param searchString To search for in the target string (or to compare entirely for equality).
-     */
-    fun compare(targetString: String, searchString: String): Boolean {
-        return when (this) {
-            EQUALS -> targetString == searchString
-            CONTAINS -> targetString.contains(searchString)
-            STARTS_WITH -> targetString.startsWith(searchString)
-            ENDS_WITH -> targetString.endsWith(searchString)
-        }
-    }
-
-    /**
-     * Throws [IllegalArgumentException] if the class type search string is invalid and can never match.
-     */
-    internal fun validateSearchStringForClassType(classTypeSearchString: String) {
-        when (this) {
-            EQUALS -> {
-                STARTS_WITH.validateSearchStringForClassType(classTypeSearchString)
-                ENDS_WITH.validateSearchStringForClassType(classTypeSearchString)
-            }
-            CONTAINS -> Unit // Nothing to validate, anything goes.
-            STARTS_WITH -> require(classTypeSearchString.startsWith('L')) {
-                "Class type does not start with L: $classTypeSearchString"
-            }
-            ENDS_WITH -> require(classTypeSearchString.endsWith(';')) {
-                "Class type does not end with a semicolon: $classTypeSearchString"
-            }
-        }
-    }
-}
 
 
 
@@ -1020,7 +1030,7 @@ fun newInstance(
 
 class CheckCastFilter internal constructor (
     var type: () -> String,
-    var stringComparison: StringComparisonType = StringComparisonType.ENDS_WITH,
+    var stringComparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) : OpcodeFilter(Opcode.CHECK_CAST, location) {
 
