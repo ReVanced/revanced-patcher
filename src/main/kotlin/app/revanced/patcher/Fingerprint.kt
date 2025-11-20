@@ -558,6 +558,10 @@ class Match internal constructor(
     ) {
         @Suppress("UNCHECKED_CAST")
         fun <T> getInstruction(): T = instruction as T
+
+        override fun toString(): String {
+            return "InstructionMatch{filter='${filter.javaClass.simpleName}, opcode='${instruction.opcode}, 'index=$index}"
+        }
     }
 }
 
