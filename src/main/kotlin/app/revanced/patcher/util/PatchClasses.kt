@@ -3,6 +3,8 @@ package app.revanced.patcher.util
 import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.util.MethodUtil
 
 @Deprecated("Instead use PatchClasses")
 typealias ProxyClassList = PatchClasses
@@ -26,6 +28,18 @@ class PatchClasses internal constructor(
 
     internal fun close() {
         pool.clear()
+    }
+
+    /**
+     * @return The up to date mutable method if the class/method has been upgraded to mutable,
+     *         or returns the same method passed in.
+     */
+    internal fun getMutableMethodIfExists(classDef: ClassDef, method: Method): Method {
+        val mutableClass = pool[classDef.type] ?: return method
+
+        return mutableClass.methods.find {
+            MethodUtil.methodSignaturesMatch(it, method)
+        } ?: method
     }
 
     /**

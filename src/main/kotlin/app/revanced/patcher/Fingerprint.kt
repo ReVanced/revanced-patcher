@@ -74,11 +74,15 @@ class Fingerprint internal constructor(
                     ?.map { it.string() }
             }
 
-        if (stringLiterals != null) {
+        if (false) if (stringLiterals != null) {
             stringLiterals.mapNotNull {
                 lookupMaps.getMethodClassPairsForString(it)
             }.minByOrNull { it.size }?.forEach { (method, classDef) ->
-                val match = matchOrNull(classDef, method)
+                // Must check if a mutable method exists, otherwise if a different patch modified
+                // the same method then the indices of the original unmodified method will not
+                // be correct for the mutable method.
+                val upToDateMethod = classes.getMutableMethodIfExists(classDef, method)
+                val match = matchOrNull(classDef, upToDateMethod)
                 if (match != null) {
                     _matchOrNull = match
                     return match
@@ -88,11 +92,12 @@ class Fingerprint internal constructor(
             // Fingerprint has partial strings.
             // Search all methods that contain strings.
            lookupMaps.allMethodsWithStrings.forEach { (method, classDef) ->
-                val match = matchOrNull(classDef, method)
-                if (match != null) {
-                    _matchOrNull = match
-                    return match
-                }
+               val upToDateMethod = classes.getMutableMethodIfExists(classDef, method)
+               val match = matchOrNull(classDef, upToDateMethod)
+               if (match != null) {
+                   _matchOrNull = match
+                   return match
+               }
             }
         }
 
@@ -218,7 +223,7 @@ class Fingerprint internal constructor(
         } else {
             val instructions = method.instructionsOrNull?.toList() ?: return null
 
-            fun matchFilters() : List<Match.InstructionMatch>? {
+            fun matchFilters(): List<Match.InstructionMatch>? {
                 val lastMethodIndex = instructions.lastIndex
                 var instructionMatches : MutableList<Match.InstructionMatch>? = null
 
@@ -730,7 +735,7 @@ class FingerprintBuilder() {
         this.customBlock = customBlock
     }
 
-    fun build() : Fingerprint {
+    fun build(): Fingerprint {
         // If access flags include constructor then
         // skip the return type check since it's always void.
         if (returnType?.equals("V") == true && accessFlags != null
