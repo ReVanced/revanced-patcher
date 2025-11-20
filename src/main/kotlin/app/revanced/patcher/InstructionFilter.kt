@@ -233,7 +233,7 @@ fun interface InstructionFilter {
 
 
 class AnyInstruction internal constructor(
-    private val filters: List<InstructionFilter>,
+    internal val filters: List<InstructionFilter>,
     override val location: InstructionLocation
 ) : InstructionFilter {
 
@@ -942,7 +942,7 @@ class StringFilter internal constructor(
         val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
         val filterString = string()
 
-        return comparison.compare(instructionString, filterString);
+        return comparison.compare(instructionString, filterString)
     }
 }
 

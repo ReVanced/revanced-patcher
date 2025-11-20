@@ -1,7 +1,6 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.patch.PatchResult
@@ -181,8 +180,7 @@ internal object PatcherTest {
     @Test
     fun `matches fingerprint`() {
         every { patcher.context.bytecodeContext.classes } returns PatchClasses(
-            mutableMapOf(
-                "class" to ImmutableClassDef(
+            setOf(ImmutableClassDef(
                     "class",
                     0,
                     null,
@@ -213,8 +211,8 @@ internal object PatcherTest {
         val patches = setOf(
             bytecodePatch {
                 execute {
-                    fingerprint.match(classes.pool.values.first().methods.first())
-                    fingerprint2.match(classes.pool.values.first())
+                    fingerprint.match(classes.classMap.values.first().classDef.methods.first())
+                    fingerprint2.match(classes.classMap.values.first().classDef)
                     fingerprint3.originalClassDef
                 }
             },
@@ -532,7 +530,6 @@ internal object PatcherTest {
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classes.pool.values)
         every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }

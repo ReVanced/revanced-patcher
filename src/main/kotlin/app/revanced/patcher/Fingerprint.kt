@@ -5,6 +5,7 @@ package app.revanced.patcher
 import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.*
+import app.revanced.patcher.util.PatchClasses
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -65,48 +66,60 @@ class Fingerprint internal constructor(
 
         // Use string declarations to first check only the methods
         // that contain one or more of fingerprint string.
-        val stringLiterals =
-            if (strings != null) {
-                // Old deprecated string declaration.
-                strings
-            } else {
-                filters?.filterIsInstance<StringFilter>()
-                    ?.map { it.string() }
-            }
+        val fingerprintStrings = mutableListOf<String>()
+        if (strings != null) {
+            // Old deprecated string declaration.
+            fingerprintStrings.addAll(strings)
+        }
 
-        if (false) if (stringLiterals != null) {
-            stringLiterals.mapNotNull {
-                lookupMaps.getMethodClassPairsForString(it)
-            }.minByOrNull { it.size }?.forEach { (method, classDef) ->
-                // Must check if a mutable method exists, otherwise if a different patch modified
-                // the same method then the indices of the original unmodified method will not
-                // be correct for the mutable method.
-                val upToDateMethod = classes.getMutableMethodIfExists(classDef, method)
-                val match = matchOrNull(classDef, upToDateMethod)
+        if (filters != null) {
+            fun findStringLiterals(list: List<InstructionFilter>) =
+                list.filterIsInstance<StringFilter>().map { it.string() }
+
+            fingerprintStrings.addAll(findStringLiterals(filters))
+
+            // Use strings declared inside anyInstruction.
+            filters.filterIsInstance<AnyInstruction>().forEach { anyFilter ->
+                fingerprintStrings.addAll(findStringLiterals(anyFilter.filters))
+            }
+        }
+
+        fun machAllClassMethods(value: PatchClasses.PatchesClassMapValue): Match? {
+            val classDef = value.classDef
+            value.classDef.methods.forEach { method ->
+                val match = matchOrNull(classDef, method)
                 if (match != null) {
                     _matchOrNull = match
                     return match
                 }
             }
+            return null
+        }
 
-            // Fingerprint has partial strings.
-            // Search all methods that contain strings.
-           lookupMaps.allMethodsWithStrings.forEach { (method, classDef) ->
-               val upToDateMethod = classes.getMutableMethodIfExists(classDef, method)
-               val match = matchOrNull(classDef, upToDateMethod)
-               if (match != null) {
-                   _matchOrNull = match
-                   return match
-               }
+        if (fingerprintStrings.isNotEmpty()) {
+            fingerprintStrings.mapNotNull {
+                classes.getMethodClassPairsForString(it)
+            }.minByOrNull { it.size }?.forEach { value ->
+                val value = machAllClassMethods(value)
+                if (value != null) {
+                    return value
+                }
+            }
+
+            // Fingerprint has partial string matches. Check all classes with strings.
+            classes.classMap.values.forEach { value ->
+                val value = machAllClassMethods(value)
+                if (value != null) {
+                    return value
+                }
             }
         }
 
         // Check all classes.
-        classes.pool.values.forEach { classDef ->
-            val match = matchOrNull(classDef)
-            if (match != null) {
-                _matchOrNull = match
-                return match
+        classes.classMap.values.forEach { value ->
+            val value = machAllClassMethods(value)
+            if (value != null) {
+                return value
             }
         }
 
