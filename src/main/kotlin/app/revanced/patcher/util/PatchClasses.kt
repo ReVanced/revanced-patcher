@@ -31,6 +31,18 @@ class PatchClasses internal constructor(
     }
 
     /**
+     * @return The up to date mutable method if the class/method has been upgraded to mutable,
+     *         or returns the same method passed in.
+     */
+    internal fun getMutableMethodIfExists(classDef: ClassDef, method: Method): Method {
+        val mutableClass = pool[classDef.type] ?: return method
+
+        return mutableClass.methods.find {
+            MethodUtil.methodSignaturesMatch(it, method)
+        } ?: method
+    }
+
+    /**
      * Iterate over all classes.
      */
     fun forEach(action: (ClassDef) -> Unit) {

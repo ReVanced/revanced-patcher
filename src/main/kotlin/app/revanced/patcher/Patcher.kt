@@ -96,6 +96,11 @@ class Patcher(private val config: PatcherConfig) : Closeable {
             context.resourceContext.decodeResources(config.resourceMode)
         }
 
+        logger.info("Initializing lookup maps")
+
+        // Accessing the lazy lookup maps to initialize them.
+        context.bytecodeContext.lookupMaps
+
         logger.info("Executing patches")
 
         val executedPatches = LinkedHashMap<Patch<*>, PatchResult>()

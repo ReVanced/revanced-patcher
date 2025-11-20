@@ -4,8 +4,7 @@ package app.revanced.patcher
 
 import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
-import app.revanced.patcher.patch.BytecodePatchContext
-import app.revanced.patcher.patch.PatchException
+import app.revanced.patcher.patch.*
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -64,6 +63,45 @@ class Fingerprint internal constructor(
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
+        // Use string declarations to first check only the methods
+        // that contain one or more of fingerprint string.
+        val stringLiterals =
+            if (strings != null) {
+                // Old deprecated string declaration.
+                strings
+            } else {
+                filters?.filterIsInstance<StringFilter>()
+                    ?.map { it.string() }
+            }
+
+        if (false) if (stringLiterals != null) {
+            stringLiterals.mapNotNull {
+                lookupMaps.getMethodClassPairsForString(it)
+            }.minByOrNull { it.size }?.forEach { (method, classDef) ->
+                // Must check if a mutable method exists, otherwise if a different patch modified
+                // the same method then the indices of the original unmodified method will not
+                // be correct for the mutable method.
+                val upToDateMethod = classes.getMutableMethodIfExists(classDef, method)
+                val match = matchOrNull(classDef, upToDateMethod)
+                if (match != null) {
+                    _matchOrNull = match
+                    return match
+                }
+            }
+
+            // Fingerprint has partial strings.
+            // Search all methods that contain strings.
+           lookupMaps.allMethodsWithStrings.forEach { (method, classDef) ->
+               val upToDateMethod = classes.getMutableMethodIfExists(classDef, method)
+               val match = matchOrNull(classDef, upToDateMethod)
+               if (match != null) {
+                   _matchOrNull = match
+                   return match
+               }
+            }
+        }
+
+        // Check all classes.
         classes.pool.values.forEach { classDef ->
             val match = matchOrNull(classDef)
             if (match != null) {
