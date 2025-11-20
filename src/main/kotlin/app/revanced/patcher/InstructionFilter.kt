@@ -927,7 +927,7 @@ fun fieldAccess(
 
 class StringFilter internal constructor(
     var string: () -> String,
-    var comparisonType: StringComparisonType,
+    var comparison: StringComparisonType,
     location: InstructionLocation
 ) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), location) {
 
@@ -942,7 +942,7 @@ class StringFilter internal constructor(
         val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
         val filterString = string()
 
-        return comparisonType.compare(instructionString, filterString);
+        return comparison.compare(instructionString, filterString);
     }
 }
 
@@ -961,6 +961,14 @@ fun string(
 ) = StringFilter(string, matchType, location)
 
 /**
+ * Literal String instruction with [StringComparisonType.EQUALS].
+ */
+fun string(
+    string: () -> String,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = StringFilter(string, StringComparisonType.EQUALS, location)
+
+/**
  * Literal String instruction.
  */
 fun string(
@@ -970,9 +978,17 @@ fun string(
      * precise matching of multiple strings, consider using [anyInstruction] with multiple
      * exact string declarations.
      */
-    matchType: StringComparisonType = StringComparisonType.EQUALS,
+    comparison: StringComparisonType = StringComparisonType.EQUALS,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = StringFilter({ string }, matchType, location)
+) = StringFilter({ string }, comparison, location)
+
+/**
+ * Literal String instruction with [StringComparisonType.EQUALS].
+ */
+fun string(
+    string: String,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = StringFilter({ string }, StringComparisonType.EQUALS, location)
 
 
 
@@ -1005,31 +1021,53 @@ class NewInstanceFilter internal constructor (
  * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  *
  * @param type Class type.
- * @param stringComparison How to compare the opcode class type. Defaults to [StringComparisonType.ENDS_WITH].
+ * @param stringComparison How to compare the opcode class type.
+ */
+fun newInstancetype(
+    type: () -> String,
+    stringComparison: StringComparisonType = StringComparisonType.ENDS_WITH,
+    location: InstructionLocation
+) = NewInstanceFilter(type, stringComparison, location)
+
+/**
+ * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type,
+ * using [StringComparisonType.ENDS_WITH].
+ *
+ * @param type Class type.
  */
 fun newInstancetype(
     type: () -> String,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere(),
-    stringComparison: StringComparisonType = StringComparisonType.ENDS_WITH
-) = NewInstanceFilter(type, stringComparison, location)
+) = NewInstanceFilter(type, StringComparisonType.ENDS_WITH, location)
 
 /**
  * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  *
  * @param type Class type.
- * @param stringComparison How to compare the opcode class type. Defaults to [StringComparisonType.ENDS_WITH].
+ * @param comparison How to compare the opcode class type.
  */
 fun newInstance(
     type: String,
-    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere(),
-    stringComparison: StringComparisonType = StringComparisonType.ENDS_WITH
-) = NewInstanceFilter({ type }, stringComparison, location)
+    comparison: StringComparisonType = StringComparisonType.ENDS_WITH,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = NewInstanceFilter({ type }, comparison, location)
+
+/**
+ * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type,
+ * using [StringComparisonType.ENDS_WITH].
+ *
+ * @param type Class type.
+ */
+fun newInstance(
+    type: String,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = NewInstanceFilter({ type }, StringComparisonType.ENDS_WITH, location)
 
 
 
-class CheckCastFilter internal constructor (
+class CheckCastFilter internal constructor(
     var type: () -> String,
-    var stringComparison: StringComparisonType,
+    var comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) : OpcodeFilter(Opcode.CHECK_CAST, location) {
 
@@ -1046,8 +1084,8 @@ class CheckCastFilter internal constructor (
         val referenceType = reference.type
         val classType = type()
 
-        stringComparison.validateSearchStringForClassType(classType)
-        return stringComparison.compare(referenceType, classType)
+        comparison.validateSearchStringForClassType(classType)
+        return comparison.compare(referenceType, classType)
     }
 }
 
@@ -1055,22 +1093,42 @@ class CheckCastFilter internal constructor (
  * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
  *
  * @param type Class type.
- * @param stringComparison How to compare the opcode class type. Defaults to [StringComparisonType.ENDS_WITH].
+ * @param comparison How to compare the opcode class type.
  */
 fun checkCast(
     type: () -> String,
-    stringComparison: StringComparisonType = StringComparisonType.ENDS_WITH,
+    comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = CheckCastFilter(type, stringComparison, location)
+) = CheckCastFilter(type, comparison, location)
+
+/**
+ * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type using [StringComparisonType.ENDS_WITH].
+ *
+ * @param type Class type.
+ */
+fun checkCast(
+    type: () -> String,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = CheckCastFilter(type, StringComparisonType.ENDS_WITH, location)
 
 /**
  * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
  *
  * @param type Class type.
- * @param stringComparison How to compare the opcode class type. Defaults to [StringComparisonType.ENDS_WITH].
+ * @param comparison How to compare the opcode class type.
  */
 fun checkCast(
     type: String,
-    stringComparison: StringComparisonType = StringComparisonType.ENDS_WITH,
+    comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = CheckCastFilter({ type }, stringComparison, location)
+) = CheckCastFilter({ type }, comparison, location)
+
+/**
+ * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type using [StringComparisonType.ENDS_WITH].
+ *
+ * @param type Class type.
+ */
+fun checkCast(
+    type: String,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = CheckCastFilter({ type }, StringComparisonType.ENDS_WITH, location)

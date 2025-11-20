@@ -262,22 +262,22 @@ internal object PatcherTest {
             assertFalse(matches(method, instruction2))
         }
 
-        with(string("234", matchType = StringComparisonType.CONTAINS)) {
+        with(string("234", comparison = StringComparisonType.CONTAINS)) {
             assertTrue(matches(method, instruction1))
             assertFalse(matches(method, instruction2))
         }
 
-        with(string("123", matchType = StringComparisonType.STARTS_WITH)) {
+        with(string("123", comparison = StringComparisonType.STARTS_WITH)) {
             assertTrue(matches(method, instruction1))
             assertFalse(matches(method, instruction2))
         }
 
-        with(string("345", matchType = StringComparisonType.ENDS_WITH)) {
+        with(string("345", comparison = StringComparisonType.ENDS_WITH)) {
             assertTrue(matches(method, instruction1))
             assertTrue(matches(method, instruction2))
         }
 
-        with(string("123", matchType = StringComparisonType.ENDS_WITH)) {
+        with(string("123", comparison = StringComparisonType.ENDS_WITH)) {
             assertFalse(matches(method, instruction1))
             assertFalse(matches(method, instruction2))
         }
