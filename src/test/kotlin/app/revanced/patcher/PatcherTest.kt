@@ -262,22 +262,22 @@ internal object PatcherTest {
             assertFalse(matches(method, instruction2))
         }
 
-        with(string("234", matchType = StringMatchType.CONTAINS)) {
+        with(string("234", matchType = StringComparisonType.CONTAINS)) {
             assertTrue(matches(method, instruction1))
             assertFalse(matches(method, instruction2))
         }
 
-        with(string("123", matchType = StringMatchType.STARTS_WITH)) {
+        with(string("123", matchType = StringComparisonType.STARTS_WITH)) {
             assertTrue(matches(method, instruction1))
             assertFalse(matches(method, instruction2))
         }
 
-        with(string("345", matchType = StringMatchType.ENDS_WITH)) {
+        with(string("345", matchType = StringComparisonType.ENDS_WITH)) {
             assertTrue(matches(method, instruction1))
             assertTrue(matches(method, instruction2))
         }
 
-        with(string("123", matchType = StringMatchType.ENDS_WITH)) {
+        with(string("123", matchType = StringComparisonType.ENDS_WITH)) {
             assertFalse(matches(method, instruction1))
             assertFalse(matches(method, instruction2))
         }
@@ -473,20 +473,34 @@ internal object PatcherTest {
     }
 
     @Test
-    fun `NewInstance bad input`() {
+    fun `StringComparisonType bad input`() {
         with(patcher.context.bytecodeContext) {
-            assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
-                newInstance("Lcom/whatever/BadClassType")
+            StringComparisonType.entries.forEach { type ->
+                type.validateSearchStringForClassType(
+                    "Lcom/whatever/GoodClassType;"
+                )
             }
-        }
-    }
 
+            assertThrows<IllegalArgumentException>("Defining class leading L") {
+                StringComparisonType.STARTS_WITH.validateSearchStringForClassType(
+                    "com/whatever/BadClassType;"
+                )
+            }
 
-    @Test
-    fun `CheckCast bad input`() {
-        with(patcher.context.bytecodeContext) {
             assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
-                checkCast("Lcom/whatever/BadClassType")
+                StringComparisonType.ENDS_WITH.validateSearchStringForClassType(
+                    "Lcom/whatever/BadClassType"
+                )
+            }
+
+            assertThrows<IllegalArgumentException>("Defining class missing semicolon") {
+                StringComparisonType.EQUALS.validateSearchStringForClassType(
+                    "Lcom/whatever/BadClassType"
+                )
+
+                StringComparisonType.EQUALS.validateSearchStringForClassType(
+                    "Lcom/whatever/BadClassType;"
+                )
             }
         }
     }
