@@ -34,7 +34,7 @@ import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
  * @param returnType The return type. Compared using [String.startsWith].
  * @param parameters The parameters. Partial matches allowed and follow the same rules as [returnType].
  * @param filters A list of filters to match, declared in the same order the instructions appear in the method.
- * @param strings A list of the strings that appear anywhere in the method. Compared using [String.contains].
+ * @param strings A list of strings that appear anywhere in the method in any order. Compared using [String.contains].
  * @param custom A custom condition for this fingerprint.
  */
 class Fingerprint internal constructor(
@@ -42,7 +42,7 @@ class Fingerprint internal constructor(
     internal val returnType: String?,
     internal val parameters: List<String>?,
     internal val filters: List<InstructionFilter>?,
-    @Deprecated("Instead use instruction filters")
+    // TODO: Possibly deprecate this in the future.
     internal val strings: List<String>?,
     internal val custom: ((method: Method, classDef: ClassDef) -> Boolean)?,
 ) {
@@ -562,7 +562,7 @@ class Match internal constructor(
      * @param string The string that matched.
      * @param index The index of the instruction in the method.
      */
-    @Deprecated("Instead use string instructions and `InstructionMatch`")
+    // TODO: Possibly deprecate this in the future.
     class StringMatch internal constructor(val string: String, val index: Int)
 
     /**
