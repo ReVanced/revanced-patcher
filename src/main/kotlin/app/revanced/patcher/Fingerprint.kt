@@ -2,10 +2,10 @@
 
 package app.revanced.patcher
 
-import android.R.id.custom
 import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.BytecodePatchContext
+import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.util.PatchClasses
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -15,11 +15,10 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
 
 /**
- * A fingerprint for a method. A fingerprint is a partial description of a method.
- * It is used to uniquely match a method by its characteristics.
+ * A fingerprint for a method. A fingerprint is a partial description of a method,
+ * used to uniquely match a method by its characteristics.
  *
  * An example fingerprint for a public method that takes a single string parameter and returns void:
  * ```
@@ -29,6 +28,8 @@ import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
  *    parameters("Ljava/lang/String;")
  * }
  * ```
+ *
+ * See the patcher documentation for more detailed explanations and example fingerprinting.
  *
  * @param accessFlags The exact access flags using values of [AccessFlags].
  * @param returnType The return type. Compared using [String.startsWith].
@@ -42,7 +43,7 @@ class Fingerprint internal constructor(
     internal val returnType: String?,
     internal val parameters: List<String>?,
     internal val filters: List<InstructionFilter>?,
-    // TODO: Possibly deprecate this in the future.
+    // TODO: Possibly deprecate legacy string declarations in the future.
     internal val strings: List<String>?,
     internal val custom: ((method: Method, classDef: ClassDef) -> Boolean)?,
 ) {
@@ -75,14 +76,14 @@ class Fingerprint internal constructor(
         }
 
         if (filters != null) {
-            fun findStringLiterals(list: List<InstructionFilter>) =
+            fun findStringFilterLiterals(list: List<InstructionFilter>) =
                 list.filterIsInstance<StringFilter>().map { it.string() }
 
-            fingerprintStrings.addAll(findStringLiterals(filters))
+            fingerprintStrings.addAll(findStringFilterLiterals(filters))
 
             // Use strings declared inside anyInstruction.
             filters.filterIsInstance<AnyInstruction>().forEach { anyFilter ->
-                fingerprintStrings.addAll(findStringLiterals(anyFilter.filters))
+                fingerprintStrings.addAll(findStringFilterLiterals(anyFilter.filters))
             }
         }
 
@@ -175,7 +176,7 @@ class Fingerprint internal constructor(
      * @param method The method to match against.
      * @param classDef The class the method is a member of.
      * @return The [Match] if a match was found or if the fingerprint is previously matched to a method,
-     * otherwise `null`.
+     *         otherwise `null`.
      */
     context(BytecodePatchContext)
     fun matchOrNull(
@@ -268,7 +269,7 @@ class Fingerprint internal constructor(
                                     firstFilterIndex = subIndex
                                 }
                                 if (instructionMatches == null) {
-                                    instructionMatches = ArrayList<Match.InstructionMatch>(filters.size)
+                                    instructionMatches = ArrayList(filters.size)
                                 }
                                 instructionMatches += Match.InstructionMatch(filter, subIndex, instruction)
                                 instructionsMatched = true
@@ -394,35 +395,11 @@ class Fingerprint internal constructor(
         get() = matchOrNull()?.method
 
     /**
-     * The match for the opcode pattern, or null if this fingerprint did not match.
-     */
-    context(BytecodePatchContext)
-    @Deprecated("instead use instructionMatchesOrNull")
-    val patternMatchOrNull : PatternMatch?
-        get() {
-            val match = this.matchOrNull()
-            if (match == null || match.instructionMatchesOrNull == null) {
-                return null
-            }
-            return match.patternMatch
-        }
-
-    /**
      * The match for the instruction filters, or null if this fingerprint did not match.
      */
     context(BytecodePatchContext)
     val instructionMatchesOrNull
         get() = matchOrNull()?.instructionMatchesOrNull
-
-    /**
-     * The matches for the strings, or null if this fingerprint did not match.
-     *
-     * This does not give matches for strings declared using [string] instruction filters.
-     */
-    context(BytecodePatchContext)
-    @Deprecated("Instead use string instructions and `instructionMatchesOrNull()`")
-    val stringMatchesOrNull
-        get() = matchOrNull()?.stringMatchesOrNull
 
     /**
      * The class the matching method is a member of.
@@ -467,16 +444,6 @@ class Fingerprint internal constructor(
         get() = match().method
 
     /**
-     * The match for the opcode pattern.
-     *
-     * @throws PatchException If the fingerprint has not been matched.
-     */
-    context(BytecodePatchContext)
-    @Deprecated("Instead use instructionMatch")
-    val patternMatch
-        get() = match().patternMatch
-
-    /**
      * Instruction filter matches.
      *
      * @throws PatchException If the fingerprint has not been matched.
@@ -491,10 +458,63 @@ class Fingerprint internal constructor(
      *
      * @throws PatchException If the fingerprint has not been matched.
      */
+    // TODO: Possibly deprecate this in the future.
     context(BytecodePatchContext)
-    @Deprecated("Instead use string instructions and `instructionMatches()`")
     val stringMatches
         get() = match().stringMatches
+
+    //
+    // Old legacy non-unified matching objects.
+    //
+
+    /**
+     * The matches for strings declared in [Fingerprint.strings].
+     *
+     * **Note**: Strings declared as instruction filters are not included in these legacy match results.
+     *
+     * This property may be deprecated in the future.
+     * Consider changing to [InstructionFilter] and [string] declarations.
+     */
+    // TODO: Possibly deprecate this in the future.
+    context(BytecodePatchContext)
+    val stringMatchesOrNull
+        get() = matchOrNull()?.stringMatchesOrNull
+
+    /**
+     * Instead use `instructionMatches`.
+     *
+     * The opcode pattern start index is:
+     * `.instructionMatches.first().index`
+     *
+     * and the end index is:
+     * `instructionMatches.last().index`
+     *
+     * @throws PatchException If the fingerprint has not been matched.
+     */
+    context(BytecodePatchContext)
+    @Deprecated("Instead use instructionMatches", ReplaceWith("instructionMatches"))
+    val patternMatch
+        get() = match().patternMatch
+
+    /**
+     * Instead use `instructionMatches`.
+     *
+     * The opcode pattern start index is:
+     * `.instructionMatches.first().index`
+     *
+     * and the end index is:
+     * `instructionMatches.last().index`
+     */
+    context(BytecodePatchContext)
+    @Deprecated("instead use instructionMatchesOrNull", ReplaceWith("instructionMatchesOrNull"))
+    val patternMatchOrNull : PatternMatch?
+        get() {
+            val match = this.matchOrNull()
+            if (match == null || match.instructionMatchesOrNull == null) {
+                return null
+            }
+            return match.patternMatch
+        }
 }
 
 /**
@@ -528,45 +548,15 @@ class Match internal constructor(
      */
     val method by lazy { classDef.methods.first { MethodUtil.methodSignaturesMatch(it, originalMethod) } }
 
-    @Deprecated("Instead use instructionMatches", ReplaceWith("instructionMatches"))
-    val patternMatch by lazy {
-        if (_instructionMatches == null) throw PatchException("Did not match $this")
-        @SuppressWarnings("deprecation")
-        PatternMatch(_instructionMatches.first().index, _instructionMatches.last().index)
-    }
-
+    /**
+     * Matches corresponding to the [InstructionFilter] declared in the [Fingerprint].
+     */
     val instructionMatches
         get() = _instructionMatches ?: throw PatchException("Fingerprint declared no instruction filters")
     val instructionMatchesOrNull = _instructionMatches
 
-    @Deprecated("Instead use string instructions and `instructionMatches()`")
-    val stringMatches
-        get() = _stringMatches ?: throw PatchException("Fingerprint declared no strings")
-    @Deprecated("Instead use string instructions and `instructionMatchesOrNull()`")
-    val stringMatchesOrNull = _stringMatches
-
     /**
-     * A match for an opcode pattern.
-     * @param startIndex The index of the first opcode of the pattern in the method.
-     * @param endIndex The index of the last opcode of the pattern in the method.
-     */
-    @Deprecated("Instead use InstructionMatch")
-    class PatternMatch internal constructor(
-        val startIndex: Int,
-        val endIndex: Int,
-    )
-
-    /**
-     * A match for a string.
-     *
-     * @param string The string that matched.
-     * @param index The index of the instruction in the method.
-     */
-    // TODO: Possibly deprecate this in the future.
-    class StringMatch internal constructor(val string: String, val index: Int)
-
-    /**
-     * A match for a [InstructionFilter].
+     * A match for an [InstructionFilter].
      * @param filter The filter that matched
      * @param index The instruction index it matched with.
      * @param instruction The instruction that matched.
@@ -576,6 +566,9 @@ class Match internal constructor(
         val index: Int,
         val instruction: Instruction
     ) {
+        /**
+         * Helper method to simplify casting the instruction to it's known and expected type.
+         */
         @Suppress("UNCHECKED_CAST")
         fun <T> getInstruction(): T = instruction as T
 
@@ -583,6 +576,72 @@ class Match internal constructor(
             return "InstructionMatch{filter='${filter.javaClass.simpleName}, opcode='${instruction.opcode}, 'index=$index}"
         }
     }
+
+    //
+    // Old legacy non-unified matching objects.
+    //
+
+    /**
+     * The matches for strings declared in [Fingerprint.strings].
+     *
+     * **Note**: Strings declared as instruction filters are not included in these legacy match results.
+     *
+     * This property may be deprecated in the future.
+     * Consider changing to [InstructionFilter] and [string] declarations.
+     */
+    // TODO: Possibly deprecate this in the future.
+    val stringMatches
+        get() = _stringMatches ?: throw PatchException("Fingerprint declared no strings")
+    val stringMatchesOrNull = _stringMatches
+
+    /**
+     * A match for a string declared in [Fingerprint.stringMatches].
+     *
+     * **Note**: Strings declared as instruction filters are not included in this legacy match object.
+     *
+     * This legacy match type may be deprecated in the future.
+     * Consider changing to [InstructionFilter] and [StringFilter] declarations.
+     *
+     * @param string The string that matched.
+     * @param index The index of the instruction in the method.
+     */
+    // TODO: Possibly deprecate this in the future.
+    class StringMatch internal constructor(val string: String, val index: Int)
+
+    /**
+     * Instead use `instructionMatches`.
+     *
+     * The opcode pattern start index is:
+     * `.instructionMatches.first().index`
+     *
+     * and the end index is:
+     * `instructionMatches.last().index`
+     */
+    @Deprecated("Instead use instructionMatches", ReplaceWith("instructionMatches"))
+    val patternMatch by lazy {
+        if (_instructionMatches == null) throw PatchException("Did not match $this")
+        @SuppressWarnings("deprecation")
+        PatternMatch(_instructionMatches.first().index, _instructionMatches.last().index)
+    }
+
+    /**
+     * A legacy match result.
+     *
+     * Instead use `instructionMatches`.
+     * The opcode pattern start index is:
+     * `.instructionMatches.first().index`
+     *
+     * and the end index is:
+     * `instructionMatches.last().index`
+     *
+     * @param startIndex The index of the first opcode of the pattern in the method.
+     * @param endIndex The index of the last opcode of the pattern in the method.
+     */
+    @Deprecated("Instead use InstructionMatch")
+    class PatternMatch internal constructor(
+        val startIndex: Int,
+        val endIndex: Int,
+    )
 }
 
 /**
@@ -796,5 +855,3 @@ internal fun parametersStartsWith(
 
     return true
 }
-
-
