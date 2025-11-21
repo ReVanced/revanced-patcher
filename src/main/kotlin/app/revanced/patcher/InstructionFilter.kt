@@ -324,7 +324,7 @@ open class OpcodesFilter private constructor(
         return opcodes.contains(instruction.opcode)
     }
 
-    companion object {
+    internal companion object {
         /**
          * First opcode can match anywhere in a method, but all
          * subsequent opcodes must match after the previous opcode.

@@ -238,14 +238,10 @@ public class app/revanced/patcher/OpcodeFilter : app/revanced/patcher/Instructio
 }
 
 public class app/revanced/patcher/OpcodesFilter : app/revanced/patcher/InstructionFilter {
-	public static final field Companion Lapp/revanced/patcher/OpcodesFilter$Companion;
 	protected fun <init> (Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)V
 	public fun getLocation ()Lapp/revanced/patcher/InstructionLocation;
 	public final fun getOpcodes ()Ljava/util/EnumSet;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
-}
-
-public final class app/revanced/patcher/OpcodesFilter$Companion {
 }
 
 public final class app/revanced/patcher/PackageMetadata {
