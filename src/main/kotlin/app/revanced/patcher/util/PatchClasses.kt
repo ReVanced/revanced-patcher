@@ -40,32 +40,32 @@ class PatchClasses internal constructor(
             }
             return classDef as MutableClass
         }
+    }
 
-        /**
-         * Strings found in all methods of the class.
-         */
-        fun findClassMethodStrings(): List<String>? {
-            var list : MutableList<String>? = null
+    /**
+     * @return All strings found anywhere in all class methods.
+     */
+    private fun ClassDef.findMethodStrings(): List<String>? {
+        var list : MutableList<String>? = null
 
-            classDef.methods.forEach { method ->
-                // Add strings contained in the method as the key.
-                method.instructionsOrNull?.forEach { instruction ->
-                    val opcode = instruction.opcode
-                    if (opcode != Opcode.CONST_STRING && opcode != Opcode.CONST_STRING_JUMBO) {
-                        return@forEach
-                    }
-
-                    val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-
-                    if (list == null) {
-                        list = mutableListOf()
-                    }
-                    list.add(string)
+        methods.forEach { method ->
+            // Add strings contained in the method as the key.
+            method.instructionsOrNull?.forEach { instruction ->
+                val opcode = instruction.opcode
+                if (opcode != Opcode.CONST_STRING && opcode != Opcode.CONST_STRING_JUMBO) {
+                    return@forEach
                 }
-            }
 
-            return list
+                val string = ((instruction as ReferenceInstruction).reference as StringReference).string
+
+                if (list == null) {
+                    list = mutableListOf()
+                }
+                list.add(string)
+            }
         }
+
+        return list
     }
 
     /**
@@ -100,7 +100,7 @@ class PatchClasses internal constructor(
         val map = HashMap<String, LinkedList<ClassDefWrapper>>()
 
         classMap.values.forEach { wrapper ->
-            wrapper.findClassMethodStrings()?.forEach { stringLiteral ->
+            wrapper.classDef.findMethodStrings()?.forEach { stringLiteral ->
                 map.getOrPut(stringLiteral) {
                     LinkedList()
                 }.add(wrapper)
