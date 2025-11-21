@@ -17,27 +17,35 @@ typealias ProxyClassList = PatchClasses
  */
 class PatchClasses internal constructor(
     /**
-     * Map of both immutable and mutable classes and the strings contained.
+     * Class type -> ClassDef.
      */
-    internal val classMap: MutableMap<String, PatchesClassMapValue>
+    internal val classMap: MutableMap<String, ClassDefWrapper>
 ) {
 
     /**
-     * Container to hold both the class definition and all strings found in the class.
-     * This intermediate class is used to remove the need of updating the string map
-     * when a class is upgraded to mutable.
+     * Container to hold the class definition that is either mutable or immutable.
+     *
+     * This intermediate container is needed to easily update the class in both
+     * the class map and in the string map with a single constant time operation.
      */
-    internal class PatchesClassMapValue(
+    internal class ClassDefWrapper(
         /**
          * Can be immutable or mutable.
          */
         var classDef: ClassDef,
     ) {
+        fun getMutableClass(): MutableClass {
+            if (classDef !is MutableClass) {
+                classDef = MutableClass(classDef)
+            }
+            return classDef as MutableClass
+        }
+
         /**
          * Strings found in all methods of the class.
          */
-        val strings by lazy {
-            var list : LinkedList<String>? = null
+        fun findClassMethodStrings(): List<String>? {
+            var list : MutableList<String>? = null
 
             classDef.methods.forEach { method ->
                 // Add strings contained in the method as the key.
@@ -50,31 +58,23 @@ class PatchClasses internal constructor(
                     val string = ((instruction as ReferenceInstruction).reference as StringReference).string
 
                     if (list == null) {
-                        list = LinkedList()
+                        list = mutableListOf()
                     }
                     list.add(string)
                 }
             }
 
-            list
-        }
-
-        fun getMutableClass(): MutableClass {
-            if (classDef !is MutableClass) {
-                classDef = MutableClass(classDef)
-            }
-            return classDef as MutableClass
+            return list
         }
     }
 
     /**
-     * Methods associated by strings referenced in them.
-     * Effectively this is a reverse lookup map to values in the [classMap].
+     * Opcode string constant -> ClassDef that contains the method.
      */
-    private var _stringMap: HashMap<String, LinkedList<PatchesClassMapValue>>? = null
+    private var stringMap: Map<String, List<ClassDefWrapper>>? = null
 
     internal constructor(set: Set<ClassDef>) : this(set.map {
-        PatchesClassMapValue(it)
+        ClassDefWrapper(it)
     }.associateByTo(HashMap(set.size * 3 / 2)) { classDefStrings ->
         classDefStrings.classDef.type
     })
@@ -85,19 +85,42 @@ class PatchClasses internal constructor(
     }
 
     internal fun closeStringMap() {
-        _stringMap = null
+        stringMap = null
     }
 
     internal fun addClass(classDef: ClassDef) {
-        classMap[classDef.type] = PatchesClassMapValue(classDef)
+        classMap[classDef.type] = ClassDefWrapper(classDef)
+    }
+
+    private fun getMethodsByStrings(): Map<String, List<ClassDefWrapper>> {
+        if (stringMap != null) {
+            return stringMap!!
+        }
+
+        val map = HashMap<String, LinkedList<ClassDefWrapper>>()
+
+        classMap.values.forEach { wrapper ->
+            wrapper.findClassMethodStrings()?.forEach { stringLiteral ->
+                map.getOrPut(stringLiteral) {
+                    LinkedList()
+                }.add(wrapper)
+            }
+        }
+
+        stringMap = map
+        return map
+    }
+
+    internal fun getClassFromOpcodeStringLiteral(stringLiteral: String): List<ClassDefWrapper>? {
+        return getMethodsByStrings()[stringLiteral]
     }
 
     /**
      * Iterate over all classes.
      */
     fun forEach(action: (ClassDef) -> Unit) {
-        classMap.values.forEach { poolValue ->
-            action(poolValue.classDef)
+        classMap.values.forEach { wrapper ->
+            action(wrapper.classDef)
         }
     }
 
@@ -110,6 +133,11 @@ class PatchClasses internal constructor(
      */
     fun classByOrNull(classType: String) = classMap[classType]?.classDef
 
+    private fun mapWrapperByOrNull(predicate: (ClassDef) -> Boolean) =
+        classMap.values.find { wrapper ->
+            predicate(wrapper.classDef)
+        }
+
     /**
      * Find a class with a predicate. If you know the class type name,
      * it is highly preferred to instead use [classByOrNull(String)].
@@ -117,12 +145,7 @@ class PatchClasses internal constructor(
      * @param predicate A predicate to match the class.
      * @return An immutable instance of the class type, or null if not found.
      */
-    fun classByOrNull(predicate: (ClassDef) -> Boolean) = poolValueByOrNull(predicate)?.classDef
-
-    private fun poolValueByOrNull(predicate: (ClassDef) -> Boolean) =
-        classMap.values.find { poolValue ->
-            predicate(poolValue.classDef)
-        }
+    fun classByOrNull(predicate: (ClassDef) -> Boolean) = mapWrapperByOrNull(predicate)?.classDef
 
     /**
      * Find a class with a predicate.
@@ -151,8 +174,8 @@ class PatchClasses internal constructor(
      * @return A mutable version of the class type.
      */
     fun mutableClassByOrNull(classDefType: String): MutableClass? {
-        val poolValue = classMap[classDefType] ?: return null
-        return poolValue.getMutableClass()
+        val wrapper = classMap[classDefType] ?: return null
+        return wrapper.getMutableClass()
     }
 
     /**
@@ -171,7 +194,7 @@ class PatchClasses internal constructor(
      * @return A mutable class that matches the predicate.
      */
     fun mutableClassByOrNull(predicate: (ClassDef) -> Boolean) =
-        poolValueByOrNull(predicate)?.getMutableClass()
+        mapWrapperByOrNull(predicate)?.getMutableClass()
 
     /**
      * @param classDef An immutable class.
@@ -188,30 +211,4 @@ class PatchClasses internal constructor(
      */
     fun mutableClassBy(predicate: (ClassDef) -> Boolean) = mutableClassByOrNull(predicate)
         ?: throw PatchException("Could not find any class match")
-
-    private fun getMethodsByStrings(): Map<String, List<PatchesClassMapValue>> {
-        if (_stringMap != null) {
-            return _stringMap!!
-        }
-
-        val map = HashMap<String, LinkedList<PatchesClassMapValue>>()
-
-        classMap.values.forEach { poolEntry ->
-            poolEntry.strings?.forEach { stringLiteral ->
-                map.getOrPut(stringLiteral) {
-                    LinkedList()
-                }.add(poolEntry)
-            }
-
-            // String literals are no longer needed and can clear them.
-            poolEntry.strings?.clear()
-        }
-
-        _stringMap = map
-        return map
-    }
-
-    internal fun getMethodClassPairsForString(stringLiteral: String): List<PatchesClassMapValue>? {
-        return getMethodsByStrings()[stringLiteral]
-    }
 }

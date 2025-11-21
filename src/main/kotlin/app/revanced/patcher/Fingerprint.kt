@@ -2,6 +2,7 @@
 
 package app.revanced.patcher
 
+import android.R.id.custom
 import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.extensions.InstructionExtensions.instructionsOrNull
 import app.revanced.patcher.patch.*
@@ -14,6 +15,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle
 
 /**
  * A fingerprint for a method. A fingerprint is a partial description of a method.
@@ -64,8 +66,8 @@ class Fingerprint internal constructor(
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        // Use string declarations to first check only the methods
-        // that contain one or more of fingerprint string.
+        // Use string declarations to first check only the classes
+        // that contain one or more fingerprint strings.
         val fingerprintStrings = mutableListOf<String>()
         if (strings != null) {
             // Old deprecated string declaration.
@@ -84,7 +86,7 @@ class Fingerprint internal constructor(
             }
         }
 
-        fun machAllClassMethods(value: PatchClasses.PatchesClassMapValue): Match? {
+        fun machAllClassMethods(value: PatchClasses.ClassDefWrapper): Match? {
             val classDef = value.classDef
             value.classDef.methods.forEach { method ->
                 val match = matchOrNull(classDef, method)
@@ -97,12 +99,12 @@ class Fingerprint internal constructor(
         }
 
         if (fingerprintStrings.isNotEmpty()) {
-            fingerprintStrings.mapNotNull {
-                classes.getMethodClassPairsForString(it)
-            }.minByOrNull { it.size }?.forEach { value ->
-                val value = machAllClassMethods(value)
-                if (value != null) {
-                    return value
+            fingerprintStrings.forEach { string ->
+                classes.getClassFromOpcodeStringLiteral(string)?.forEach { stringClass ->
+                    val value = machAllClassMethods(stringClass)
+                    if (value != null) {
+                        return value
+                    }
                 }
             }
 
