@@ -367,6 +367,9 @@ class LiteralFilter internal constructor(
     location: InstructionLocation
 ) : OpcodesFilter(opcodes, location) {
 
+    /**
+     * Store the lambda value instead of calling it more than once.
+     */
     private var literalValue: Long? = null
 
     override fun matches(
@@ -379,11 +382,13 @@ class LiteralFilter internal constructor(
 
         if (instruction !is WideLiteralInstruction) return false
 
-        if (literalValue == null) {
-            literalValue = literal()
+        var literal = literalValue
+        if (literal == null) {
+            literal = literal()
+            literalValue = literal
         }
 
-        return instruction.wideLiteral == literalValue
+        return instruction.wideLiteral == literal
     }
 }
 
@@ -458,10 +463,10 @@ fun literal(
 
 
 class MethodCallFilter internal constructor(
-    val definingClass: (() -> String)? = null,
-    val name: (() -> String)? = null,
-    val parameters: (() -> List<String>)? = null,
-    val returnType: (() -> String)? = null,
+    val definingClass: String? = null,
+    val name: String? = null,
+    val parameters: List<String>? = null,
+    val returnType: String? = null,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation
 ) : OpcodesFilter(opcodes, location) {
@@ -479,7 +484,6 @@ class MethodCallFilter internal constructor(
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
-            val definingClass = definingClass()
 
             if (!StringComparisonType.ENDS_WITH.compare(referenceClass, definingClass)) {
                 // Check if 'this' defining class is used.
@@ -491,13 +495,15 @@ class MethodCallFilter internal constructor(
                 } // else, the method call is for 'this' class.
             }
         }
-        if (name != null && reference.name != name()) {
+        if (name != null && reference.name != name) {
             return false
         }
-        if (returnType != null && !StringComparisonType.STARTS_WITH.compare(reference.returnType, returnType())) {
+        if (returnType != null &&
+            !StringComparisonType.STARTS_WITH.compare(reference.returnType, returnType)) {
             return false
         }
-        if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters())) {
+        if (parameters != null &&
+            !parametersStartsWith(reference.parameterTypes, parameters)) {
             return false
         }
 
@@ -523,10 +529,10 @@ class MethodCallFilter internal constructor(
             val paramDescriptors = parseParameterDescriptors(paramDescriptorString)
 
             return MethodCallFilter(
-                { classDescriptor },
-                { methodName },
-                { paramDescriptors },
-                { returnDescriptor },
+                classDescriptor,
+                methodName,
+                paramDescriptors,
+                returnDescriptor,
                 opcodes,
                 location
             )
@@ -605,18 +611,10 @@ fun methodCall(
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = MethodCallFilter(
-    if (definingClass != null) {
-        { definingClass }
-    } else null,
-    if (name != null) {
-        { name }
-    } else null,
-    if (parameters != null) {
-        { parameters }
-    } else null,
-    if (returnType != null) {
-        { returnType }
-    } else null,
+    definingClass,
+    name,
+    parameters,
+    returnType,
     opcodes,
     location
 )
@@ -643,51 +641,11 @@ fun methodCall(
     opcode: Opcode,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = MethodCallFilter(
-    if (definingClass != null) {
-        { definingClass }
-    } else null,
-    if (name != null) {
-        { name }
-    } else null,
-    if (parameters != null) {
-        { parameters }
-    } else null,
-    if (returnType != null) {
-        { returnType }
-    } else null,
-    listOf(opcode),
-    location
-)
-
-/**
- * Matches a method call, such as:
- * `invoke-virtual {v3, v4}, La;->b(I)V`
- *
- * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
- *                      For calls to a method in the same class, use 'this' as the defining class.
- *                      Note: 'this' does not work for fields found in superclasses.
- * @param name Full name of the method. Compares using [StringComparisonType.EQUALS].
- * @param parameters Parameters of the method call. Each parameter matches using[StringComparisonType.STARTS_WITH]
- *                   and semantics are the same as [Fingerprint] parameters.
- * @param returnType Return type. Matches using [StringComparisonType.STARTS_WITH].
- * @param opcodes Opcode types to match. By default this matches any method call opcode: `Opcode.INVOKE_*`.
- *                If this filter must match specific types of method call, then specify the desired opcodes
- *                such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
- * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
- */
-fun methodCall(
-    definingClass: (() -> String)? = null,
-    name: (() -> String)? = null,
-    parameters: (() -> List<String>)? = null,
-    returnType: (() -> String)? = null,
-    opcodes: List<Opcode>? = null,
-    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = MethodCallFilter(
     definingClass,
     name,
     parameters,
     returnType,
-    opcodes,
+    listOf(opcode),
     location
 )
 
@@ -728,9 +686,9 @@ fun methodCall(
 
 
 class FieldAccessFilter internal constructor(
-    val definingClass: (() -> String)? = null,
-    val name: (() -> String)? = null,
-    val type: (() -> String)? = null,
+    val definingClass: String? = null,
+    val name: String? = null,
+    val type: String? = null,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation
 ) : OpcodesFilter(opcodes, location) {
@@ -748,7 +706,6 @@ class FieldAccessFilter internal constructor(
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
-            val definingClass = definingClass()
 
             if (!referenceClass.endsWith(definingClass)) {
                 if (!(definingClass == "this" && referenceClass == enclosingMethod.definingClass)) {
@@ -756,10 +713,10 @@ class FieldAccessFilter internal constructor(
                 } // else, the method call is for 'this' class.
             }
         }
-        if (name != null && reference.name != name()) {
+        if (name != null && reference.name != name) {
             return false
         }
-        if (type != null && !reference.type.startsWith(type())) {
+        if (type != null && !reference.type.startsWith(type)) {
             return false
         }
 
@@ -835,39 +792,12 @@ fun fieldAccess(
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = FieldAccessFilter(
-    if (definingClass != null) {
-        { definingClass }
-    } else null,
-    if (name != null) {
-        { name }
-    } else null,
-    if (type != null) {
-        { type }
-    } else null,
+    definingClass,
+    name,
+    type,
     opcodes,
     location
 )
-
-/**
- * Matches a field call, such as:
- * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
- *
- * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
- *                      For calls to a method in the same class, use 'this' as the defining class.
- *                      Note: 'this' does not work for fields found in superclasses.
- * @param name Full name of the field. Compares using [StringComparisonType.EQUALS].
- * @param type Class type of field. Compares using [StringComparisonType.STARTS_WITH].
- * @param opcodes List of all possible opcodes to match. Defaults to matching all get/put opcodes.
- *                (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
- * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
- */
-fun fieldAccess(
-    definingClass: (() -> String)? = null,
-    name: (() -> String)? = null,
-    type: (() -> String)? = null,
-    opcodes: List<Opcode>? = null,
-    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-)  = FieldAccessFilter(definingClass, name, type, opcodes, location)
 
 /**
  * Field access for a copy pasted SMALI style field access call. e.g.:
@@ -909,6 +839,11 @@ class StringFilter internal constructor(
     location: InstructionLocation
 ) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), location) {
 
+    /**
+     * Store the lambda value instead of calling it more than once.
+     */
+    private var stringValue: String? = null
+
     override fun matches(
         enclosingMethod: Method,
         instruction: Instruction
@@ -918,9 +853,14 @@ class StringFilter internal constructor(
         }
 
         val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
-        val filterString = string()
 
-        return comparison.compare(instructionString, filterString)
+        var string = stringValue
+        if (string == null) {
+            string = string()
+            stringValue = string
+        }
+
+        return comparison.compare(instructionString, string)
     }
 }
 
@@ -940,7 +880,8 @@ fun string(
  *
  * @param string string literal, using exact matching of [StringComparisonType.EQUALS].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
- */fun string(
+ */
+fun string(
     string: () -> String,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = StringFilter(string, StringComparisonType.EQUALS, location)
@@ -982,9 +923,14 @@ fun string(
 
 class NewInstanceFilter internal constructor (
     var type: () -> String,
-    var stringComparison: StringComparisonType,
+    var comparison: StringComparisonType,
     location: InstructionLocation
 ) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), location) {
+
+    /**
+     * Store the lambda value instead of calling it more than once.
+     */
+    private var typeValue: String? = null
 
     override fun matches(
         enclosingMethod: Method,
@@ -997,10 +943,15 @@ class NewInstanceFilter internal constructor (
         val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
         if (reference == null) return false
         val referenceType = reference.type
-        val classType = type()
 
-        stringComparison.validateSearchStringForClassType(classType)
-        return stringComparison.compare(referenceType, classType)
+        var type = typeValue
+        if (type == null) {
+            type = type()
+            comparison.validateSearchStringForClassType(type)
+            typeValue = type
+        }
+
+        return comparison.compare(referenceType, type)
     }
 }
 
@@ -1021,7 +972,7 @@ fun newInstance(
  * @param type Class type, compared using [StringComparisonType.ENDS_WITH].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
-fun newInstancetype(
+fun newInstance(
     type: () -> String,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere(),
 ) = NewInstanceFilter(type, StringComparisonType.ENDS_WITH, location)
@@ -1048,7 +999,7 @@ fun newInstance(
  *                   consider using [anyInstruction] with multiple exact type declarations.
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
-fun newInstancetype(
+fun newInstance(
     type: () -> String,
     comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
@@ -1062,6 +1013,11 @@ class CheckCastFilter internal constructor(
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) : OpcodeFilter(Opcode.CHECK_CAST, location) {
 
+    /**
+     * Store the lambda value instead of calling it more than once.
+     */
+    private var typeValue: String? = null
+
     override fun matches(
         enclosingMethod: Method,
         instruction: Instruction
@@ -1073,10 +1029,15 @@ class CheckCastFilter internal constructor(
         val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
         if (reference == null) return false
         val referenceType = reference.type
-        val classType = type()
 
-        comparison.validateSearchStringForClassType(classType)
-        return comparison.compare(referenceType, classType)
+        var type = typeValue
+        if (type == null) {
+            type = type()
+            comparison.validateSearchStringForClassType(type)
+            typeValue = type
+        }
+
+        return comparison.compare(referenceType, type)
     }
 }
 

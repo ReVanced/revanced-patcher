@@ -292,10 +292,10 @@ internal object PatcherTest {
 
             var filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(parameters, filter.parameters!!())
-            assertEquals(returnType, filter.returnType!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(parameters, filter.parameters!!)
+            assertEquals(returnType, filter.returnType!!)
 
             definingClass = "Landroid/view/View\$InnerClass;"
             name = "inflate"
@@ -305,10 +305,10 @@ internal object PatcherTest {
 
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(parameters, filter.parameters!!())
-            assertEquals(returnType, filter.returnType!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(parameters, filter.parameters!!)
+            assertEquals(returnType, filter.returnType!!)
 
             definingClass = "Landroid/view/View\$InnerClass;"
             name = "inflate"
@@ -318,10 +318,10 @@ internal object PatcherTest {
 
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(parameters, filter.parameters!!())
-            assertEquals(returnType, filter.returnType!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(parameters, filter.parameters!!)
+            assertEquals(returnType, filter.returnType!!)
 
             definingClass = "Landroid/view/View\$InnerClass;"
             name = "inflate"
@@ -331,10 +331,10 @@ internal object PatcherTest {
 
             filter = MethodCallFilter.parseJvmMethodCall(methodSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(parameters, filter.parameters!!())
-            assertEquals(returnType, filter.returnType!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(parameters, filter.parameters!!)
+            assertEquals(returnType, filter.returnType!!)
         }
     }
 
@@ -407,9 +407,9 @@ internal object PatcherTest {
 
             var filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(type, filter.type!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(type, filter.type!!)
 
 
             definingClass = "Landroid/view/View\$InnerClass;"
@@ -419,9 +419,9 @@ internal object PatcherTest {
 
             filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(type, filter.type!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(type, filter.type!!)
 
 
             definingClass = "Landroid/view/View\$InnerClass;"
@@ -431,9 +431,9 @@ internal object PatcherTest {
 
             filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(type, filter.type!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(type, filter.type!!)
 
 
             definingClass = "Landroid/view/View\$InnerClass;"
@@ -443,9 +443,9 @@ internal object PatcherTest {
 
             filter = FieldAccessFilter.parseJvmFieldAccess(fieldSignature)
 
-            assertEquals(definingClass, filter.definingClass!!())
-            assertEquals(name, filter.name!!())
-            assertEquals(type, filter.type!!())
+            assertEquals(definingClass, filter.definingClass!!)
+            assertEquals(name, filter.name!!)
+            assertEquals(type, filter.type!!)
         }
     }
 
