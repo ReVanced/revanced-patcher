@@ -249,6 +249,8 @@ class AnyInstruction internal constructor(
 
 /**
  * Logical OR operator where the first filter that matches satisfies this filter.
+ *
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun anyInstruction(
     vararg filters: InstructionFilter,
@@ -257,6 +259,15 @@ fun anyInstruction(
 
 
 
+/**
+ * Single opcode match.
+ *
+ * Patches can extend this as desired to do unusual or app specific instruction filtering.
+ * Or Alternatively can implement [InstructionFilter] directly.
+ *
+ * @param opcode Opcode to match.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */
 open class OpcodeFilter(
     val opcode: Opcode,
     override val location: InstructionLocation
@@ -271,7 +282,10 @@ open class OpcodeFilter(
 }
 
 /**
- * Single opcode.
+ * Single opcode match.
+ *
+ * @param opcode Opcode to match.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun opcode(
     opcode: Opcode,
@@ -282,7 +296,13 @@ fun opcode(
 
 /**
  * Matches a single instruction from many kinds of opcodes.
- * If matching only a single opcode instead use [OpcodeFilter].
+ *
+ * Patches can extend this as desired to do unusual or app specific instruction filtering.
+ * Or Alternatively can implement [InstructionFilter] directly.
+ *
+ * @param opcodes Set of opcodes to match to. Value of `null` will match any opcode.
+ *                If matching only a single opcode instead use single opcode parameter [OpcodeFilter].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 open class OpcodesFilter private constructor(
     val opcodes: EnumSet<Opcode>?,
@@ -290,9 +310,6 @@ open class OpcodesFilter private constructor(
 ) : InstructionFilter {
 
     protected constructor(
-        /**
-         * Value of `null` will match any opcode.
-         */
         opcodes: List<Opcode>?,
         location: InstructionLocation
     ) : this(if (opcodes == null) null else EnumSet.copyOf(opcodes), location)
@@ -371,46 +388,38 @@ class LiteralFilter internal constructor(
 }
 
 /**
- * Literal value, such as:
- * `const v1, 0x7f080318`
+ * Long literal. Automatically converts literal to opcode hex.
  *
- * that can be matched using:
- * `LiteralFilter(0x7f080318)`
- * or
- * `LiteralFilter(2131231512)`
- */
-fun literal(
-    literal: () -> Long,
-    opcodes: List<Opcode>? = null,
-    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = LiteralFilter(literal, opcodes, location)
-
-/**
- * Literal value, such as:
- * `const v1, 0x7f080318`
- *
- * that can be matched using:
- * `LiteralFilter(0x7f080318)`
- * or
- * `LiteralFilter(2131231512L)`
- */
-fun literal(
+ * @param literal Literal number.
+ * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */fun literal(
     literal: Long,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = LiteralFilter({ literal }, opcodes, location)
 
 /**
- * Integer literal.
- */
-fun literal(
+ * Integer literal. Automatically converts literal to opcode hex.
+ *
+ * @param literal Literal number.
+ * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */fun literal(
     literal: Int,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = LiteralFilter({ literal.toLong() }, opcodes, location)
 
 /**
- * Double literal. Automatically compares hex value as a double.
+ * Double point literal. Automatically converts literal to opcode hex.
+ *
+ * @param literal Literal number.
+ * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun literal(
     literal: Double,
@@ -419,13 +428,32 @@ fun literal(
 ) = LiteralFilter({ literal.toRawBits() }, opcodes, location)
 
 /**
- * Floating point literal. Automatically compares hex value as a floating point.
+ * Floating point literal. Automatically converts literal to opcode hex.
+ *
+ * @param literal Floating point literal.
+ * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
+ *                [Opcode.CONST_4], [Opcode.CONST_32], [Opcode.CONST_WIDE].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun literal(
     literal: Float,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = LiteralFilter({ literal.toRawBits().toLong() }, opcodes, location)
+
+/**
+ * Literal number value. Automatically converts the provided number to opcode hex.
+ *
+ * @param literal Literal number.
+ * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */
+fun literal(
+    literal: () -> Long,
+    opcodes: List<Opcode>? = null,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = LiteralFilter(literal, opcodes, location)
 
 
 
@@ -554,87 +582,27 @@ class MethodCallFilter internal constructor(
 }
 
 /**
- * Identifies method calls.
+ * Matches a method call, such as:
+ * `invoke-virtual {v3, v4}, La;->b(I)V`
  *
- * `Null` parameters matches anything.
- *
- * By default any type of method call matches.
- * Specify opcodes if a specific type of method call is desired (such as only static calls).
+ * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
+ *                      For calls to a method in the same class, use 'this' as the defining class.
+ *                      Note: 'this' does not work for fields found in superclasses.
+ * @param name Full name of the method. Compares using [StringComparisonType.EQUALS].
+ * @param parameters Parameters of the method call. Each parameter matches using[StringComparisonType.STARTS_WITH]
+ *                   and semantics are the same as [Fingerprint] parameters.
+ * @param returnType Return type. Matches using [StringComparisonType.STARTS_WITH].
+ * @param opcodes Opcode types to match. By default this matches any method call opcode: `Opcode.INVOKE_*`.
+ *                If this filter must match specific types of method call, then specify the desired opcodes
+                  such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun methodCall(
-    /**
-     * Defining class of the method call. Matches using endsWith().
-     *
-     * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for methods declared only in a superclass.
-     */
-    definingClass: (() -> String)? = null,
-    /**
-     * Method name. Must be exact match of the method name.
-     */
-    name: (() -> String)? = null,
-    /**
-     * Parameters of the method call. Each parameter matches
-     * using startsWith() and semantics are the same as [Fingerprint].
-     */
-    parameters: (() -> List<String>)? = null,
-    /**
-     * Return type. Matches using startsWith()
-     */
-    returnType: (() -> String)? = null,
-    /**
-     * Opcode types to match. By default this matches any method call opcode:
-     * `Opcode.INVOKE_*`.
-     *
-     * If this filter must match specific types of method call, then specify the desired opcodes
-     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
-     */
-    opcodes: List<Opcode>? = null,
-    /**
-     * The locations where this filter is allowed to match.
-     */
-    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = MethodCallFilter(
-    definingClass,
-    name,
-    parameters,
-    returnType,
-    opcodes,
-    location
-)
-
-fun methodCall(
-    /**
-     * Defining class of the method call. Matches using [StringComparisonType.ENDS_WITH].
-     *
-     * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for methods declared only in a superclass.
-     */
     definingClass: String? = null,
-    /**
-     * Method name. Must be exact match of the method name ([StringComparisonType.EQUALS]).
-     */
     name: String? = null,
-    /**
-     * Parameters of the method call. Each parameter matches
-     * using startsWith() and semantics are the same as [Fingerprint].
-     */
     parameters: List<String>? = null,
-    /**
-     * Return type. Matches using [StringComparisonType.STARTS_WITH].
-     */
     returnType: String? = null,
-    /**
-     * Opcode types to match. By default this matches any method call opcode:
-     * `Opcode.INVOKE_*`.
-     *
-     * If this filter must match specific types of method call, then specify the desired opcodes
-     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
-     */
     opcodes: List<Opcode>? = null,
-    /**
-     * The locations where this filter is allowed to match.
-     */
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = MethodCallFilter(
     if (definingClass != null) {
@@ -653,38 +621,26 @@ fun methodCall(
     location
 )
 
+/**
+ * Matches a method call, such as:
+ * `invoke-virtual {v3, v4}, La;->b(I)V`
+ *
+ * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
+ *                      For calls to a method in the same class, use 'this' as the defining class.
+ *                      Note: 'this' does not work for fields found in superclasses.
+ * @param name Full name of the method. Compares using [StringComparisonType.EQUALS].
+ * @param parameters Parameters of the method call. Each parameter matches using[StringComparisonType.STARTS_WITH]
+ *                   and semantics are the same as [Fingerprint] parameters.
+ * @param returnType Return type. Matches using [StringComparisonType.STARTS_WITH].
+ * @param opcode Single opcode type to match.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */
 fun methodCall(
-    /**
-     * Defining class of the method call. Matches using [StringComparisonType.ENDS_WITH].
-     *
-     * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for methods declared only in a superclass.
-     */
     definingClass: String? = null,
-    /**
-     * Method name. Must be exact match of the method name ([StringComparisonType.EQUALS]).
-     */
     name: String? = null,
-    /**
-     * Parameters of the method call. Each parameter matches using [StringComparisonType.STARTS_WITH]
-     * and semantics are the same as [Fingerprint] parameters.
-     */
     parameters: List<String>? = null,
-    /**
-     * Return type. Matches using [StringComparisonType.STARTS_WITH].
-     */
     returnType: String? = null,
-    /**
-     * Opcode types to match. By default this matches any method call opcode:
-     * `Opcode.INVOKE_*`.
-     *
-     * If this filter must match specific types of method call, then specify the desired opcodes
-     * such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
-     */
     opcode: Opcode,
-    /**
-     * The locations where this filter is allowed to match.
-     */
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = MethodCallFilter(
     if (definingClass != null) {
@@ -704,10 +660,47 @@ fun methodCall(
 )
 
 /**
+ * Matches a method call, such as:
+ * `invoke-virtual {v3, v4}, La;->b(I)V`
+ *
+ * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
+ *                      For calls to a method in the same class, use 'this' as the defining class.
+ *                      Note: 'this' does not work for fields found in superclasses.
+ * @param name Full name of the method. Compares using [StringComparisonType.EQUALS].
+ * @param parameters Parameters of the method call. Each parameter matches using[StringComparisonType.STARTS_WITH]
+ *                   and semantics are the same as [Fingerprint] parameters.
+ * @param returnType Return type. Matches using [StringComparisonType.STARTS_WITH].
+ * @param opcodes Opcode types to match. By default this matches any method call opcode: `Opcode.INVOKE_*`.
+ *                If this filter must match specific types of method call, then specify the desired opcodes
+ *                such as [Opcode.INVOKE_STATIC], [Opcode.INVOKE_STATIC_RANGE] to match only static calls.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */
+fun methodCall(
+    definingClass: (() -> String)? = null,
+    name: (() -> String)? = null,
+    parameters: (() -> List<String>)? = null,
+    returnType: (() -> String)? = null,
+    opcodes: List<Opcode>? = null,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = MethodCallFilter(
+    definingClass,
+    name,
+    parameters,
+    returnType,
+    opcodes,
+    location
+)
+
+/**
  * Method call for a copy pasted SMALI style method signature. e.g.:
  * `Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;`
  *
- * Does not support obfuscated method names or parameter/return types.
+ * Should never be used with obfuscated method names or parameter/return types.
+ *
+ * @param smali Smali method call reference, such as
+ *              `Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;`.
+ * @param opcodes List of all possible opcodes to match. Defaults to matching all method calls types: `Opcode.INVOKE_*`.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun methodCall(
     smali: String,
@@ -719,7 +712,12 @@ fun methodCall(
  * Method call for a copy pasted SMALI style method signature. e.g.:
  * `Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;`
  *
- * Does not support obfuscated method names or parameter/return types.
+ * Should never be used with obfuscated method names or parameter/return types.
+ *
+ * @param smali Smali method call reference, such as
+ *              `Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;`.
+ * @param opcode Single opcode type to match.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun methodCall(
     smali: String,
@@ -790,67 +788,51 @@ class FieldAccessFilter internal constructor(
     }
 }
 
-/**
- * Matches a field call, such as:
- * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
- */
-fun fieldAccess(
-    /**
-     * Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
-     *
-     * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for fields found in superclasses.
-     */
-    definingClass: (() -> String)? = null,
-    /**
-     * Name of the field. Must be a full match of the field name.
-     */
-    name: (() -> String)? = null,
-    /**
-     * Class type of field. Compares using [StringComparisonType.STARTS_WITH].
-     */
-    type: (() -> String)? = null,
-    /**
-     * Valid opcodes matches for this instruction.
-     * By default this matches any kind of field access
-     * (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
-     */
-    opcodes: List<Opcode>? = null,
-    /**
-     * The locations where this filter is allowed to match.
-     */
-    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-)  = FieldAccessFilter(definingClass, name, type, opcodes, location)
 
 /**
  * Matches a field call, such as:
  * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
+ *
+ * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
+ *                      For calls to a method in the same class, use 'this' as the defining class.
+ *                      Note: 'this' does not work for fields found in superclasses.
+ * @param name Full name of the field. Compares using [StringComparisonType.EQUALS].
+ * @param type Class type of field. Compares using [StringComparisonType.STARTS_WITH].
+ * @param opcode Single opcode type to match.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun fieldAccess(
-    /**
-     * Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
-     *
-     * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for fields found in superclasses.
-     */
     definingClass: String? = null,
-    /**
-     * Full field name of the field. Compares using ([StringComparisonType.EQUALS]).
-     */
     name: String? = null,
-    /**
-     * Class type of field. Compares using [StringComparisonType.STARTS_WITH].
-     */
     type: String? = null,
-    /**
-     * Valid opcodes matches for this instruction.
-     * By default this matches any kind of field access
-     * (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
-     */
+    opcode: Opcode,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = fieldAccess(
+    definingClass,
+    name,
+    type,
+    listOf(opcode),
+    location
+)
+
+/**
+ * Matches a field call, such as:
+ * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
+ *
+ * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
+ *                      For calls to a method in the same class, use 'this' as the defining class.
+ *                      Note: 'this' does not work for fields found in superclasses.
+ * @param name Full name of the field. Compares using [StringComparisonType.EQUALS].
+ * @param type Class type of field. Compares using [StringComparisonType.STARTS_WITH].
+ * @param opcodes List of all possible opcodes to match. Defaults to matching all get/put opcodes.
+ *                (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */
+fun fieldAccess(
+    definingClass: String? = null,
+    name: String? = null,
+    type: String? = null,
     opcodes: List<Opcode>? = null,
-    /**
-     * The locations where this filter is allowed to match.
-     */
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = FieldAccessFilter(
     if (definingClass != null) {
@@ -869,41 +851,33 @@ fun fieldAccess(
 /**
  * Matches a field call, such as:
  * `iget-object v0, p0, Lahhh;->g:Landroid/view/View;`
+ *
+ * @param definingClass Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
+ *                      For calls to a method in the same class, use 'this' as the defining class.
+ *                      Note: 'this' does not work for fields found in superclasses.
+ * @param name Full name of the field. Compares using [StringComparisonType.EQUALS].
+ * @param type Class type of field. Compares using [StringComparisonType.STARTS_WITH].
+ * @param opcodes List of all possible opcodes to match. Defaults to matching all get/put opcodes.
+ *                (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun fieldAccess(
-    /**
-     * Defining class of the field call. Compares using [StringComparisonType.ENDS_WITH].
-     *
-     * For calls to a method in the same class, use 'this' as the defining class.
-     * Note: 'this' does not work for fields found in superclasses.
-     */
-    definingClass: String? = null,
-    /**
-     * Full name of the field. Compares using [StringComparisonType.EQUALS].
-     */
-    name: String? = null,
-    /**
-     * Class type of field. Compares using [StringComparisonType.STARTS_WITH].
-     */
-    type: String? = null,
-    opcode: Opcode,
-    /**
-     * The locations where this filter is allowed to match.
-     */
+    definingClass: (() -> String)? = null,
+    name: (() -> String)? = null,
+    type: (() -> String)? = null,
+    opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = fieldAccess(
-    definingClass,
-    name,
-    type,
-    listOf(opcode),
-    location
-)
+)  = FieldAccessFilter(definingClass, name, type, opcodes, location)
 
 /**
  * Field access for a copy pasted SMALI style field access call. e.g.:
  * `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`
  *
  * Should never be used with obfuscated field names or obfuscated field types.
+ * @param smali Smali field access statement, such as `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`.
+ * @param opcodes List of all possible opcodes to match. Defaults to matching all get/put opcodes.
+ *                (`Opcode.IGET`, `Opcode.SGET`, `Opcode.IPUT`, `Opcode.SPUT`, etc).
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun fieldAccess(
     smali: String,
@@ -916,6 +890,10 @@ fun fieldAccess(
  * `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`
  *
  * Should never be used with obfuscated field names or obfuscated field types.
+ *
+ * @param smali Smali field access statement, such as `Ljava/lang/Boolean;->TRUE:Ljava/lang/Boolean;`.
+ * @param opcode Single opcode type to match.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun fieldAccess(
     smali: String,
@@ -948,33 +926,37 @@ class StringFilter internal constructor(
 
 /**
  * Literal String instruction.
+ *
+ * @param string string literal, using exact matching of [StringComparisonType.EQUALS].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun string(
-    string: () -> String,
-    /**
-     * For partial matching of a string opcode and defaults to full string equality. For more
-     * precise matching of multiple strings, consider using [anyInstruction] with multiple
-     * exact string declarations.
-     */
-    matchType: StringComparisonType = StringComparisonType.EQUALS,
+    string: String,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = StringFilter(string, matchType, location)
+) = StringFilter({ string }, StringComparisonType.EQUALS, location)
 
 /**
- * Literal String instruction with [StringComparisonType.EQUALS].
- */
-fun string(
+ * Literal String instruction.
+ *
+ * @param string string literal, using exact matching of [StringComparisonType.EQUALS].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */fun string(
     string: () -> String,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = StringFilter(string, StringComparisonType.EQUALS, location)
 
 /**
  * Literal String instruction.
+ *
+ * @param string string literal.
+ * @param comparison How to compare the string literal. For more precise matching of strings,
+ *                   consider using [anyInstruction] with multiple exact string declarations.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun string(
     string: String,
     /**
-     * For partial matching of a string opcode and defaults to full string equality. For more
+     * How to match a given string opcode literal. Default is exact string equality. For more
      * precise matching of multiple strings, consider using [anyInstruction] with multiple
      * exact string declarations.
      */
@@ -983,12 +965,18 @@ fun string(
 ) = StringFilter({ string }, comparison, location)
 
 /**
- * Literal String instruction with [StringComparisonType.EQUALS].
+ * Literal String instruction.
+ *
+ * @param string string literal.
+ * @param comparison How to compare the string literal. For more precise matching of strings,
+ *                   consider using [anyInstruction] with multiple exact string declarations.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun string(
-    string: String,
+    string: () -> String,
+    comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = StringFilter({ string }, StringComparisonType.EQUALS, location)
+) = StringFilter(string, comparison, location)
 
 
 
@@ -1016,24 +1004,22 @@ class NewInstanceFilter internal constructor (
     }
 }
 
+/**
+ * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
+ *
+ * @param type Class type, compared using [StringComparisonType.ENDS_WITH].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
+ */
+fun newInstance(
+    type: String,
+    location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
+) = NewInstanceFilter({ type }, StringComparisonType.ENDS_WITH, location)
 
 /**
  * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  *
- * @param type Class type.
- * @param stringComparison How to compare the opcode class type.
- */
-fun newInstancetype(
-    type: () -> String,
-    stringComparison: StringComparisonType = StringComparisonType.ENDS_WITH,
-    location: InstructionLocation
-) = NewInstanceFilter(type, stringComparison, location)
-
-/**
- * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type,
- * using [StringComparisonType.ENDS_WITH].
- *
- * @param type Class type.
+ * @param type Class type, compared using [StringComparisonType.ENDS_WITH].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun newInstancetype(
     type: () -> String,
@@ -1044,24 +1030,29 @@ fun newInstancetype(
  * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  *
  * @param type Class type.
- * @param comparison How to compare the opcode class type.
+ * @param comparison How to compare the opcode class type. For more precise matching of types,
+ *                   consider using [anyInstruction] with multiple exact type declarations.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun newInstance(
     type: String,
-    comparison: StringComparisonType = StringComparisonType.ENDS_WITH,
+    comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) = NewInstanceFilter({ type }, comparison, location)
 
 /**
- * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type,
- * using [StringComparisonType.ENDS_WITH].
+ * Opcode type [Opcode.NEW_INSTANCE] or [Opcode.NEW_ARRAY] with a non obfuscated class type.
  *
  * @param type Class type.
+ * @param comparison How to compare the opcode class type. For more precise matching of types,
+ *                   consider using [anyInstruction] with multiple exact type declarations.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
-fun newInstance(
-    type: String,
+fun newInstancetype(
+    type: () -> String,
+    comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = NewInstanceFilter({ type }, StringComparisonType.ENDS_WITH, location)
+) = NewInstanceFilter(type, comparison, location)
 
 
 
@@ -1092,19 +1083,19 @@ class CheckCastFilter internal constructor(
 /**
  * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
  *
- * @param type Class type.
- * @param comparison How to compare the opcode class type.
+ * @param type Class type, compared using [StringComparisonType.ENDS_WITH].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun checkCast(
-    type: () -> String,
-    comparison: StringComparisonType,
+    type: String,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = CheckCastFilter(type, comparison, location)
+) = CheckCastFilter({ type }, StringComparisonType.ENDS_WITH, location)
 
 /**
- * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type using [StringComparisonType.ENDS_WITH].
+ * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
  *
- * @param type Class type.
+ * @param type Class type, compared using [StringComparisonType.ENDS_WITH].
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun checkCast(
     type: () -> String,
@@ -1112,10 +1103,12 @@ fun checkCast(
 ) = CheckCastFilter(type, StringComparisonType.ENDS_WITH, location)
 
 /**
- * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type.
+ * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type using the provided string comparison type.
  *
  * @param type Class type.
- * @param comparison How to compare the opcode class type.
+ * @param comparison How to compare the opcode class type. For more precise matching of types,
+ *                   consider using [anyInstruction] with multiple exact type declarations.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun checkCast(
     type: String,
@@ -1124,11 +1117,15 @@ fun checkCast(
 ) = CheckCastFilter({ type }, comparison, location)
 
 /**
- * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type using [StringComparisonType.ENDS_WITH].
+ * Opcode type [Opcode.CHECK_CAST] with a non obfuscated class type using the provided string comparison type.
  *
  * @param type Class type.
+ * @param comparison How to compare the opcode class type. For more precise matching of types,
+ *                   consider using [anyInstruction] with multiple exact type declarations.
+ * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun checkCast(
-    type: String,
+    type: () -> String,
+    comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
-) = CheckCastFilter({ type }, StringComparisonType.ENDS_WITH, location)
+) = CheckCastFilter(type, comparison, location)
