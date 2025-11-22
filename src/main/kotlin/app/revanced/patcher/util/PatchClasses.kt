@@ -83,11 +83,14 @@ class PatchClasses internal constructor(
         ClassDefWrapper(it)
     }.associateByTo(
         // Must use linked hash map, otherwise with a regular map the ordering of classes found
-        // in the apk is not preserved, and old fingerprints that had multiple matches could
-        // then match the wrong class due to hashmap random class iteration during matching.
-        // The issue is with a fingerprints not being unique enough and currently there is
-        // no way to check for duplicate matches.
-        LinkedHashMap(set.size * 3 / 2)
+        // in the apk is not preserved, and old fingerprints that have multiple matches can match
+        // the wrong class due to hashmap random class iteration during matching. The issue is with
+        // some fingerprint declarations not being unique enough and currently there is no way to
+        // check for duplicate matches.
+        // See https://github.com/ReVanced/revanced-patcher/issues/74
+        //
+        // Pre-size so rehashing doesn't occur and use a more performant load factor.
+        LinkedHashMap(2 * set.size, 0.5f)
     ) { classDefStrings ->
         classDefStrings.classDef.type
     })
@@ -111,6 +114,7 @@ class PatchClasses internal constructor(
             return stringMap!!
         }
 
+        // Default 0.75f load factor works well and a lower value does not improve patching time.
         val map = HashMap<String, LinkedList<ClassDefWrapper>>()
         val allClasses = mutableListOf<ClassDefWrapper>()
 
