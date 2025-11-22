@@ -7,8 +7,6 @@ public final class app/revanced/patcher/CheckCastFilter : app/revanced/patcher/O
 	public final fun getComparison ()Lapp/revanced/patcher/StringComparisonType;
 	public final fun getType ()Lkotlin/jvm/functions/Function0;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
-	public final fun setComparison (Lapp/revanced/patcher/StringComparisonType;)V
-	public final fun setType (Lkotlin/jvm/functions/Function0;)V
 }
 
 public final class app/revanced/patcher/FieldAccessFilter : app/revanced/patcher/OpcodesFilter {
@@ -152,6 +150,8 @@ public final class app/revanced/patcher/InstructionLocation$MatchAfterImmediatel
 
 public final class app/revanced/patcher/InstructionLocation$MatchAfterRange : app/revanced/patcher/InstructionLocation {
 	public fun <init> (II)V
+	public final fun getMaximumDistanceFromLastInstruction ()I
+	public final fun getMinimumDistanceFromLastInstruction ()I
 	public fun indexIsValidForMatching (II)Z
 }
 
@@ -159,7 +159,6 @@ public final class app/revanced/patcher/InstructionLocation$MatchAfterWithin : a
 	public fun <init> (I)V
 	public final fun getMatchDistance ()I
 	public fun indexIsValidForMatching (II)Z
-	public final fun setMatchDistance (I)V
 }
 
 public final class app/revanced/patcher/InstructionLocation$MatchFirst : app/revanced/patcher/InstructionLocation {
@@ -173,7 +172,6 @@ public abstract interface annotation class app/revanced/patcher/InternalApi : ja
 public final class app/revanced/patcher/LiteralFilter : app/revanced/patcher/OpcodesFilter {
 	public final fun getLiteral ()Lkotlin/jvm/functions/Function0;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
-	public final fun setLiteral (Lkotlin/jvm/functions/Function0;)V
 }
 
 public final class app/revanced/patcher/Match {
@@ -207,7 +205,6 @@ public final class app/revanced/patcher/Match$StringMatch {
 }
 
 public final class app/revanced/patcher/MethodCallFilter : app/revanced/patcher/OpcodesFilter {
-	public static final field Companion Lapp/revanced/patcher/MethodCallFilter$Companion;
 	public final fun getDefiningClass ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getParameters ()Ljava/util/List;
@@ -215,25 +212,23 @@ public final class app/revanced/patcher/MethodCallFilter : app/revanced/patcher/
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
-public final class app/revanced/patcher/MethodCallFilter$Companion {
-}
-
 public final class app/revanced/patcher/NewInstanceFilter : app/revanced/patcher/OpcodesFilter {
 	public final fun getComparison ()Lapp/revanced/patcher/StringComparisonType;
 	public final fun getType ()Lkotlin/jvm/functions/Function0;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
-	public final fun setComparison (Lapp/revanced/patcher/StringComparisonType;)V
-	public final fun setType (Lkotlin/jvm/functions/Function0;)V
 }
 
 public class app/revanced/patcher/OpcodeFilter : app/revanced/patcher/InstructionFilter {
 	public fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;)V
+	public synthetic fun <init> (Lcom/android/tools/smali/dexlib2/Opcode;Lapp/revanced/patcher/InstructionLocation;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun getLocation ()Lapp/revanced/patcher/InstructionLocation;
 	public final fun getOpcode ()Lcom/android/tools/smali/dexlib2/Opcode;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
 }
 
 public class app/revanced/patcher/OpcodesFilter : app/revanced/patcher/InstructionFilter {
+	protected fun <init> (Ljava/util/EnumSet;Lapp/revanced/patcher/InstructionLocation;)V
+	public synthetic fun <init> (Ljava/util/EnumSet;Lapp/revanced/patcher/InstructionLocation;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	protected fun <init> (Ljava/util/List;Lapp/revanced/patcher/InstructionLocation;)V
 	public fun getLocation ()Lapp/revanced/patcher/InstructionLocation;
 	public final fun getOpcodes ()Ljava/util/EnumSet;
@@ -298,8 +293,6 @@ public final class app/revanced/patcher/StringFilter : app/revanced/patcher/Opco
 	public final fun getComparison ()Lapp/revanced/patcher/StringComparisonType;
 	public final fun getString ()Lkotlin/jvm/functions/Function0;
 	public fun matches (Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;)Z
-	public final fun setComparison (Lapp/revanced/patcher/StringComparisonType;)V
-	public final fun setString (Lkotlin/jvm/functions/Function0;)V
 }
 
 public final class app/revanced/patcher/extensions/ExtensionsKt {

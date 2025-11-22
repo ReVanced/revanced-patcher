@@ -17,7 +17,7 @@ import java.util.EnumSet
 
 /**
  * Simple interface to control how much space is allowed between a previous
- * [InstructionFilter match and the current [InstructionFilter].
+ * [InstructionFilter] match and the current [InstructionFilter].
  */
 fun interface InstructionLocation {
     /**
@@ -81,7 +81,7 @@ fun interface InstructionLocation {
      *                      instructions can exist between the previously matched instruction and
      *                      the current instruction filter.
      */
-    class MatchAfterWithin(var matchDistance: Int) : InstructionLocation {
+    class MatchAfterWithin(val matchDistance: Int) : InstructionLocation {
         init {
             require(matchDistance >= 0) {
                 "matchDistance must be non-negative"
@@ -119,21 +119,21 @@ fun interface InstructionLocation {
 
     /**
      * Functionally combines both [MatchAfterAtLeast] and [MatchAfterWithin] to give a bounded range
-     * where the next instruction can match relative to the previous matched instruction.
+     * where the next instruction must match relative to the previous matched instruction.
      *
-     * Unlike [MatchAfterImmediately] or [MatchAfterWithin], this can also be used for the first filter
+     * Unlike [MatchAfterImmediately] or [MatchAfterWithin], this can be used for the first filter
      * to constrain matching to a specific range starting from index 0.
      *
      * @param minimumDistanceFromLastInstruction The minimum number of unmatched instructions that
-     *                                           must exist between this instruction and the last matched
-     *                                           instruction.
-     * @param maximumDistanceFromLastInstruction The maximum number of unmatched instructions
-     *                                           that can exist between this instruction and the last
+     *                                           must exist between this instruction and the last
      *                                           matched instruction.
+     * @param maximumDistanceFromLastInstruction The maximum number of unmatched instructions
+     *                                           that can exist between this instruction and the
+     *                                           last matched instruction.
      */
     class MatchAfterRange(
-        minimumDistanceFromLastInstruction: Int,
-        maximumDistanceFromLastInstruction: Int
+        val minimumDistanceFromLastInstruction: Int,
+        val maximumDistanceFromLastInstruction: Int
     ) : InstructionLocation {
 
         private val minMatcher = MatchAfterAtLeast(minimumDistanceFromLastInstruction)
@@ -201,7 +201,7 @@ enum class StringComparisonType {
 
 
 /**
- * Matches method [Instruction] objects, similar to how [Fingerprint] matches entire fingerprints.
+ * Matches method [Instruction] objects, similar to how [Fingerprint] matches entire methods.
  *
  * The most basic filters match only opcodes and nothing more,
  * and more precise filters can match:
@@ -209,6 +209,9 @@ enum class StringComparisonType {
  * - Method calls (invoke_* opcodes) by name/parameter/return type.
  * - Object instantiation for specific class types.
  * - Literal const values.
+ *
+ * If creating a custom filter for unusual or app specific purposes, consider extending
+ * [OpcodeFilter] or [OpcodesFilter] to reduce boilerplate opcode checking logic.
  */
 fun interface InstructionFilter {
 
@@ -270,7 +273,7 @@ fun anyInstruction(
  */
 open class OpcodeFilter(
     val opcode: Opcode,
-    override val location: InstructionLocation
+    override val location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) : InstructionFilter {
 
     override fun matches(
@@ -301,12 +304,12 @@ fun opcode(
  * Or Alternatively can implement [InstructionFilter] directly.
  *
  * @param opcodes Set of opcodes to match to. Value of `null` will match any opcode.
- *                If matching only a single opcode instead use single opcode parameter [OpcodeFilter].
+ *                If matching only a single opcode then instead use [OpcodeFilter].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
-open class OpcodesFilter private constructor(
+open class OpcodesFilter protected constructor(
     val opcodes: EnumSet<Opcode>?,
-    override val location: InstructionLocation
+    override val location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) : InstructionFilter {
 
     protected constructor(
@@ -362,7 +365,7 @@ open class OpcodesFilter private constructor(
 
 
 class LiteralFilter internal constructor(
-    var literal: () -> Long,
+    val literal: () -> Long,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation
 ) : OpcodesFilter(opcodes, location) {
@@ -370,7 +373,7 @@ class LiteralFilter internal constructor(
     /**
      * Store the lambda value instead of calling it more than once.
      */
-    private var literalValue: Long? = null
+    private val literalValue: Long by lazy(literal)
 
     override fun matches(
         enclosingMethod: Method,
@@ -382,13 +385,7 @@ class LiteralFilter internal constructor(
 
         if (instruction !is WideLiteralInstruction) return false
 
-        var literal = literalValue
-        if (literal == null) {
-            literal = literal()
-            literalValue = literal
-        }
-
-        return instruction.wideLiteral == literal
+        return instruction.wideLiteral == literalValue
     }
 }
 
@@ -397,9 +394,10 @@ class LiteralFilter internal constructor(
  *
  * @param literal Literal number.
  * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
- *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST], [Opcode.CONST_WIDE].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
- */fun literal(
+ */
+fun literal(
     literal: Long,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
@@ -410,9 +408,10 @@ class LiteralFilter internal constructor(
  *
  * @param literal Literal number.
  * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
- *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST], [Opcode.CONST_WIDE].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
- */fun literal(
+ */
+fun literal(
     literal: Int,
     opcodes: List<Opcode>? = null,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
@@ -423,7 +422,7 @@ class LiteralFilter internal constructor(
  *
  * @param literal Literal number.
  * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
- *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST], [Opcode.CONST_WIDE].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun literal(
@@ -437,7 +436,7 @@ fun literal(
  *
  * @param literal Floating point literal.
  * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
- *                [Opcode.CONST_4], [Opcode.CONST_32], [Opcode.CONST_WIDE].
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST], [Opcode.CONST_WIDE].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun literal(
@@ -451,7 +450,7 @@ fun literal(
  *
  * @param literal Literal number.
  * @param opcodes Opcodes to match. By default this matches any literal number opcode such as:
- *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST_WIDE].
+ *                [Opcode.CONST_4], [Opcode.CONST_16], [Opcode.CONST], [Opcode.CONST_WIDE].
  * @param location Where this filter is allowed to match. Default is anywhere after the previous instruction.
  */
 fun literal(
@@ -480,7 +479,7 @@ class MethodCallFilter internal constructor(
         }
 
         val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
-        if (reference == null) return false
+            ?: return false
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
@@ -495,13 +494,16 @@ class MethodCallFilter internal constructor(
                 } // else, the method call is for 'this' class.
             }
         }
+
         if (name != null && reference.name != name) {
             return false
         }
+
         if (returnType != null &&
             !StringComparisonType.STARTS_WITH.compare(reference.returnType, returnType)) {
             return false
         }
+
         if (parameters != null &&
             !parametersStartsWith(reference.parameterTypes, parameters)) {
             return false
@@ -510,7 +512,7 @@ class MethodCallFilter internal constructor(
         return true
     }
 
-    companion object {
+    internal companion object {
         private val regex = Regex("""^(L[^;]+;)->([^(\s]+)\(([^)]*)\)(\[?L[^;]+;|\[?[BCSIJFDZV])${'$'}""")
 
         internal fun parseJvmMethodCall(
@@ -702,7 +704,7 @@ class FieldAccessFilter internal constructor(
         }
 
         val reference = (instruction as? ReferenceInstruction)?.reference as? FieldReference
-        if (reference == null) return false
+                ?: return false
 
         if (definingClass != null) {
             val referenceClass = reference.definingClass
@@ -713,9 +715,11 @@ class FieldAccessFilter internal constructor(
                 } // else, the method call is for 'this' class.
             }
         }
+
         if (name != null && reference.name != name) {
             return false
         }
+
         if (type != null && !reference.type.startsWith(type)) {
             return false
         }
@@ -834,15 +838,15 @@ fun fieldAccess(
 
 
 class StringFilter internal constructor(
-    var string: () -> String,
-    var comparison: StringComparisonType,
+    val string: () -> String,
+    val comparison: StringComparisonType,
     location: InstructionLocation
 ) : OpcodesFilter(listOf(Opcode.CONST_STRING, Opcode.CONST_STRING_JUMBO), location) {
 
     /**
      * Store the lambda value instead of calling it more than once.
      */
-    private var stringValue: String? = null
+    private val stringValue: String by lazy (string)
 
     override fun matches(
         enclosingMethod: Method,
@@ -852,15 +856,8 @@ class StringFilter internal constructor(
             return false
         }
 
-        val instructionString = ((instruction as ReferenceInstruction).reference as StringReference).string
-
-        var string = stringValue
-        if (string == null) {
-            string = string()
-            stringValue = string
-        }
-
-        return comparison.compare(instructionString, string)
+        val stringReference = (instruction as ReferenceInstruction).reference as StringReference
+        return comparison.compare(stringReference.string, stringValue)
     }
 }
 
@@ -922,15 +919,19 @@ fun string(
 
 
 class NewInstanceFilter internal constructor (
-    var type: () -> String,
-    var comparison: StringComparisonType,
+    val type: () -> String,
+    val comparison: StringComparisonType,
     location: InstructionLocation
 ) : OpcodesFilter(listOf(Opcode.NEW_INSTANCE, Opcode.NEW_ARRAY), location) {
 
     /**
      * Store the lambda value instead of calling it more than once.
      */
-    private var typeValue: String? = null
+    private val typeValue: String by lazy {
+        val typeValue = type()
+        comparison.validateSearchStringForClassType(typeValue)
+        typeValue
+    }
 
     override fun matches(
         enclosingMethod: Method,
@@ -940,18 +941,8 @@ class NewInstanceFilter internal constructor (
             return false
         }
 
-        val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
-        if (reference == null) return false
-        val referenceType = reference.type
-
-        var type = typeValue
-        if (type == null) {
-            type = type()
-            comparison.validateSearchStringForClassType(type)
-            typeValue = type
-        }
-
-        return comparison.compare(referenceType, type)
+        val reference = (instruction as ReferenceInstruction).reference as TypeReference
+        return comparison.compare(reference.type, typeValue)
     }
 }
 
@@ -1008,15 +999,19 @@ fun newInstance(
 
 
 class CheckCastFilter internal constructor(
-    var type: () -> String,
-    var comparison: StringComparisonType,
+    val type: () -> String,
+    val comparison: StringComparisonType,
     location: InstructionLocation = InstructionLocation.MatchAfterAnywhere()
 ) : OpcodeFilter(Opcode.CHECK_CAST, location) {
 
     /**
      * Store the lambda value instead of calling it more than once.
      */
-    private var typeValue: String? = null
+    private val typeValue: String by lazy {
+        val typeValue = type()
+        comparison.validateSearchStringForClassType(typeValue)
+        typeValue
+    }
 
     override fun matches(
         enclosingMethod: Method,
@@ -1026,18 +1021,8 @@ class CheckCastFilter internal constructor(
             return false
         }
 
-        val reference = (instruction as? ReferenceInstruction)?.reference as? TypeReference
-        if (reference == null) return false
-        val referenceType = reference.type
-
-        var type = typeValue
-        if (type == null) {
-            type = type()
-            comparison.validateSearchStringForClassType(type)
-            typeValue = type
-        }
-
-        return comparison.compare(referenceType, type)
+        val reference = (instruction as ReferenceInstruction).reference as TypeReference
+        return comparison.compare(reference.type, typeValue)
     }
 }
 
