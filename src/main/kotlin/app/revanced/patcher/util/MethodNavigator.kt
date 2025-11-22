@@ -2,9 +2,9 @@
 
 package app.revanced.patcher.util
 
-import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.dex.mutable.MutableMethod
 import app.revanced.patcher.extensions.instructionsOrNull
+import app.revanced.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -23,12 +23,12 @@ import kotlin.reflect.KProperty
  * @throws NavigateException If the method does not have an implementation.
  * @throws NavigateException If the instruction at the specified index is not a method reference.
  */
-context(BytecodePatchContext)
 class MethodNavigator internal constructor(
     private var startMethod: MethodReference,
 ) {
     private var lastNavigatedMethodReference = startMethod
 
+    context(_: BytecodePatchContext)
     private val lastNavigatedMethodInstructions
         get() = with(original()) {
             instructionsOrNull ?: throw NavigateException("Method $this does not have an implementation.")
@@ -41,6 +41,7 @@ class MethodNavigator internal constructor(
      *
      * @return This [MethodNavigator].
      */
+    context(_: BytecodePatchContext)
     fun to(vararg index: Int): MethodNavigator {
         index.forEach {
             lastNavigatedMethodReference = lastNavigatedMethodInstructions.getMethodReferenceAt(it)
@@ -55,6 +56,7 @@ class MethodNavigator internal constructor(
      * @param index The index of the method to navigate to.
      * @param predicate The predicate to match.
      */
+    context(_: BytecodePatchContext)
     fun to(index: Int = 0, predicate: (Instruction) -> Boolean): MethodNavigator {
         lastNavigatedMethodReference = lastNavigatedMethodInstructions.asSequence()
             .filter(predicate).asIterable().getMethodReferenceAt(index)
@@ -79,22 +81,27 @@ class MethodNavigator internal constructor(
      *
      * @return The last navigated method mutably.
      */
-    fun stop() = classDefs.find(matchesCurrentMethodReferenceDefiningClass)!!.mutable().firstMethodBySignature
-        as MutableMethod
+    context(context: BytecodePatchContext)
+    fun stop() = with(context) {
+        classDefs.find(matchesCurrentMethodReferenceDefiningClass)!!.mutable().firstMethodBySignature
+                as MutableMethod
+    }
 
     /**
      * Get the last navigated method mutably.
      *
      * @return The last navigated method mutably.
      */
-    operator fun getValue(nothing: Nothing?, property: KProperty<*>) = stop()
+    operator fun getValue(context: BytecodePatchContext?, property: KProperty<*>) =
+        context(requireNotNull(context)) { stop() }
 
     /**
      * Get the last navigated method immutably.
      *
      * @return The last navigated method immutably.
      */
-    fun original(): Method = classDefs.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
+    context(context: BytecodePatchContext)
+    fun original(): Method = context.classDefs.first(matchesCurrentMethodReferenceDefiningClass).firstMethodBySignature
 
     /**
      * Predicate to match the class defining the current method reference.

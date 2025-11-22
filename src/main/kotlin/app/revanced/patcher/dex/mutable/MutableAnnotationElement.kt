@@ -2,8 +2,6 @@ package app.revanced.patcher.dex.mutable
 
 import app.revanced.patcher.dex.mutable.encodedValue.MutableEncodedValue
 import app.revanced.patcher.dex.mutable.encodedValue.MutableEncodedValue.Companion.toMutable
-import app.revanced.patcher.dex.mutable.encodedValue.MutableEncodedValue
-import app.revanced.patcher.dex.mutable.encodedValue.MutableEncodedValue.Companion.toMutable
 import com.android.tools.smali.dexlib2.base.BaseAnnotationElement
 import com.android.tools.smali.dexlib2.iface.AnnotationElement
 import com.android.tools.smali.dexlib2.iface.value.EncodedValue

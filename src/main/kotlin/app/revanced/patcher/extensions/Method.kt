@@ -1,23 +1,19 @@
 package app.revanced.patcher.extensions
 
 import app.revanced.patcher.dex.mutable.MutableMethod
-import app.revanced.patcher.util.smali.ExternalLabel
-import app.revanced.patcher.util.smali.toInstructions
+import app.revanced.patcher.util.toInstructions
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
 import com.android.tools.smali.dexlib2.builder.Label
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction10t
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction20t
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22t
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction30t
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction31t
+import com.android.tools.smali.dexlib2.builder.instruction.*
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodImplementation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
-import kotlin.collections.forEach
-import kotlin.collections.indexOf
+
+fun Method.accessFlags(vararg flags: AccessFlags) =
+    accessFlags.and(flags.map { it.ordinal }.reduce { acc, i -> acc or i }) != 0
 
 /**
  * Add instructions to a method at the given index.
@@ -382,3 +378,10 @@ val MutableMethod.instructions: MutableList<BuilderInstruction> get() = instruct
  * @return The label.
  */
 fun MutableMethod.newLabel(index: Int) = implementation!!.newLabelForIndex(index)
+
+/**
+ * A class that represents a label for an instruction.
+ * @param name The label name.
+ * @param instruction The instruction that this label is for.
+ */
+data class ExternalLabel(internal val name: String, internal val instruction: Instruction)

@@ -1,10 +1,8 @@
 package app.revanced.patcher.util.smali
 
 import app.revanced.patcher.dex.mutable.MutableMethod.Companion.toMutable
-import app.revanced.patcher.extensions.addInstructions
-import app.revanced.patcher.extensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.getInstruction
-import app.revanced.patcher.extensions.newLabel
+import app.revanced.patcher.extensions.*
+import app.revanced.patcher.util.toInstructions
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
@@ -22,7 +20,7 @@ internal object InlineSmaliCompilerTest {
     @Test
     fun `outputs valid instruction`() {
         val want = BuilderInstruction21c(Opcode.CONST_STRING, 0, ImmutableStringReference("Test")) as BuilderInstruction
-        val have = "const-string v0, \"Test\"".toInstruction()
+        val have = "const-string v0, \"Test\"".toInstructions().first()
 
         assertInstructionsEqual(want, have)
     }
