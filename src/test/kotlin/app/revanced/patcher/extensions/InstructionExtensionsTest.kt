@@ -2,7 +2,6 @@ package app.revanced.patcher.extensions
 
 import app.revanced.patcher.dex.mutable.MutableMethod
 import app.revanced.patcher.dex.mutable.MutableMethod.Companion.toMutable
-import app.revanced.patcher.util.smali.ExternalLabel
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction

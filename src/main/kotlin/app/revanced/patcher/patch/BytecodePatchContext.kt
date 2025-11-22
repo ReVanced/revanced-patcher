@@ -21,6 +21,7 @@ import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
 import java.io.Closeable
 import java.io.IOException
+import java.util.LinkedHashMap
 import java.util.logging.Logger
 
 
@@ -140,8 +141,12 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                     this,
                     BasicDexFileNamer(),
                     object : DexFile {
-                        override fun getClasses() =
-                            this@BytecodePatchContext.classDefs.toSet()
+                        override fun getClasses() = this@BytecodePatchContext.classDefs.let {
+                            // More performant according to
+                            // https://github.com/LisoUseInAIKyrios/revanced-patcher/commit/8c26ad08457fb1565ea5794b7930da42a1c81cf1#diff-be698366d9868784ecf7da3fd4ac9d2b335b0bb637f9f618fbe067dbd6830b8fR197
+                            // TODO: Benchmark, if actually faster.
+                            HashSet<ClassDef>(it.size * 3 / 2).apply { addAll(it) }
+                        }
 
                         override fun getOpcodes() = this@BytecodePatchContext.opcodes
                     },
@@ -166,10 +171,17 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
     }
 
     internal inner class LookupMaps {
+        // No custom HashMap needed here, according to
+        // https://github.com/LisoUseInAIKyrios/revanced-patcher/commit/9b6d95d4f414a35ed68da37b0ecd8549df1ef63a
+        // TODO: Benchmark, if actually faster.
         private val _classDefsByType = mutableMapOf<String, ClassDef>()
         val classDefsByType: Map<String, ClassDef> = _classDefsByType
 
-        private val _methodsByStrings = mutableMapOf<String, MutableList<Method>>()
+        // Better performance according to
+        // https://github.com/LisoUseInAIKyrios/revanced-patcher/commit/9b6d95d4f414a35ed68da37b0ecd8549df1ef63a
+        private val _methodsByStrings =
+            LinkedHashMap<String, MutableList<Method>>(2 * classDefs.size, 0.5f)
+
         val methodsByStrings: Map<String, List<Method>> = _methodsByStrings
 
         private val _methodsWithString = methodsByStrings.values.flatten().toMutableSet()
@@ -195,7 +207,9 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
             classDef.forEachString { method, string ->
                 _methodsWithString += method
-                _methodsByStrings.getOrPut(string) { mutableListOf() } += method
+                _methodsByStrings.getOrPut(string) {
+                    mutableListOf()
+                } += method
             }
         }
 

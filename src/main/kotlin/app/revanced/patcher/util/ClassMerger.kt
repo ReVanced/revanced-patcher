@@ -1,5 +1,6 @@
 package app.revanced.patcher.util
 
+import app.revanced.patcher.dex.mutable.MutableClassDef
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
 import app.revanced.patcher.util.ClassMerger.Utils.filterAny
@@ -7,7 +8,6 @@ import app.revanced.patcher.util.ClassMerger.Utils.filterNotAny
 import app.revanced.patcher.util.ClassMerger.Utils.isPublic
 import app.revanced.patcher.util.ClassMerger.Utils.toPublic
 import app.revanced.patcher.util.ClassMerger.Utils.traverseClassHierarchy
-import app.revanced.patcher.dex.mutable.MutableClassDef
 import app.revanced.patcher.dex.mutable.MutableClassDef.Companion.toMutable
 import app.revanced.patcher.dex.mutable.MutableField
 import app.revanced.patcher.dex.mutable.MutableField.Companion.toMutable

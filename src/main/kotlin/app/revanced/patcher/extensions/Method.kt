@@ -74,6 +74,42 @@ fun MutableMethodImplementation.replaceInstructions(
 }
 
 /**
+ * Add an instruction to a method at the given index.
+ *
+ * @param index The index to add the instruction at.
+ * @param instruction The instruction to add.
+ */
+fun MutableMethod.addInstruction(
+    index: Int,
+    instruction: BuilderInstruction,
+) = implementation!!.addInstruction(index, instruction)
+
+/**
+ * Add an instruction to a method.
+ *
+ * @param instruction The instructions to add.
+ */
+fun MutableMethod.addInstruction(instruction: BuilderInstruction) = implementation!!.addInstruction(instruction)
+
+/**
+ * Add an instruction to a method at the given index.
+ *
+ * @param index The index to add the instruction at.
+ * @param smaliInstructions The instruction to add.
+ */
+fun MutableMethod.addInstruction(
+    index: Int,
+    smaliInstructions: String,
+) = implementation!!.addInstructions(index, smaliInstructions.toInstructions(this))
+
+/**
+ * Add an instruction to a method.
+ *
+ * @param smaliInstructions The instruction to add.
+ */
+fun MutableMethod.addInstruction(smaliInstructions: String) = implementation!!.addInstructions(smaliInstructions.toInstructions(this))
+
+/**
  * Add instructions to a method at the given index.
  *
  * @param index The index to add the instructions at.
@@ -89,8 +125,7 @@ fun MutableMethod.addInstructions(
  *
  * @param instructions The instructions to add.
  */
-fun MutableMethod.addInstructions(instructions: List<BuilderInstruction>) =
-    implementation!!.addInstructions(instructions)
+fun MutableMethod.addInstructions(instructions: List<BuilderInstruction>) = implementation!!.addInstructions(instructions)
 
 /**
  * Add instructions to a method.
@@ -107,8 +142,7 @@ fun MutableMethod.addInstructions(
  *
  * @param smaliInstructions The instructions to add.
  */
-fun MutableMethod.addInstructions(smaliInstructions: String) =
-    implementation!!.addInstructions(smaliInstructions.toInstructions(this))
+fun MutableMethod.addInstructions(smaliInstructions: String) = implementation!!.addInstructions(smaliInstructions.toInstructions(this))
 
 /**
  * Add instructions to a method at the given index.
@@ -166,7 +200,6 @@ fun MutableMethod.addInstructionsWithLabels(
                                     i.registerB,
                                     label,
                                 )
-
                             is BuilderInstruction30t -> BuilderInstruction30t(i.opcode, label)
                             is BuilderInstruction31t -> BuilderInstruction31t(i.opcode, i.registerA, label)
                             else -> throw IllegalStateException(
@@ -212,6 +245,13 @@ fun MutableMethod.addInstructionsWithLabels(
 }
 
 /**
+ * Remove an instruction at the given index.
+ *
+ * @param index The index to remove the instruction at.
+ */
+fun MutableMethod.removeInstruction(index: Int) = implementation!!.removeInstruction(index)
+
+/**
  * Remove instructions at the given index.
  *
  * @param index The index to remove the instructions at.
@@ -228,6 +268,28 @@ fun MutableMethod.removeInstructions(
  * @param count The amount of instructions to remove.
  */
 fun MutableMethod.removeInstructions(count: Int) = implementation!!.removeInstructions(count)
+
+/**
+ * Replace an instruction at the given index.
+ *
+ * @param index The index to replace the instruction at.
+ * @param instruction The instruction to replace the instruction with.
+ */
+fun MutableMethod.replaceInstruction(
+    index: Int,
+    instruction: BuilderInstruction,
+) = implementation!!.replaceInstruction(index, instruction)
+
+/**
+ * Replace an instruction at the given index.
+ *
+ * @param index The index to replace the instruction at.
+ * @param smaliInstruction The smali instruction to replace the instruction with.
+ */
+fun MutableMethod.replaceInstruction(
+    index: Int,
+    smaliInstruction: String,
+) = implementation!!.replaceInstructions(index, smaliInstruction.toInstructions(this))
 
 /**
  * Replace instructions at the given index.
