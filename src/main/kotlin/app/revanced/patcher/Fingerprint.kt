@@ -110,7 +110,7 @@ class Fingerprint internal constructor(
             }
 
             // Fingerprint has partial string matches. Check all classes with strings.
-            classes.classMap.values.forEach { value ->
+            classes.getAllClassesWithStrings().forEach { value ->
                 val value = machAllClassMethods(value)
                 if (value != null) {
                     return value

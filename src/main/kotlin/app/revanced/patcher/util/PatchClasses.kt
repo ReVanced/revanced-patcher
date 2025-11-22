@@ -73,9 +73,22 @@ class PatchClasses internal constructor(
      */
     private var stringMap: Map<String, List<ClassDefWrapper>>? = null
 
+    /**
+     * All classes that contain at least 1 string.
+     * Same contents as [stringMap] except contains no duplicates.
+     */
+    private var allClassesWithStrings: List<ClassDefWrapper>? = null
+
     internal constructor(set: Set<ClassDef>) : this(set.map {
         ClassDefWrapper(it)
-    }.associateByTo(HashMap(set.size * 3 / 2)) { classDefStrings ->
+    }.associateByTo(
+        // Must use linked hash map, otherwise with a regular map the ordering of classes found
+        // in the apk is not preserved, and old fingerprints that had multiple matches could
+        // then match the wrong class due to hashmap random class iteration during matching.
+        // The issue is with a fingerprints not being unique enough and currently there is
+        // no way to check for duplicate matches.
+        LinkedHashMap(set.size * 3 / 2)
+    ) { classDefStrings ->
         classDefStrings.classDef.type
     })
 
@@ -86,18 +99,20 @@ class PatchClasses internal constructor(
 
     internal fun closeStringMap() {
         stringMap = null
+        allClassesWithStrings = null
     }
 
     internal fun addClass(classDef: ClassDef) {
         classMap[classDef.type] = ClassDefWrapper(classDef)
     }
 
-    private fun getMethodsByStrings(): Map<String, List<ClassDefWrapper>> {
+    private fun getClassesByStrings(): Map<String, List<ClassDefWrapper>> {
         if (stringMap != null) {
             return stringMap!!
         }
 
         val map = HashMap<String, LinkedList<ClassDefWrapper>>()
+        val allClasses = mutableListOf<ClassDefWrapper>()
 
         classMap.values.forEach { wrapper ->
             wrapper.classDef.findMethodStrings()?.forEach { stringLiteral ->
@@ -105,14 +120,22 @@ class PatchClasses internal constructor(
                     LinkedList()
                 }.add(wrapper)
             }
+
+            allClasses += wrapper
         }
 
         stringMap = map
+        allClassesWithStrings = allClasses
         return map
     }
 
     internal fun getClassFromOpcodeStringLiteral(stringLiteral: String): List<ClassDefWrapper>? {
-        return getMethodsByStrings()[stringLiteral]
+        return getClassesByStrings()[stringLiteral]
+    }
+
+    internal fun getAllClassesWithStrings(): List<ClassDefWrapper> {
+        getClassesByStrings() // Load string map if needed.
+        return allClassesWithStrings!!
     }
 
     /**
