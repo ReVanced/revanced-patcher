@@ -844,7 +844,7 @@ class StringFilter internal constructor(
     /**
      * Store the lambda value instead of calling it more than once.
      */
-    private val stringValue: String by lazy (string)
+    internal val stringValue: String by lazy (string)
 
     override fun matches(
         enclosingMethod: Method,

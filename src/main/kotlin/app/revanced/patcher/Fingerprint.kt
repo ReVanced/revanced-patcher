@@ -164,7 +164,7 @@ class Fingerprint internal constructor(
                     is StringFilter -> {
                         val string = instruction.stringReference?.string ?: return false
 
-                        val filterString = string()
+                        val filterString = stringValue
                         when (comparison) {
                             StringComparisonType.EQUALS -> string == filterString
                             StringComparisonType.CONTAINS -> string.contains(filterString)
@@ -212,7 +212,7 @@ class Fingerprint internal constructor(
                     it.filters.filterIsInstance<StringFilter>()
                 })
             )
-        }.map { it.string() } + (strings ?: emptyList())
+        }.map { it.stringValue } + (strings ?: emptyList())
 
         val method = if (allStrings.isNotEmpty())
             context.firstMethodOrNull(strings = allStrings.toTypedArray()) { match() } ?:

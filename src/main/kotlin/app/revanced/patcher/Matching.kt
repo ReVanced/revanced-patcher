@@ -229,7 +229,7 @@ fun <T> Iterable<T>.matchIndexed(build: IndexedMatcher<T>.() -> Unit) =
 
 context(_: MatchContext)
 operator fun <T> IndexedMatcher<T>.invoke(iterable: Iterable<T>, key: String, builder: IndexedMatcher<T>.() -> Unit) =
-    remember(key) { IndexedMatcher<T>().apply(builder) }(iterable)
+    remember(key) { apply(builder) }(iterable)
 
 context(_: MatchContext)
 fun <T> Iterable<T>.matchIndexed(key: String, build: IndexedMatcher<T>.() -> Unit) =
@@ -241,12 +241,11 @@ abstract class Matcher<T, U> : MutableList<U> by mutableListOf() {
 
     abstract operator fun invoke(haystack: Iterable<T>): Boolean
 
-    class MatchContext internal constructor() : MutableMap<String, Any> by mutableMapOf() {
-    }
+    class MatchContext internal constructor() : MutableMap<Any, Any> by mutableMapOf()
 }
 
 context(context: MatchContext)
-inline fun <reified V : Any> remember(key: String, defaultValue: () -> V) =
+inline fun <reified V : Any> remember(key: Any, defaultValue: () -> V) =
     context[key] as? V ?: defaultValue().also { context[key] = it }
 
 class IndexedMatcher<T>() : Matcher<T, T.() -> Boolean>() {
@@ -257,6 +256,7 @@ class IndexedMatcher<T>() : Matcher<T, T.() -> Boolean>() {
     private var currentIndex = -1
 
     override fun invoke(haystack: Iterable<T>): Boolean {
+        // Defensive, in case haystack is not a list.
         val hayList = haystack as? List<T> ?: haystack.toList()
 
         _indices.clear()
@@ -278,7 +278,7 @@ class IndexedMatcher<T>() : Matcher<T, T.() -> Boolean>() {
                     currentIndex = subIndex
                     val element = hayList[subIndex]
                     if (this[predicateIndex](element)) {
-                        tempIndices.add(subIndex)
+                        tempIndices += subIndex
                         lastMatchedIndex = subIndex
                         predicateMatched = true
                         subIndex++
@@ -296,13 +296,14 @@ class IndexedMatcher<T>() : Matcher<T, T.() -> Boolean>() {
             }
 
             if (matchedAll) {
-                _indices.addAll(tempIndices)
+                _indices += tempIndices
                 return true
             }
         }
 
         return false
     }
+
 
     fun first(predicate: T.() -> Boolean) = add {
         if (lastMatchedIndex != -1) false

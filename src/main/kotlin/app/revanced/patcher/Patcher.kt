@@ -69,7 +69,7 @@ class Patcher(private val config: PatcherConfig) : Closeable {
 
             // Recursively execute all dependency patches.
             dependencies.forEach { dependency ->
-                dependency.execute(executedPatches).exception?.let {
+                dependency.execute(executedPatches).exception?.let{
                     return PatchResult(
                         this,
                         PatchException(
