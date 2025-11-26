@@ -65,13 +65,7 @@ fun MutableMethodImplementation.removeInstructions(count: Int) = removeInstructi
 fun MutableMethodImplementation.replaceInstructions(
     index: Int,
     instructions: List<BuilderInstruction>,
-) {
-    // Remove the instructions at the given index.
-    removeInstructions(index, instructions.size)
-
-    // Add the instructions at the given index.
-    addInstructions(index, instructions)
-}
+) = instructions.forEach { replaceInstruction(index, it) }
 
 /**
  * Add an instruction to a method at the given index.
@@ -100,14 +94,14 @@ fun MutableMethod.addInstruction(instruction: BuilderInstruction) = implementati
 fun MutableMethod.addInstruction(
     index: Int,
     smaliInstructions: String,
-) = implementation!!.addInstructions(index, smaliInstructions.toInstructions(this))
+) = implementation!!.addInstruction(index, smaliInstructions.toInstructions(this).first())
 
 /**
  * Add an instruction to a method.
  *
  * @param smaliInstructions The instruction to add.
  */
-fun MutableMethod.addInstruction(smaliInstructions: String) = implementation!!.addInstructions(smaliInstructions.toInstructions(this))
+fun MutableMethod.addInstruction(smaliInstructions: String) = implementation!!.addInstruction(smaliInstructions.toInstructions(this).first())
 
 /**
  * Add instructions to a method at the given index.
@@ -289,7 +283,7 @@ fun MutableMethod.replaceInstruction(
 fun MutableMethod.replaceInstruction(
     index: Int,
     smaliInstruction: String,
-) = implementation!!.replaceInstructions(index, smaliInstruction.toInstructions(this))
+) = implementation!!.replaceInstruction(index, smaliInstruction.toInstructions(this).first())
 
 /**
  * Replace instructions at the given index.
