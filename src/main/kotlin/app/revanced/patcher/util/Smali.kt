@@ -17,8 +17,6 @@ import java.io.StringReader
 private const val CLASS_HEADER = ".class LInlineCompiler;\n.super Ljava/lang/Object;\n"
 private const val STATIC_HEADER = "$CLASS_HEADER.method public static dummyMethod("
 private const val HEADER = "$CLASS_HEADER.method public dummyMethod("
-
-private val dexBuilder = DexBuilder(Opcodes.getDefault())
 private val sb by lazy { StringBuilder(512) }
 
 /**
@@ -59,7 +57,7 @@ fun String.toInstructions(templateMethod: MutableMethod? = null): List<BuilderIn
     }
 
     val walker = smaliTreeWalker(treeStream)
-    walker.setDexBuilder(dexBuilder)
+    walker.setDexBuilder(DexBuilder(Opcodes.getDefault()))
 
     val classDef = walker.smali_file()
     return classDef.methods.first().instructions.map { it as BuilderInstruction }

@@ -1,8 +1,7 @@
-package app.revanced.patcher.util.smali
+package app.revanced.patcher.util
 
 import app.revanced.patcher.dex.mutable.MutableMethod.Companion.toMutable
 import app.revanced.patcher.extensions.*
-import app.revanced.patcher.util.toInstructions
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
@@ -16,7 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-internal object InlineSmaliCompilerTest {
+internal object SmaliTest {
     @Test
     fun `outputs valid instruction`() {
         val want = BuilderInstruction21c(Opcode.CONST_STRING, 0, ImmutableStringReference("Test")) as BuilderInstruction

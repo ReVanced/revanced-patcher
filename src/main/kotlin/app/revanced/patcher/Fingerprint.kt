@@ -82,15 +82,11 @@ class Fingerprint internal constructor(
             if (this@Fingerprint.returnType != null && this@Fingerprint.returnType != returnType)
                 return false
 
-            if (this@Fingerprint.parameters != null && parametersStartsWith(
-                    this@Fingerprint.parameters,
-                    parameters
-                )
-            ) return false
-
-            if (custom != null && !custom.invoke(this, context.lookupMaps.classDefsByType[definingClass]!!))
+            if (this@Fingerprint.parameters != null && !parametersStartsWith(parameterTypes, this@Fingerprint.parameters))
                 return false
 
+            if (custom != null && !custom(this, context.lookupMaps.classDefsByType[definingClass]!!))
+                return false
 
             if (strings != null && !matchStrings(instructionsOrNull ?: return false))
                 return false
@@ -98,34 +94,22 @@ class Fingerprint internal constructor(
             fun InstructionFilter.evaluate(instruction: Instruction): Boolean {
                 return when (this) {
                     is AnyInstruction -> filters.any { evaluate(instruction) }
-                    is CheckCastFilter -> {
-                        val type = type()
-
-                        instruction.opcode(Opcode.CHECK_CAST) &&
-                                instruction.reference<TypeReference> { endsWith(type) }
-                    }
+                    is CheckCastFilter -> instruction.opcode(Opcode.CHECK_CAST) && instruction.typeReference?.endsWith(
+                        typeValue
+                    ) ?: false
 
                     is FieldAccessFilter -> {
                         val reference = instruction.fieldReference ?: return false
 
                         if (name != null && reference.name != name) return false
-
                         if (type != null && !reference.type.startsWith(type)) return false
 
-                        if (definingClass != null) {
-                            if (!reference.definingClass.endsWith(definingClass))
-                            // else, the method call is for 'this' class.
-                                if (!(definingClass == "this" && reference.definingClass == method.definingClass)) return false
-                        }
-
-                        true
+                        definingClass == null || reference.definingClass.endsWith(definingClass) ||
+                                (definingClass == "this" && reference.definingClass != method.definingClass)
                     }
 
-                    is LiteralFilter -> {
-                        instruction.wideLiteral?.equals(literal()) ?: return false
-
-                        opcodes != null && !opcodes.contains(instruction.opcode)
-                    }
+                    is LiteralFilter -> instruction.wideLiteral == literalValue
+                            && opcodes?.contains(instruction.opcode) ?: true
 
                     is MethodCallFilter -> {
                         val reference = instruction.methodReference ?: return false
@@ -134,25 +118,14 @@ class Fingerprint internal constructor(
 
                         if (returnType != null && !reference.returnType.startsWith(returnType)) return false
 
-                        if (parameters != null && !parametersStartsWith(
-                                reference.parameterTypes,
-                                parameters
-                            )
+                        if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters))
+                            return false
+
+                        if ((definingClass != null && !reference.definingClass.endsWith(definingClass)) ||
+                            (definingClass == "this" && reference.definingClass != method.definingClass)
                         ) return false
 
-                        if (definingClass != null) {
-                            if (!reference.definingClass.endsWith(definingClass)) {
-                                // Check if 'this' defining class is used.
-                                // Would be nice if this also checked all super classes,
-                                // but doing so requires iteratively checking all superclasses
-                                // up to the root class since class defs are mere Strings.
-                                if (!(definingClass == "this" && reference.definingClass == method.definingClass)) {
-                                    return false
-                                } // else, the method call is for 'this' class.
-                            }
-                        }
-
-                        opcodes != null && !opcodes.contains(instruction.opcode)
+                        opcodes?.contains(instruction.opcode) ?: true
                     }
 
                     is NewInstanceFilter -> {
@@ -182,19 +155,15 @@ class Fingerprint internal constructor(
                     filters.forEach { filter ->
                         when (val location = filter.location) {
                             is MatchAfterImmediately -> after { filter.evaluate(this) }
+                            is MatchAfterWithin -> after(1..location.matchDistance) { filter.evaluate(this) }
                             is MatchAfterAnywhere -> add { filter.evaluate(this) }
-                            is MatchAfterWithin -> after(atLeast = 1, atMost = location.matchDistance) {
-                                filter.evaluate(this)
-                            }
-
                             is MatchAfterAtLeast -> after(
-                                atLeast = location.minimumDistanceFromLastInstruction,
-                                atMost = Int.MAX_VALUE
+                                location.minimumDistanceFromLastInstruction..Int.MAX_VALUE
                             ) { filter.evaluate(this) }
 
                             is MatchAfterRange -> after(
-                                atLeast = location.minimumDistanceFromLastInstruction,
-                                atMost = location.maximumDistanceFromLastInstruction
+                                location.minimumDistanceFromLastInstruction..
+                                        location.maximumDistanceFromLastInstruction
                             ) { filter.evaluate(this) }
 
                             is MatchFirst -> first { filter.evaluate(this) }

@@ -1,19 +1,22 @@
 package app.revanced.patcher
 
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.patch.BytecodePatchContext.LookupMaps
+import app.revanced.patcher.util.toInstructions
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
-import io.mockk.*
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
 import java.util.logging.Logger
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal object PatcherTest {
     private lateinit var patcher: Patcher
@@ -163,6 +166,91 @@ internal object PatcherTest {
     }
 
     @Test
+    fun `matcher finds indices correctly`() {
+        val iterable = (1..10).toList()
+        val matcher = indexedMatcher<Int>()
+
+        matcher.apply { first { this > 5 } }
+        assertFalse(
+            matcher(iterable),
+            "Should not match at any other index than first"
+        )
+        matcher.clear()
+
+        matcher.apply { first { this == 1 } }(iterable)
+        assertEquals(
+            listOf(0),
+            matcher.indices,
+            "Should match at first index."
+        )
+        matcher.clear()
+
+        matcher.apply { add { this > 0 } }(iterable)
+        assertEquals(1, matcher.indices.size, "Should only match once.")
+        matcher.clear()
+
+        matcher.apply { add { this == 2 } }(iterable)
+        assertEquals(
+            listOf(1),
+            matcher.indices,
+            "Should find the index correctly."
+        )
+        matcher.clear()
+
+        matcher.apply {
+            first { this == 1 }
+            add { this == 2 }
+            add { this == 4 }
+        }(iterable)
+        assertEquals(
+            listOf(0, 1, 3),
+            matcher.indices,
+            "Should match 1, 2 and 4 at indices 0, 1 and 3."
+        )
+        matcher.clear()
+
+        matcher.apply {
+            after { this == 1 }
+        }(iterable)
+        assertEquals(
+            listOf(0),
+            matcher.indices,
+            "Should match index 0 after nothing"
+        )
+        matcher.clear()
+
+        matcher.apply {
+            after(2..Int.MAX_VALUE) { this == 1 }
+        }
+        assertFalse(
+            matcher(iterable),
+            "Should not match, because 1 is out of range"
+        )
+        matcher.clear()
+
+        matcher.apply {
+            after(1..1) { this == 2 }
+        }
+        assertFalse(
+            matcher(iterable),
+            "Should not match, because 2 is at index 1"
+        )
+        matcher.clear()
+
+        matcher.apply {
+            first { this == 1 }
+            after(2..5) { this == 4}
+            add { this == 8 }
+            add { this == 9 }
+        }(iterable)
+        assertEquals(
+            listOf(0, 3, 7, 8),
+            matcher.indices,
+            "Should match indices correctly."
+        )
+    }
+
+    @Test
     fun `matches fingerprint`() {
         every { patcher.context.bytecodeContext.classDefs } returns mutableSetOf(
             ImmutableClassDef(
@@ -182,7 +270,22 @@ internal object PatcherTest {
                         0,
                         null,
                         null,
-                        null,
+                        ImmutableMethodImplementation(
+                            2,
+                            """
+                                const-string v0, "Hello, World!"
+                                iput-object v0, p0, Ljava/lang/System;->out:Ljava/io/PrintStream;
+                                iget-object v0, p0, Ljava/lang/System;->out:Ljava/io/PrintStream;
+                                return-void
+                                const-string v0, "This is a test."
+                                return-object v0
+                                invoke-virtual { p0, v0 }, Ljava/io/PrintStream;->println(Ljava/lang/String;)V
+                                invoke-static { p0 }, Ljava/lang/System;->currentTimeMillis()J
+                                check-cast p0, Ljava/io/PrintStream;
+                            """.toInstructions(),
+                            null,
+                            null
+                        ),
                     ),
                 ),
             ),
@@ -192,12 +295,23 @@ internal object PatcherTest {
         val fingerprint2 = fingerprint { returns("V") }
         val fingerprint3 = fingerprint { returns("V") }
 
+        val matchIndices = indexedMatcher<Instruction>()
+        val method by gettingFirstMethod {
+            implementation {
+                matchIndices(instructions, "match") {
+                    first { opcode == Opcode.CONST_STRING }
+                    add { opcode == Opcode.IPUT_OBJECT }
+                }
+            }
+        }
+
         val patches = setOf(
             bytecodePatch {
                 execute {
                     fingerprint.match(classDefs.first().methods.first())
                     fingerprint2.match(classDefs.first())
                     fingerprint3.originalClassDef
+                    println(method)
                 }
             },
         )
@@ -216,7 +330,7 @@ internal object PatcherTest {
 
     private operator fun Set<Patch<*>>.invoke(): List<PatchResult> {
         every { patcher.context.executablePatches } returns toMutableSet()
-        every { patcher.context.bytecodeContext.lookupMaps } returns LookupMaps(patcher.context.bytecodeContext.classDefs)
+        every { patcher.context.bytecodeContext.lookupMaps } returns with(patcher.context.bytecodeContext) { LookupMaps() }
         every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
         return runBlocking { patcher().toList() }

@@ -4,11 +4,8 @@ package app.revanced.patcher
 
 import app.revanced.patcher.Matcher.MatchContext
 import app.revanced.patcher.dex.mutable.MutableMethod
-import app.revanced.patcher.extensions.*
 import app.revanced.patcher.patch.BytecodePatchContext
-import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.HiddenApiRestriction
-import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.*
 import com.android.tools.smali.dexlib2.iface.Annotation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -248,129 +245,62 @@ context(context: MatchContext)
 inline fun <reified V : Any> remember(key: Any, defaultValue: () -> V) =
     context[key] as? V ?: defaultValue().also { context[key] = it }
 
-class IndexedMatcher<T>() : Matcher<T, T.() -> Boolean>() {
+class IndexedMatcher<T>() : Matcher<T, T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean>() {
     private val _indices: MutableList<Int> = mutableListOf()
     val indices: List<Int> = _indices
 
     private var lastMatchedIndex = -1
     private var currentIndex = -1
+    // TODO: Hint to stop searching for performance: private var stop = false
+    //  Also make the APIs advance indices (e.g. atLeast, atMost) for performance.
 
     override fun invoke(haystack: Iterable<T>): Boolean {
-        // Defensive, in case haystack is not a list.
+        // Normalize to list
         val hayList = haystack as? List<T> ?: haystack.toList()
 
         _indices.clear()
+        lastMatchedIndex = -1
+        currentIndex = -1
 
-        var firstNeedleIndex = 0
+        for (predicate in this) {
+            var matched = false
 
-        while (firstNeedleIndex <= hayList.lastIndex) {
-            lastMatchedIndex = -1
+            // Continue scanning from the position after the last successful match
+            for (i in (lastMatchedIndex + 1) until hayList.size) {
+                currentIndex = i
+                val element = hayList[i]
 
-            val tempIndices = mutableListOf<Int>()
-
-            var matchedAll = true
-            var subIndex = firstNeedleIndex
-
-            for (predicateIndex in _indices.indices) {
-                var predicateMatched = false
-
-                while (subIndex <= hayList.lastIndex) {
-                    currentIndex = subIndex
-                    val element = hayList[subIndex]
-                    if (this[predicateIndex](element)) {
-                        tempIndices += subIndex
-                        lastMatchedIndex = subIndex
-                        predicateMatched = true
-                        subIndex++
-                        break
-                    }
-                    subIndex++
-                }
-
-                if (!predicateMatched) {
-                    // Restart from next possible first match
-                    firstNeedleIndex = if (tempIndices.isNotEmpty()) tempIndices[0] + 1 else firstNeedleIndex + 1
-                    matchedAll = false
+                if (element.predicate(lastMatchedIndex, currentIndex)) {
+                    _indices += i
+                    lastMatchedIndex = i
+                    matched = true
                     break
                 }
             }
 
-            if (matchedAll) {
-                _indices += tempIndices
-                return true
+            if (!matched) {
+                return false
             }
         }
 
-        return false
+        return true
     }
 
-
-    fun first(predicate: T.() -> Boolean) = add {
-        if (lastMatchedIndex != -1) false
-        else predicate()
-    }
-
-    fun after(atLeast: Int = 1, atMost: Int = 1, predicate: T.() -> Boolean) = add {
-        val distance = currentIndex - lastMatchedIndex
-        if (distance in atLeast..atMost) predicate() else false
-    }
-}
-
-fun BytecodePatchContext.matchers() {
-    val customMatcher = object : Matcher<Instruction, Instruction.() -> Boolean>() {
-        override fun invoke(haystack: Iterable<Instruction>) = true
-    }.apply { add { true } }
-
-    // Probably gonna make this ctor internal.
-    IndexedMatcher<Instruction>().apply { add { true } }
-    // Since there is a function for it.
-    val m = indexedMatcher<Instruction>()
-    m.apply { add { true } }
-
-    // You can directly use the extension function to match.
-    listOf<Instruction>().matchIndexed { add { true } }
-
-    // Inside a match context extension functions are cacheable:
-    firstMethod { instructions.matchIndexed("key") { add { true } } }
-
-    // Or create a matcher outside a context and use it in a MatchContext as follows:
-    val match = indexedMatcher<Instruction>()
-    firstMethod { match(instructions, "anotherKey") { first { opcode(Opcode.RETURN_VOID) } } }
-    match.indices // so that you can access the matched indices later.
-}
-
-fun BytecodePatchContext.a() {
-    val matcher = indexedMatcher<Instruction>()
-
-    firstMethodMutableOrNull("string to find in lookupmap") {
-        returnType == "L" && matcher(instructions, "key") {
-            first {
-                // The first instruction is a field reference to a field in the class of the method being matched.
-                // We cache the field name using remember to avoid redundant lookups.
-                fieldReference!!.name == remember("fieldName") {
-                    firstClassDef(definingClass).fields.first().name
-                }
-            }
-            after { fieldReference("fieldName") }
-            after {
-                opcode(Opcode.NEW_INSTANCE) && methodReference { toString() == "Lcom/example/MyClass;" }
-            }
-            // Followed by 2 to 4 string instructions starting with "test".
-            after(atLeast = 1, atMost = 2) { string { startsWith("test") } }
-        } && parameterTypes.matchIndexed("params") {
-            // Fully dynamic environment to customize depending on your needs.
-            operator fun String.plus(other: String) {
-                after { this == this@plus }
-                after { this == other }
-            }
-
-            "L" + "I" + "Z" // Matches parameter types "L", "I", "Z" in order.
+    fun first(predicate: T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean) =
+        add { lastMatchedIndex, currentIndex ->
+            currentIndex == 0 && predicate(lastMatchedIndex, currentIndex)
         }
-    }
 
-    firstMethodMutable {
-        accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL) && instructions.matchIndexed("anotherKey") {
-            first { opcode(Opcode.RETURN_VOID) }
+    fun first(predicate: T.() -> Boolean) =
+        first { _, _ -> predicate() }
+
+    fun after(range: IntRange = 1..1, predicate: T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean) =
+        add { lastMatchedIndex, currentIndex ->
+            currentIndex - lastMatchedIndex in range && predicate(lastMatchedIndex, currentIndex)
         }
-    }
+
+    fun after(range: IntRange = 1..1, predicate: T.() -> Boolean) =
+        after(range) { _, _ -> predicate() }
+
+    fun add(predicate: T.() -> Boolean) = add { _, _ -> predicate() }
 }
