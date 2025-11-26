@@ -251,52 +251,101 @@ class IndexedMatcher<T>() : Matcher<T, T.(lastMatchedIndex: Int, currentIndex: I
 
     private var lastMatchedIndex = -1
     private var currentIndex = -1
-    // TODO: Hint to stop searching for performance: private var stop = false
-    //  Also make the APIs advance indices (e.g. atLeast, atMost) for performance.
+
+    private var nextIndex: Int? = null
 
     override fun invoke(haystack: Iterable<T>): Boolean {
         // Normalize to list
-        val hayList = haystack as? List<T> ?: haystack.toList()
+        val hay = haystack as? List<T> ?: haystack.toList()
 
         _indices.clear()
-        lastMatchedIndex = -1
+        this@IndexedMatcher.lastMatchedIndex = -1
         currentIndex = -1
 
-        for (predicate in this) {
-            var matched = false
+        data class Frame(
+            val patternIndex: Int,
+            val lastMatchedIndex: Int,
+            val previousFrame: Frame?,
+            var nextHayIndex: Int,
+            val matchedIndex: Int
+        )
 
-            // Continue scanning from the position after the last successful match
-            for (i in (lastMatchedIndex + 1) until hayList.size) {
-                currentIndex = i
-                val element = hayList[i]
+        val stack = ArrayDeque<Frame>()
+        stack.add(
+            Frame(
+                patternIndex = 0,
+                lastMatchedIndex = -1,
+                previousFrame = null,
+                nextHayIndex = 0,
+                matchedIndex = -1
+            )
+        )
 
-                if (element.predicate(lastMatchedIndex, currentIndex)) {
-                    _indices += i
-                    lastMatchedIndex = i
-                    matched = true
-                    break
-                }
+        while (stack.isNotEmpty()) {
+            val frame = stack.last()
+
+            if (frame.nextHayIndex >= hay.size || nextIndex == -1) {
+                stack.removeLast()
+                nextIndex = null
+                continue
             }
 
-            if (!matched) {
-                return false
+            val i = frame.nextHayIndex
+            currentIndex = i
+            lastMatchedIndex = frame.lastMatchedIndex
+            nextIndex = null
+
+            if (this[frame.patternIndex](hay[i], lastMatchedIndex, currentIndex)) {
+                Frame(
+                    patternIndex = frame.patternIndex + 1,
+                    lastMatchedIndex = i,
+                    previousFrame = frame,
+                    nextHayIndex = i + 1,
+                    matchedIndex = i
+                ).also {
+                    if (it.patternIndex == size) {
+                        _indices += buildList(size) {
+                            var f: Frame? = it
+                            while (f != null && f.matchedIndex != -1) {
+                                add(f.matchedIndex)
+                                f = f.previousFrame
+                            }
+                        }.asReversed()
+
+                        return true
+                    }
+                }.let(stack::add)
+            }
+
+            frame.nextHayIndex = when (val nextIndex = nextIndex) {
+                null -> frame.nextHayIndex + 1
+                -1 -> 0 // Frame will be removed next loop.
+                else -> nextIndex
             }
         }
 
-        return true
+        return false
     }
 
-    fun first(predicate: T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean) =
+    fun head(predicate: T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean) =
         add { lastMatchedIndex, currentIndex ->
             currentIndex == 0 && predicate(lastMatchedIndex, currentIndex)
         }
 
-    fun first(predicate: T.() -> Boolean) =
-        first { _, _ -> predicate() }
+    fun head(predicate: T.() -> Boolean) =
+        head { _, _ -> predicate() }
 
     fun after(range: IntRange = 1..1, predicate: T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean) =
         add { lastMatchedIndex, currentIndex ->
-            currentIndex - lastMatchedIndex in range && predicate(lastMatchedIndex, currentIndex)
+            val distance = currentIndex - lastMatchedIndex
+
+            nextIndex = when {
+                distance < range.first -> lastMatchedIndex + range.first
+                distance > range.last -> -1
+                else -> return@add predicate(lastMatchedIndex, currentIndex)
+            }
+
+            false
         }
 
     fun after(range: IntRange = 1..1, predicate: T.() -> Boolean) =

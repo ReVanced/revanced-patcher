@@ -170,14 +170,14 @@ internal object PatcherTest {
         val iterable = (1..10).toList()
         val matcher = indexedMatcher<Int>()
 
-        matcher.apply { first { this > 5 } }
+        matcher.apply { head { this > 5 } }
         assertFalse(
             matcher(iterable),
             "Should not match at any other index than first"
         )
         matcher.clear()
 
-        matcher.apply { first { this == 1 } }(iterable)
+        matcher.apply { head { this == 1 } }(iterable)
         assertEquals(
             listOf(0),
             matcher.indices,
@@ -198,7 +198,7 @@ internal object PatcherTest {
         matcher.clear()
 
         matcher.apply {
-            first { this == 1 }
+            head { this == 1 }
             add { this == 2 }
             add { this == 4 }
         }(iterable)
@@ -238,8 +238,8 @@ internal object PatcherTest {
         matcher.clear()
 
         matcher.apply {
-            first { this == 1 }
-            after(2..5) { this == 4}
+            head { this == 1 }
+            after(2..5) { this == 4 }
             add { this == 8 }
             add { this == 9 }
         }(iterable)
@@ -299,7 +299,7 @@ internal object PatcherTest {
         val method by gettingFirstMethod {
             implementation {
                 matchIndices(instructions, "match") {
-                    first { opcode == Opcode.CONST_STRING }
+                    head { opcode == Opcode.CONST_STRING }
                     add { opcode == Opcode.IPUT_OBJECT }
                 }
             }

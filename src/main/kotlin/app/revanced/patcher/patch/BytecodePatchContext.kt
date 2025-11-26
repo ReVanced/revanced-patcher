@@ -156,6 +156,8 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
                 PatcherResult.PatchedDexFile(it.name, it.inputStream())
             }.toSet()
 
+        // Free up more memory, although it is unclear if this is actually helpful.
+        classDefs.clear()
         System.gc()
 
         return patchedDexFileResults
@@ -163,7 +165,6 @@ class BytecodePatchContext internal constructor(private val config: PatcherConfi
 
     override fun close() {
         try {
-            classDefs.clear()
             _lookupMaps = null
         } catch (e: IOException) {
             logger.warning("Failed to clear BytecodePatchContext: ${e.message}")

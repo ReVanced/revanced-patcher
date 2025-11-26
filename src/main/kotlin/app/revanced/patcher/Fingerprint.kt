@@ -5,9 +5,11 @@ package app.revanced.patcher
 import app.revanced.patcher.InstructionLocation.*
 import app.revanced.patcher.Match.PatternMatch
 import app.revanced.patcher.Matcher.MatchContext
-import app.revanced.patcher.extensions.*
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.instructionsOrNull
 import app.revanced.patcher.extensions.opcode
 import app.revanced.patcher.extensions.string
+import app.revanced.patcher.extensions.stringReference
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.PatchException
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -15,9 +17,6 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 
 /**
@@ -69,110 +68,69 @@ class Fingerprint internal constructor(
     fun matchOrNull(): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        val matchStrings = indexedMatcher<Instruction> {
-            strings?.forEach { add { string { contains(it) } } }
-        }
+        var stringMatches: List<Match.StringMatch>? = null
 
         val matchIndices = indexedMatcher<Instruction>()
 
-        val match = context(_: MatchContext) fun Method.(): Boolean {
+        // This line is needed, because the method must be passed by reference to "matchIndices".
+        // Referencing the method directly would "hardcode" it in the cached pattern by value.
+        // By using this variable, the reference can be updated for each method.
+        lateinit var currentMethod: Method
+
+        context(_: MatchContext)
+        fun Method.match(): Boolean {
             if (this@Fingerprint.accessFlags != null && this@Fingerprint.accessFlags != accessFlags)
                 return false
 
-            if (this@Fingerprint.returnType != null && this@Fingerprint.returnType != returnType)
+            if (this@Fingerprint.returnType != null && !returnType.startsWith(this@Fingerprint.returnType))
                 return false
 
-            if (this@Fingerprint.parameters != null && !parametersStartsWith(parameterTypes, this@Fingerprint.parameters))
+            if (this@Fingerprint.parameters != null && !parametersStartsWith(
+                    parameterTypes,
+                    this@Fingerprint.parameters
+                )
+            )
                 return false
 
             if (custom != null && !custom(this, context.lookupMaps.classDefsByType[definingClass]!!))
                 return false
 
-            if (strings != null && !matchStrings(instructionsOrNull ?: return false))
-                return false
+            stringMatches = if (strings != null) {
+                val instructions = instructionsOrNull ?: return false
+                var stringsList: MutableList<String>? = null
 
-            fun InstructionFilter.evaluate(instruction: Instruction): Boolean {
-                return when (this) {
-                    is AnyInstruction -> filters.any { evaluate(instruction) }
-                    is CheckCastFilter -> instruction.opcode(Opcode.CHECK_CAST) && instruction.typeReference?.endsWith(
-                        typeValue
-                    ) ?: false
+                buildList {
+                    instructions.forEachIndexed { instructionIndex, instruction ->
+                        if (stringsList == null) stringsList = strings.toMutableList()
 
-                    is FieldAccessFilter -> {
-                        val reference = instruction.fieldReference ?: return false
+                        val string = instruction.stringReference?.string ?: return@forEachIndexed
+                        val index = stringsList.indexOfFirst(string::contains)
+                        if (index < 0) return@forEachIndexed
 
-                        if (name != null && reference.name != name) return false
-                        if (type != null && !reference.type.startsWith(type)) return false
-
-                        definingClass == null || reference.definingClass.endsWith(definingClass) ||
-                                (definingClass == "this" && reference.definingClass != method.definingClass)
+                        add(Match.StringMatch(string, instructionIndex))
+                        stringsList.removeAt(index)
                     }
 
-                    is LiteralFilter -> instruction.wideLiteral == literalValue
-                            && opcodes?.contains(instruction.opcode) ?: true
+                    if (stringsList == null || stringsList.isNotEmpty()) return false
+                }
 
-                    is MethodCallFilter -> {
-                        val reference = instruction.methodReference ?: return false
+            } else null
 
-                        if (name != null && reference.name != name) return false
+            currentMethod = this
+            return filters == null || matchIndices(instructionsOrNull ?: return false, "match") {
+                filters.forEach { filter ->
+                    val filterMatches: Instruction.() -> Boolean = { filter.matches(currentMethod, this) }
 
-                        if (returnType != null && !reference.returnType.startsWith(returnType)) return false
-
-                        if (parameters != null && !parametersStartsWith(reference.parameterTypes, parameters))
-                            return false
-
-                        if ((definingClass != null && !reference.definingClass.endsWith(definingClass)) ||
-                            (definingClass == "this" && reference.definingClass != method.definingClass)
-                        ) return false
-
-                        opcodes?.contains(instruction.opcode) ?: true
+                    when (val location = filter.location) {
+                        is MatchAfterImmediately -> after { filterMatches() }
+                        is MatchAfterWithin -> after(1..location.matchDistance) { filterMatches() }
+                        is MatchAfterAnywhere -> add { filterMatches() }
+                        is MatchAfterAtLeast -> after(location.minimumDistanceFromLastInstruction..Int.MAX_VALUE) { filterMatches() }
+                        is MatchAfterRange -> after(location.minimumDistanceFromLastInstruction..location.maximumDistanceFromLastInstruction) { filterMatches() }
+                        is MatchFirst -> head { filterMatches() }
                     }
-
-                    is NewInstanceFilter -> {
-                        if (opcodes != null && !opcodes.contains(instruction.opcode)) return false
-                        instruction.reference<TypeReference> { endsWith(type) }
-                    }
-
-                    is OpcodeFilter -> instruction.opcode(opcode)
-                    is StringFilter -> {
-                        val string = instruction.stringReference?.string ?: return false
-
-                        val filterString = stringValue
-                        when (comparison) {
-                            StringComparisonType.EQUALS -> string == filterString
-                            StringComparisonType.CONTAINS -> string.contains(filterString)
-                            StringComparisonType.STARTS_WITH -> string.startsWith(filterString)
-                            StringComparisonType.ENDS_WITH -> string.endsWith(filterString)
-                        }
-                    }
-
-                    is OpcodesFilter -> opcodes?.contains(instruction.opcode) == true
-                    else -> throw IllegalStateException("Unknown InstructionFilter type: ${this::class.java}")
                 }
             }
-
-            if (filters != null && !matchIndices(instructionsOrNull ?: return false, "match") {
-                    filters.forEach { filter ->
-                        when (val location = filter.location) {
-                            is MatchAfterImmediately -> after { filter.evaluate(this) }
-                            is MatchAfterWithin -> after(1..location.matchDistance) { filter.evaluate(this) }
-                            is MatchAfterAnywhere -> add { filter.evaluate(this) }
-                            is MatchAfterAtLeast -> after(
-                                location.minimumDistanceFromLastInstruction..Int.MAX_VALUE
-                            ) { filter.evaluate(this) }
-
-                            is MatchAfterRange -> after(
-                                location.minimumDistanceFromLastInstruction..
-                                        location.maximumDistanceFromLastInstruction
-                            ) { filter.evaluate(this) }
-
-                            is MatchFirst -> first { filter.evaluate(this) }
-                        }
-                    }
-                })
-                return false
-
-            return true
         }
 
         val allStrings = buildList {
@@ -183,30 +141,28 @@ class Fingerprint internal constructor(
             )
         }.map { it.stringValue } + (strings ?: emptyList())
 
-        val method = if (allStrings.isNotEmpty())
-            context.firstMethodOrNull(strings = allStrings.toTypedArray()) { match() } ?:
-            // Maybe a better way exists
-            context(MatchContext()) {
-                context.lookupMaps.methodsWithString.first { it.match() }
-            }
-        else context.firstMethodOrNull { match() } ?: return null
+        val method = if (allStrings.isNotEmpty()) {
+            context.firstMethodOrNull(strings = allStrings.toTypedArray()) { match() }
+                ?: context(MatchContext()) { context.lookupMaps.methodsWithString.firstOrNull { it.match() } }
+        } else {
+            context.firstMethodOrNull { match() }
+        } ?: return null
 
         val instructionMatches = filters?.withIndex()?.map { (i, filter) ->
-            Match.InstructionMatch(filter, matchIndices.indices[i], method.getInstruction(i))
+            val matchIndex = matchIndices.indices[i]
+
+            Match.InstructionMatch(filter, matchIndex, method.getInstruction(matchIndex))
         }
 
-        val stringMatches = if (strings != null) matchStrings.indices.map { i ->
-            // TODO: Should we use the methods string or the fingerprints string
-            Match.StringMatch(method.getInstruction(i).stringReference!!.string, i)
-        } else null
-
-        return Match(
+        _matchOrNull = Match(
             context,
             context.lookupMaps.classDefsByType[method.definingClass]!!,
             method,
             instructionMatches,
             stringMatches,
         )
+
+        return _matchOrNull
     }
 
     /**
@@ -265,124 +221,74 @@ class Fingerprint internal constructor(
     ): Match? {
         if (_matchOrNull != null) return _matchOrNull
 
-        if (returnType != null && !method.returnType.startsWith(returnType)) {
-            return null
-        }
+        var stringMatches: List<Match.StringMatch>? = null
 
-        if (accessFlags != null && accessFlags != method.accessFlags) {
-            return null
-        }
+        val matchIndices = indexedMatcher<Instruction>()
 
-        // TODO: parseParameters()
-        if (parameters != null && !parametersStartsWith(method.parameterTypes, parameters)) {
-            return null
-        }
+        context(_: MatchContext)
+        fun Method.match(): Boolean {
+            if (this@Fingerprint.accessFlags != null && this@Fingerprint.accessFlags != accessFlags)
+                return false
 
-        if (custom != null && !custom.invoke(method, classDef)) {
-            return null
-        }
+            if (this@Fingerprint.returnType != null && !returnType.startsWith(this@Fingerprint.returnType))
+                return false
 
-        // Legacy string declarations.
-        val stringMatches: List<Match.StringMatch>? = if (strings == null) {
-            null
-        } else {
-            buildList {
-                val instructions = method.instructionsOrNull ?: return null
+            if (this@Fingerprint.parameters != null && !parametersStartsWith(
+                    parameterTypes,
+                    this@Fingerprint.parameters
+                )
+            )
+                return false
 
+            if (custom != null && !custom(this, classDef))
+                return false
+
+            stringMatches = if (strings != null) {
+                val instructions = instructionsOrNull ?: return false
                 var stringsList: MutableList<String>? = null
 
-                instructions.forEachIndexed { instructionIndex, instruction ->
-                    if (
-                        instruction.opcode != Opcode.CONST_STRING &&
-                        instruction.opcode != Opcode.CONST_STRING_JUMBO
-                    ) {
-                        return@forEachIndexed
+                buildList {
+                    instructions.forEachIndexed { instructionIndex, instruction ->
+                        if (stringsList == null) stringsList = strings.toMutableList()
+
+                        val string = instruction.stringReference?.string ?: return@forEachIndexed
+                        val index = stringsList.indexOfFirst(string::contains)
+                        if (index < 0) return@forEachIndexed
+
+                        add(Match.StringMatch(string, instructionIndex))
+                        stringsList.removeAt(index)
                     }
 
-                    val string = ((instruction as ReferenceInstruction).reference as StringReference).string
-                    if (stringsList == null) {
-                        stringsList = strings.toMutableList()
-                    }
-                    val index = stringsList.indexOfFirst(string::contains)
-                    if (index < 0) return@forEachIndexed
-
-                    add(Match.StringMatch(string, instructionIndex))
-                    stringsList.removeAt(index)
+                    if (stringsList == null || stringsList.isNotEmpty()) return false
                 }
 
-                if (stringsList == null || stringsList.isNotEmpty()) return null
-            }
+            } else null
+
+            return filters == null || matchIndices.apply {
+                filters.forEach { filter ->
+                    val filterMatches: Instruction.() -> Boolean = { filter.matches(method, this) }
+
+                    when (val location = filter.location) {
+                        is MatchAfterImmediately -> after { filterMatches() }
+                        is MatchAfterWithin -> after(1..location.matchDistance) { filterMatches() }
+                        is MatchAfterAnywhere -> add { filterMatches() }
+                        is MatchAfterAtLeast -> after(location.minimumDistanceFromLastInstruction..Int.MAX_VALUE) { filterMatches() }
+                        is MatchAfterRange -> after(location.minimumDistanceFromLastInstruction..location.maximumDistanceFromLastInstruction) { filterMatches() }
+                        is MatchFirst -> head { filterMatches() }
+                    }
+                }
+            }(instructionsOrNull ?: return false)
         }
 
-        val instructionMatches = if (filters == null) {
-            null
-        } else {
-            val instructions = method.instructionsOrNull?.toList() ?: return null
-
-            fun matchFilters(): List<Match.InstructionMatch>? {
-                val lastMethodIndex = instructions.lastIndex
-                var instructionMatches: MutableList<Match.InstructionMatch>? = null
-
-                var firstInstructionIndex = 0
-                var lastMatchIndex = -1
-
-                firstFilterLoop@ while (true) {
-                    // Matched index of the first filter.
-                    var firstFilterIndex = -1
-                    var subIndex = firstInstructionIndex
-
-                    for (filterIndex in filters.indices) {
-                        val filter = filters[filterIndex]
-                        val location = filter.location
-                        var instructionsMatched = false
-
-                        while (subIndex <= lastMethodIndex &&
-                            location.indexIsValidForMatching(
-                                lastMatchIndex, subIndex
-                            )
-                        ) {
-                            val instruction = instructions[subIndex]
-                            if (filter.matches(method, instruction)) {
-                                lastMatchIndex = subIndex
-
-                                if (filterIndex == 0) {
-                                    firstFilterIndex = subIndex
-                                }
-                                if (instructionMatches == null) {
-                                    instructionMatches = ArrayList<Match.InstructionMatch>(filters.size)
-                                }
-                                instructionMatches += Match.InstructionMatch(filter, subIndex, instruction)
-                                instructionsMatched = true
-                                subIndex++
-                                break
-                            }
-                            subIndex++
-                        }
-
-                        if (!instructionsMatched) {
-                            if (filterIndex == 0) {
-                                return null // First filter has no more matches to start from.
-                            }
-
-                            // Try again with the first filter, starting from
-                            // the next possible first filter index.
-                            firstInstructionIndex = firstFilterIndex + 1
-                            instructionMatches?.clear()
-                            continue@firstFilterLoop
-                        }
-                    }
-
-                    // All instruction filters matches.
-                    return instructionMatches
-                }
-            }
-
-            matchFilters() ?: return null
+        if (!context(MatchContext()) { method.match() }) return null
+        val instructionMatches = filters?.withIndex()?.map { (i, filter) ->
+            val matchIndex = matchIndices.indices[i]
+            Match.InstructionMatch(filter, matchIndex, method.getInstruction(matchIndex))
         }
 
         _matchOrNull = Match(
             context,
-            classDef,
+            context.lookupMaps.classDefsByType[method.definingClass]!!,
             method,
             instructionMatches,
             stringMatches,
@@ -600,11 +506,7 @@ class Match internal constructor(
      * Accessing this property allocates a new mutable instance.
      * Use [originalClassDef] if mutable access is not required.
      */
-    val classDef by lazy {
-        with(context) {
-            originalClassDef.mutable()
-        }
-    }
+    val classDef by lazy { with(context) { originalClassDef.mutable() } }
 
     /**
      * The mutable version of [originalMethod].
