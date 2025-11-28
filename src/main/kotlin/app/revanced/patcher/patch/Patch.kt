@@ -21,6 +21,13 @@ typealias PackageName = String
 typealias VersionName = String
 typealias Package = Pair<PackageName, Set<VersionName>?>
 
+
+/**
+ * A common interface for contexts such as [ResourcePatchContext] and [BytecodePatchContext].
+ */
+
+sealed interface PatchContext<T> : Supplier<T>
+
 /**
  * A patch.
  *

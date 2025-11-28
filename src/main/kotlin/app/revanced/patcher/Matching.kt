@@ -4,8 +4,12 @@ package app.revanced.patcher
 
 import app.revanced.patcher.Matcher.MatchContext
 import app.revanced.patcher.dex.mutable.MutableMethod
+import app.revanced.patcher.extensions.accessFlags
 import app.revanced.patcher.patch.BytecodePatchContext
+import app.revanced.patcher.patch.gettingBytecodePatch
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.HiddenApiRestriction
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.*
 import com.android.tools.smali.dexlib2.iface.Annotation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -217,7 +221,6 @@ fun gettingFirstMethodMutable(
 
 fun <T> indexedMatcher() = IndexedMatcher<T>()
 
-// Add lambda to emit instructions if matched (or matched arg)
 fun <T> indexedMatcher(build: IndexedMatcher<T>.() -> Unit) =
     IndexedMatcher<T>().apply(build)
 
@@ -234,7 +237,7 @@ operator fun <T> IndexedMatcher<T>.invoke(key: Any, iterable: Iterable<T>, build
 
 context(_: MatchContext)
 operator fun <T> IndexedMatcher<T>.invoke(iterable: Iterable<T>, builder: IndexedMatcher<T>.() -> Unit) =
-    invoke(hashCode(), iterable, builder)
+    invoke(this@invoke.hashCode(), iterable, builder)
 
 abstract class Matcher<T, U> : MutableList<U> by mutableListOf() {
     var matchIndex = -1
@@ -356,4 +359,246 @@ class IndexedMatcher<T>() : Matcher<T, T.(lastMatchedIndex: Int, currentIndex: I
         after(range) { _, _ -> predicate() }
 
     fun add(predicate: T.() -> Boolean) = add { _, _ -> predicate() }
+}
+
+class DeclarativePredicateBuilder<T> {
+    private val children = mutableListOf<T.() -> Boolean>()
+
+    fun anyOf(block: DeclarativePredicateBuilder<T>.() -> Unit) {
+        val child = DeclarativePredicateBuilder<T>().apply(block)
+        children += { child.children.any { it() } }
+    }
+
+    fun predicate(block: T.() -> Boolean) {
+        children += block
+    }
+
+    fun all(target: T): Boolean = children.all { target.it() }
+    fun any(target: T): Boolean = children.all { target.it() }
+}
+
+fun <T> T.declarativePredicate(build: DeclarativePredicateBuilder<T>.() -> Unit) =
+    DeclarativePredicateBuilder<T>().apply(build).all(this)
+
+context(_: MatchContext)
+fun <T> T.rememberDeclarativePredicate(key: Any, block: DeclarativePredicateBuilder<T>.() -> Unit): Boolean =
+    remember(key) { DeclarativePredicateBuilder<T>().apply(block) }.all(this)
+
+context(_: MatchContext)
+private fun <T> T.rememberDeclarativePredicate(predicate: context(MatchContext, T) DeclarativePredicateBuilder<T>.() -> Unit) =
+    rememberDeclarativePredicate("declarative predicate build") { predicate() }
+
+fun BytecodePatchContext.firstClassDefByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = firstClassDefOrNull { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstClassDefByDeclarativePredicate(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(firstClassDefByDeclarativePredicateOrNull(predicate))
+
+fun BytecodePatchContext.firstClassDefMutableByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = firstClassDefMutableOrNull { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstClassDefMutableByDeclarativePredicate(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(firstClassDefMutableByDeclarativePredicateOrNull(predicate))
+
+fun BytecodePatchContext.firstClassDefByDeclarativePredicateOrNull(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = firstClassDefOrNull(type) { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstClassDefByDeclarativePredicate(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(firstClassDefByDeclarativePredicateOrNull(type, predicate))
+
+fun BytecodePatchContext.firstClassDefMutableByDeclarativePredicateOrNull(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = firstClassDefMutableOrNull(type) { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstClassDefMutableByDeclarativePredicate(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(firstClassDefMutableByDeclarativePredicateOrNull(type, predicate))
+
+fun BytecodePatchContext.firstMethodByDeclarativePredicateOrNull(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = firstMethodOrNull(*strings) { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstMethodByDeclarativePredicate(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(firstMethodByDeclarativePredicateOrNull(*strings, predicate = predicate))
+
+fun BytecodePatchContext.firstMethodMutableByDeclarativePredicateOrNull(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = firstMethodMutableOrNull(*strings) { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstMethodMutableByDeclarativePredicate(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(firstMethodMutableByDeclarativePredicateOrNull(*strings, predicate = predicate))
+
+fun gettingFirstClassDefByDeclarativePredicateOrNull(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = gettingFirstClassDefOrNull(type) { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstClassDefByDeclarativePredicate(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(gettingFirstClassDefByDeclarativePredicateOrNull(type, predicate))
+
+fun gettingFirstClassDefMutableByDeclarativePredicateOrNull(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = gettingFirstClassDefMutableOrNull(type) { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstClassDefMutableByDeclarativePredicate(
+    type: String,
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(gettingFirstClassDefMutableByDeclarativePredicateOrNull(type, predicate))
+
+fun gettingFirstClassDefByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = gettingFirstClassDefOrNull { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstClassDefByDeclarativePredicate(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(gettingFirstClassDefByDeclarativePredicateOrNull(predicate))
+
+fun gettingFirstClassDefMutableByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = gettingFirstClassDefMutableOrNull { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstClassDefMutableByDeclarativePredicate(
+    predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
+) = requireNotNull(gettingFirstClassDefMutableByDeclarativePredicateOrNull(predicate))
+
+fun gettingFirstMethodByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = gettingFirstMethodOrNull { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstMethodByDeclarativePredicate(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(gettingFirstMethodByDeclarativePredicateOrNull(predicate))
+
+fun gettingFirstMethodMutableByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = gettingFirstMethodMutableOrNull { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstMethodMutableByDeclarativePredicate(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(gettingFirstMethodMutableByDeclarativePredicateOrNull(predicate))
+
+fun gettingFirstMethodByDeclarativePredicateOrNull(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = gettingFirstMethodOrNull(*strings) { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstMethodByDeclarativePredicate(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(gettingFirstMethodByDeclarativePredicateOrNull(*strings, predicate = predicate))
+
+fun gettingFirstMethodMutableByDeclarativePredicateOrNull(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = gettingFirstMethodMutableOrNull(*strings) { rememberDeclarativePredicate(predicate) }
+
+fun gettingFirstMethodMutableByDeclarativePredicate(
+    vararg strings: String,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(gettingFirstMethodMutableByDeclarativePredicateOrNull(*strings, predicate = predicate))
+
+
+class CompositionBuilder() {
+    val indexedMatcher = IndexedMatcher<Instruction>()
+
+    var accessFlagsPredicate: (DeclarativePredicateBuilder<Method>.() -> Unit)? = null
+    var returnsPredicate: (DeclarativePredicateBuilder<Method>.() -> Unit)? = null
+    var parameterTypesPredicate: (DeclarativePredicateBuilder<Method>.() -> Unit)? = null
+    var instructionsPredicate: (context(MatchContext) DeclarativePredicateBuilder<Method>.() -> Unit)? = null
+    var customPredicate: (context(MatchContext) DeclarativePredicateBuilder<Method>.() -> Unit)? = null
+
+    fun accessFlags(vararg flags: AccessFlags) {
+        accessFlagsPredicate = { predicate { accessFlags(*flags) } }
+    }
+
+    fun returns(returnType: String) {
+        returnsPredicate = { predicate { this.returnType.startsWith(returnType) } }
+    }
+
+    fun parameterTypes(vararg parameterTypes: String) {
+        parameterTypesPredicate = {
+            predicate {
+                this.parameterTypes.size == parameterTypes.size && this.parameterTypes.zip(parameterTypes)
+                    .all { (a, b) -> a.startsWith(b) }
+            }
+        }
+    }
+
+    fun instructions(build: context(MatchContext, Method) IndexedMatcher<Instruction>.() -> Unit) {
+        instructionsPredicate = {
+            predicate {
+                implementation { indexedMatcher(this@CompositionBuilder.hashCode(), instructions) { build() } }
+            }
+        }
+    }
+
+    fun custom(block: context(MatchContext) Method.() -> Boolean) {
+        customPredicate = { predicate { block() } }
+    }
+
+
+    fun build() = Composition(indexedMatcher) {
+        accessFlagsPredicate?.invoke(this)
+        returnsPredicate?.invoke(this)
+        parameterTypesPredicate?.invoke(this)
+        with(contextOf<MatchContext>()) {
+            instructionsPredicate?.invoke(this@with, this@Composition)
+            customPredicate?.invoke(this@with, this@Composition)
+        }
+    }
+}
+
+class Composition internal constructor(
+    private val indexedMatcher: IndexedMatcher<Instruction>,
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) {
+    val methodOrNull by gettingFirstMethodMutableByDeclarativePredicateOrNull(predicate)
+    val method = requireNotNull(methodOrNull)
+    val indices get() = indexedMatcher.indices
+}
+
+fun composeFirstMethod(predicate: CompositionBuilder.() -> Unit) = CompositionBuilder().apply(predicate).build()
+
+val methodComposition = composeFirstMethod {
+    accessFlags(AccessFlags.PUBLIC)
+    instructions {
+        head { opcode == Opcode.RETURN }
+        fun opcode(opcode: Opcode) = add { this.opcode == opcode }
+        opcode(Opcode.NOP)
+    }
+}
+
+val patch by gettingBytecodePatch {
+    execute {
+        val mutableMethod = methodComposition.method
+        methodComposition.indices.first() // Opcode == return
+
+        firstClassDef(mutableMethod.definingClass).methods
+        firstClassDefMutable { type == mutableMethod.definingClass }
+        firstClassDefByDeclarativePredicateOrNull {
+            anyOf {
+                predicate { type == mutableMethod.definingClass }
+                predicate { type == "Ltest;" }
+            }
+        }
+    }
 }

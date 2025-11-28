@@ -48,7 +48,6 @@ class Fingerprint internal constructor(
     internal val strings: List<String>?,
     internal val custom: ((method: Method, classDef: ClassDef) -> Boolean)?,
 ) {
-    @Suppress("ktlint:standard:backing-property-naming")
     // Backing field needed for lazy initialization.
     private var _matchOrNull: Match? = null
 
@@ -117,7 +116,7 @@ class Fingerprint internal constructor(
             } else null
 
             currentMethod = this
-            return filters == null || matchIndices(instructionsOrNull ?: return false, "match") {
+            return filters == null || matchIndices(instructionsOrNull ?: return false) {
                 filters.forEach { filter ->
                     val filterMatches: Instruction.() -> Boolean = { filter.matches(currentMethod, this) }
 
@@ -264,7 +263,7 @@ class Fingerprint internal constructor(
 
             } else null
 
-            return filters == null || matchIndices.apply {
+            return filters == null || matchIndices(instructionsOrNull ?: return false) {
                 filters.forEach { filter ->
                     val filterMatches: Instruction.() -> Boolean = { filter.matches(method, this) }
 
@@ -277,7 +276,7 @@ class Fingerprint internal constructor(
                         is MatchFirst -> head { filterMatches() }
                     }
                 }
-            }(instructionsOrNull ?: return false)
+            }
         }
 
         if (!context(MatchContext()) { method.match() }) return null

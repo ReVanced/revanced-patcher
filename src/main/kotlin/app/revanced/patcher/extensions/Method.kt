@@ -1,7 +1,6 @@
 package app.revanced.patcher.extensions
 
 import app.revanced.patcher.dex.mutable.MutableMethod
-import app.revanced.patcher.util.toInstructions
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction

@@ -1,7 +1,7 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.extensions.toInstructions
 import app.revanced.patcher.patch.*
-import app.revanced.patcher.util.toInstructions
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
@@ -298,7 +298,7 @@ internal object PatcherTest {
         val matchIndices = indexedMatcher<Instruction>()
         val method by gettingFirstMethod {
             implementation {
-                matchIndices(instructions, "match") {
+                matchIndices(instructions) {
                     head { opcode == Opcode.CONST_STRING }
                     add { opcode == Opcode.IPUT_OBJECT }
                 }
