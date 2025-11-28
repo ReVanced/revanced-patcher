@@ -6,10 +6,8 @@ import app.revanced.patcher.Matcher.MatchContext
 import app.revanced.patcher.dex.mutable.MutableMethod
 import app.revanced.patcher.extensions.accessFlags
 import app.revanced.patcher.patch.BytecodePatchContext
-import app.revanced.patcher.patch.gettingBytecodePatch
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.HiddenApiRestriction
-import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.*
 import com.android.tools.smali.dexlib2.iface.Annotation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -361,22 +359,6 @@ class IndexedMatcher<T>() : Matcher<T, T.(lastMatchedIndex: Int, currentIndex: I
     fun add(predicate: T.() -> Boolean) = add { _, _ -> predicate() }
 }
 
-class DeclarativePredicateBuilder<T> {
-    private val children = mutableListOf<T.() -> Boolean>()
-
-    fun anyOf(block: DeclarativePredicateBuilder<T>.() -> Unit) {
-        val child = DeclarativePredicateBuilder<T>().apply(block)
-        children += { child.children.any { it() } }
-    }
-
-    fun predicate(block: T.() -> Boolean) {
-        children += block
-    }
-
-    fun all(target: T): Boolean = children.all { target.it() }
-    fun any(target: T): Boolean = children.all { target.it() }
-}
-
 fun <T> T.declarativePredicate(build: DeclarativePredicateBuilder<T>.() -> Unit) =
     DeclarativePredicateBuilder<T>().apply(build).all(this)
 
@@ -517,88 +499,54 @@ fun gettingFirstMethodMutableByDeclarativePredicate(
 ) = requireNotNull(gettingFirstMethodMutableByDeclarativePredicateOrNull(*strings, predicate = predicate))
 
 
-class CompositionBuilder() {
-    val indexedMatcher = IndexedMatcher<Instruction>()
+class DeclarativePredicateBuilder<T> internal constructor() {
+    private val children = mutableListOf<T.() -> Boolean>()
 
-    var accessFlagsPredicate: (DeclarativePredicateBuilder<Method>.() -> Unit)? = null
-    var returnsPredicate: (DeclarativePredicateBuilder<Method>.() -> Unit)? = null
-    var parameterTypesPredicate: (DeclarativePredicateBuilder<Method>.() -> Unit)? = null
-    var instructionsPredicate: (context(MatchContext) DeclarativePredicateBuilder<Method>.() -> Unit)? = null
-    var customPredicate: (context(MatchContext) DeclarativePredicateBuilder<Method>.() -> Unit)? = null
-
-    fun accessFlags(vararg flags: AccessFlags) {
-        accessFlagsPredicate = { predicate { accessFlags(*flags) } }
+    fun anyOf(block: DeclarativePredicateBuilder<T>.() -> Unit) {
+        val child = DeclarativePredicateBuilder<T>().apply(block)
+        children += { child.children.any { it() } }
     }
 
-    fun returns(returnType: String) {
-        returnsPredicate = { predicate { this.returnType.startsWith(returnType) } }
+    fun predicate(block: T.() -> Boolean) {
+        children += block
     }
 
-    fun parameterTypes(vararg parameterTypes: String) {
-        parameterTypesPredicate = {
-            predicate {
-                this.parameterTypes.size == parameterTypes.size && this.parameterTypes.zip(parameterTypes)
-                    .all { (a, b) -> a.startsWith(b) }
-            }
-        }
-    }
+    fun all(target: T): Boolean = children.all { target.it() }
+    fun any(target: T): Boolean = children.all { target.it() }
+}
 
-    fun instructions(build: context(MatchContext, Method) IndexedMatcher<Instruction>.() -> Unit) {
-        instructionsPredicate = {
-            predicate {
-                implementation { indexedMatcher(this@CompositionBuilder.hashCode(), instructions) { build() } }
-            }
-        }
-    }
+fun firstMethodComposite(
+    predicate:
+    context(MatchContext, Method, IndexedMatcher<Instruction>) DeclarativePredicateBuilder<Method>.() -> Unit
+) = with(indexedMatcher<Instruction>()) { Composition(indices = this.indices) { predicate() } }
 
-    fun custom(block: context(MatchContext) Method.() -> Boolean) {
-        customPredicate = { predicate { block() } }
-    }
+fun DeclarativePredicateBuilder<Method>.accessFlags(vararg flags: AccessFlags) {
+    predicate { accessFlags(*flags) }
+}
 
+fun DeclarativePredicateBuilder<Method>.returns(returnType: String) {
+    predicate { this.returnType.startsWith(returnType) }
+}
 
-    fun build() = Composition(indexedMatcher) {
-        accessFlagsPredicate?.invoke(this)
-        returnsPredicate?.invoke(this)
-        parameterTypesPredicate?.invoke(this)
-        with(contextOf<MatchContext>()) {
-            instructionsPredicate?.invoke(this@with, this@Composition)
-            customPredicate?.invoke(this@with, this@Composition)
-        }
-    }
+fun DeclarativePredicateBuilder<Method>.parameterTypes(vararg parameterTypes: String) = predicate {
+    this.parameterTypes.size == parameterTypes.size && this.parameterTypes.zip(parameterTypes)
+        .all { (a, b) -> a.startsWith(b) }
+}
+
+context(_: MatchContext, indexedMatcher: IndexedMatcher<Instruction>)
+fun DeclarativePredicateBuilder<Method>.instructions(
+    build: context(MatchContext, Method) IndexedMatcher<Instruction>.() -> Unit
+) = predicate { implementation { indexedMatcher(indexedMatcher.hashCode(), instructions) { build() } } }
+
+context(_: MatchContext)
+fun DeclarativePredicateBuilder<Method>.custom(block: context(MatchContext) Method.() -> Boolean) {
+    predicate { block() }
 }
 
 class Composition internal constructor(
-    private val indexedMatcher: IndexedMatcher<Instruction>,
+    val indices: List<Int>,
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
 ) {
     val methodOrNull by gettingFirstMethodMutableByDeclarativePredicateOrNull(predicate)
     val method = requireNotNull(methodOrNull)
-    val indices get() = indexedMatcher.indices
-}
-
-fun composeFirstMethod(predicate: CompositionBuilder.() -> Unit) = CompositionBuilder().apply(predicate).build()
-
-val methodComposition = composeFirstMethod {
-    accessFlags(AccessFlags.PUBLIC)
-    instructions {
-        head { opcode == Opcode.RETURN }
-        fun opcode(opcode: Opcode) = add { this.opcode == opcode }
-        opcode(Opcode.NOP)
-    }
-}
-
-val patch by gettingBytecodePatch {
-    execute {
-        val mutableMethod = methodComposition.method
-        methodComposition.indices.first() // Opcode == return
-
-        firstClassDef(mutableMethod.definingClass).methods
-        firstClassDefMutable { type == mutableMethod.definingClass }
-        firstClassDefByDeclarativePredicateOrNull {
-            anyOf {
-                predicate { type == mutableMethod.definingClass }
-                predicate { type == "Ltest;" }
-            }
-        }
-    }
 }
