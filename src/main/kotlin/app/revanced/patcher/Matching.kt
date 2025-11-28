@@ -225,12 +225,16 @@ fun <T> Iterable<T>.matchIndexed(build: IndexedMatcher<T>.() -> Unit) =
     indexedMatcher(build)(this)
 
 context(_: MatchContext)
-operator fun <T> IndexedMatcher<T>.invoke(iterable: Iterable<T>, key: String, builder: IndexedMatcher<T>.() -> Unit) =
+fun <T> Iterable<T>.matchIndexed(key: Any, build: IndexedMatcher<T>.() -> Unit) =
+    indexedMatcher<T>()(key, this, build)
+
+context(_: MatchContext)
+operator fun <T> IndexedMatcher<T>.invoke(key: Any, iterable: Iterable<T>, builder: IndexedMatcher<T>.() -> Unit) =
     remember(key) { apply(builder) }(iterable)
 
 context(_: MatchContext)
-fun <T> Iterable<T>.matchIndexed(key: String, build: IndexedMatcher<T>.() -> Unit) =
-    indexedMatcher<T>()(this, key, build)
+operator fun <T> IndexedMatcher<T>.invoke(iterable: Iterable<T>, builder: IndexedMatcher<T>.() -> Unit) =
+    invoke(hashCode(), iterable, builder)
 
 abstract class Matcher<T, U> : MutableList<U> by mutableListOf() {
     var matchIndex = -1
