@@ -3,7 +3,7 @@ package app.revanced.patcher
 import app.revanced.patcher.extensions.toInstructions
 import app.revanced.patcher.patch.*
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
@@ -15,8 +15,12 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertThrows
 import java.util.logging.Logger
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 
 internal object PatcherTest {
     private lateinit var patcher: Patcher
@@ -79,7 +83,11 @@ internal object PatcherTest {
         infix fun Patch<*>.produces(equals: List<String>) {
             val patches = setOf(this)
 
-            patches()
+            try {
+                patches()
+            } catch (_: PatchException) {
+                // Swallow expected exceptions for testing purposes.
+            }
 
             assertEquals(equals, executed, "Expected patches to be executed in correct order.")
 
@@ -159,10 +167,7 @@ internal object PatcherTest {
             }
         }
 
-        assertTrue(
-            patch().exception != null,
-            "Expected an exception because the fingerprint can't match.",
-        )
+        assertThrows<PatchException>("Expected an exception because the fingerprint can't match.") { patch() }
     }
 
     @Test
@@ -290,18 +295,22 @@ internal object PatcherTest {
                 ),
             ),
         )
+        every {
+            with(patcher.context.bytecodeContext) {
+                any(ClassDef::class).mutable()
+            }
+        } answers { callOriginal() }
+
+        val a = gettingFirstMethodOrNull { true }
 
         val fingerprint = fingerprint { returns("V") }
         val fingerprint2 = fingerprint { returns("V") }
         val fingerprint3 = fingerprint { returns("V") }
 
-        val matchIndices = indexedMatcher<Instruction>()
-        val method by gettingFirstMethod {
-            implementation {
-                matchIndices(instructions) {
-                    head { opcode == Opcode.CONST_STRING }
-                    add { opcode == Opcode.IPUT_OBJECT }
-                }
+        val composite = firstMethodComposite {
+            instructions {
+                head { opcode == Opcode.CONST_STRING }
+                add { opcode == Opcode.IPUT_OBJECT }
             }
         }
 
@@ -311,19 +320,21 @@ internal object PatcherTest {
                     fingerprint.match(classDefs.first().methods.first())
                     fingerprint2.match(classDefs.first())
                     fingerprint3.originalClassDef
-                    println(method)
+                    composite.method
                 }
             },
         )
 
         patches()
 
-        with(patcher.context.bytecodeContext) {
+        with(patcher.context.bytecodeContext)
+        {
             assertAll(
                 "Expected fingerprints to match.",
                 { assertNotNull(fingerprint.originalClassDefOrNull) },
                 { assertNotNull(fingerprint2.originalClassDefOrNull) },
                 { assertNotNull(fingerprint3.originalClassDefOrNull) },
+                { assertEquals("method", composite.method.name) },
             )
         }
     }
@@ -333,7 +344,11 @@ internal object PatcherTest {
         every { patcher.context.bytecodeContext.lookupMaps } returns with(patcher.context.bytecodeContext) { LookupMaps() }
         every { with(patcher.context.bytecodeContext) { mergeExtension(any<BytecodePatch>()) } } just runs
 
-        return runBlocking { patcher().toList() }
+        return runBlocking {
+            patcher().toList().also { results ->
+                results.firstOrNull { result -> result.exception != null }?.let { result -> throw result.exception!! }
+            }
+        }
     }
 
     private operator fun Patch<*>.invoke() = setOf(this)().first()

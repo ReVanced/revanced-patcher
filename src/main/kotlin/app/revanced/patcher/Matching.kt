@@ -50,6 +50,7 @@ fun MethodImplementation.anyTryBlock(predicate: TryBlock<out ExceptionHandler>.(
 fun MethodImplementation.anyDebugItem(predicate: Any.() -> Boolean) = debugItems.any(predicate)
 
 fun Iterable<Instruction>.anyInstruction(predicate: Instruction.() -> Boolean) = any(predicate)
+
 fun BytecodePatchContext.firstClassDefOrNull(predicate: context(MatchContext) ClassDef.() -> Boolean) =
     with(MatchContext()) { classDefs.firstOrNull { it.predicate() } }
 
@@ -88,33 +89,25 @@ fun Iterable<ClassDef>.firstMethodOrNull(predicate: context(MatchContext) Method
 fun Iterable<ClassDef>.firstMethod(predicate: context(MatchContext) Method.() -> Boolean) =
     requireNotNull(firstMethodOrNull(predicate))
 
-context(context: BytecodePatchContext)
-fun Iterable<ClassDef>.firstMethodMutableOrNull(predicate: context(MatchContext) Method.() -> Boolean): MutableMethod? =
-    with(context) {
-        with(MatchContext()) {
-            this@firstMethodMutableOrNull.forEach { classDef ->
-                classDef.methods.firstOrNull { it.predicate() }?.let { method ->
-                    return classDef.mutable().methods.first { MethodUtil.methodSignaturesMatch(it, method) }
-                }
-            }
+/** Can't compile due to JVM platform declaration clash
+fun Iterable<Method>.firstMethodOrNull(predicate: context(MatchContext) Method.() -> Boolean) =
+with(MatchContext()) { firstOrNull { it.predicate() } }
 
-            null
-        }
-    }
-
-context(_: BytecodePatchContext)
-fun Iterable<ClassDef>.firstMethodMutable(predicate: context(MatchContext) Method.() -> Boolean) =
-    requireNotNull(firstMethodMutableOrNull(predicate))
-
+fun Iterable<Method>.firstMethod(predicate: context(MatchContext) Method.() -> Boolean) =
+with(MatchContext()) { requireNotNull(firstMethodOrNull(predicate)) }
+ **/
 fun BytecodePatchContext.firstMethodOrNull(predicate: context(MatchContext) Method.() -> Boolean) =
     classDefs.firstMethodOrNull(predicate)
 
 fun BytecodePatchContext.firstMethod(predicate: context(MatchContext) Method.() -> Boolean) =
     requireNotNull(firstMethodOrNull(predicate))
 
-
 fun BytecodePatchContext.firstMethodMutableOrNull(predicate: context(MatchContext) Method.() -> Boolean) =
-    classDefs.firstMethodMutableOrNull(predicate)
+    classDefs.firstMethodOrNull(predicate)?.let { method ->
+        lookupMaps.classDefsByType[method.definingClass]!!.mutable().methods.first {
+            MethodUtil.methodSignaturesMatch(method, it)
+        }
+    }
 
 fun BytecodePatchContext.firstMethodMutable(predicate: context(MatchContext) Method.() -> Boolean) =
     requireNotNull(firstMethodMutableOrNull(predicate))
@@ -150,72 +143,81 @@ fun BytecodePatchContext.firstMethodMutable(
     vararg strings: String, predicate: context(MatchContext) Method.() -> Boolean = { true }
 ) = requireNotNull(firstMethodMutableOrNull(*strings, predicate = predicate))
 
-inline fun <reified C, T> ReadOnlyProperty(crossinline block: C.(KProperty<*>) -> T) =
-    ReadOnlyProperty<Any?, T> { thisRef, property ->
-        require(thisRef is C)
+class CachedReadOnlyProperty<T> internal constructor(
+    private val block: BytecodePatchContext.(KProperty<*>) -> T
+) : ReadOnlyProperty<BytecodePatchContext, T> {
+    private var value: T? = null
+    private var cached = false
 
-        thisRef.block(property)
+    override fun getValue(thisRef: BytecodePatchContext, property: KProperty<*>): T {
+        if (!cached) {
+            value = thisRef.block(property)
+            cached = true
+        }
+
+        return value!!
     }
+}
 
 fun gettingFirstClassDefOrNull(predicate: context(MatchContext) ClassDef.() -> Boolean) =
-    ReadOnlyProperty<BytecodePatchContext, ClassDef?> { firstClassDefOrNull(predicate) }
+    CachedReadOnlyProperty { firstClassDefOrNull(predicate) }
 
 fun gettingFirstClassDef(predicate: context(MatchContext) ClassDef.() -> Boolean) =
-    requireNotNull(gettingFirstClassDefOrNull(predicate))
+    CachedReadOnlyProperty { firstClassDef(predicate) }
 
 fun gettingFirstClassDefMutableOrNull(predicate: context(MatchContext) ClassDef.() -> Boolean) =
-    ReadOnlyProperty<BytecodePatchContext, ClassDef?> { firstClassDefMutableOrNull(predicate) }
+    CachedReadOnlyProperty { firstClassDefMutableOrNull(predicate) }
 
 fun gettingFirstClassDefMutable(predicate: context(MatchContext) ClassDef.() -> Boolean) =
-    requireNotNull(gettingFirstClassDefMutableOrNull(predicate))
+    CachedReadOnlyProperty { firstClassDefMutable(predicate) }
 
 fun gettingFirstClassDefOrNull(
     type: String, predicate: (context(MatchContext) ClassDef.() -> Boolean)? = null
-) = ReadOnlyProperty<BytecodePatchContext, ClassDef?> { firstClassDefOrNull(type, predicate) }
+) = CachedReadOnlyProperty { firstClassDefOrNull(type, predicate) }
 
 fun gettingFirstClassDef(
     type: String, predicate: (context(MatchContext) ClassDef.() -> Boolean)? = null
-) = requireNotNull(gettingFirstClassDefOrNull(type, predicate))
+) = CachedReadOnlyProperty { firstClassDef(type, predicate) }
 
 fun gettingFirstClassDefMutableOrNull(
     type: String, predicate: (context(MatchContext) ClassDef.() -> Boolean)? = null
-) = ReadOnlyProperty<BytecodePatchContext, ClassDef?> { firstClassDefMutableOrNull(type, predicate) }
+) = CachedReadOnlyProperty { firstClassDefMutableOrNull(type, predicate) }
 
 fun gettingFirstClassDefMutable(
     type: String, predicate: (context(MatchContext) ClassDef.() -> Boolean)? = null
-) = requireNotNull(gettingFirstClassDefMutableOrNull(type, predicate))
+) = CachedReadOnlyProperty { firstClassDefMutable(type, predicate) }
 
 fun gettingFirstMethodOrNull(predicate: context(MatchContext) Method.() -> Boolean) =
-    ReadOnlyProperty<BytecodePatchContext, Method?> { firstMethodOrNull(predicate) }
+    CachedReadOnlyProperty { firstMethodOrNull(predicate) }
 
 fun gettingFirstMethod(predicate: context(MatchContext) Method.() -> Boolean) =
-    requireNotNull(gettingFirstMethodOrNull(predicate))
+    CachedReadOnlyProperty { firstMethod(predicate) }
 
 fun gettingFirstMethodMutableOrNull(predicate: context(MatchContext) Method.() -> Boolean) =
-    ReadOnlyProperty<BytecodePatchContext, Method?> { firstMethodMutableOrNull(predicate) }
+    CachedReadOnlyProperty { firstMethodMutableOrNull(predicate) }
 
 fun gettingFirstMethodMutable(predicate: context(MatchContext) Method.() -> Boolean) =
-    requireNotNull(gettingFirstMethodMutableOrNull(predicate))
+    CachedReadOnlyProperty { firstMethodMutable(predicate) }
 
 fun gettingFirstMethodOrNull(
     vararg strings: String,
     predicate: context(MatchContext) Method.() -> Boolean = { true },
-) = ReadOnlyProperty<BytecodePatchContext, Method?> { firstMethodOrNull(*strings, predicate = predicate) }
+) = CachedReadOnlyProperty { firstMethodOrNull(*strings, predicate = predicate) }
 
 fun gettingFirstMethod(
     vararg strings: String,
     predicate: context(MatchContext) Method.() -> Boolean = { true },
-) = requireNotNull(gettingFirstMethodOrNull(*strings, predicate = predicate))
+) = CachedReadOnlyProperty { firstMethod(*strings, predicate = predicate) }
 
 fun gettingFirstMethodMutableOrNull(
     vararg strings: String,
     predicate: context(MatchContext) Method.() -> Boolean = { true },
-) = ReadOnlyProperty<BytecodePatchContext, Method?> { firstMethodMutableOrNull(*strings, predicate = predicate) }
+) = CachedReadOnlyProperty { firstMethodMutableOrNull(*strings, predicate = predicate) }
 
 fun gettingFirstMethodMutable(
     vararg strings: String,
     predicate: context(MatchContext) Method.() -> Boolean = { true },
-) = requireNotNull(gettingFirstMethodMutableOrNull(*strings, predicate = predicate))
+) = CachedReadOnlyProperty { firstMethodMutable(*strings, predicate = predicate) }
 
 fun <T> indexedMatcher() = IndexedMatcher<T>()
 
@@ -407,6 +409,22 @@ fun BytecodePatchContext.firstClassDefMutableByDeclarativePredicate(
 ) = requireNotNull(firstClassDefMutableByDeclarativePredicateOrNull(type, predicate))
 
 fun BytecodePatchContext.firstMethodByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = firstMethodOrNull { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstMethodByDeclarativePredicate(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(firstMethodByDeclarativePredicateOrNull(predicate))
+
+fun BytecodePatchContext.firstMethodMutableByDeclarativePredicateOrNull(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = firstMethodMutableOrNull { rememberDeclarativePredicate(predicate) }
+
+fun BytecodePatchContext.firstMethodMutableByDeclarativePredicate(
+    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+) = requireNotNull(firstMethodMutableByDeclarativePredicateOrNull(predicate))
+
+fun BytecodePatchContext.firstMethodByDeclarativePredicateOrNull(
     vararg strings: String,
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
 ) = firstMethodOrNull(*strings) { rememberDeclarativePredicate(predicate) }
@@ -434,7 +452,7 @@ fun gettingFirstClassDefByDeclarativePredicateOrNull(
 fun gettingFirstClassDefByDeclarativePredicate(
     type: String,
     predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
-) = requireNotNull(gettingFirstClassDefByDeclarativePredicateOrNull(type, predicate))
+) = CachedReadOnlyProperty { firstClassDefByDeclarativePredicate(type, predicate) }
 
 fun gettingFirstClassDefMutableByDeclarativePredicateOrNull(
     type: String,
@@ -444,7 +462,7 @@ fun gettingFirstClassDefMutableByDeclarativePredicateOrNull(
 fun gettingFirstClassDefMutableByDeclarativePredicate(
     type: String,
     predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
-) = requireNotNull(gettingFirstClassDefMutableByDeclarativePredicateOrNull(type, predicate))
+) = CachedReadOnlyProperty { firstClassDefMutableByDeclarativePredicate(type, predicate) }
 
 fun gettingFirstClassDefByDeclarativePredicateOrNull(
     predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
@@ -452,7 +470,7 @@ fun gettingFirstClassDefByDeclarativePredicateOrNull(
 
 fun gettingFirstClassDefByDeclarativePredicate(
     predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
-) = requireNotNull(gettingFirstClassDefByDeclarativePredicateOrNull(predicate))
+) = CachedReadOnlyProperty { firstClassDefByDeclarativePredicate(predicate) }
 
 fun gettingFirstClassDefMutableByDeclarativePredicateOrNull(
     predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
@@ -460,7 +478,7 @@ fun gettingFirstClassDefMutableByDeclarativePredicateOrNull(
 
 fun gettingFirstClassDefMutableByDeclarativePredicate(
     predicate: context(MatchContext, ClassDef) DeclarativePredicateBuilder<ClassDef>.() -> Unit
-) = requireNotNull(gettingFirstClassDefMutableByDeclarativePredicateOrNull(predicate))
+) = CachedReadOnlyProperty { firstClassDefMutableByDeclarativePredicate(predicate) }
 
 fun gettingFirstMethodByDeclarativePredicateOrNull(
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
@@ -468,7 +486,7 @@ fun gettingFirstMethodByDeclarativePredicateOrNull(
 
 fun gettingFirstMethodByDeclarativePredicate(
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
-) = requireNotNull(gettingFirstMethodByDeclarativePredicateOrNull(predicate))
+) = CachedReadOnlyProperty { firstMethodByDeclarativePredicate(predicate = predicate) }
 
 fun gettingFirstMethodMutableByDeclarativePredicateOrNull(
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
@@ -476,7 +494,7 @@ fun gettingFirstMethodMutableByDeclarativePredicateOrNull(
 
 fun gettingFirstMethodMutableByDeclarativePredicate(
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
-) = requireNotNull(gettingFirstMethodMutableByDeclarativePredicateOrNull(predicate))
+) = CachedReadOnlyProperty { firstMethodMutableByDeclarativePredicate(predicate = predicate) }
 
 fun gettingFirstMethodByDeclarativePredicateOrNull(
     vararg strings: String,
@@ -486,7 +504,7 @@ fun gettingFirstMethodByDeclarativePredicateOrNull(
 fun gettingFirstMethodByDeclarativePredicate(
     vararg strings: String,
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
-) = requireNotNull(gettingFirstMethodByDeclarativePredicateOrNull(*strings, predicate = predicate))
+) = CachedReadOnlyProperty { firstMethodByDeclarativePredicate(*strings, predicate = predicate) }
 
 fun gettingFirstMethodMutableByDeclarativePredicateOrNull(
     vararg strings: String,
@@ -496,7 +514,7 @@ fun gettingFirstMethodMutableByDeclarativePredicateOrNull(
 fun gettingFirstMethodMutableByDeclarativePredicate(
     vararg strings: String,
     predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
-) = requireNotNull(gettingFirstMethodMutableByDeclarativePredicateOrNull(*strings, predicate = predicate))
+) = CachedReadOnlyProperty { firstMethodMutableByDeclarativePredicate(*strings, predicate = predicate) }
 
 
 class DeclarativePredicateBuilder<T> internal constructor() {
@@ -545,8 +563,20 @@ fun DeclarativePredicateBuilder<Method>.custom(block: context(MatchContext) Meth
 
 class Composition internal constructor(
     val indices: List<Int>,
-    predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
+    private val predicate: context(MatchContext, Method) DeclarativePredicateBuilder<Method>.() -> Unit
 ) {
-    val methodOrNull by gettingFirstMethodMutableByDeclarativePredicateOrNull(predicate)
-    val method = requireNotNull(methodOrNull)
+    private var _methodOrNull: MutableMethod? = null
+
+    context(context: BytecodePatchContext)
+    val methodOrNull: MutableMethod?
+        get() {
+            if (_methodOrNull == null) {
+                _methodOrNull = context.firstMethodMutableByDeclarativePredicateOrNull(predicate)
+            }
+
+            return _methodOrNull
+        }
+
+    context(_: BytecodePatchContext)
+    val method get() = requireNotNull(methodOrNull)
 }
