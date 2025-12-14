@@ -1,0 +1,634 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
+package app.revanced.patcher.patch
+
+import app.revanced.patcher.Patcher
+import app.revanced.patcher.PatcherContext
+import java.io.File
+import java.io.InputStream
+import java.lang.reflect.Member
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import java.util.function.Supplier
+import kotlin.properties.ReadOnlyProperty
+
+typealias PackageName = String
+typealias VersionName = String
+typealias Package = Pair<PackageName, Set<VersionName>?>
+
+
+/**
+ * A common interface for contexts such as [ResourcePatchContext] and [BytecodePatchContext].
+ */
+
+sealed interface PatchContext<T> : Supplier<T>
+
+/**
+ * A patch.
+ *
+ * @param C The [PatchContext] to execute and finalize the patch with.
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param dependencies Other patches this patch depends on.
+ * @param compatiblePackages The packages the patch is compatible with.
+ * If null, the patch is compatible with all packages.
+ * @param options The options of the patch.
+ * @param executeBlock The execution block of the patch.
+ * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
+ * in reverse order of execution.
+ *
+ * @constructor Create a new patch.
+ */
+sealed class Patch<C : PatchContext<*>>(
+    val name: String?,
+    val description: String?,
+    val use: Boolean,
+    val dependencies: Set<Patch<*>>,
+    val compatiblePackages: Set<Package>?,
+    options: Set<Option<*>>,
+    private val executeBlock: (C) -> Unit,
+    // Must be internal and nullable, so that Patcher.invoke can check,
+    // if a patch has a finalizing block in order to not emit it twice.
+    internal var finalizeBlock: ((C) -> Unit)?,
+) {
+    /**
+     * The options of the patch.
+     */
+    val options = Options(options)
+
+    /**
+     * Calls the execution block of the patch.
+     * This function is called by [Patcher.invoke].
+     *
+     * @param context The [PatcherContext] to get the [PatchContext] from to execute the patch with.
+     */
+    internal abstract fun execute(context: PatcherContext)
+
+    /**
+     * Calls the execution block of the patch.
+     *
+     * @param context The [PatchContext] to execute the patch with.
+     */
+    fun execute(context: C) = executeBlock(context)
+
+    /**
+     * Calls the finalizing block of the patch.
+     * This function is called by [Patcher.invoke].
+     *
+     * @param context The [PatcherContext] to get the [PatchContext] from to finalize the patch with.
+     */
+    internal abstract fun finalize(context: PatcherContext)
+
+    /**
+     * Calls the finalizing block of the patch.
+     *
+     * @param context The [PatchContext] to finalize the patch with.
+     */
+    fun finalize(context: C) {
+        finalizeBlock?.invoke(context)
+    }
+
+    override fun toString() = name ?: "Patch@${System.identityHashCode(this)}"
+}
+
+internal fun Patch<*>.anyRecursively(
+    visited: MutableSet<Patch<*>> = mutableSetOf(),
+    predicate: (Patch<*>) -> Boolean,
+): Boolean {
+    if (this in visited) return false
+
+    if (predicate(this)) return true
+
+    visited += this
+
+    return dependencies.any { it.anyRecursively(visited, predicate) }
+}
+
+internal fun Iterable<Patch<*>>.forEachRecursively(
+    visited: MutableSet<Patch<*>> = mutableSetOf(),
+    action: (Patch<*>) -> Unit,
+): Unit = forEach {
+    if (it in visited) return@forEach
+
+    visited += it
+    action(it)
+
+    it.dependencies.forEachRecursively(visited, action)
+}
+
+/**
+ * A bytecode patch.
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param compatiblePackages The packages the patch is compatible with.
+ * If null, the patch is compatible with all packages.
+ * @param dependencies Other patches this patch depends on.
+ * @param options The options of the patch.
+ * @property extensionInputStream Getter for the extension input stream of the patch.
+ * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
+ * @param executeBlock The execution block of the patch.
+ * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
+ * in reverse order of execution.
+ *
+ * @constructor Create a new bytecode patch.
+ */
+class BytecodePatch internal constructor(
+    name: String?,
+    description: String?,
+    use: Boolean,
+    compatiblePackages: Set<Package>?,
+    dependencies: Set<Patch<*>>,
+    options: Set<Option<*>>,
+    internal val extensionInputStream: Supplier<InputStream>?,
+    executeBlock: (BytecodePatchContext) -> Unit,
+    finalizeBlock: ((BytecodePatchContext) -> Unit)?,
+) : Patch<BytecodePatchContext>(
+    name,
+    description,
+    use,
+    dependencies,
+    compatiblePackages,
+    options,
+    executeBlock,
+    finalizeBlock,
+) {
+    override fun execute(context: PatcherContext) = with(context.bytecodeContext) {
+        mergeExtension(this@BytecodePatch)
+        execute(this)
+    }
+
+    override fun finalize(context: PatcherContext) = finalize(context.bytecodeContext)
+
+    override fun toString() = name ?: "Bytecode${super.toString()}"
+}
+
+/**
+ * A raw resource patch.
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param compatiblePackages The packages the patch is compatible with.
+ * If null, the patch is compatible with all packages.
+ * @param dependencies Other patches this patch depends on.
+ * @param options The options of the patch.
+ * @param executeBlock The execution block of the patch.
+ * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
+ * in reverse order of execution.
+ *
+ * @constructor Create a new raw resource patch.
+ */
+class RawResourcePatch internal constructor(
+    name: String?,
+    description: String?,
+    use: Boolean,
+    compatiblePackages: Set<Package>?,
+    dependencies: Set<Patch<*>>,
+    options: Set<Option<*>>,
+    executeBlock: (ResourcePatchContext) -> Unit,
+    finalizeBlock: ((ResourcePatchContext) -> Unit)?,
+) : Patch<ResourcePatchContext>(
+    name,
+    description,
+    use,
+    dependencies,
+    compatiblePackages,
+    options,
+    executeBlock,
+    finalizeBlock,
+) {
+    override fun execute(context: PatcherContext) = execute(context.resourceContext)
+
+    override fun finalize(context: PatcherContext) = finalize(context.resourceContext)
+
+    override fun toString() = name ?: "RawResource${super.toString()}"
+}
+
+/**
+ * A resource patch.
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param compatiblePackages The packages the patch is compatible with.
+ * If null, the patch is compatible with all packages.
+ * @param dependencies Other patches this patch depends on.
+ * @param options The options of the patch.
+ * @param executeBlock The execution block of the patch.
+ * @param finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
+ * in reverse order of execution.
+ *
+ * @constructor Create a new resource patch.
+ */
+class ResourcePatch internal constructor(
+    name: String?,
+    description: String?,
+    use: Boolean,
+    compatiblePackages: Set<Package>?,
+    dependencies: Set<Patch<*>>,
+    options: Set<Option<*>>,
+    executeBlock: (ResourcePatchContext) -> Unit,
+    finalizeBlock: ((ResourcePatchContext) -> Unit)?,
+) : Patch<ResourcePatchContext>(
+    name,
+    description,
+    use,
+    dependencies,
+    compatiblePackages,
+    options,
+    executeBlock,
+    finalizeBlock,
+) {
+    override fun execute(context: PatcherContext) = execute(context.resourceContext)
+
+    override fun finalize(context: PatcherContext) = finalize(context.resourceContext)
+
+    override fun toString() = name ?: "Resource${super.toString()}"
+}
+
+/**
+ * A [Patch] builder.
+ *
+ * @param C The [PatchContext] to execute and finalize the patch with.
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @property compatiblePackages The packages the patch is compatible with.
+ * If null, the patch is compatible with all packages.
+ * @property dependencies Other patches this patch depends on.
+ * @property options The options of the patch.
+ * @property executionBlock The execution block of the patch.
+ * @property finalizeBlock The finalizing block of the patch. Called after all patches have been executed,
+ * in reverse order of execution.
+ *
+ * @constructor Create a new [Patch] builder.
+ */
+sealed class PatchBuilder<C : PatchContext<*>>(
+    protected val name: String?,
+    protected val description: String?,
+    protected val use: Boolean,
+) {
+    protected var compatiblePackages: MutableSet<Package>? = null
+    protected var dependencies = mutableSetOf<Patch<*>>()
+    protected val options = mutableSetOf<Option<*>>()
+
+    protected var executionBlock: ((C) -> Unit) = { }
+    protected var finalizeBlock: ((C) -> Unit)? = null
+
+    /**
+     * Add an option to the patch.
+     *
+     * @return The added option.
+     */
+    operator fun <T> Option<T>.invoke() = apply {
+        options += this
+    }
+
+    /**
+     * Create a package a patch is compatible with.
+     *
+     * @param versions The versions of the package.
+     */
+    operator fun String.invoke(vararg versions: String) = invoke(versions.toSet())
+
+    /**
+     * Create a package a patch is compatible with.
+     *
+     * @param versions The versions of the package.
+     */
+    private operator fun String.invoke(versions: Set<String>? = null) = this to versions
+
+    /**
+     * Add packages the patch is compatible with.
+     *
+     * @param packages The packages the patch is compatible with.
+     */
+    fun compatibleWith(vararg packages: Package) {
+        if (compatiblePackages == null) {
+            compatiblePackages = mutableSetOf()
+        }
+
+        compatiblePackages!! += packages
+    }
+
+    /**
+     * Set the compatible packages of the patch.
+     *
+     * @param packages The packages the patch is compatible with.
+     */
+    fun compatibleWith(vararg packages: String) = compatibleWith(*packages.map { it() }.toTypedArray())
+
+    /**
+     * Add dependencies to the patch.
+     *
+     * @param patches The patches the patch depends on.
+     */
+    fun dependsOn(vararg patches: Patch<*>) {
+        dependencies += patches
+    }
+
+    /**
+     * Set the execution block of the patch.
+     *
+     * @param block The execution block of the patch.
+     */
+    fun execute(block: C.() -> Unit) {
+        executionBlock = block
+    }
+
+    /**
+     * Set the finalizing block of the patch.
+     *
+     * @param block The finalizing block of the patch.
+     */
+    fun finalize(block: C.() -> Unit) {
+        finalizeBlock = block
+    }
+
+    /**
+     * Build the patch.
+     *
+     * @return The built patch.
+     */
+    internal abstract fun build(): Patch<C>
+}
+
+/**
+ * Builds a [Patch].
+ *
+ * @param B The [PatchBuilder] to build the patch with.
+ * @param block The block to build the patch.
+ *
+ * @return The built [Patch].
+ */
+private fun <B : PatchBuilder<*>> B.buildPatch(block: B.() -> Unit = {}) = apply(block).build()
+
+/**
+ * A [BytecodePatchBuilder] builder.
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @property extensionInputStream Getter for the extension input stream of the patch.
+ * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
+ *
+ * @constructor Create a new [BytecodePatchBuilder] builder.
+ */
+class BytecodePatchBuilder internal constructor(
+    name: String?,
+    description: String?,
+    use: Boolean,
+) : PatchBuilder<BytecodePatchContext>(name, description, use) {
+    internal var extensionInputStream: Supplier<InputStream>? = null
+
+    /**
+     * Set the extension of the patch.
+     *
+     * @param extension The name of the extension resource.
+     */
+    fun extendWith(extension: String) = apply {
+        // Should be the classloader which loaded the patch class.
+        val classLoader = Class.forName(Thread.currentThread().stackTrace[2].className).classLoader!!
+
+        extensionInputStream = Supplier {
+            classLoader.getResourceAsStream(extension)
+                ?: throw PatchException("Extension \"$extension\" not found")
+        }
+    }
+
+    override fun build() = BytecodePatch(
+        name,
+        description,
+        use,
+        compatiblePackages,
+        dependencies,
+        options,
+        extensionInputStream,
+        executionBlock,
+        finalizeBlock,
+    )
+}
+
+/**
+ * Create a new [BytecodePatch].
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [BytecodePatch].
+ */
+fun bytecodePatch(
+    name: String? = null,
+    description: String? = null,
+    use: Boolean = true,
+    block: BytecodePatchBuilder.() -> Unit = {},
+) = BytecodePatchBuilder(name, description, use).buildPatch(block) as BytecodePatch
+
+/**
+ * Create a [ReadOnlyProperty] that creates a new [BytecodePatch] with the name of the property.
+ *
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [ReadOnlyProperty] that creates a new [BytecodePatch].
+ */
+fun gettingBytecodePatch(
+    description: String? = null,
+    use: Boolean = true,
+    block: BytecodePatchBuilder.() -> Unit = {},
+) = ReadOnlyProperty<Any?, BytecodePatch> { _, property -> bytecodePatch(property.name, description, use, block) }
+
+/**
+ * A [RawResourcePatch] builder.
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ *
+ * @constructor Create a new [RawResourcePatch] builder.
+ */
+class RawResourcePatchBuilder internal constructor(
+    name: String?,
+    description: String?,
+    use: Boolean,
+) : PatchBuilder<ResourcePatchContext>(name, description, use) {
+    override fun build() = RawResourcePatch(
+        name,
+        description,
+        use,
+        compatiblePackages,
+        dependencies,
+        options,
+        executionBlock,
+        finalizeBlock,
+    )
+}
+
+/**
+ * Create a new [RawResourcePatch].
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ * @return The created [RawResourcePatch].
+ */
+fun rawResourcePatch(
+    name: String? = null,
+    description: String? = null,
+    use: Boolean = true,
+    block: RawResourcePatchBuilder.() -> Unit = {},
+) = RawResourcePatchBuilder(name, description, use).buildPatch(block) as RawResourcePatch
+
+/**
+ * Create a [ReadOnlyProperty] that creates a new [RawResourcePatch] with the name of the property.
+ *
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [ReadOnlyProperty] that creates a new [RawResourcePatch].
+ */
+fun gettingRawResourcePatch(
+    description: String? = null,
+    use: Boolean = true,
+    block: RawResourcePatchBuilder.() -> Unit = {},
+) = ReadOnlyProperty<Any?, RawResourcePatch> { _, property -> rawResourcePatch(property.name, description, use, block) }
+
+/**
+ * A [ResourcePatch] builder.
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ *
+ * @constructor Create a new [ResourcePatch] builder.
+ */
+class ResourcePatchBuilder internal constructor(
+    name: String?,
+    description: String?,
+    use: Boolean,
+) : PatchBuilder<ResourcePatchContext>(name, description, use) {
+    override fun build() = ResourcePatch(
+        name,
+        description,
+        use,
+        compatiblePackages,
+        dependencies,
+        options,
+        executionBlock,
+        finalizeBlock,
+    )
+}
+
+/**
+ * Create a new [ResourcePatch].
+ *
+ * @param name The name of the patch.
+ * If null, the patch is named "Patch" and will not be loaded by [loadPatches].
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [ResourcePatch].
+ */
+fun resourcePatch(
+    name: String? = null,
+    description: String? = null,
+    use: Boolean = true,
+    block: ResourcePatchBuilder.() -> Unit = {},
+) = ResourcePatchBuilder(name, description, use).buildPatch(block) as ResourcePatch
+
+/**
+ * Create a [ReadOnlyProperty] that creates a new [ResourcePatch] with the name of the property.
+ *
+ * @param description The description of the patch.
+ * @param use Weather or not the patch should be used.
+ * @param block The block to build the patch.
+ *
+ * @return The created [ReadOnlyProperty] that creates a new [ResourcePatch].
+ */
+fun gettingResourcePatch(
+    description: String? = null,
+    use: Boolean = true,
+    block: ResourcePatchBuilder.() -> Unit = {},
+) = ReadOnlyProperty<Any?, ResourcePatch> { _, property -> resourcePatch(property.name, description, use, block) }
+
+/**
+ * An exception thrown when patching.
+ *
+ * @param errorMessage The exception message.
+ * @param cause The corresponding [Throwable].
+ */
+class PatchException(errorMessage: String?, cause: Throwable?) : Exception(errorMessage, cause) {
+    constructor(errorMessage: String) : this(errorMessage, null)
+    constructor(cause: Throwable) : this(cause.message, cause)
+}
+
+/**
+ * A result of executing a [Patch].
+ *
+ * @param patch The [Patch] that was executed.
+ * @param exception The [PatchException] thrown, if any.
+ */
+class PatchResult internal constructor(val patch: Patch<*>, val exception: PatchException? = null)
+
+/**
+ * A collection of patches loaded from patches files.
+ *
+ * @property patchesByFile The patches mapped by their patches file.
+ */
+class Patches internal constructor(val patchesByFile: Map<File, Set<Patch<*>>>) : Set<Patch<*>>
+by patchesByFile.values.flatten().toSet()
+
+internal fun loadPatches(
+    patchesFiles: Set<File>,
+    getBinaryClassNames: (patchesFile: File) -> List<String>,
+    classLoader: ClassLoader,
+): Patches {
+    fun Member.isUsable(): Boolean {
+        if (this is Method && parameterCount != 0) return false
+
+        return Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)
+    }
+
+    fun Class<*>.getPatchFields() = fields.filter { field ->
+        field.type.isPatch && field.isUsable()
+    }.map { field ->
+        field.get(null) as Patch<*>
+    }
+
+    fun Class<*>.getPatchMethods() = methods.filter { method ->
+        method.returnType.isPatch && method.parameterCount == 0 && method.isUsable()
+    }.map { method ->
+        method.invoke(null) as Patch<*>
+    }
+
+    return Patches(patchesFiles.associateWith { file ->
+        getBinaryClassNames(file).map {
+            classLoader.loadClass(it)
+        }.flatMap { clazz ->
+            clazz.getPatchMethods() + clazz.getPatchFields()
+        }.filter { it.name != null }.toSet()
+    })
+}
+
+expect fun loadPatches(patchesFiles: Set<File>): Patches
+
+internal expect val Class<*>.isPatch: Boolean
