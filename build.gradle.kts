@@ -26,12 +26,10 @@ repositories {
     mavenCentral()
     google()
     maven {
+        name = "GitHubPackages"
         // A repository must be specified for some reason. "registry" is a dummy.
         url = uri("https://maven.pkg.github.com/revanced/registry")
-        credentials {
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
+        credentials(PasswordCredentials::class)
     }
 }
 
@@ -72,10 +70,7 @@ publishing {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/revanced/revanced-patcher")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
+            credentials(PasswordCredentials::class)
         }
     }
 
