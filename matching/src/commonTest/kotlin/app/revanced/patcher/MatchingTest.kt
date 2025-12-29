@@ -15,7 +15,7 @@ import kotlin.test.assertNotNull
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 object MatchingTest : PatcherTestBase() {
     @BeforeAll
-    fun setUp() = setUpMock()
+    fun setup() = setupMock()
 
     @Test
     fun `matches via builder api`() {
@@ -37,7 +37,7 @@ object MatchingTest : PatcherTestBase() {
         }
 
         bytecodePatch {
-            execute {
+            apply {
                 assertNotNull(firstMethodBuilder().methodOrNull) { "Expected to find a method" }
                 Assertions.assertNull(firstMethodBuilder(fail = true).methodOrNull) { "Expected to not find a method" }
             }
@@ -47,7 +47,7 @@ object MatchingTest : PatcherTestBase() {
     @Test
     fun `matches via declarative api`() {
         bytecodePatch {
-            execute {
+            apply {
                 val method = firstMethodByDeclarativePredicateOrNull {
                     anyOf {
                         predicate { name == "method" }
@@ -66,7 +66,7 @@ object MatchingTest : PatcherTestBase() {
     @Test
     fun `predicate matcher works correctly`() {
         bytecodePatch {
-            execute {
+            apply {
                 assertDoesNotThrow("Should find method") { firstMethod { name == "method" } }
             }
         }

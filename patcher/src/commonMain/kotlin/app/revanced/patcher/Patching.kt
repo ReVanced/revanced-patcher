@@ -38,11 +38,7 @@ fun patcher(
     val patches = getPatches(packageName, versionName)
 
     return { emit: (PatchResult) -> Unit ->
-        if (patches.any { patch ->
-                fun Patch.check(): Boolean = type == PatchType.RESOURCE || dependencies.any { it.check() }
-                patch.check()
-            }
-        ) resourcePatchContext.decodeResources()
+        if (patches.any { patch -> patch.patchesResources }) resourcePatchContext.decodeResources()
 
         // After initializing the resource context, to keep memory usage time low.
         val bytecodePatchContext = BytecodePatchContext(
@@ -54,74 +50,67 @@ fun patcher(
 
         bytecodePatchContext.classDefs.initializeCache()
 
-        logger.info("Executing patches")
+        logger.info("Applying patches")
 
-        patches.execute(bytecodePatchContext, resourcePatchContext, emit)
+        patches.apply(bytecodePatchContext, resourcePatchContext, emit)
     }
 }
 
 // Public for testing.
-fun Set<Patch>.execute(
+fun Set<Patch>.apply(
     bytecodePatchContext: BytecodePatchContext,
     resourcePatchContext: ResourcePatchContext,
     emit: (PatchResult) -> Unit
 ): PatchesResult {
-    val executedPatches = LinkedHashMap<Patch, PatchResult>()
+    val appliedPatches = LinkedHashMap<Patch, PatchResult>()
 
     sortedBy { it.name }.forEach { patch ->
-        fun Patch.execute(): PatchResult {
-            val result = executedPatches[this]
-            if (result != null) {
-                if (result.exception == null) return result
-                return patchResult(PatchException("The patch '$this' has failed previously"))
-            }
+        fun Patch.apply(): PatchResult {
+            val result = appliedPatches[this]
 
-            val failedDependency = dependencies.asSequence().map { it.execute() }.firstOrNull { it.exception != null }
-            if (failedDependency != null) {
-                return patchResult(
-                    PatchException(
-                        "The dependant patch \"$failedDependency\" of the patch \"$this\"" +
-                                " raised an exception:\n${failedDependency.exception!!.stackTraceToString()}",
-                    ),
+            return if (result == null) {
+                val failedDependency = dependencies.asSequence().map { it.apply() }.firstOrNull { it.exception != null }
+                if (failedDependency != null) return patchResult(
+                    "The dependant patch \"$failedDependency\" of the patch \"$this\" raised an exception:\n" +
+                            failedDependency.exception!!.stackTraceToString(),
                 )
-            }
 
-            val exception = runCatching {
-                execute(bytecodePatchContext, resourcePatchContext)
-            }.exceptionOrNull() as? Exception
+                val exception = runCatching { apply(bytecodePatchContext, resourcePatchContext) }
+                    .exceptionOrNull() as? Exception
 
-            return patchResult(exception).also { executedPatches[this] = it }
+                patchResult(exception).also { result -> appliedPatches[this] = result }
+            } else if (result.exception == null) result
+            else patchResult("The patch '$this' has failed previously")
         }
 
-        val patchResult = patch.execute()
+        val patchResult = patch.apply()
 
         // If an exception occurred or the patch has no finalize block, emit the result.
-        if (patchResult.exception != null || patch.finalize == null) {
+        if (patchResult.exception != null || patch.afterDependents == null) {
             emit(patchResult)
         }
     }
 
-    val succeededPatchesWithFinalizeBlock = executedPatches.values.filter {
-        it.exception == null && it.patch.finalize != null
+    val succeededPatchesWithFinalizeBlock = appliedPatches.values.filter {
+        it.exception == null && it.patch.afterDependents != null
     }
 
-    succeededPatchesWithFinalizeBlock.asReversed().forEach { executionResult ->
-        val patch = executionResult.patch
-        runCatching { patch.finalize!!.invoke(bytecodePatchContext, resourcePatchContext) }
-            .fold(
-                { emit(executionResult) },
-                {
-                    emit(
-                        PatchResult(
-                            patch,
-                            PatchException(
-                                "The patch \"$patch\" raised an exception:\n${it.stackTraceToString()}",
-                                it,
-                            ),
-                        )
+    succeededPatchesWithFinalizeBlock.asReversed().forEach { result ->
+        val patch = result.patch
+        runCatching { patch.afterDependents!!.invoke(bytecodePatchContext, resourcePatchContext) }.fold(
+            { emit(result) },
+            {
+                emit(
+                    PatchResult(
+                        patch,
+                        PatchException(
+                            "The patch \"$patch\" raised an exception:\n" + it.stackTraceToString(),
+                            it,
+                        ),
                     )
-                }
-            )
+                )
+            }
+        )
     }
 
     return PatchesResult(bytecodePatchContext.get(), resourcePatchContext.get())

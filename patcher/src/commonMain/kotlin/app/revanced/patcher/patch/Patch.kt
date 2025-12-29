@@ -20,6 +20,8 @@ enum class PatchType(internal val prefix: String) {
     RESOURCE("Resource")
 }
 
+internal val Patch.patchesResources: Boolean get() = type == PatchType.RESOURCE || dependencies.any { it.patchesResources }
+
 open class Patch internal constructor(
     val name: String?,
     val description: String?,
@@ -27,10 +29,10 @@ open class Patch internal constructor(
     val dependencies: Set<Patch>,
     val compatiblePackages: Set<Package>?,
     options: Set<Option<*>>,
-    internal val execute: context(BytecodePatchContext, ResourcePatchContext) () -> Unit,
+    internal val apply: context(BytecodePatchContext, ResourcePatchContext) () -> Unit,
     // Must be nullable, so that Patcher.invoke can check,
-    // if a patch has "finalize" in order to not emit it twice.
-    internal var finalize: (context(BytecodePatchContext, ResourcePatchContext) () -> Unit)?,
+    // if a patch has an "afterDependents" in order to not emit it twice.
+    internal var afterDependents: (context(BytecodePatchContext, ResourcePatchContext) () -> Unit)?,
     internal val type: PatchType,
 ) {
     val options = Options(options)
@@ -46,18 +48,18 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     private val dependencies = mutableSetOf<Patch>()
     private val options = mutableSetOf<Option<*>>()
 
-    internal var execute: context(BytecodePatchContext, ResourcePatchContext) () -> Unit = { }
-    internal var finalize: (context(BytecodePatchContext, ResourcePatchContext)  () -> Unit)? = null
+    internal var apply: context(BytecodePatchContext, ResourcePatchContext) () -> Unit = { }
+    internal var afterDependents: (context(BytecodePatchContext, ResourcePatchContext)  () -> Unit)? = null
 
     context(_: BytecodePatchContext, _: ResourcePatchContext)
     private val patchContext get() = getPatchContext()
 
-    fun execute(block: C.() -> Unit) {
-        execute = { block(patchContext) }
+    fun apply(block: C.() -> Unit) {
+        apply = { block(patchContext) }
     }
 
-    fun finalize(block: C.() -> Unit) {
-        finalize = { block(patchContext) }
+    fun afterDependents(block: C.() -> Unit) {
+        afterDependents = { block(patchContext) }
     }
 
     operator fun <T> Option<T>.invoke() = apply {
@@ -90,8 +92,8 @@ sealed class PatchBuilder<C : PatchContext<*>>(
         dependencies,
         compatiblePackages,
         options,
-        execute,
-        finalize,
+        apply,
+        afterDependents,
         type,
     )
 }
@@ -101,7 +103,7 @@ class BytecodePatchBuilder private constructor(
 ) : PatchBuilder<BytecodePatchContext>(
     PatchType.BYTECODE,
     {
-        // Extend the context with the extension, before returning it to the patch for execution.
+        // Extend the context with the extension, before returning it to the patch before applying it.
         contextOf<BytecodePatchContext>().apply {
             if (extensionInputStream != null) extendWith(extensionInputStream)
         }
@@ -109,7 +111,7 @@ class BytecodePatchBuilder private constructor(
 ) {
     internal constructor() : this(null)
 
-    fun extendWith(extension: String) = apply {
+    fun extendWith(extension: String) {
         // Should be the classloader which loaded the patch class.
         val classLoader = Class.forName(Thread.currentThread().stackTrace[2].className).classLoader!!
 
@@ -198,9 +200,9 @@ class PatchException(errorMessage: String?, cause: Throwable?) : Exception(error
 }
 
 /**
- * A result of executing a [Patch].
+ * A result of applying a [Patch].
  *
- * @param patch The [Patch] that was executed.
+ * @param patch The [Patch] that ran.
  * @param exception The [PatchException] thrown, if any.
  */
 class PatchResult internal constructor(val patch: Patch, val exception: PatchException? = null)
@@ -212,6 +214,14 @@ class PatchResult internal constructor(val patch: Patch, val exception: PatchExc
  * @return The created [PatchResult].
  */
 internal fun Patch.patchResult(exception: Exception? = null) = PatchResult(this, exception?.toPatchException())
+
+/**
+ * Creates a [PatchResult] for this [Patch] with the given error message.
+ *
+ * @param errorMessage The error message.
+ * @return The created [PatchResult].
+ */
+internal fun Patch.patchResult(errorMessage: String) = PatchResult(this, PatchException(errorMessage))
 private fun Exception.toPatchException() = this as? PatchException ?: PatchException(this)
 
 /**

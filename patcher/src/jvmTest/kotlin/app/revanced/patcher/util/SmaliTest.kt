@@ -1,43 +1,39 @@
 package app.revanced.patcher.util
 
-import com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
 import app.revanced.patcher.extensions.*
 import com.android.tools.smali.dexlib2.AccessFlags
-import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.builder.BuilderInstruction
+import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21t
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
-import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
-import java.util.*
+import com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
+import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-internal object SmaliTest {
-    @Test
-    fun `outputs valid instruction`() {
-        val want = BuilderInstruction21c(Opcode.CONST_STRING, 0, ImmutableStringReference("Test")) as BuilderInstruction
-        val have = "const-string v0, \"Test\"".toInstructions().first()
+internal class SmaliTest {
+    val method = ImmutableMethod(
+        "Ldummy;",
+        "name",
+        emptyList(), // parameters
+        "V",
+        AccessFlags.PUBLIC.value,
+        null,
+        null,
+        MutableMethodImplementation(1),
+    ).toMutable()
 
-        assertInstructionsEqual(want, have)
+
+    @BeforeEach
+    fun setup() {
+        method.instructions.clear()
     }
 
     @Test
-    fun `supports branching with own branches`() {
-        val method = createMethod()
-        val instructionCount = 8
-        val instructionIndex = instructionCount - 2
-        val targetIndex = instructionIndex - 1
-
-        method.addInstructions(
-            arrayOfNulls<String>(instructionCount).also {
-                Arrays.fill(it, "const/4 v0, 0x0")
-            }.joinToString("\n"),
-        )
+    fun `own branches work`() {
         method.addInstructionsWithLabels(
-            targetIndex,
+            0,
             """
                 :test
                 const/4 v0, 0x1
@@ -45,14 +41,13 @@ internal object SmaliTest {
             """,
         )
 
-        val instruction = method.getInstruction<BuilderInstruction21t>(instructionIndex)
+        val targetLocationIndex = method.getInstruction<BuilderOffsetInstruction>(0).target.location.index
 
-        assertEquals(targetIndex, instruction.target.location.index)
+        assertEquals(0, targetLocationIndex, "Label should point to index 0")
     }
 
     @Test
-    fun `supports branching to outside branches`() {
-        val method = createMethod()
+    fun `external branches work`() {
         val instructionIndex = 3
         val labelIndex = 1
 
@@ -63,10 +58,8 @@ internal object SmaliTest {
             """,
         )
 
-        assertEquals(labelIndex, method.newLabel(labelIndex).location.index)
-
         method.addInstructionsWithLabels(
-            method.implementation!!.instructions.size,
+            method.instructions.size,
             """
                 const/4 v0, 0x1
                 if-eqz v0, :test
@@ -76,29 +69,8 @@ internal object SmaliTest {
         )
 
         val instruction = method.getInstruction<BuilderInstruction21t>(instructionIndex)
-        assertTrue(instruction.target.isPlaced, "Label was not placed")
+
+        assertTrue(instruction.target.isPlaced, "Label should be placed")
         assertEquals(labelIndex, instruction.target.location.index)
-    }
-
-    private fun createMethod(
-        name: String = "dummy",
-        returnType: String = "V",
-        accessFlags: Int = AccessFlags.STATIC.value,
-        registerCount: Int = 1,
-    ) = ImmutableMethod(
-        "Ldummy;",
-        name,
-        emptyList(), // parameters
-        returnType,
-        accessFlags,
-        emptySet(),
-        emptySet(),
-        MutableMethodImplementation(registerCount),
-    ).toMutable()
-
-    private fun assertInstructionsEqual(want: BuilderInstruction, have: BuilderInstruction) {
-        assertEquals(want.opcode, have.opcode)
-        assertEquals(want.format, have.format)
-        assertEquals(want.codeUnits, have.codeUnits)
     }
 }

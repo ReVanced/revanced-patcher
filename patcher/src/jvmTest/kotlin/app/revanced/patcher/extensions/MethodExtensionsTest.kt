@@ -1,8 +1,5 @@
-package app.revanced.patcher
+package app.revanced.patcher.extensions
 
-import com.android.tools.smali.dexlib2.mutable.MutableMethod
-import com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
-import app.revanced.patcher.extensions.*
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
@@ -10,28 +7,30 @@ import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21s
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.mutable.MutableMethod
+import com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private object InstructionExtensionsTest {
-    private lateinit var testMethod: MutableMethod
-    private lateinit var testMethodImplementation: MutableMethodImplementation
+internal class MethodExtensionsTest {
+    private val testInstructions = (0..9).map { i -> TestInstruction(i) }
+    private var method = ImmutableMethod(
+        "TestClass;",
+        "testMethod",
+        null,
+        "V",
+        AccessFlags.PUBLIC.value,
+        null,
+        null,
+        MutableMethodImplementation(16)
+    ).toMutable()
 
     @BeforeEach
-    fun createTestMethod() =
-        ImmutableMethod(
-            "TestClass;",
-            "testMethod",
-            null,
-            "V",
-            AccessFlags.PUBLIC.value,
-            null,
-            null,
-            MutableMethodImplementation(16).also { testMethodImplementation = it }.apply {
-                repeat(10) { i -> this.addInstruction(TestInstruction(i)) }
-            },
-        ).let { testMethod = it.toMutable() }
+    fun setup() {
+        method.instructions.clear()
+        method.addInstructions(testInstructions)
+    }
 
     @Test
     fun addInstructionsToImplementationIndexed() =
@@ -219,11 +218,11 @@ private object InstructionExtensionsTest {
     // region Helper methods
 
     private fun applyToImplementation(block: MutableMethodImplementation.() -> Unit) {
-        testMethodImplementation.apply(block)
+        method.implementation!!.apply(block)
     }
 
     private fun applyToMethod(block: MutableMethod.() -> Unit) {
-        testMethod.apply(block)
+        method.apply(block)
     }
 
     private fun MutableMethodImplementation.assertRegisterIs(

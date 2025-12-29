@@ -21,7 +21,7 @@ abstract class PatcherTestBase {
     protected lateinit var bytecodePatchContext: BytecodePatchContext
     protected lateinit var resourcePatchContext: ResourcePatchContext
 
-    protected fun setUpMock(
+    protected fun setupMock(
         method: ImmutableMethod = ImmutableMethod(
             "class",
             "method",
@@ -89,7 +89,7 @@ abstract class PatcherTestBase {
 
     protected operator fun Set<Patch>.invoke() {
         runCatching {
-            execute(
+            apply(
                 bytecodePatchContext,
                 resourcePatchContext
             ) { }

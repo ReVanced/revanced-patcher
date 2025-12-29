@@ -1,10 +1,13 @@
-package app.revanced.patcher.patch.options
+package app.revanced.patcher.patch
 
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.PatchBuilder.invoke
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.reflect.typeOf
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal object OptionsTest {
     private val externalOption = stringOption("external", "default")

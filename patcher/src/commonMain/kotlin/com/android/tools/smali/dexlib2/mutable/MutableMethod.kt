@@ -12,8 +12,8 @@ class MutableMethod(method: Method) : BaseMethodReference(), Method {
     private var accessFlags = method.accessFlags
     private var returnType = method.returnType
 
-    // TODO: Create own mutable MethodImplementation (due to not being able to change members like register count)
-    private val _implementation by lazy { method.implementation?.let { MutableMethodImplementation(it) } }
+    // TODO: Create own mutable MethodImplementation (due to not being able to change members like register count).
+    private var implementation = method.implementation?.let(::MutableMethodImplementation)
     private val _annotations by lazy { method.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
     private val _parameters by lazy { method.parameters.map { parameter -> parameter.toMutable() }.toMutableList() }
     private val _parameterTypes by lazy { method.parameterTypes.toMutableList() }
@@ -35,6 +35,10 @@ class MutableMethod(method: Method) : BaseMethodReference(), Method {
         this.returnType = returnType
     }
 
+    fun setImplementation(implementation: MutableMethodImplementation?) {
+        this.implementation = implementation
+    }
+
     override fun getDefiningClass() = definingClass
 
     override fun getName() = name
@@ -51,7 +55,7 @@ class MutableMethod(method: Method) : BaseMethodReference(), Method {
 
     override fun getParameters() = _parameters
 
-    override fun getImplementation() = _implementation
+    override fun getImplementation() = implementation
 
     companion object {
         fun Method.toMutable() = MutableMethod(this)
