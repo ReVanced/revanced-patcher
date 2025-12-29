@@ -27,7 +27,7 @@ typealias Package = Pair<PackageName, Set<VersionName>?>
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @param dependencies Other patches this patch depends on.
  * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
@@ -122,7 +122,7 @@ internal fun Iterable<Patch<*>>.forEachRecursively(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @param dependencies Other patches this patch depends on.
@@ -171,7 +171,7 @@ class BytecodePatch internal constructor(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @param dependencies Other patches this patch depends on.
@@ -214,7 +214,7 @@ class RawResourcePatch internal constructor(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @param compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @param dependencies Other patches this patch depends on.
@@ -258,7 +258,7 @@ class ResourcePatch internal constructor(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @property compatiblePackages The packages the patch is compatible with.
  * If null, the patch is compatible with all packages.
  * @property dependencies Other patches this patch depends on.
@@ -375,7 +375,7 @@ private fun <B : PatchBuilder<*>> B.buildPatch(block: B.() -> Unit = {}) = apply
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @property extensionInputStream Getter for the extension input stream of the patch.
  * An extension is a precompiled DEX file that is merged into the patched app before this patch is executed.
  *
@@ -425,7 +425,7 @@ class BytecodePatchBuilder internal constructor(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @param block The block to build the patch.
  *
  * @return The created [BytecodePatch].
@@ -443,7 +443,7 @@ fun bytecodePatch(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  *
  * @constructor Create a new [RawResourcePatch] builder.
  */
@@ -470,7 +470,7 @@ class RawResourcePatchBuilder internal constructor(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @param block The block to build the patch.
  * @return The created [RawResourcePatch].
  */
@@ -487,7 +487,7 @@ fun rawResourcePatch(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  *
  * @constructor Create a new [ResourcePatch] builder.
  */
@@ -514,7 +514,7 @@ class ResourcePatchBuilder internal constructor(
  * @param name The name of the patch.
  * If null, the patch is named "Patch" and will not be loaded by [PatchLoader].
  * @param description The description of the patch.
- * @param use Weather or not the patch should be used.
+ * @param use Whether or not the patch should be used.
  * @param block The block to build the patch.
  *
  * @return The created [ResourcePatch].
