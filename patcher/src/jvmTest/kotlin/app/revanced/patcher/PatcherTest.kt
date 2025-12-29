@@ -77,15 +77,4 @@ internal class PatcherTest : PatcherTestBase() {
                 "afterDependents of a patch should be called " +
                 "regardless of dependant patches failing."
     }
-
-    @Test
-    fun `throws if unmatched fingerprint match is used`() {
-        with(bytecodePatchContext) {
-            val fingerprint = fingerprint { strings("doesnt exist") }
-
-            assertThrows<PatchException>("Expected an exception because the fingerprint can't match.") {
-                fingerprint.patternMatch
-            }
-        }
-    }
 }

@@ -236,7 +236,7 @@ by patchesByFile.values.flatten().toSet()
 @Suppress("MISSING_DEPENDENCY_IN_INFERRED_TYPE_ANNOTATION_WARNING")
 internal fun getPatches(classNames: List<String>, classLoader: ClassLoader): Set<Patch> {
     fun Member.isUsable() =
-        Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && (this !is Method || parameterCount != 0)
+        Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && (this !is Method || parameterCount == 0)
 
     fun Class<*>.getPatchFields() = fields
         .filter { it.type.isPatch && it.isUsable() }

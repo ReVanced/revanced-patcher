@@ -50,12 +50,14 @@ kotlin {
         jvmTest.dependencies {
             implementation(libs.mockk)
             implementation(libs.kotlin.test)
-            implementation(project(":tests"))
         }
     }
 
     compilerOptions {
-        freeCompilerArgs = listOf("-Xcontext-parameters")
+        freeCompilerArgs.addAll(
+            "-Xexplicit-backing-fields",
+            "-Xcontext-parameters"
+        )
     }
 }
 

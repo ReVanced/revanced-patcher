@@ -1,6 +1,5 @@
 package app.revanced.patcher.patch
 
-import app.revanced.patcher.patch.PatchBuilder.invoke
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.reflect.typeOf

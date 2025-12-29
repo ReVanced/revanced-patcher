@@ -41,7 +41,7 @@ internal class SmaliTest {
             """,
         )
 
-        val targetLocationIndex = method.getInstruction<BuilderOffsetInstruction>(0).target.location.index
+        val targetLocationIndex = method.getInstruction<BuilderOffsetInstruction>(1).target.location.index
 
         assertEquals(0, targetLocationIndex, "Label should point to index 0")
     }

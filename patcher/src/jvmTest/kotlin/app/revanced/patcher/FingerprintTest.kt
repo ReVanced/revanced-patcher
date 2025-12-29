@@ -19,7 +19,7 @@ internal class FingerprintTest : PatcherTestBase() {
                 "Fingerprints should match correctly."
             )
             assertNull(
-                fingerprint { returns("doesnt exist") }.originalMethodOrNull,
+                fingerprint { returns("does not exist") }.originalMethodOrNull,
                 "Fingerprints should match correctly."
             )
         }

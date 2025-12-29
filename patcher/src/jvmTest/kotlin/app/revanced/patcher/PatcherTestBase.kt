@@ -78,7 +78,9 @@ abstract class PatcherTestBase {
             every { this@bytecodePatchContext.getProperty("apkFile") } returns mockk<File>()
 
             every { this@bytecodePatchContext.classDefs } returns ClassDefs().apply {
-                invokePrivateMethod($$"initializeCache$patcher")
+                javaClass.getDeclaredMethod($$"initializeCache$patcher").apply {
+                    isAccessible = true
+                }.invoke(this)
             }
 
             every { get() } returns emptySet()
@@ -100,16 +102,4 @@ abstract class PatcherTestBase {
     }
 
     protected operator fun Patch.invoke() = setOf(this)()
-
-    private fun Any.setPrivateField(field: String, value: Any) {
-        this::class.java.getDeclaredField(field).apply {
-            this.isAccessible = true
-            set(this@setPrivateField, value)
-        }
-    }
-
-    private fun Any.invokePrivateMethod(method: String) =
-        javaClass.getDeclaredMethod(method).apply {
-            isAccessible = true
-        }.invoke(this)
 }

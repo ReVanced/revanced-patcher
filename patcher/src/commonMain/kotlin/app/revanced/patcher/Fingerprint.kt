@@ -25,14 +25,14 @@ class Fingerprint internal constructor(
 ) {
     @Suppress("ktlint:standard:backing-property-naming")
     // Backing field needed for lazy initialization.
-    private var _matchOrNull: Match? = null
+    private var _matchOrNull: FingerprintMatch? = null
 
     context(_: BytecodePatchContext)
-    private val matchOrNull: Match?
+    private val matchOrNull: FingerprintMatch?
         get() = matchOrNull()
 
     context(context: BytecodePatchContext)
-    internal fun matchOrNull(): Match? {
+    internal fun matchOrNull(): FingerprintMatch? {
         if (_matchOrNull != null) return _matchOrNull
 
         var match = strings?.mapNotNull {
@@ -57,7 +57,7 @@ class Fingerprint internal constructor(
     context(_: BytecodePatchContext)
     fun matchOrNull(
         classDef: ClassDef,
-    ): Match? {
+    ): FingerprintMatch? {
         if (_matchOrNull != null) return _matchOrNull
 
         for (method in classDef.methods) {
@@ -77,7 +77,7 @@ class Fingerprint internal constructor(
     fun matchOrNull(
         method: Method,
         classDef: ClassDef,
-    ): Match? {
+    ): FingerprintMatch? {
         if (_matchOrNull != null) return _matchOrNull
 
         if (returnType != null && !method.returnType.startsWith(returnType)) {
@@ -109,7 +109,7 @@ class Fingerprint internal constructor(
             return null
         }
 
-        val stringMatches: List<Match.StringMatch>? =
+        val stringMatches: List<FingerprintMatch.StringMatch>? =
             if (strings != null) {
                 buildList {
                     val instructions = method.instructionsOrNull ?: return null
@@ -128,7 +128,7 @@ class Fingerprint internal constructor(
                         val index = stringsList.indexOfFirst(string::contains)
                         if (index == -1) return@forEachIndexed
 
-                        add(Match.StringMatch(string, instructionIndex))
+                        add(FingerprintMatch.StringMatch(string, instructionIndex))
                         stringsList.removeAt(index)
                     }
 
@@ -141,7 +141,7 @@ class Fingerprint internal constructor(
         val patternMatch = if (opcodes != null) {
             val instructions = method.instructionsOrNull ?: return null
 
-            fun patternScan(): Match.PatternMatch? {
+            fun patternScan(): FingerprintMatch.PatternMatch? {
                 val fingerprintFuzzyPatternScanThreshold = fuzzyPatternScanThreshold
 
                 val instructionLength = instructions.count()
@@ -168,7 +168,7 @@ class Fingerprint internal constructor(
                         }
 
                         // The entire pattern has been scanned.
-                        return Match.PatternMatch(
+                        return FingerprintMatch.PatternMatch(
                             index,
                             index + patternIndex,
                         )
@@ -183,7 +183,7 @@ class Fingerprint internal constructor(
             null
         }
 
-        _matchOrNull = Match(
+        _matchOrNull = FingerprintMatch(
             context,
             classDef,
             method,
@@ -266,7 +266,7 @@ class Fingerprint internal constructor(
 }
 
 @Deprecated("Use the matcher API instead.")
-class Match internal constructor(
+class FingerprintMatch internal constructor(
     val context: BytecodePatchContext,
     val originalClassDef: ClassDef,
     val originalMethod: Method,

@@ -18,7 +18,7 @@ object MatchingTest : PatcherTestBase() {
     fun setup() = setupMock()
 
     @Test
-    fun `matches via builder api`() {
+    fun `finds via builder api`() {
         fun firstMethodBuilder(fail: Boolean = false) = firstMethodBuilder {
             name("method")
             definingClass("class")
@@ -45,7 +45,7 @@ object MatchingTest : PatcherTestBase() {
     }
 
     @Test
-    fun `matches via declarative api`() {
+    fun `finds via declarative api`() {
         bytecodePatch {
             apply {
                 val method = firstMethodByDeclarativePredicateOrNull {
@@ -64,7 +64,7 @@ object MatchingTest : PatcherTestBase() {
     }
 
     @Test
-    fun `predicate matcher works correctly`() {
+    fun `predicate api works correctly`() {
         bytecodePatch {
             apply {
                 assertDoesNotThrow("Should find method") { firstMethod { name == "method" } }

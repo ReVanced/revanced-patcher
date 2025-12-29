@@ -22,5 +22,3 @@ dependencyResolutionManagement {
 }
 
 include(":patcher")
-include(":matching")
-include(":tests")
