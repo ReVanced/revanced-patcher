@@ -3,10 +3,10 @@
 agp = "8.12.3"
 android-compileSdk = "36"
 android-minSdk = "26"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 apktool-lib = "2.10.1.1"
 kotlinx-coroutines-core = "1.10.2"
-mockk = "1.14.6"
+mockk = "1.14.7"
 multidexlib2 = "3.0.3.r3"
 # Tracking https://github.com/google/smali/issues/64.
 #noinspection GradleDependency
