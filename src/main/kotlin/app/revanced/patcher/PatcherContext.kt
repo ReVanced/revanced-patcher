@@ -6,6 +6,8 @@ import app.revanced.patcher.patch.ResourcePatchContext
 import brut.androlib.apk.ApkInfo
 import brut.directory.ExtFile
 import java.io.Closeable
+import lanchon.multidexlib2.EmptyMultiDexContainerException
+import java.util.logging.Logger
 
 /**
  * A context for the patcher containing the current state of the patcher.
@@ -14,6 +16,8 @@ import java.io.Closeable
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class PatcherContext internal constructor(config: PatcherConfig): Closeable {
+    private val logger = Logger.getLogger(this::class.java.name)
+
     /**
      * [PackageMetadata] of the supplied [PatcherConfig.apkFile].
      */
@@ -37,7 +41,12 @@ class PatcherContext internal constructor(config: PatcherConfig): Closeable {
     /**
      * The context for patches containing the current state of the bytecode.
      */
-    internal val bytecodeContext = BytecodePatchContext(config)
+    internal val bytecodeContext : BytecodePatchContext? = try {
+        BytecodePatchContext(config)
+    } catch (_: EmptyMultiDexContainerException) {
+        logger.info("The APK contains no DEX files. Skipping bytecode patches")
+        null
+    }
 
-    override fun close() = bytecodeContext.close()
+    override fun close() = bytecodeContext?.close() ?: Unit
 }
