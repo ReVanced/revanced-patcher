@@ -1,8 +1,11 @@
 package app.revanced.patcher
 
+import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMethod
+import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMethodDeclarativelyOrNull
 import app.revanced.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -13,13 +16,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-object MatchingTest : PatcherTestBase() {
+class MatchingTest : PatcherTestBase() {
     @BeforeAll
     fun setup() = setupMock()
 
     @Test
     fun `finds via builder api`() {
-        fun firstMethodBuilder(fail: Boolean = false) = firstMethodBuilder {
+        fun firstMethodComposite(fail: Boolean = false) = firstMethodComposite {
             name("method")
             definingClass("class")
 
@@ -36,19 +39,20 @@ object MatchingTest : PatcherTestBase() {
             )
         }
 
-        bytecodePatch {
-            apply {
-                assertNotNull(firstMethodBuilder().methodOrNull) { "Expected to find a method" }
-                Assertions.assertNull(firstMethodBuilder(fail = true).methodOrNull) { "Expected to not find a method" }
-            }
-        }()
+        with(bytecodePatchContext) {
+            assertNotNull(firstMethodComposite().methodOrNull) { "Expected to find a method" }
+            Assertions.assertNull(firstMethodComposite(fail = true).immutableMethodOrNull) { "Expected to not find a method" }
+            Assertions.assertNotNull(
+                firstMethodComposite().match(classDefs.first()).methodOrNull
+            ) { "Expected to find a method matching in a specific class" }
+        }
     }
 
     @Test
     fun `finds via declarative api`() {
         bytecodePatch {
             apply {
-                val method = firstMethodByDeclarativePredicateOrNull {
+                val method = firstMethodDeclarativelyOrNull {
                     anyOf {
                         predicate { name == "method" }
                         add { false }
@@ -78,7 +82,7 @@ object MatchingTest : PatcherTestBase() {
         val matcher = indexedMatcher<Int>()
 
         matcher.apply {
-            +head { this > 5 }
+            +head<Int> { this > 5 }
         }
         assertFalse(
             matcher(iterable),
@@ -86,7 +90,7 @@ object MatchingTest : PatcherTestBase() {
         )
         matcher.clear()
 
-        matcher.apply { +head { this == 1 } }(iterable)
+        matcher.apply { +head<Int> { this == 1 } }(iterable)
         assertEquals(
             listOf(0),
             matcher.indices,
@@ -107,7 +111,7 @@ object MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +head { this == 1 }
+            +head<Int> { this == 1 }
             add { _, _ -> this == 2 }
             add { _, _ -> this == 4 }
         }(iterable)
@@ -147,7 +151,7 @@ object MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +head { this == 1 }
+            +head<Int> { this == 1 }
             +after(2..5) { this == 4 }
             add { _, _ -> this == 8 }
             add { _, _ -> this == 9 }

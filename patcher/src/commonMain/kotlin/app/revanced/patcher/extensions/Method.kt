@@ -1,6 +1,5 @@
 package app.revanced.patcher.extensions
 
-import com.android.tools.smali.dexlib2.mutable.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
@@ -10,6 +9,7 @@ import com.android.tools.smali.dexlib2.builder.instruction.*
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodImplementation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.mutable.MutableMethod
 
 fun Method.accessFlags(vararg flags: AccessFlags) =
     accessFlags.and(flags.map { it.ordinal }.reduce { acc, i -> acc or i }) != 0

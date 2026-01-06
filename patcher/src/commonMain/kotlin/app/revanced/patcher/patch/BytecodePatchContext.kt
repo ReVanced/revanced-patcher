@@ -2,14 +2,13 @@ package app.revanced.patcher.patch
 
 import app.revanced.patcher.PatchesResult
 import app.revanced.patcher.extensions.instructionsOrNull
+import app.revanced.patcher.extensions.string
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.mutable.MutableClassDef
 import com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
 import lanchon.multidexlib2.BasicDexFileNamer
@@ -141,13 +140,8 @@ class BytecodePatchContext internal constructor(
         private fun ClassDef.forEachString(action: (Method, String) -> Unit) {
             methods.asSequence().forEach { method ->
                 method.instructionsOrNull?.asSequence()
-                    ?.filterIsInstance<ReferenceInstruction>()
-                    ?.map { it.reference }
-                    ?.filterIsInstance<StringReference>()
-                    ?.map { it.string }
-                    ?.forEach { string ->
-                        action(method, string)
-                    }
+                    ?.mapNotNull { it.string }
+                    ?.forEach { string -> action(method, string) }
             }
         }
 

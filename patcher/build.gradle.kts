@@ -41,7 +41,6 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.apktool.lib)
             implementation(libs.kotlin.reflect)
-            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.multidexlib2)
             implementation(libs.smali)
             implementation(libs.xpp3)

@@ -5,7 +5,6 @@ android-compileSdk = "36"
 android-minSdk = "26"
 kotlin = "2.3.0"
 apktool-lib = "2.10.1.1"
-kotlinx-coroutines-core = "1.10.2"
 mockk = "1.14.7"
 multidexlib2 = "3.0.3.r3"
 # Tracking https://github.com/google/smali/issues/64.
@@ -17,7 +16,6 @@ vanniktechMavenPublish = "0.35.0"
 [libraries]
 apktool-lib = { module = "app.revanced:apktool-lib", version.ref = "apktool-lib" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 multidexlib2 = { module = "app.revanced:multidexlib2", version.ref = "multidexlib2" }
