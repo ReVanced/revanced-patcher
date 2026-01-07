@@ -21,80 +21,79 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.*
 import com.android.tools.smali.dexlib2.iface.Annotation
 import com.android.tools.smali.dexlib2.iface.instruction.*
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.Reference
 import com.android.tools.smali.dexlib2.mutable.MutableMethod
 import com.android.tools.smali.dexlib2.util.MethodUtil
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-fun Iterable<ClassDef>.anyClassDef(predicate: ClassDef.() -> Boolean) = any(predicate)
+typealias Predicate<T> = T.() -> Boolean
+typealias Function<T> = T.() -> Unit
 
-fun ClassDef.anyMethod(predicate: Method.() -> Boolean) = methods.any(predicate)
+fun Iterable<ClassDef>.anyClassDef(predicate: Predicate<ClassDef>) = any(predicate)
 
-fun ClassDef.anyDirectMethod(predicate: Method.() -> Boolean) = directMethods.any(predicate)
+fun ClassDef.anyMethod(predicate: Predicate<Method>) = methods.any(predicate)
 
-fun ClassDef.anyVirtualMethod(predicate: Method.() -> Boolean) = virtualMethods.any(predicate)
+fun ClassDef.anyDirectMethod(predicate: Predicate<Method>) = directMethods.any(predicate)
 
-fun ClassDef.anyField(predicate: Field.() -> Boolean) = fields.any(predicate)
+fun ClassDef.anyVirtualMethod(predicate: Predicate<Method>) = virtualMethods.any(predicate)
 
-fun ClassDef.anyInstanceField(predicate: Field.() -> Boolean) = instanceFields.any(predicate)
+fun ClassDef.anyField(predicate: Predicate<Field>) = fields.any(predicate)
 
-fun ClassDef.anyStaticField(predicate: Field.() -> Boolean) = staticFields.any(predicate)
+fun ClassDef.anyInstanceField(predicate: Predicate<Field>) = instanceFields.any(predicate)
 
-fun ClassDef.anyInterface(predicate: String.() -> Boolean) = interfaces.any(predicate)
+fun ClassDef.anyStaticField(predicate: Predicate<Field>) = staticFields.any(predicate)
 
-fun ClassDef.anyAnnotation(predicate: Annotation.() -> Boolean) = annotations.any(predicate)
+fun ClassDef.anyInterface(predicate: Predicate<String>) = interfaces.any(predicate)
 
-fun Method.implementation(predicate: MethodImplementation.() -> Boolean) = implementation?.predicate() ?: false
+fun ClassDef.anyAnnotation(predicate: Predicate<Annotation>) = annotations.any(predicate)
 
-fun Method.anyParameter(predicate: MethodParameter.() -> Boolean) = parameters.any(predicate)
+fun Method.implementation(predicate: Predicate<MethodImplementation>) = implementation?.predicate() ?: false
 
-fun Method.anyParameterType(predicate: CharSequence.() -> Boolean) = parameterTypes.any(predicate)
+fun Method.anyParameter(predicate: Predicate<MethodParameter>) = parameters.any(predicate)
 
-fun Method.anyAnnotation(predicate: Annotation.() -> Boolean) = annotations.any(predicate)
+fun Method.anyParameterType(predicate: Predicate<CharSequence>) = parameterTypes.any(predicate)
 
-fun Method.anyHiddenApiRestriction(predicate: HiddenApiRestriction.() -> Boolean) = hiddenApiRestrictions.any(predicate)
+fun Method.anyAnnotation(predicate: Predicate<Annotation>) = annotations.any(predicate)
 
-fun MethodImplementation.anyInstruction(predicate: Instruction.() -> Boolean) = instructions.any(predicate)
+fun Method.anyHiddenApiRestriction(predicate: Predicate<HiddenApiRestriction>) = hiddenApiRestrictions.any(predicate)
 
-fun MethodImplementation.anyTryBlock(predicate: TryBlock<out ExceptionHandler>.() -> Boolean) = tryBlocks.any(predicate)
+fun MethodImplementation.anyInstruction(predicate: Predicate<Instruction>) = instructions.any(predicate)
 
-fun MethodImplementation.anyDebugItem(predicate: Any.() -> Boolean) = debugItems.any(predicate)
+fun MethodImplementation.anyTryBlock(predicate: Predicate<TryBlock<out ExceptionHandler>>) = tryBlocks.any(predicate)
 
-fun Iterable<Instruction>.anyInstruction(predicate: Instruction.() -> Boolean) = any(predicate)
+fun MethodImplementation.anyDebugItem(predicate: Predicate<Any>) = debugItems.any(predicate)
+
+fun Iterable<Instruction>.anyInstruction(predicate: Predicate<Instruction>) = any(predicate)
 
 private typealias ClassDefPredicate = context(PredicateContext) ClassDef.() -> Boolean
-
 private typealias MethodPredicate = context(PredicateContext) Method.() -> Boolean
-
 
 inline fun <reified V> PredicateContext.remember(key: Any, defaultValue: () -> V) = if (key in this) get(key) as V
 else defaultValue().also { put(key, it) }
 
 private fun <T> cachedReadOnlyProperty(block: BytecodePatchContext.(KProperty<*>) -> T) =
-    JVMConflict.cachedReadOnlyProperty(block)
+    object : ReadOnlyProperty<BytecodePatchContext, T> {
+        private val cache = HashMap<BytecodePatchContext, T>(1)
 
-private object JVMConflict {
-    fun <R, T> cachedReadOnlyProperty(block: R.(KProperty<*>) -> T) = object : ReadOnlyProperty<R, T?> {
-        private val cache = HashMap<R, T>(1)
-
-        override fun getValue(thisRef: R, property: KProperty<*>) =
-            (if (thisRef in cache) cache[thisRef] else cache.getOrPut(thisRef) { thisRef.block(property) })
+        override fun getValue(thisRef: BytecodePatchContext, property: KProperty<*>) =
+            if (thisRef in cache) cache.getValue(thisRef)
+            else cache.getOrPut(thisRef) { thisRef.block(property) }
     }
-}
 
-class MutablePredicateList<T> internal constructor() : MutableList<T.() -> Boolean> by mutableListOf()
+class MutablePredicateList<T> internal constructor() : MutableList<Predicate<T>> by mutableListOf()
 
 private typealias DeclarativePredicate<T> = context(PredicateContext) MutablePredicateList<T>.() -> Unit
 
-
-fun <T> T.declarativePredicate(build: MutablePredicateList<T>.() -> Unit) =
+fun <T> T.declarativePredicate(build: Function<MutablePredicateList<T>>) =
     context(MutablePredicateList<T>().apply(build)) {
         all(this)
     }
 
 context(context: PredicateContext)
-fun <T> T.rememberDeclarativePredicate(key: Any, block: MutablePredicateList<T>.() -> Unit) =
+fun <T> T.rememberDeclarativePredicate(key: Any, block: Function<MutablePredicateList<T>>) =
     context(context.remember(key) { MutablePredicateList<T>().apply(block) }) {
         all(this)
     }
@@ -567,58 +566,102 @@ private inline fun <T> withPredicateContext(block: PredicateContext.() -> T) = P
 
 fun <T> indexedMatcher() = IndexedMatcher<T>()
 
-fun <T> indexedMatcher(build: IndexedMatcher<T>.() -> Unit) =
+fun <T> indexedMatcher(build: Function<IndexedMatcher<T>>) =
     IndexedMatcher<T>().apply(build)
 
-fun <T> Iterable<T>.matchIndexed(build: IndexedMatcher<T>.() -> Unit) =
+fun <T> Iterable<T>.matchIndexed(build: Function<IndexedMatcher<T>>) =
     indexedMatcher(build)(this)
 
 context(_: PredicateContext)
-fun <T> Iterable<T>.rememberMatchIndexed(key: Any, build: IndexedMatcher<T>.() -> Unit) =
+fun <T> Iterable<T>.rememberMatchIndexed(key: Any, build: Function<IndexedMatcher<T>>) =
     indexedMatcher<T>()(key, this, build)
 
-fun <T> head(
-    predicate: T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean
-): T.(Int, Int) -> Boolean = { lastMatchedIndex, currentIndex ->
-    currentIndex == 0 && predicate(lastMatchedIndex, currentIndex)
+context(_: PredicateContext)
+fun <T> Iterable<T>.matchIndexed(
+    key: Any,
+    vararg items: IndexedMatcherPredicate<T>
+) = indexedMatcher<T>()(key, this) { items.forEach { +it } }
+
+fun <T> at(
+    index: Int = 0,
+    predicate: IndexedMatcherPredicate<T>
+): IndexedMatcherPredicate<T> = { lastMatchedIndex, currentIndex, setNextIndex ->
+    currentIndex == index && predicate(lastMatchedIndex, currentIndex, setNextIndex)
 }
 
-fun <T> head(predicate: T.() -> Boolean): T.(Int, Int) -> Boolean =
-    head { _, _ -> predicate() }
+fun <T> at(index: Int = 0, predicate: Predicate<T>) =
+    at<T>(index) { _, _, _ -> predicate() }
 
-context(matcher: IndexedMatcher<T>)
+fun <T> at(predicate: IndexedMatcherPredicate<T>): IndexedMatcherPredicate<T> =
+    at(0) { lastMatchedIndex, currentIndex, setNextIndex -> predicate(lastMatchedIndex, currentIndex, setNextIndex) }
+
+fun <T> at(predicate: Predicate<T>) =
+    at<T> { _, _, _ -> predicate() }
+
 fun <T> after(
     range: IntRange = 1..1,
-    predicate: T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean
-): T.(Int, Int) -> Boolean = predicate@{ lastMatchedIndex, currentIndex ->
+    predicate: IndexedMatcherPredicate<T>
+): IndexedMatcherPredicate<T> = predicate@{ lastMatchedIndex, currentIndex, setNextIndex ->
     val distance = currentIndex - lastMatchedIndex
 
-    matcher.nextIndex = when {
-        distance < range.first -> lastMatchedIndex + range.first
-        distance > range.last -> -1
-        else -> return@predicate predicate(lastMatchedIndex, currentIndex)
-    }
+    setNextIndex(
+        when {
+            distance < range.first -> lastMatchedIndex + range.first
+            distance > range.last -> -1
+            else -> return@predicate predicate(lastMatchedIndex, currentIndex, setNextIndex)
+        }
+    )
 
     false
 }
 
-context(_: IndexedMatcher<T>)
-fun <T> after(range: IntRange = 1..1, predicate: T.() -> Boolean) =
-    after(range) { _, _ -> predicate() }
+fun <T> after(range: IntRange = 1..1, predicate: Predicate<T>) =
+    after<T>(range) { _, _, _ -> predicate() }
+
+fun <T> after(predicate: IndexedMatcherPredicate<T>) =
+    after<T>(1..1) { lastMatchedIndex, currentIndex, setNextIndex ->
+        predicate(lastMatchedIndex, currentIndex, setNextIndex)
+    }
+
+fun <T> after(predicate: Predicate<T>) =
+    after<T> { _, _, _ -> predicate() }
+
+
+fun <T> anyOf(
+    vararg predicates: IndexedMatcherPredicate<T>
+): IndexedMatcherPredicate<T> = { currentIndex, lastMatchedIndex, setNextIndex ->
+    predicates.any { predicate -> predicate(currentIndex, lastMatchedIndex, setNextIndex) }
+}
+
+fun <T> allOf(
+    vararg predicates: IndexedMatcherPredicate<T>
+): IndexedMatcherPredicate<T> = { currentIndex, lastMatchedIndex, setNextIndex ->
+    predicates.all { predicate -> predicate(currentIndex, lastMatchedIndex, setNextIndex) }
+}
+
+fun <T> noneOf(
+    vararg predicates: IndexedMatcherPredicate<T>
+): IndexedMatcherPredicate<T> = { currentIndex, lastMatchedIndex, setNextIndex ->
+    predicates.none { predicate -> predicate(currentIndex, lastMatchedIndex, setNextIndex) }
+}
 
 context(matcher: IndexedMatcher<T>)
-operator fun <T> (T.(Int, Int) -> Boolean).unaryPlus() = matcher.add(this)
+operator fun <T> IndexedMatcherPredicate<T>.unaryPlus() = matcher.add(this)
 
-class IndexedMatcher<T> : Matcher<T, T.(lastMatchedIndex: Int, currentIndex: Int) -> Boolean>() {
+typealias IndexedMatcherPredicate<T> =
+        T.(lastMatchedIndex: Int, currentIndex: Int, setNextIndex: (Int?) -> Unit) -> Boolean
+
+class IndexedMatcher<T> :
+    Matcher<T, IndexedMatcherPredicate<T>>() {
     val indices: List<Int>
         field = mutableListOf()
 
     private var lastMatchedIndex = -1
     private var currentIndex = -1
-    var nextIndex: Int? = null
+    private var nextIndex: Int? = null
 
     override fun invoke(haystack: Iterable<T>): Boolean {
-        // Normalize to list
+        // Ensure list for indexed access.
         val hay = haystack as? List<T> ?: haystack.toList()
 
         indices.clear()
@@ -658,7 +701,7 @@ class IndexedMatcher<T> : Matcher<T, T.(lastMatchedIndex: Int, currentIndex: Int
             lastMatchedIndex = frame.lastMatchedIndex
             nextIndex = null
 
-            if (this[frame.patternIndex](hay[i], lastMatchedIndex, currentIndex)) {
+            if (this[frame.patternIndex](hay[i], lastMatchedIndex, currentIndex, this::nextIndex::set)) {
                 Frame(
                     patternIndex = frame.patternIndex + 1,
                     lastMatchedIndex = i,
@@ -697,14 +740,8 @@ context(context: PredicateContext)
 inline operator fun <T, U, reified M : Matcher<T, U>> M.invoke(
     key: Any,
     iterable: Iterable<T>,
-    builder: M.() -> Unit
+    builder: Function<M>
 ) = context.remember(key) { apply(builder) }(iterable)
-
-context(_: PredicateContext)
-inline operator fun <T, U, reified M : Matcher<T, U>> M.invoke(
-    iterable: Iterable<T>,
-    builder: M.() -> Unit
-) = invoke(this@invoke.hashCode(), iterable, builder)
 
 abstract class Matcher<T, U> : MutableList<U> by mutableListOf() {
     var matchIndex = -1
@@ -716,19 +753,25 @@ abstract class Matcher<T, U> : MutableList<U> by mutableListOf() {
 // endregion Matcher
 
 context(list: MutablePredicateList<T>)
-fun <T> allOf(block: MutablePredicateList<T>.() -> Unit) {
+fun <T> allOf(block: Function<MutablePredicateList<T>>) {
     val child = MutablePredicateList<T>().apply(block)
     list.add { child.all { it() } }
 }
 
 context(list: MutablePredicateList<T>)
-fun <T> anyOf(block: MutablePredicateList<T>.() -> Unit) {
+fun <T> anyOf(block: Function<MutablePredicateList<T>>) {
     val child = MutablePredicateList<T>().apply(block)
     list.add { child.any { it() } }
 }
 
 context(list: MutablePredicateList<T>)
-fun <T> predicate(block: T.() -> Boolean) {
+fun <T> noneOf(block: Function<MutablePredicateList<T>>) {
+    val child = MutablePredicateList<T>().apply(block)
+    list.add { child.none { it() } }
+}
+
+context(list: MutablePredicateList<T>)
+fun <T> predicate(block: Predicate<T>) {
     list.add(block)
 }
 
@@ -742,14 +785,26 @@ fun MutablePredicateList<Method>.accessFlags(vararg flags: AccessFlags) =
     predicate { accessFlags(flags = flags) }
 
 fun MutablePredicateList<Method>.returnType(
+    predicate: Predicate<String>
+) = predicate { this.returnType.predicate() }
+
+fun MutablePredicateList<Method>.returnType(
     returnType: String,
     compare: String.(String) -> Boolean = String::startsWith
 ) = predicate { this.returnType.compare(returnType) }
 
 fun MutablePredicateList<Method>.name(
+    predicate: Predicate<String>
+) = predicate { this.name.predicate() }
+
+fun MutablePredicateList<Method>.name(
     name: String,
     compare: String.(String) -> Boolean = String::equals
 ) = predicate { this.name.compare(name) }
+
+fun MutablePredicateList<Method>.definingClass(
+    predicate: Predicate<String>
+) = predicate { this.definingClass.predicate() }
 
 fun MutablePredicateList<Method>.definingClass(
     definingClass: String,
@@ -769,7 +824,7 @@ fun MutablePredicateList<Method>.instructions(
 }
 
 fun MutablePredicateList<Method>.instructions(
-    vararg predicates: Instruction.(currentIndex: Int, lastMatchedIndex: Int) -> Boolean
+    vararg predicates: IndexedMatcherPredicate<Instruction>
 ) = instructions {
     predicates.forEach { +it }
 }
@@ -784,42 +839,41 @@ fun MutablePredicateList<Method>.instructions(
 
 context(matcher: IndexedMatcher<Instruction>)
 fun MutablePredicateList<Method>.instructions(
-    vararg predicates: Instruction.(currentIndex: Int, lastMatchedIndex: Int) -> Boolean
-) = instructions {
-    predicates.forEach { +it }
-}
+    vararg predicates: IndexedMatcherPredicate<Instruction>
+) = instructions { predicates.forEach { +it } }
 
-fun MutablePredicateList<Method>.custom(block: Method.() -> Boolean) {
+fun MutablePredicateList<Method>.custom(block: Predicate<Method>) {
     predicate { block() }
 }
 
-context(_: IndexedMatcher<Instruction>)
 inline fun <reified T : Instruction> `is`(
-    crossinline predicate: T.() -> Boolean = { true }
-): Instruction.(Int, Int) -> Boolean = { _, _ -> (this as? T)?.predicate() == true }
+    crossinline predicate: Predicate<T> = { true }
+): IndexedMatcherPredicate<Instruction> = { _, _, _ -> (this as? T)?.predicate() == true }
 
-fun instruction(predicate: Instruction.() -> Boolean): Instruction.(Int, Int) -> Boolean = { _, _ -> predicate() }
+fun instruction(predicate: Predicate<Instruction> = { true }): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> predicate() }
 
-fun registers(predicate: IntArray.() -> Boolean = { true }): Instruction.(Int, Int) -> Boolean = { _, _ ->
-    when (this) {
-        is RegisterRangeInstruction ->
-            IntArray(registerCount) { startRegister + it }.predicate()
+fun registers(predicate: Predicate<IntArray> = { true }): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ ->
+        when (this) {
+            is RegisterRangeInstruction ->
+                IntArray(registerCount) { startRegister + it }.predicate()
 
-        is FiveRegisterInstruction ->
-            intArrayOf(registerC, registerD, registerE, registerF, registerG).predicate()
+            is FiveRegisterInstruction ->
+                intArrayOf(registerC, registerD, registerE, registerF, registerG).predicate()
 
-        is ThreeRegisterInstruction ->
-            intArrayOf(registerA, registerB, registerC).predicate()
+            is ThreeRegisterInstruction ->
+                intArrayOf(registerA, registerB, registerC).predicate()
 
-        is TwoRegisterInstruction ->
-            intArrayOf(registerA, registerB).predicate()
+            is TwoRegisterInstruction ->
+                intArrayOf(registerA, registerB).predicate()
 
-        is OneRegisterInstruction ->
-            intArrayOf(registerA).predicate()
+            is OneRegisterInstruction ->
+                intArrayOf(registerA).predicate()
 
-        else -> false
+            else -> false
+        }
     }
-}
 
 fun registers(
     vararg registers: Int,
@@ -828,47 +882,54 @@ fun registers(
     }
 ) = registers({ compare(registers) })
 
-fun literal(predicate: Long.() -> Boolean = { true }): Instruction.(Int, Int) -> Boolean =
-    { _, _ -> wideLiteral?.predicate() == true }
+fun literal(predicate: Predicate<Long> = { true }): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> wideLiteral?.predicate() == true }
 
 fun literal(literal: Long, compare: Long.(Long) -> Boolean = Long::equals) =
     literal { compare(literal) }
 
-fun reference(predicate: String.() -> Boolean = { true }): Instruction.(Int, Int) -> Boolean =
-    predicate@{ _, _ -> this.reference?.toString()?.predicate() == true }
 
-fun reference(reference: String, compare: String.(String) -> Boolean = String::equals) =
-    reference { compare(reference) }
+inline fun <reified T : Reference> reference(
+    crossinline predicate: Predicate<T> = { true }
+): IndexedMatcherPredicate<Instruction> = { _, _, _ ->
+    (reference as? T)?.predicate() == true
+}
 
-fun field(predicate: String.() -> Boolean = { true }): Instruction.(Int, Int) -> Boolean = { _, _ ->
-    fieldReference?.name?.predicate() == true
+fun reference(
+    reference: String,
+    compare: String.(String) -> Boolean = String::equals
+): IndexedMatcherPredicate<Instruction> = { _, _, _ -> this.reference?.toString()?.compare(reference) == true }
+
+fun field(predicate: Predicate<FieldReference> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ ->
+    fieldReference?.predicate() == true
 }
 
 fun field(name: String, compare: String.(String) -> Boolean = String::equals) =
-    field { compare(name) }
+    field { this.name.compare(name) }
 
-fun type(predicate: String.() -> Boolean = { true }): Instruction.(Int, Int) -> Boolean =
-    { _, _ -> type?.predicate() == true }
+fun type(predicate: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> type?.predicate() == true }
 
-fun type(type: String, compare: String.(String) -> Boolean = String::equals) =
+fun type(type: String, compare: String.(type: String) -> Boolean = String::equals) =
     type { compare(type) }
 
-fun method(predicate: String.() -> Boolean = { true }): Instruction.(Int, Int) -> Boolean = { _, _ ->
-    methodReference?.name?.predicate() == true
+fun method(predicate: Predicate<MethodReference> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ ->
+    methodReference?.predicate() == true
 }
 
 fun method(name: String, compare: String.(String) -> Boolean = String::equals) =
-    method { compare(name) }
+    method { this.name.compare(name) }
 
-fun string(compare: String.() -> Boolean = { true }): Instruction.(Int, Int) -> Boolean = predicate@{ _, _ ->
-    this@predicate.string?.compare() == true
-}
+fun string(compare: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> =
+    predicate@{ _, _, _ ->
+        this@predicate.string?.compare() == true
+    }
 
 context(stringsList: MutableList<String>)
 fun string(
     string: String,
     compare: String.(String) -> Boolean = String::equals
-): Instruction.(Int, Int) -> Boolean {
+): IndexedMatcherPredicate<Instruction> {
     if (compare == String::equals) stringsList += string
 
     return string { compare(string) }
@@ -877,32 +938,14 @@ fun string(
 fun string(string: String, compare: String.(String) -> Boolean = String::equals) = string { compare(string) }
 
 context(stringsList: MutableList<String>)
-operator fun String.invoke(compare: String.(String) -> Boolean = String::equals): Instruction.(Int, Int) -> Boolean {
+operator fun String.invoke(compare: String.(String) -> Boolean = String::equals): IndexedMatcherPredicate<Instruction> {
     if (compare == String::equals) stringsList += this
 
-    return { _, _ -> string?.compare(this@invoke) == true }
+    return { _, _, _ -> string?.compare(this@invoke) == true }
 }
 
-operator fun Opcode.invoke(): Instruction.(currentIndex: Int, lastMatchedIndex: Int) -> Boolean =
-    { _, _ -> opcode == this@invoke }
-
-fun anyOf(
-    vararg predicates: Instruction.(currentIndex: Int, lastMatchedIndex: Int) -> Boolean
-): Instruction.(Int, Int) -> Boolean = { currentIndex, lastMatchedIndex ->
-    predicates.any { predicate -> predicate(currentIndex, lastMatchedIndex) }
-}
-
-fun allOf(
-    vararg predicates: Instruction.(currentIndex: Int, lastMatchedIndex: Int) -> Boolean
-): Instruction.(Int, Int) -> Boolean = { currentIndex, lastMatchedIndex ->
-    predicates.all { predicate -> predicate(currentIndex, lastMatchedIndex) }
-}
-
-fun noneOf(
-    vararg predicates: Instruction.(currentIndex: Int, lastMatchedIndex: Int) -> Boolean
-): Instruction.(Int, Int) -> Boolean = { currentIndex, lastMatchedIndex ->
-    predicates.none { predicate -> predicate(currentIndex, lastMatchedIndex) }
-}
+operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> opcode == this@invoke }
 
 private typealias BuildDeclarativePredicate<Method> = context(
 PredicateContext,
@@ -915,18 +958,8 @@ fun firstMethodComposite(
     build: BuildDeclarativePredicate<Method>
 ) = MatchBuilder(strings = strings, build)
 
-val a = firstMethodComposite {
-    name("exampleMethod")
-    definingClass("Lcom/example/MyClass;")
-    returnType("V")
-    instructions(
-        head(Opcode.RETURN_VOID()),
-        after(1..5, Opcode.INVOKE_VIRTUAL())
-    )
-}
-
 class MatchBuilder private constructor(
-    val strings: MutableList<String>,
+    private val strings: MutableList<String>,
     indexedMatcher: IndexedMatcher<Instruction>,
     build: BuildDeclarativePredicate<Method>,
 ) {
@@ -936,7 +969,7 @@ class MatchBuilder private constructor(
 
     private val predicate: DeclarativePredicate<Method> = context(strings, indexedMatcher) { { build() } }
 
-    private val indices = indexedMatcher.indices
+    val indices = indexedMatcher.indices
 
     private val BytecodePatchContext.cachedImmutableMethodOrNull
             by gettingFirstMethodDeclarativelyOrNull(strings = strings.toTypedArray(), predicate)

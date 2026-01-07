@@ -5,7 +5,8 @@ import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMethodDeclar
 import app.revanced.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
-import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
+import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction22t
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -29,12 +30,14 @@ class MatchingTest : PatcherTestBase() {
             if (fail) returnType("doesnt exist")
 
             instructions(
-                head(Opcode.CONST_STRING()),
+                reference<StringReference>(),
+                at(Opcode.CONST_STRING()),
                 `is`<TwoRegisterInstruction>(),
                 noneOf(registers()),
                 string("test", String::contains),
                 after(1..3, allOf(Opcode.INVOKE_VIRTUAL(), registers(1, 0))),
                 allOf(),
+                `is`<Instruction22t>(),
                 type("PrintStream;", String::endsWith)
             )
         }
@@ -82,7 +85,7 @@ class MatchingTest : PatcherTestBase() {
         val matcher = indexedMatcher<Int>()
 
         matcher.apply {
-            +head<Int> { this > 5 }
+            +at<Int> { this > 5 }
         }
         assertFalse(
             matcher(iterable),
@@ -90,7 +93,7 @@ class MatchingTest : PatcherTestBase() {
         )
         matcher.clear()
 
-        matcher.apply { +head<Int> { this == 1 } }(iterable)
+        matcher.apply { +at<Int> { this == 1 } }(iterable)
         assertEquals(
             listOf(0),
             matcher.indices,
@@ -98,11 +101,11 @@ class MatchingTest : PatcherTestBase() {
         )
         matcher.clear()
 
-        matcher.apply { add { _, _ -> this > 0 } }(iterable)
+        matcher.apply { add { _, _, _ -> this > 0 } }(iterable)
         assertEquals(1, matcher.indices.size, "Should only match once.")
         matcher.clear()
 
-        matcher.apply { add { _, _ -> this == 2 } }(iterable)
+        matcher.apply { add { _, _, _ -> this == 2 } }(iterable)
         assertEquals(
             listOf(1),
             matcher.indices,
@@ -111,9 +114,9 @@ class MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +head<Int> { this == 1 }
-            add { _, _ -> this == 2 }
-            add { _, _ -> this == 4 }
+            +at<Int> { this == 1 }
+            add { _, _, _ -> this == 2 }
+            add { _, _, _ -> this == 4 }
         }(iterable)
         assertEquals(
             listOf(0, 1, 3),
@@ -123,7 +126,7 @@ class MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +after { this == 1 }
+            +after<Int> { this == 1 }
         }(iterable)
         assertEquals(
             listOf(0),
@@ -133,7 +136,7 @@ class MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +after(2..Int.MAX_VALUE) { this == 1 }
+            +after<Int>(2..Int.MAX_VALUE) { this == 1 }
         }
         assertFalse(
             matcher(iterable),
@@ -142,7 +145,7 @@ class MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +after(1..1) { this == 2 }
+            +after<Int>(1..1) { this == 2 }
         }
         assertFalse(
             matcher(iterable),
@@ -151,10 +154,10 @@ class MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +head<Int> { this == 1 }
-            +after(2..5) { this == 4 }
-            add { _, _ -> this == 8 }
-            add { _, _ -> this == 9 }
+            +at<Int> { this == 1 }
+            +after<Int>(2..5) { this == 4 }
+            add { _, _, _ -> this == 8 }
+            add { _, _, _ -> this == 9 }
         }(iterable)
         assertEquals(
             listOf(0, 3, 7, 8),
