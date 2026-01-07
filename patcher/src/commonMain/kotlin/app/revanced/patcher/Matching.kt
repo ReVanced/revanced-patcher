@@ -226,20 +226,17 @@ object IterableClassDefMethodMatching {
 
     context(context: BytecodePatchContext)
     fun Iterable<ClassDef>.firstMethodDeclarativelyOrNull(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method>
+        vararg strings: String, predicate: DeclarativePredicate<Method>
     ) = firstMethodOrNull(strings = strings) { rememberDeclarativePredicate(predicate) }
 
     context(context: BytecodePatchContext)
     fun Iterable<ClassDef>.firstMethodDeclaratively(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method>
+        vararg strings: String, predicate: DeclarativePredicate<Method>
     ) = requireNotNull(firstMethodDeclarativelyOrNull(strings = strings, predicate))
 
     context(context: BytecodePatchContext)
     fun Iterable<ClassDef>.firstMutableMethodDeclarativelyOrNull(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method>
+        vararg strings: String, predicate: DeclarativePredicate<Method>
     ) = firstMutableMethodOrNull(strings = strings) { rememberDeclarativePredicate(predicate) }
 }
 
@@ -299,48 +296,40 @@ object IterableClassDefClassDefMatching {
     ) = requireNotNull(firstClassDefOrNull(predicate))
 
     fun Iterable<ClassDef>.firstClassDefOrNull(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = if (type == null) firstClassDefOrNull(predicate)
     else withPredicateContext { firstOrNull { it.type == type && it.predicate() } }
 
     fun Iterable<ClassDef>.firstClassDef(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = requireNotNull(firstClassDefOrNull(type, predicate))
 
     context(context: BytecodePatchContext)
     fun Iterable<ClassDef>.firstMutableClassDefOrNull(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = firstClassDefOrNull(type, predicate)?.let { context.classDefs.getOrReplaceMutable(it) }
 
     context(_: BytecodePatchContext)
     fun Iterable<ClassDef>.firstMutableClassDef(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = requireNotNull(firstMutableClassDefOrNull(type, predicate))
 
     fun Iterable<ClassDef>.firstClassDefDeclarativelyOrNull(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef>
+        type: String? = null, predicate: DeclarativePredicate<ClassDef>
     ) = firstClassDefOrNull(type) { rememberDeclarativePredicate(predicate) }
 
     fun Iterable<ClassDef>.firstClassDefDeclaratively(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef>
+        type: String? = null, predicate: DeclarativePredicate<ClassDef>
     ) = requireNotNull(firstClassDefDeclarativelyOrNull(type, predicate))
 
     context(_: BytecodePatchContext)
     fun Iterable<ClassDef>.firstMutableClassDefDeclarativelyOrNull(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef>
+        type: String? = null, predicate: DeclarativePredicate<ClassDef>
     ) = firstMutableClassDefOrNull(type) { rememberDeclarativePredicate(predicate) }
 
     context(_: BytecodePatchContext)
     fun Iterable<ClassDef>.firstMutableClassDefDeclaratively(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef>
+        type: String? = null, predicate: DeclarativePredicate<ClassDef>
     ) = requireNotNull(firstMutableClassDefDeclarativelyOrNull(type, predicate))
 }
 
@@ -355,8 +344,12 @@ object BytecodePatchContextMethodMatching {
 
     fun BytecodePatchContext.firstMutableMethodOrNull(
         methodReference: MethodReference
-    ): MutableMethod? = firstMutableClassDefOrNull(methodReference.definingClass)?.methods
-        ?.first { MethodUtil.methodSignaturesMatch(methodReference, it) }
+    ): MutableMethod? = firstMutableClassDefOrNull(methodReference.definingClass)?.methods?.first {
+            MethodUtil.methodSignaturesMatch(
+                methodReference,
+                it
+            )
+        }
 
     fun BytecodePatchContext.firstMutableMethod(
         method: MethodReference
@@ -390,8 +383,7 @@ object BytecodePatchContextMethodMatching {
     }
 
     fun BytecodePatchContext.firstMutableMethod(
-        vararg strings: String,
-        predicate: MethodPredicate = { true }
+        vararg strings: String, predicate: MethodPredicate = { true }
     ) = requireNotNull(firstMutableMethodOrNull(strings = strings, predicate))
 
     fun gettingFirstMethodOrNull(
@@ -431,128 +423,104 @@ object BytecodePatchContextMethodMatching {
     ) = cachedReadOnlyProperty { firstMutableMethod(strings = strings, predicate) }
 
     fun BytecodePatchContext.firstMethodDeclarativelyOrNull(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = firstMethodOrNull(strings = strings) { rememberDeclarativePredicate(predicate) }
 
     fun BytecodePatchContext.firstMethodDeclaratively(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = requireNotNull(firstMethodDeclarativelyOrNull(strings = strings, predicate))
 
     fun BytecodePatchContext.firstMutableMethodDeclarativelyOrNull(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = firstMutableMethodOrNull(strings = strings) { rememberDeclarativePredicate(predicate) }
 
     fun BytecodePatchContext.firstMutableMethodDeclaratively(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = requireNotNull(firstMutableMethodDeclarativelyOrNull(strings = strings, predicate))
 
     fun gettingFirstMethodDeclarativelyOrNull(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = gettingFirstMethodOrNull(strings = strings) { rememberDeclarativePredicate(predicate) }
 
     fun gettingFirstMethodDeclaratively(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = gettingFirstMethod(strings = strings) { rememberDeclarativePredicate(predicate) }
 
     fun gettingFirstMutableMethodDeclarativelyOrNull(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = gettingFirstMutableMethodOrNull(strings = strings) { rememberDeclarativePredicate(predicate) }
 
     fun gettingFirstMutableMethodDeclaratively(
-        vararg strings: String,
-        predicate: DeclarativePredicate<Method> = { }
+        vararg strings: String, predicate: DeclarativePredicate<Method> = { }
     ) = gettingFirstMutableMethod(strings = strings) { rememberDeclarativePredicate(predicate) }
 }
 
 object BytecodePatchContextClassDefMatching {
     fun BytecodePatchContext.firstClassDefOrNull(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = withPredicateContext {
         if (type == null) classDefs.firstClassDefOrNull(predicate)
         else classDefs[type]?.takeIf { it.predicate() }
     }
 
     fun BytecodePatchContext.firstClassDef(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = requireNotNull(firstClassDefOrNull(type, predicate))
 
     fun BytecodePatchContext.firstMutableClassDefOrNull(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = firstClassDefOrNull(type, predicate)?.let { classDefs.getOrReplaceMutable(it) }
 
     fun BytecodePatchContext.firstMutableClassDef(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = requireNotNull(firstMutableClassDefOrNull(type, predicate))
 
     fun gettingFirstClassDefOrNull(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = cachedReadOnlyProperty { firstClassDefOrNull(type, predicate) }
 
     fun gettingFirstClassDef(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = requireNotNull(gettingFirstClassDefOrNull(type, predicate))
 
     fun gettingFirstMutableClassDefOrNull(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = cachedReadOnlyProperty { firstMutableClassDefOrNull(type, predicate) }
 
     fun gettingFirstMutableClassDef(
-        type: String? = null,
-        predicate: ClassDefPredicate = { true }
+        type: String? = null, predicate: ClassDefPredicate = { true }
     ) = requireNotNull(gettingFirstMutableClassDefOrNull(type, predicate))
 
     fun BytecodePatchContext.firstClassDefDeclarativelyOrNull(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = firstClassDefOrNull(type) { rememberDeclarativePredicate(predicate) }
 
     fun BytecodePatchContext.firstClassDefDeclaratively(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = requireNotNull(firstClassDefDeclarativelyOrNull(type, predicate))
 
     fun BytecodePatchContext.firstMutableClassDefDeclarativelyOrNull(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = firstMutableClassDefOrNull(type) { rememberDeclarativePredicate(predicate) }
 
     fun BytecodePatchContext.firstMutableClassDefDeclaratively(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = requireNotNull(firstMutableClassDefDeclarativelyOrNull(type, predicate))
 
     fun gettingFirstClassDefDeclarativelyOrNull(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = cachedReadOnlyProperty { firstClassDefDeclarativelyOrNull(type, predicate) }
 
     fun gettingFirstClassDefDeclaratively(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = requireNotNull(gettingFirstClassDefDeclarativelyOrNull(type, predicate))
 
     fun gettingFirstMutableClassDefDeclarativelyOrNull(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = cachedReadOnlyProperty { firstMutableClassDefDeclarativelyOrNull(type, predicate) }
 
     fun gettingFirstMutableClassDefDeclaratively(
-        type: String? = null,
-        predicate: DeclarativePredicate<ClassDef> = { }
+        type: String? = null, predicate: DeclarativePredicate<ClassDef> = { }
     ) = requireNotNull(gettingFirstMutableClassDefDeclarativelyOrNull(type, predicate))
 }
 
@@ -566,11 +534,9 @@ private inline fun <T> withPredicateContext(block: PredicateContext.() -> T) = P
 
 fun <T> indexedMatcher() = IndexedMatcher<T>()
 
-fun <T> indexedMatcher(build: Function<IndexedMatcher<T>>) =
-    IndexedMatcher<T>().apply(build)
+fun <T> indexedMatcher(build: Function<IndexedMatcher<T>>) = IndexedMatcher<T>().apply(build)
 
-fun <T> Iterable<T>.matchIndexed(build: Function<IndexedMatcher<T>>) =
-    indexedMatcher(build)(this)
+fun <T> Iterable<T>.matchIndexed(build: Function<IndexedMatcher<T>>) = indexedMatcher(build)(this)
 
 context(_: PredicateContext)
 fun <T> Iterable<T>.rememberMatchIndexed(key: Any, build: Function<IndexedMatcher<T>>) =
@@ -578,29 +544,24 @@ fun <T> Iterable<T>.rememberMatchIndexed(key: Any, build: Function<IndexedMatche
 
 context(_: PredicateContext)
 fun <T> Iterable<T>.matchIndexed(
-    key: Any,
-    vararg items: IndexedMatcherPredicate<T>
+    key: Any, vararg items: IndexedMatcherPredicate<T>
 ) = indexedMatcher<T>()(key, this) { items.forEach { +it } }
 
 fun <T> at(
-    index: Int = 0,
-    predicate: IndexedMatcherPredicate<T>
+    index: Int = 0, predicate: IndexedMatcherPredicate<T>
 ): IndexedMatcherPredicate<T> = { lastMatchedIndex, currentIndex, setNextIndex ->
     currentIndex == index && predicate(lastMatchedIndex, currentIndex, setNextIndex)
 }
 
-fun <T> at(index: Int = 0, predicate: Predicate<T>) =
-    at<T>(index) { _, _, _ -> predicate() }
+fun <T> at(index: Int = 0, predicate: Predicate<T>) = at<T>(index) { _, _, _ -> predicate() }
 
 fun <T> at(predicate: IndexedMatcherPredicate<T>): IndexedMatcherPredicate<T> =
     at(0) { lastMatchedIndex, currentIndex, setNextIndex -> predicate(lastMatchedIndex, currentIndex, setNextIndex) }
 
-fun <T> at(predicate: Predicate<T>) =
-    at<T> { _, _, _ -> predicate() }
+fun <T> at(predicate: Predicate<T>) = at<T> { _, _, _ -> predicate() }
 
 fun <T> after(
-    range: IntRange = 1..1,
-    predicate: IndexedMatcherPredicate<T>
+    range: IntRange = 1..1, predicate: IndexedMatcherPredicate<T>
 ): IndexedMatcherPredicate<T> = predicate@{ lastMatchedIndex, currentIndex, setNextIndex ->
     val distance = currentIndex - lastMatchedIndex
 
@@ -615,16 +576,13 @@ fun <T> after(
     false
 }
 
-fun <T> after(range: IntRange = 1..1, predicate: Predicate<T>) =
-    after<T>(range) { _, _, _ -> predicate() }
+fun <T> after(range: IntRange = 1..1, predicate: Predicate<T>) = after<T>(range) { _, _, _ -> predicate() }
 
-fun <T> after(predicate: IndexedMatcherPredicate<T>) =
-    after<T>(1..1) { lastMatchedIndex, currentIndex, setNextIndex ->
-        predicate(lastMatchedIndex, currentIndex, setNextIndex)
-    }
+fun <T> after(predicate: IndexedMatcherPredicate<T>) = after<T>(1..1) { lastMatchedIndex, currentIndex, setNextIndex ->
+    predicate(lastMatchedIndex, currentIndex, setNextIndex)
+}
 
-fun <T> after(predicate: Predicate<T>) =
-    after<T> { _, _, _ -> predicate() }
+fun <T> after(predicate: Predicate<T>) = after<T> { _, _, _ -> predicate() }
 
 
 fun <T> anyOf(
@@ -648,11 +606,9 @@ fun <T> noneOf(
 context(matcher: IndexedMatcher<T>)
 operator fun <T> IndexedMatcherPredicate<T>.unaryPlus() = matcher.add(this)
 
-typealias IndexedMatcherPredicate<T> =
-        T.(lastMatchedIndex: Int, currentIndex: Int, setNextIndex: (Int?) -> Unit) -> Boolean
+typealias IndexedMatcherPredicate<T> = T.(lastMatchedIndex: Int, currentIndex: Int, setNextIndex: (Int?) -> Unit) -> Boolean
 
-class IndexedMatcher<T> :
-    Matcher<T, IndexedMatcherPredicate<T>>() {
+class IndexedMatcher<T> : Matcher<T, IndexedMatcherPredicate<T>>() {
     val indices: List<Int>
         field = mutableListOf()
 
@@ -679,11 +635,7 @@ class IndexedMatcher<T> :
         val stack = ArrayDeque<Frame>()
         stack.add(
             Frame(
-                patternIndex = 0,
-                lastMatchedIndex = -1,
-                previousFrame = null,
-                nextHayIndex = 0,
-                matchedIndex = -1
+                patternIndex = 0, lastMatchedIndex = -1, previousFrame = null, nextHayIndex = 0, matchedIndex = -1
             )
         )
 
@@ -738,9 +690,7 @@ class IndexedMatcher<T> :
 
 context(context: PredicateContext)
 inline operator fun <T, U, reified M : Matcher<T, U>> M.invoke(
-    key: Any,
-    iterable: Iterable<T>,
-    builder: Function<M>
+    key: Any, iterable: Iterable<T>, builder: Function<M>
 ) = context.remember(key) { apply(builder) }(iterable)
 
 abstract class Matcher<T, U> : MutableList<U> by mutableListOf() {
@@ -781,16 +731,14 @@ fun <T> all(target: T): Boolean = list.all { target.it() }
 context(list: MutablePredicateList<T>)
 fun <T> any(target: T): Boolean = list.any { target.it() }
 
-fun MutablePredicateList<Method>.accessFlags(vararg flags: AccessFlags) =
-    predicate { accessFlags(flags = flags) }
+fun MutablePredicateList<Method>.accessFlags(vararg flags: AccessFlags) = predicate { accessFlags(flags = flags) }
 
 fun MutablePredicateList<Method>.returnType(
     predicate: Predicate<String>
 ) = predicate { this.returnType.predicate() }
 
 fun MutablePredicateList<Method>.returnType(
-    returnType: String,
-    compare: String.(String) -> Boolean = String::startsWith
+    returnType: String, compare: String.(String) -> Boolean = String::startsWith
 ) = predicate { this.returnType.compare(returnType) }
 
 fun MutablePredicateList<Method>.name(
@@ -798,8 +746,7 @@ fun MutablePredicateList<Method>.name(
 ) = predicate { this.name.predicate() }
 
 fun MutablePredicateList<Method>.name(
-    name: String,
-    compare: String.(String) -> Boolean = String::equals
+    name: String, compare: String.(String) -> Boolean = String::equals
 ) = predicate { this.name.compare(name) }
 
 fun MutablePredicateList<Method>.definingClass(
@@ -807,8 +754,7 @@ fun MutablePredicateList<Method>.definingClass(
 ) = predicate { this.definingClass.predicate() }
 
 fun MutablePredicateList<Method>.definingClass(
-    definingClass: String,
-    compare: String.(String) -> Boolean = String::equals
+    definingClass: String, compare: String.(String) -> Boolean = String::equals
 ) = predicate { this.definingClass.compare(definingClass) }
 
 fun MutablePredicateList<Method>.parameterTypes(vararg parameterTypePrefixes: String) = predicate {
@@ -853,31 +799,24 @@ inline fun <reified T : Instruction> `is`(
 fun instruction(predicate: Predicate<Instruction> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ -> predicate() }
 
-fun registers(predicate: Predicate<IntArray> = { true }): IndexedMatcherPredicate<Instruction> =
-    { _, _, _ ->
-        when (this) {
-            is RegisterRangeInstruction ->
-                IntArray(registerCount) { startRegister + it }.predicate()
+fun registers(predicate: Predicate<IntArray> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ ->
+    when (this) {
+        is RegisterRangeInstruction -> IntArray(registerCount) { startRegister + it }.predicate()
 
-            is FiveRegisterInstruction ->
-                intArrayOf(registerC, registerD, registerE, registerF, registerG).predicate()
+        is FiveRegisterInstruction -> intArrayOf(registerC, registerD, registerE, registerF, registerG).predicate()
 
-            is ThreeRegisterInstruction ->
-                intArrayOf(registerA, registerB, registerC).predicate()
+        is ThreeRegisterInstruction -> intArrayOf(registerA, registerB, registerC).predicate()
 
-            is TwoRegisterInstruction ->
-                intArrayOf(registerA, registerB).predicate()
+        is TwoRegisterInstruction -> intArrayOf(registerA, registerB).predicate()
 
-            is OneRegisterInstruction ->
-                intArrayOf(registerA).predicate()
+        is OneRegisterInstruction -> intArrayOf(registerA).predicate()
 
-            else -> false
-        }
+        else -> false
     }
+}
 
 fun registers(
-    vararg registers: Int,
-    compare: IntArray.(registers: IntArray) -> Boolean = { registers ->
+    vararg registers: Int, compare: IntArray.(registers: IntArray) -> Boolean = { registers ->
         this.size >= registers.size && registers.indices.all { this[it] == registers[it] }
     }
 ) = registers({ compare(registers) })
@@ -885,8 +824,7 @@ fun registers(
 fun literal(predicate: Predicate<Long> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ -> wideLiteral?.predicate() == true }
 
-fun literal(literal: Long, compare: Long.(Long) -> Boolean = Long::equals) =
-    literal { compare(literal) }
+fun literal(literal: Long, compare: Long.(Long) -> Boolean = Long::equals) = literal { compare(literal) }
 
 
 inline fun <reified T : Reference> reference(
@@ -896,39 +834,33 @@ inline fun <reified T : Reference> reference(
 }
 
 fun reference(
-    reference: String,
-    compare: String.(String) -> Boolean = String::equals
+    reference: String, compare: String.(String) -> Boolean = String::equals
 ): IndexedMatcherPredicate<Instruction> = { _, _, _ -> this.reference?.toString()?.compare(reference) == true }
 
 fun field(predicate: Predicate<FieldReference> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ ->
     fieldReference?.predicate() == true
 }
 
-fun field(name: String, compare: String.(String) -> Boolean = String::equals) =
-    field { this.name.compare(name) }
+fun field(name: String, compare: String.(String) -> Boolean = String::equals) = field { this.name.compare(name) }
 
 fun type(predicate: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ -> type?.predicate() == true }
 
-fun type(type: String, compare: String.(type: String) -> Boolean = String::equals) =
-    type { compare(type) }
+fun type(type: String, compare: String.(type: String) -> Boolean = String::equals) = type { compare(type) }
 
 fun method(predicate: Predicate<MethodReference> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ ->
     methodReference?.predicate() == true
 }
 
-fun method(name: String, compare: String.(String) -> Boolean = String::equals) =
-    method { this.name.compare(name) }
+fun method(name: String, compare: String.(String) -> Boolean = String::equals) = method { this.name.compare(name) }
 
-fun string(compare: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> =
-    predicate@{ _, _, _ ->
-        this@predicate.string?.compare() == true
-    }
+fun string(compare: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> = predicate@{ _, _, _ ->
+    this@predicate.string?.compare() == true
+}
 
 context(stringsList: MutableList<String>)
 fun string(
-    string: String,
-    compare: String.(String) -> Boolean = String::equals
+    string: String, compare: String.(String) -> Boolean = String::equals
 ): IndexedMatcherPredicate<Instruction> {
     if (compare == String::equals) stringsList += string
 
@@ -944,18 +876,12 @@ operator fun String.invoke(compare: String.(String) -> Boolean = String::equals)
     return { _, _, _ -> string?.compare(this@invoke) == true }
 }
 
-operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> =
-    { _, _, _ -> opcode == this@invoke }
+operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> = { _, _, _ -> opcode == this@invoke }
 
-private typealias BuildDeclarativePredicate<Method> = context(
-PredicateContext,
-IndexedMatcher<Instruction>,
-MutableList<String>
-) MutablePredicateList<Method>.() -> Unit
+private typealias BuildDeclarativePredicate<Method> = context(PredicateContext, IndexedMatcher<Instruction>, MutableList<String>) MutablePredicateList<Method>.() -> Unit
 
 fun firstMethodComposite(
-    vararg strings: String,
-    build: BuildDeclarativePredicate<Method>
+    vararg strings: String, build: BuildDeclarativePredicate<Method>
 ) = MatchBuilder(strings = strings, build)
 
 class MatchBuilder private constructor(
@@ -964,15 +890,19 @@ class MatchBuilder private constructor(
     build: BuildDeclarativePredicate<Method>,
 ) {
 
-    internal constructor(vararg strings: String, build: BuildDeclarativePredicate<Method>) :
-            this(strings = mutableListOf(elements = strings), indexedMatcher(), build)
+    internal constructor(
+        vararg strings: String,
+        build: BuildDeclarativePredicate<Method>
+    ) : this(strings = mutableListOf(elements = strings), indexedMatcher(), build)
 
     private val predicate: DeclarativePredicate<Method> = context(strings, indexedMatcher) { { build() } }
 
     val indices = indexedMatcher.indices
 
-    private val BytecodePatchContext.cachedImmutableMethodOrNull
-            by gettingFirstMethodDeclarativelyOrNull(strings = strings.toTypedArray(), predicate)
+    private val BytecodePatchContext.cachedImmutableMethodOrNull by gettingFirstMethodDeclarativelyOrNull(
+        strings = strings.toTypedArray(),
+        predicate
+    )
 
     private val BytecodePatchContext.cachedImmutableClassDefOrNull by cachedReadOnlyProperty {
         val type = cachedImmutableMethodOrNull?.definingClass ?: return@cachedReadOnlyProperty null
@@ -1014,16 +944,12 @@ class MatchBuilder private constructor(
 
     context(context: BytecodePatchContext)
     fun match(classDef: ClassDef) = Match(
-        context,
-        classDef.firstMethodDeclarativelyOrNull { predicate() },
-        indices.toList()
+        context, classDef.firstMethodDeclarativelyOrNull { predicate() }, indices.toList()
     )
 }
 
 class Match(
-    val context: BytecodePatchContext,
-    val immutableMethodOrNull: Method?,
-    val indices: List<Int>
+    val context: BytecodePatchContext, val immutableMethodOrNull: Method?, val indices: List<Int>
 ) {
     val immutableMethod by lazy { requireNotNull(immutableMethodOrNull) }
 
