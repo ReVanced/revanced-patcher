@@ -68,8 +68,8 @@ fun MethodImplementation.anyDebugItem(predicate: Predicate<Any>) = debugItems.an
 
 fun Iterable<Instruction>.anyInstruction(predicate: Predicate<Instruction>) = any(predicate)
 
-private typealias ClassDefPredicate = context(PredicateContext) ClassDef.() -> Boolean
-private typealias MethodPredicate = context(PredicateContext) Method.() -> Boolean
+typealias ClassDefPredicate = context(PredicateContext) ClassDef.() -> Boolean
+typealias MethodPredicate = context(PredicateContext) Method.() -> Boolean
 
 inline fun <reified V> PredicateContext.remember(key: Any, defaultValue: () -> V) = if (key in this) get(key) as V
 else defaultValue().also { put(key, it) }
@@ -85,7 +85,7 @@ private fun <T> cachedReadOnlyProperty(block: BytecodePatchContext.(KProperty<*>
 
 class MutablePredicateList<T> internal constructor() : MutableList<Predicate<T>> by mutableListOf()
 
-private typealias DeclarativePredicate<T> = context(PredicateContext) MutablePredicateList<T>.() -> Unit
+typealias DeclarativePredicate<T> = context(PredicateContext) MutablePredicateList<T>.() -> Unit
 
 fun <T> T.declarativePredicate(build: Function<MutablePredicateList<T>>) =
     context(MutablePredicateList<T>().apply(build)) {
@@ -345,11 +345,11 @@ object BytecodePatchContextMethodMatching {
     fun BytecodePatchContext.firstMutableMethodOrNull(
         methodReference: MethodReference
     ): MutableMethod? = firstMutableClassDefOrNull(methodReference.definingClass)?.methods?.first {
-            MethodUtil.methodSignaturesMatch(
-                methodReference,
-                it
-            )
-        }
+        MethodUtil.methodSignaturesMatch(
+            methodReference,
+            it
+        )
+    }
 
     fun BytecodePatchContext.firstMutableMethod(
         method: MethodReference
@@ -878,7 +878,7 @@ operator fun String.invoke(compare: String.(String) -> Boolean = String::equals)
 
 operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> = { _, _, _ -> opcode == this@invoke }
 
-private typealias BuildDeclarativePredicate<Method> = context(PredicateContext, IndexedMatcher<Instruction>, MutableList<String>) MutablePredicateList<Method>.() -> Unit
+typealias BuildDeclarativePredicate<Method> = context(PredicateContext, IndexedMatcher<Instruction>, MutableList<String>) MutablePredicateList<Method>.() -> Unit
 
 fun firstMethodComposite(
     vararg strings: String, build: BuildDeclarativePredicate<Method>
