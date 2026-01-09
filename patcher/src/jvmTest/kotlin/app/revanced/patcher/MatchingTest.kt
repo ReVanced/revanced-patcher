@@ -6,7 +6,6 @@ import app.revanced.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction22t
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -30,14 +29,12 @@ class MatchingTest : PatcherTestBase() {
             if (fail) returnType("doesnt exist")
 
             instructions(
-                reference<StringReference>(),
                 at(Opcode.CONST_STRING()),
                 `is`<TwoRegisterInstruction>(),
                 noneOf(registers()),
                 string("test", String::contains),
                 after(1..3, allOf(Opcode.INVOKE_VIRTUAL(), registers(1, 0))),
                 allOf(),
-                `is`<Instruction22t>(),
                 type("PrintStream;", String::endsWith)
             )
         }
