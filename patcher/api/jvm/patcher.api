@@ -172,6 +172,47 @@ public final class app/revanced/patcher/IndexedMatcher : app/revanced/patcher/Ma
 	public fun removeAt (I)Lkotlin/jvm/functions/Function4;
 }
 
+public final class app/revanced/patcher/InstructionMatchingFunctions {
+	public static final field INSTANCE Lapp/revanced/patcher/InstructionMatchingFunctions;
+	public final fun field (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun field (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun field$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun field$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun instruction (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun instruction$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun invoke (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun invoke (Lcom/android/tools/smali/dexlib2/Opcode;)Lkotlin/jvm/functions/Function4;
+	public final fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun invoke (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun invoke$default (Lapp/revanced/patcher/InstructionMatchingFunctions;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun invoke$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun invoke$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun literal (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun literal (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun literal$default (Lapp/revanced/patcher/InstructionMatchingFunctions;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun literal$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun method (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun method (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun method$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun method$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun reference (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun reference$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun registers (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public final fun registers ([ILkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun registers$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun registers$default (Lapp/revanced/patcher/InstructionMatchingFunctions;[ILkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun string (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun string (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun string (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun string$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun string$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun string$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public final fun type (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public final fun type (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun type$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun type$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+}
+
 public final class app/revanced/patcher/IterableClassDefClassDefMatching {
 	public static final field INSTANCE Lapp/revanced/patcher/IterableClassDefClassDefMatching;
 	public final fun firstClassDef (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
@@ -238,7 +279,7 @@ public final class app/revanced/patcher/IterableMethodMethodMatching {
 }
 
 public final class app/revanced/patcher/Match {
-	public fun <init> (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Ljava/util/List;)V
+	public fun <init> (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Ljava/util/List;Ljava/util/Map;)V
 	public final fun getClassDef ()Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public final fun getClassDefOrNull ()Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public final fun getContext ()Lapp/revanced/patcher/patch/BytecodePatchContext;
@@ -249,6 +290,7 @@ public final class app/revanced/patcher/Match {
 	public final fun getIndices ()Ljava/util/List;
 	public final fun getMethod ()Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
 	public final fun getMethodOrNull ()Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public final fun getStringIndices ()Ljava/util/Map;
 }
 
 public final class app/revanced/patcher/MatchBuilder {
@@ -262,6 +304,7 @@ public final class app/revanced/patcher/MatchBuilder {
 	public final fun getIndices ()Ljava/util/List;
 	public final fun getMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
 	public final fun getMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public final fun getStringIndices ()Ljava/util/Map;
 	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 }
 
@@ -339,11 +382,7 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun definingClass (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static final fun definingClass (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun definingClass$default (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
-	public static final fun field (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static final fun field (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun field$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun field$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static final fun firstMethodComposite ([Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lapp/revanced/patcher/MatchBuilder;
+	public static final fun firstMethodComposite ([Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lapp/revanced/patcher/MatchBuilder;
 	public static final fun getClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public static final fun getClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public static final fun getImmutableClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
@@ -351,29 +390,14 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun implementation (Lcom/android/tools/smali/dexlib2/iface/Method;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun indexedMatcher (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/IndexedMatcher;
 	public static final fun indexedMatcher ([Lkotlin/jvm/functions/Function4;)Lapp/revanced/patcher/IndexedMatcher;
-	public static final fun instruction (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun instruction$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun instructions (Lapp/revanced/patcher/IndexedMatcher;Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun instructions (Lapp/revanced/patcher/IndexedMatcher;Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function4;)V
 	public static final fun instructions (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun instructions (Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function4;)V
-	public static final fun invoke (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static final fun invoke (Lcom/android/tools/smali/dexlib2/Opcode;)Lkotlin/jvm/functions/Function4;
-	public static final fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static final fun invoke (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun invoke$default (JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun invoke$default (Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun invoke$default (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static final fun literal (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static final fun literal (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun literal$default (JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun literal$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun matchIndexed (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;[Lkotlin/jvm/functions/Function4;)Z
 	public static final fun matchIndexed (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Z
-	public static final fun method (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static final fun method (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun method$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun method$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun matchUnordered (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;[Lkotlin/jvm/functions/Function1;)Z
+	public static final fun matchUnordered (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun name (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static final fun name (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun name$default (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
@@ -381,28 +405,21 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun noneOf ([Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
 	public static final fun parameterTypes (Lapp/revanced/patcher/MutablePredicateList;[Ljava/lang/String;)V
 	public static final fun predicate (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
-	public static final fun reference (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun reference$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static final fun registers (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static final fun registers ([ILkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun registers$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun registers$default ([ILkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun rememberDeclarativePredicate (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun rememberMatchIndexed (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
+	public static final fun rememberMatchUnordered (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun returnType (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static final fun returnType (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun returnType$default (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
-	public static final fun string (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static final fun string (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static final fun string (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun string$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun string$default (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun string$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static final fun type (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static final fun type (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun type$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun type$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static final fun unaryPlus (Lapp/revanced/patcher/IndexedMatcher;Lkotlin/jvm/functions/Function4;)Z
+	public static final fun strings (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
+	public static final fun strings (Lapp/revanced/patcher/MutablePredicateList;[Ljava/lang/String;)V
+	public static final fun strings (Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function1;)V
+	public static final fun strings (Lapp/revanced/patcher/UnorderedMatcher;Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
+	public static final fun strings (Lapp/revanced/patcher/UnorderedMatcher;Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function1;)V
+	public static final fun strings (Ljava/util/List;Lapp/revanced/patcher/UnorderedMatcher;Lapp/revanced/patcher/MutablePredicateList;[Ljava/lang/String;)V
+	public static final fun unaryPlus (Lapp/revanced/patcher/Matcher;Ljava/lang/Object;)Z
+	public static final fun unorderedMatcher (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/UnorderedMatcher;
+	public static final fun unorderedMatcher ([Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/UnorderedMatcher;
 }
 
 public final class app/revanced/patcher/MutablePredicateList : java/util/List, kotlin/jvm/internal/markers/KMutableList {
@@ -482,6 +499,35 @@ public final class app/revanced/patcher/PredicateContext : java/util/Map, kotlin
 	public fun remove (Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun size ()I
 	public final fun values ()Ljava/util/Collection;
+}
+
+public final class app/revanced/patcher/StringMatchingFunctions {
+	public static final field INSTANCE Lapp/revanced/patcher/StringMatchingFunctions;
+	public final fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public final fun invoke (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public static synthetic fun invoke$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
+	public static synthetic fun invoke$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
+	public final fun string (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public final fun string (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public final fun string (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
+	public static synthetic fun string$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
+	public static synthetic fun string$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
+}
+
+public final class app/revanced/patcher/UnorderedMatcher : app/revanced/patcher/Matcher {
+	public fun <init> ()V
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun contains (Lkotlin/jvm/functions/Function1;)Z
+	public final fun getIndices ()Ljava/util/Map;
+	public final fun indexOf (Ljava/lang/Object;)I
+	public fun indexOf (Lkotlin/jvm/functions/Function1;)I
+	public fun invoke (Ljava/lang/Iterable;)Z
+	public final fun lastIndexOf (Ljava/lang/Object;)I
+	public fun lastIndexOf (Lkotlin/jvm/functions/Function1;)I
+	public final fun remove (I)Lkotlin/jvm/functions/Function1;
+	public final fun remove (Ljava/lang/Object;)Z
+	public fun remove (Lkotlin/jvm/functions/Function1;)Z
+	public fun removeAt (I)Lkotlin/jvm/functions/Function1;
 }
 
 public final class app/revanced/patcher/extensions/ExternalLabel {

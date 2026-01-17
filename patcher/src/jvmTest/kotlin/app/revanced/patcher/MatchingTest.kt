@@ -2,18 +2,23 @@ package app.revanced.patcher
 
 import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMethod
 import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMethodDeclarativelyOrNull
+import app.revanced.patcher.InstructionMatchingFunctions.invoke
+import app.revanced.patcher.InstructionMatchingFunctions.`is`
+import app.revanced.patcher.InstructionMatchingFunctions.registers
+import app.revanced.patcher.InstructionMatchingFunctions.string
+import app.revanced.patcher.InstructionMatchingFunctions.type
 import app.revanced.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction22t
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MatchingTest : PatcherTestBase() {
@@ -28,6 +33,9 @@ class MatchingTest : PatcherTestBase() {
 
             if (fail) returnType("doesnt exist")
 
+            strings("This is a test.")
+            strings(StringMatchingFunctions.string("Hello", String::startsWith))
+
             instructions(
                 at(Opcode.CONST_STRING()),
                 `is`<TwoRegisterInstruction>(),
@@ -40,11 +48,29 @@ class MatchingTest : PatcherTestBase() {
         }
 
         with(bytecodePatchContext) {
-            assertNotNull(firstMethodComposite().methodOrNull) { "Expected to find a method" }
-            Assertions.assertNull(firstMethodComposite(fail = true).immutableMethodOrNull) { "Expected to not find a method" }
-            Assertions.assertNotNull(
-                firstMethodComposite().match(classDefs.first()).methodOrNull
-            ) { "Expected to find a method matching in a specific class" }
+            val match = firstMethodComposite()
+            assertNotNull(
+                match.methodOrNull,
+                "Expected to find a method"
+            )
+            assertEquals(
+                4, match.indices[3],
+                "Expected to find the string instruction at index 5"
+            )
+            assertEquals(
+                0, match.stringIndices["Hello"],
+                "Expected to find 'Hello' at index 0"
+            )
+
+            assertNull(
+                firstMethodComposite(fail = true).immutableMethodOrNull,
+                "Expected to not find a method"
+            )
+
+            assertNotNull(
+                firstMethodComposite().match(classDefs.first()).methodOrNull,
+                "Expected to find a method matching in a specific class"
+            )
         }
     }
 
@@ -77,7 +103,46 @@ class MatchingTest : PatcherTestBase() {
     }
 
     @Test
-    fun `matcher finds indices correctly`() {
+    fun `unordered matcher works correctly`() {
+        val strings = listOf("apple", "banana", "cherry", "date", "elderberry")
+        val matcher = unorderedMatcher<String, String>()
+
+        matcher.apply {
+            add { "an".takeIf { contains(it) } }
+            add { "apple".takeIf { equals(it) } }
+            add { "elder".takeIf { startsWith(it) } }
+        }
+        assertTrue(
+            matcher(strings),
+            "Should match correctly"
+        )
+        assertEquals(
+            matcher.indices["an"], 1,
+            "Should find 'banana' at index 1"
+        )
+        assertEquals(
+            matcher.indices["apple"], 0,
+            "Should find 'apple' at index 0"
+        )
+        assertEquals(
+            matcher.indices["elder"], 4,
+            "Should find 'elderberry' at index 4"
+        )
+        matcher.clear()
+
+        matcher.apply {
+            add { "xyz".takeIf { contains(it) } }
+            add { "apple".takeIf { equals(it) } }
+            add { "elder".takeIf { startsWith(it) } }
+        }
+        assertFalse(
+            matcher(strings),
+            "Should not match"
+        )
+    }
+
+    @Test
+    fun `indexed matcher finds indices correctly`() {
         val iterable = (1..10).toList()
         val matcher = indexedMatcher<Int>()
 
