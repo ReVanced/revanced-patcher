@@ -373,10 +373,6 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun anyVirtualMethod (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun at (ILkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
 	public static final fun at (ILkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
-	public static final fun at (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static final fun at (Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun at$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun at$default (ILkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun custom (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun declarativePredicate (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun definingClass (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
@@ -403,6 +399,8 @@ public final class app/revanced/patcher/MatchingKt {
 	public static synthetic fun name$default (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
 	public static final fun noneOf (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun noneOf ([Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
+	public static final fun opcodes (Lapp/revanced/patcher/IndexedMatcher;Lapp/revanced/patcher/MutablePredicateList;[Lcom/android/tools/smali/dexlib2/Opcode;)V
+	public static final fun opcodes (Lapp/revanced/patcher/MutablePredicateList;[Lcom/android/tools/smali/dexlib2/Opcode;)V
 	public static final fun parameterTypes (Lapp/revanced/patcher/MutablePredicateList;[Ljava/lang/String;)V
 	public static final fun predicate (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun rememberDeclarativePredicate (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z

@@ -7,6 +7,7 @@ import app.revanced.patcher.BytecodePatchContextClassDefMatching.firstMutableCla
 import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMutableMethodOrNull
 import app.revanced.patcher.BytecodePatchContextMethodMatching.gettingFirstMethodDeclarativelyOrNull
 import app.revanced.patcher.ClassDefMethodMatching.firstMethodDeclarativelyOrNull
+import app.revanced.patcher.InstructionMatchingFunctions.invoke
 import app.revanced.patcher.IterableClassDefClassDefMatching.firstClassDefOrNull
 import app.revanced.patcher.IterableClassDefMethodMatching.firstMethodOrNull
 import app.revanced.patcher.IterableMethodMethodMatching.firstMethodDeclarativelyOrNull
@@ -645,22 +646,12 @@ fun <T> Iterable<T>.matchIndexed(
     key: Any, vararg items: IndexedMatcherPredicate<T>
 ) = indexedMatcher<T>()(key, this) { items.forEach { +it } }
 
-fun <T> at(
-    index: Int = 0, predicate: IndexedMatcherPredicate<T>
-): IndexedMatcherPredicate<T> = { lastMatchedIndex, currentIndex, setNextIndex ->
-    currentIndex == index && predicate(lastMatchedIndex, currentIndex, setNextIndex)
-}
-
-fun <T> at(index: Int = 0, predicate: Predicate<T>) = at<T>(index) { _, _, _ -> predicate() }
-
-fun <T> at(predicate: IndexedMatcherPredicate<T>): IndexedMatcherPredicate<T> =
-    at(0) { lastMatchedIndex, currentIndex, setNextIndex ->
-        predicate(
-            lastMatchedIndex, currentIndex, setNextIndex
-        )
+fun <T> at(index: Int, predicate: IndexedMatcherPredicate<T>): IndexedMatcherPredicate<T> =
+    { lastMatchedIndex, currentIndex, setNextIndex ->
+        currentIndex == index && predicate(lastMatchedIndex, currentIndex, setNextIndex)
     }
 
-fun <T> at(predicate: Predicate<T>) = at<T> { _, _, _ -> predicate() }
+fun <T> at(index: Int, predicate: Predicate<T>) = at<T>(index) { _, _, _ -> predicate() }
 
 fun <T> after(
     range: IntRange = 1..1, predicate: IndexedMatcherPredicate<T>
@@ -935,6 +926,15 @@ fun MutablePredicateList<Method>.instructions(
 fun MutablePredicateList<Method>.custom(block: Predicate<Method>) {
     predicate { block() }
 }
+
+fun MutablePredicateList<Method>.opcodes(
+    vararg opcodes: Opcode
+) = instructions { opcodes.forEach { +it() } }
+
+context(matcher: IndexedMatcher<Instruction>)
+fun MutablePredicateList<Method>.opcodes(
+    vararg opcodes: Opcode
+) = instructions { opcodes.forEach { +it() } }
 
 object InstructionMatchingFunctions {
     inline fun <reified T : Instruction> `is`(

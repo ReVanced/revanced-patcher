@@ -37,7 +37,7 @@ class MatchingTest : PatcherTestBase() {
             strings(StringMatchingFunctions.string("Hello", String::startsWith))
 
             instructions(
-                at(Opcode.CONST_STRING()),
+                at(0, Opcode.CONST_STRING()),
                 `is`<TwoRegisterInstruction>(),
                 noneOf(registers()),
                 string("test", String::contains),
@@ -147,7 +147,7 @@ class MatchingTest : PatcherTestBase() {
         val matcher = indexedMatcher<Int>()
 
         matcher.apply {
-            +at<Int> { this > 5 }
+            +at<Int>(0) { this > 5 }
         }
         assertFalse(
             matcher(iterable),
@@ -155,7 +155,7 @@ class MatchingTest : PatcherTestBase() {
         )
         matcher.clear()
 
-        matcher.apply { +at<Int> { this == 1 } }(iterable)
+        matcher.apply { +at<Int>(0) { this == 1 } }(iterable)
         assertEquals(
             listOf(0),
             matcher.indices,
@@ -176,7 +176,7 @@ class MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +at<Int> { this == 1 }
+            +at<Int>(0) { this == 1 }
             add { _, _, _ -> this == 2 }
             add { _, _, _ -> this == 4 }
         }(iterable)
@@ -216,7 +216,7 @@ class MatchingTest : PatcherTestBase() {
         matcher.clear()
 
         matcher.apply {
-            +at<Int> { this == 1 }
+            +at<Int>(0) { this == 1 }
             +after<Int>(2..5) { this == 4 }
             add { _, _, _ -> this == 8 }
             add { _, _, _ -> this == 9 }
