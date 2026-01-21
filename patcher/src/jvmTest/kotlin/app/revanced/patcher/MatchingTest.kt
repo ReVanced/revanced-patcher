@@ -1,14 +1,9 @@
 package app.revanced.patcher
 
-import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMethod
-import app.revanced.patcher.BytecodePatchContextMethodMatching.firstMethodDeclarativelyOrNull
-import app.revanced.patcher.InstructionMatchingFunctions.invoke
-import app.revanced.patcher.InstructionMatchingFunctions.`is`
-import app.revanced.patcher.InstructionMatchingFunctions.registers
-import app.revanced.patcher.InstructionMatchingFunctions.string
-import app.revanced.patcher.InstructionMatchingFunctions.type
+import app.revanced.patcher.extensions.instructions
 import app.revanced.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -18,7 +13,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MatchingTest : PatcherTestBase() {
@@ -32,9 +26,6 @@ class MatchingTest : PatcherTestBase() {
             definingClass("class")
 
             if (fail) returnType("doesnt exist")
-
-            strings("This is a test.")
-            strings(StringMatchingFunctions.string("Hello", String::startsWith))
 
             instructions(
                 at(0, Opcode.CONST_STRING()),
@@ -56,10 +47,6 @@ class MatchingTest : PatcherTestBase() {
             assertEquals(
                 4, match.indices[3],
                 "Expected to find the string instruction at index 5"
-            )
-            assertEquals(
-                0, match.stringIndices["Hello"],
-                "Expected to find 'Hello' at index 0"
             )
 
             assertNull(
@@ -100,45 +87,6 @@ class MatchingTest : PatcherTestBase() {
                 assertDoesNotThrow("Should find method") { firstMethod { name == "method" } }
             }
         }
-    }
-
-    @Test
-    fun `unordered matcher works correctly`() {
-        val strings = listOf("apple", "banana", "cherry", "date", "elderberry")
-        val matcher = unorderedMatcher<String, String>()
-
-        matcher.apply {
-            add { "an".takeIf { contains(it) } }
-            add { "apple".takeIf { equals(it) } }
-            add { "elder".takeIf { startsWith(it) } }
-        }
-        assertTrue(
-            matcher(strings),
-            "Should match correctly"
-        )
-        assertEquals(
-            matcher.indices["an"], 1,
-            "Should find 'banana' at index 1"
-        )
-        assertEquals(
-            matcher.indices["apple"], 0,
-            "Should find 'apple' at index 0"
-        )
-        assertEquals(
-            matcher.indices["elder"], 4,
-            "Should find 'elderberry' at index 4"
-        )
-        matcher.clear()
-
-        matcher.apply {
-            add { "xyz".takeIf { contains(it) } }
-            add { "apple".takeIf { equals(it) } }
-            add { "elder".takeIf { startsWith(it) } }
-        }
-        assertFalse(
-            matcher(strings),
-            "Should not match"
-        )
     }
 
     @Test
@@ -225,6 +173,53 @@ class MatchingTest : PatcherTestBase() {
             listOf(0, 3, 7, 8),
             matcher.indices,
             "Should match indices correctly."
+        )
+    }
+
+    @Test
+    fun `unordered matching works correctly`() {
+        val list = bytecodePatchContext.classDefs.first().methods.first().instructions
+        val matcher = indexedMatcher<Instruction>()
+
+        matcher.apply {
+            addAll(
+                unorderedAllOf(
+                    afterAtLeast(1, Opcode.RETURN_OBJECT()),
+                    string(),
+                    Opcode.INVOKE_VIRTUAL(),
+                )
+            )
+        }(list)
+        assertEquals(
+            listOf(4, 5, 6),
+            matcher.indices,
+            "Should match because after(1) luckily only matches after the string at index 4."
+        )
+        matcher.clear()
+
+        matcher.apply {
+            addAll(
+                unorderedAllOf(
+                    string("test", String::contains),
+                    string("Hello", String::contains),
+                    afterAtLeast(1, Opcode.RETURN_OBJECT()),
+                )
+            )
+        }(list)
+        assertEquals(
+            listOf(0, 4, 5),
+            matcher.indices,
+            "Should first match indices 4 due to the string, then after due to step 1, then the invoke."
+        )
+
+        assertFalse(
+            indexedMatcher<Int>(
+                items = unorderedAllOf(
+                    { _, _, _ -> this == 1 },
+                    { _, _, _ -> this == -1 },
+                    after(2) { this == -2 }
+                ))(listOf(1, -1, 1, 2, -2)),
+            "Should not match because because 1 is matched at index 0, too early for after(2)."
         )
     }
 }
