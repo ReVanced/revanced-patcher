@@ -615,7 +615,7 @@ fun <T> indexedMatcher(build: Function<IndexedMatcher<T>>) = IndexedMatcher<T>()
 fun <T> Iterable<T>.matchIndexed(build: Function<IndexedMatcher<T>>) = indexedMatcher(build)(this)
 
 context(_: PredicateContext)
-fun <T> Iterable<T>.rememberMatchIndexed(key: Any, build: Function<IndexedMatcher<T>>) =
+fun <T> Iterable<T>.matchIndexed(key: Any, build: Function<IndexedMatcher<T>>) =
     indexedMatcher<T>()(key, this, build)
 
 context(_: PredicateContext)

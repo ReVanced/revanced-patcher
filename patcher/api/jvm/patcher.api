@@ -1,103 +1,3 @@
-public final class app/revanced/patcher/BytecodePatchContextClassDefMatching {
-	public static final field INSTANCE Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;
-	public final fun firstClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDef$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstClassDefDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDefDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstClassDefDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDefOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstMutableClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDef$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public final fun firstMutableClassDefDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDefDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public final fun firstMutableClassDefDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public final fun firstMutableClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDefOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public final fun gettingFirstClassDef (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstClassDef$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstClassDefDeclaratively (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstClassDefDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstClassDefDeclarativelyOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstClassDefOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstClassDefOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableClassDef (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableClassDef$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableClassDefDeclaratively (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableClassDefDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableClassDefDeclarativelyOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableClassDefOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableClassDefOrNull$default (Lapp/revanced/patcher/BytecodePatchContextClassDefMatching;Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-}
-
-public final class app/revanced/patcher/BytecodePatchContextMethodMatching {
-	public static final field INSTANCE Lapp/revanced/patcher/BytecodePatchContextMethodMatching;
-	public final fun firstMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethod$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethodDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethodDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethodOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethod$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethodDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethodDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethodOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun gettingFirstMethod (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMethod ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMethod$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMethodDeclaratively ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMethodDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMethodDeclarativelyOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMethodDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMethodOrNull (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMethodOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMethodOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableMethod (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableMethod ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableMethod$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableMethodDeclaratively ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableMethodDeclaratively$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableMethodDeclarativelyOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableMethodDeclarativelyOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableMethodOrNull (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
-	public final fun gettingFirstMutableMethodOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun gettingFirstMutableMethodOrNull$default (Lapp/revanced/patcher/BytecodePatchContextMethodMatching;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
-}
-
-public final class app/revanced/patcher/ClassDefMethodMatching {
-	public static final field INSTANCE Lapp/revanced/patcher/ClassDefMethodMatching;
-	public final fun firstMethod (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethod (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethod$default (Lapp/revanced/patcher/ClassDefMethodMatching;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclaratively (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclarativelyOrNull (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethodOrNull$default (Lapp/revanced/patcher/ClassDefMethodMatching;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethod$default (Lapp/revanced/patcher/ClassDefMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethodOrNull$default (Lapp/revanced/patcher/ClassDefMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-}
-
 public final class app/revanced/patcher/Fingerprint {
 	public final fun getClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public final fun getClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
@@ -172,114 +72,8 @@ public final class app/revanced/patcher/IndexedMatcher : app/revanced/patcher/Ma
 	public fun removeAt (I)Lkotlin/jvm/functions/Function4;
 }
 
-public final class app/revanced/patcher/InstructionMatchingFunctions {
-	public static final field INSTANCE Lapp/revanced/patcher/InstructionMatchingFunctions;
-	public final fun field (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun field (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun field$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun field$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun instruction (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun instruction$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun invoke (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun invoke (Lcom/android/tools/smali/dexlib2/Opcode;)Lkotlin/jvm/functions/Function4;
-	public final fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun invoke (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun invoke$default (Lapp/revanced/patcher/InstructionMatchingFunctions;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun invoke$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun invoke$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun literal (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun literal (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun literal$default (Lapp/revanced/patcher/InstructionMatchingFunctions;JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun literal$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun method (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun method (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun method$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun method$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun reference (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun reference$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun registers (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public final fun registers ([ILkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun registers$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun registers$default (Lapp/revanced/patcher/InstructionMatchingFunctions;[ILkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun string (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun string (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun string (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun string$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun string$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun string$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public final fun type (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
-	public final fun type (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun type$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-	public static synthetic fun type$default (Lapp/revanced/patcher/InstructionMatchingFunctions;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
-}
-
-public final class app/revanced/patcher/IterableClassDefClassDefMatching {
-	public static final field INSTANCE Lapp/revanced/patcher/IterableClassDefClassDefMatching;
-	public final fun firstClassDef (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDef$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstClassDefDeclaratively (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDefDeclaratively$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstClassDefDeclarativelyOrNull (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstClassDefOrNull (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public static synthetic fun firstClassDefOrNull$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
-	public final fun firstMutableClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDef$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public final fun firstMutableClassDefDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDefDeclaratively$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public final fun firstMutableClassDefDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public final fun firstMutableClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-	public static synthetic fun firstMutableClassDefOrNull$default (Lapp/revanced/patcher/IterableClassDefClassDefMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
-}
-
-public final class app/revanced/patcher/IterableClassDefMethodMatching {
-	public static final field INSTANCE Lapp/revanced/patcher/IterableClassDefMethodMatching;
-	public final fun firstMethod (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethod (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethod (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethod$default (Lapp/revanced/patcher/IterableClassDefMethodMatching;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethod$default (Lapp/revanced/patcher/IterableClassDefMethodMatching;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclaratively (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclarativelyOrNull (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethodOrNull$default (Lapp/revanced/patcher/IterableClassDefMethodMatching;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethodOrNull$default (Lapp/revanced/patcher/IterableClassDefMethodMatching;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethod$default (Lapp/revanced/patcher/IterableClassDefMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethodOrNull$default (Lapp/revanced/patcher/IterableClassDefMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-}
-
-public final class app/revanced/patcher/IterableMethodMethodMatching {
-	public static final field INSTANCE Lapp/revanced/patcher/IterableMethodMethodMatching;
-	public final fun firstMethod (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethod (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethod$default (Lapp/revanced/patcher/IterableMethodMethodMatching;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclaratively (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodDeclarativelyOrNull (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMethodOrNull (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static synthetic fun firstMethodOrNull$default (Lapp/revanced/patcher/IterableMethodMethodMatching;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethod$default (Lapp/revanced/patcher/IterableMethodMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public static synthetic fun firstMutableMethodOrNull$default (Lapp/revanced/patcher/IterableMethodMethodMatching;Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-}
-
 public final class app/revanced/patcher/Match {
-	public fun <init> (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Ljava/util/List;Ljava/util/Map;)V
+	public fun <init> (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;Ljava/util/List;)V
 	public final fun getClassDef ()Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public final fun getClassDefOrNull ()Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public final fun getContext ()Lapp/revanced/patcher/patch/BytecodePatchContext;
@@ -290,7 +84,6 @@ public final class app/revanced/patcher/Match {
 	public final fun getIndices ()Ljava/util/List;
 	public final fun getMethod ()Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
 	public final fun getMethodOrNull ()Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun getStringIndices ()Ljava/util/Map;
 }
 
 public final class app/revanced/patcher/MatchBuilder {
@@ -304,7 +97,6 @@ public final class app/revanced/patcher/MatchBuilder {
 	public final fun getIndices ()Ljava/util/List;
 	public final fun getMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
 	public final fun getMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
-	public final fun getStringIndices ()Ljava/util/Map;
 	public final fun match (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;)Lapp/revanced/patcher/Match;
 }
 
@@ -342,12 +134,24 @@ public abstract class app/revanced/patcher/Matcher : java/util/List, kotlin/jvm/
 
 public final class app/revanced/patcher/MatchingKt {
 	public static final fun accessFlags (Lapp/revanced/patcher/MutablePredicateList;[Lcom/android/tools/smali/dexlib2/AccessFlags;)V
+	public static final fun after (ILkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static final fun after (ILkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
 	public static final fun after (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
 	public static final fun after (Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
 	public static final fun after (Lkotlin/ranges/IntRange;Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
 	public static final fun after (Lkotlin/ranges/IntRange;Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun after$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun after$default (ILkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static synthetic fun after$default (Lkotlin/ranges/IntRange;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static synthetic fun after$default (Lkotlin/ranges/IntRange;Lkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun afterAtLeast (ILkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static final fun afterAtLeast (ILkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun afterAtLeast$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun afterAtLeast$default (ILkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun afterAtMost (ILkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static final fun afterAtMost (ILkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun afterAtMost$default (ILkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun afterAtMost$default (ILkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun all (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/Object;)Z
 	public static final fun allOf (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun allOf ([Lkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
@@ -378,22 +182,184 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun definingClass (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static final fun definingClass (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun definingClass$default (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
-	public static final fun firstMethodComposite ([Ljava/lang/String;Lkotlin/jvm/functions/Function6;)Lapp/revanced/patcher/MatchBuilder;
+	public static final fun field (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun field (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun field$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun field$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun firstClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDef$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstClassDefDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDefDeclaratively$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstClassDefDeclarativelyInClassDefs (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDefDeclarativelyInClassDefs$default (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstClassDefDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstClassDefDeclarativelyOrNullInClassDefs (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDefDeclarativelyOrNullInClassDefs$default (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstClassDefInClassDefs (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDefInClassDefs$default (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDefOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstClassDefOrNullInClassDefs (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static synthetic fun firstClassDefOrNullInClassDefs$default (Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun firstMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethod$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodComposite ([Ljava/lang/String;Lkotlin/jvm/functions/Function5;)Lapp/revanced/patcher/MatchBuilder;
+	public static final fun firstMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodDeclaratively$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyInClassDef (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyInClassDefs (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyInMethods (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodDeclarativelyOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyOrNullInClassDef (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyOrNullInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyOrNullInClassDefs (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodDeclarativelyOrNullInMethods (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodInClassDef (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodInClassDef (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodInClassDef$default (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodInClassDefs (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodInClassDefs (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodInClassDefs (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodInClassDefs$default (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodInClassDefs$default (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodInMethods (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodInMethods (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodInMethods$default (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNullInClassDef (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNullInClassDef (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodOrNullInClassDef$default (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNullInClassDefs (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNullInClassDefs (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNullInClassDefs (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodOrNullInClassDefs$default (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodOrNullInClassDefs$default (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNullInMethods (Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMethodOrNullInMethods (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static synthetic fun firstMethodOrNullInMethods$default (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
+	public static final fun firstMutableClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDef$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableClassDefDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDefDeclaratively$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableClassDefDeclarativelyInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDefDeclarativelyInClassDefs$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableClassDefDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDefDeclarativelyOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableClassDefDeclarativelyOrNullInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDefDeclarativelyOrNullInClassDefs$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableClassDefInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDefInClassDefs$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDefOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableClassDefOrNullInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static synthetic fun firstMutableClassDefOrNullInClassDefs$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
+	public static final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethod$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodDeclaratively$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodDeclarativelyInClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodDeclarativelyInMethods (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodDeclarativelyOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodDeclarativelyOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodDeclarativelyOrNullInClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodDeclarativelyOrNullInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodDeclarativelyOrNullInMethods (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodInClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodInClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodInClassDef$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodInClassDefs$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodInMethods (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodInMethods (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodInMethods$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodOrNull$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNullInClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNullInClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodOrNullInClassDef$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNullInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNullInClassDefs (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodOrNullInClassDefs$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNullInMethods (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static final fun firstMutableMethodOrNullInMethods (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
+	public static synthetic fun firstMutableMethodOrNullInMethods$default (Lapp/revanced/patcher/patch/BytecodePatchContext;Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/mutable/MutableMethod;
 	public static final fun getClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public static final fun getClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lcom/android/tools/smali/dexlib2/mutable/MutableClassDef;
 	public static final fun getImmutableClassDef (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
 	public static final fun getImmutableClassDefOrNull (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/Method;)Lcom/android/tools/smali/dexlib2/iface/ClassDef;
+	public static final fun gettingFirstClassDef (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstClassDef$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstClassDefDeclaratively (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstClassDefDeclaratively$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstClassDefDeclarativelyOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstClassDefDeclarativelyOrNull$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstClassDefOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstClassDefOrNull$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMethod (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMethod ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMethod$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMethodDeclaratively ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMethodDeclaratively$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMethodDeclarativelyOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMethodDeclarativelyOrNull$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMethodOrNull (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMethodOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMethodOrNull$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableClassDef (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableClassDef$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableClassDefDeclaratively (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableClassDefDeclaratively$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableClassDefDeclarativelyOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableClassDefDeclarativelyOrNull$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableClassDefOrNull (Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableClassDefOrNull$default (Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableMethod (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableMethod ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableMethod$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableMethodDeclaratively ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableMethodDeclaratively$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableMethodDeclarativelyOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableMethodDeclarativelyOrNull$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableMethodOrNull (Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun gettingFirstMutableMethodOrNull ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun gettingFirstMutableMethodOrNull$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
 	public static final fun implementation (Lcom/android/tools/smali/dexlib2/iface/Method;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun indexedMatcher (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/IndexedMatcher;
 	public static final fun indexedMatcher ([Lkotlin/jvm/functions/Function4;)Lapp/revanced/patcher/IndexedMatcher;
+	public static final fun instruction (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun instruction$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun instructions (Lapp/revanced/patcher/IndexedMatcher;Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun instructions (Lapp/revanced/patcher/IndexedMatcher;Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function4;)V
 	public static final fun instructions (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
+	public static final fun instructions (Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function1;)V
 	public static final fun instructions (Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function4;)V
+	public static final fun invoke (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun invoke (Lcom/android/tools/smali/dexlib2/Opcode;)Lkotlin/jvm/functions/Function4;
+	public static final fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun invoke (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun invoke$default (JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun invoke$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun invoke$default (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun literal (JLkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun literal (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun literal$default (JLkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun literal$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun matchIndexed (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun matchIndexed (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;[Lkotlin/jvm/functions/Function4;)Z
 	public static final fun matchIndexed (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Z
-	public static final fun matchUnordered (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;[Lkotlin/jvm/functions/Function1;)Z
-	public static final fun matchUnordered (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Z
+	public static final fun method (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun method (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun method$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun method$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun name (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static final fun name (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun name$default (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
@@ -403,21 +369,30 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun opcodes (Lapp/revanced/patcher/MutablePredicateList;[Lcom/android/tools/smali/dexlib2/Opcode;)V
 	public static final fun parameterTypes (Lapp/revanced/patcher/MutablePredicateList;[Ljava/lang/String;)V
 	public static final fun predicate (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
+	public static final fun reference (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun reference$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun registers (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static final fun registers ([ILkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun registers$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun registers$default ([ILkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun rememberDeclarativePredicate (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Object;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
-	public static final fun rememberMatchIndexed (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
-	public static final fun rememberMatchUnordered (Lapp/revanced/patcher/PredicateContext;Ljava/lang/Iterable;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun returnType (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)V
 	public static final fun returnType (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun returnType$default (Lapp/revanced/patcher/MutablePredicateList;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)V
+	public static final fun string (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun string (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun string (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun string$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun string$default (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun string$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static final fun strings (Lapp/revanced/patcher/IndexedMatcher;Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
 	public static final fun strings (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
-	public static final fun strings (Lapp/revanced/patcher/MutablePredicateList;[Ljava/lang/String;)V
-	public static final fun strings (Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function1;)V
-	public static final fun strings (Lapp/revanced/patcher/UnorderedMatcher;Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
-	public static final fun strings (Lapp/revanced/patcher/UnorderedMatcher;Lapp/revanced/patcher/MutablePredicateList;[Lkotlin/jvm/functions/Function1;)V
-	public static final fun strings (Ljava/util/List;Lapp/revanced/patcher/UnorderedMatcher;Lapp/revanced/patcher/MutablePredicateList;[Ljava/lang/String;)V
+	public static final fun type (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function4;
+	public static final fun type (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun type$default (Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
+	public static synthetic fun type$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lkotlin/jvm/functions/Function4;
 	public static final fun unaryPlus (Lapp/revanced/patcher/Matcher;Ljava/lang/Object;)Z
-	public static final fun unorderedMatcher (Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/UnorderedMatcher;
-	public static final fun unorderedMatcher ([Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/UnorderedMatcher;
+	public static final fun unorderedAllOf ([Lkotlin/jvm/functions/Function4;)[Lkotlin/jvm/functions/Function4;
 }
 
 public final class app/revanced/patcher/MutablePredicateList : java/util/List, kotlin/jvm/internal/markers/KMutableList {
@@ -497,35 +472,6 @@ public final class app/revanced/patcher/PredicateContext : java/util/Map, kotlin
 	public fun remove (Ljava/lang/Object;)Ljava/lang/Object;
 	public final fun size ()I
 	public final fun values ()Ljava/util/Collection;
-}
-
-public final class app/revanced/patcher/StringMatchingFunctions {
-	public static final field INSTANCE Lapp/revanced/patcher/StringMatchingFunctions;
-	public final fun invoke (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public final fun invoke (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public static synthetic fun invoke$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
-	public static synthetic fun invoke$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
-	public final fun string (Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public final fun string (Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
-	public final fun string (Lkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function1;
-	public static synthetic fun string$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
-	public static synthetic fun string$default (Lapp/revanced/patcher/StringMatchingFunctions;Ljava/util/List;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
-}
-
-public final class app/revanced/patcher/UnorderedMatcher : app/revanced/patcher/Matcher {
-	public fun <init> ()V
-	public final fun contains (Ljava/lang/Object;)Z
-	public fun contains (Lkotlin/jvm/functions/Function1;)Z
-	public final fun getIndices ()Ljava/util/Map;
-	public final fun indexOf (Ljava/lang/Object;)I
-	public fun indexOf (Lkotlin/jvm/functions/Function1;)I
-	public fun invoke (Ljava/lang/Iterable;)Z
-	public final fun lastIndexOf (Ljava/lang/Object;)I
-	public fun lastIndexOf (Lkotlin/jvm/functions/Function1;)I
-	public final fun remove (I)Lkotlin/jvm/functions/Function1;
-	public final fun remove (Ljava/lang/Object;)Z
-	public fun remove (Lkotlin/jvm/functions/Function1;)Z
-	public fun removeAt (I)Lkotlin/jvm/functions/Function1;
 }
 
 public final class app/revanced/patcher/extensions/ExternalLabel {
