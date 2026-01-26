@@ -59,10 +59,13 @@ fun Iterable<Instruction>.anyInstruction(predicate: Predicate<Instruction>) = an
 
 typealias ClassDefPredicate = context(PredicateContext)
 ClassDef.() -> Boolean
+
 typealias MethodPredicate = context(PredicateContext)
 Method.() -> Boolean
+
 typealias BytecodePatchContextMethodPredicate = context(BytecodePatchContext, PredicateContext)
 Method.() -> Boolean
+
 typealias BytecodePatchContextClassDefPredicate = context(BytecodePatchContext, PredicateContext)
 ClassDef.() -> Boolean
 
@@ -93,6 +96,7 @@ class MutablePredicateList<T> internal constructor() : MutableList<Predicate<T>>
 
 typealias DeclarativePredicate<T> = context(PredicateContext)
 MutablePredicateList<T>.() -> Unit
+
 typealias BytecodePatchContextDeclarativePredicate<T> = context(BytecodePatchContext, PredicateContext)
 MutablePredicateList<T>.() -> Unit
 
@@ -217,15 +221,8 @@ context(_: BytecodePatchContext)
 fun Iterable<ClassDef>.firstMutableMethod(methodReference: MethodReference) = requireNotNull(firstMutableMethodOrNull(methodReference))
 
 @JvmName("firstMethodOrNullInClassDefs")
-fun Iterable<ClassDef>.firstMethodOrNull(predicate: MethodPredicate = { true }): Method? {
-    forEach { classDef ->
-        with(classDef) {
-            classDef.methods.firstMethodOrNull { predicate() }?.let { return it }
-        }
-    }
-
-    return null
-}
+fun Iterable<ClassDef>.firstMethodOrNull(predicate: MethodPredicate = { true }) =
+    asSequence().flatMap { it.methods.asSequence() }.asIterable().firstMethodOrNull(strings = emptyArray(), predicate)
 
 @JvmName("firstMethodInClassDefs")
 fun Iterable<ClassDef>.firstMethod(predicate: MethodPredicate = { true }) = requireNotNull(firstMethodOrNull(predicate))
@@ -234,15 +231,7 @@ fun Iterable<ClassDef>.firstMethod(predicate: MethodPredicate = { true }) = requ
 fun Iterable<ClassDef>.firstMethodOrNull(
     vararg strings: String,
     predicate: MethodPredicate = { true },
-): Method? {
-    forEach { classDef ->
-        with(classDef) {
-            classDef.methods.firstMethodOrNull(strings = strings) { predicate() }?.let { return it }
-        }
-    }
-
-    return null
-}
+) = asSequence().flatMap { it.methods.asSequence() }.asIterable().firstMethodOrNull(strings = strings, predicate)
 
 @JvmName("firstMethodInClassDefs")
 fun Iterable<ClassDef>.firstMethod(
