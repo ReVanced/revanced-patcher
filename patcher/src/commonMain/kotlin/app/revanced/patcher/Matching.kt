@@ -774,7 +774,7 @@ fun <T> unorderedAllOf(vararg predicates: IndexedMatcherPredicate<T>): Array<Ind
 
                 lastPatternIndex = patternIndex
 
-                // Try each unused predicate
+                // Try each unused predicate.
                 for (predicateIndex in predicates.indices) {
                     if (predicateIndex in usedPredicateIndices) continue
 
