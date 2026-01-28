@@ -25,7 +25,9 @@ actual fun loadPatches(
 ) = loadPatches(
     patchesFiles = patchesFiles,
     { patchBundle ->
-        MultiDexIO.readDexFile(true, patchBundle, BasicDexFileNamer(), null, null).classes
+        MultiDexIO
+            .readDexFile(true, patchBundle, BasicDexFileNamer(), null, null)
+            .classes
             .map { classDef ->
                 classDef.type.substring(1, classDef.length - 1)
             }
@@ -33,7 +35,11 @@ actual fun loadPatches(
     DexClassLoader(
         patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
         null,
-        null, null
+        null,
+        null,
     ),
-    onFailedToLoad
+    onFailedToLoad,
 )
+
+@Suppress("NOTHING_TO_INLINE")
+actual inline val currentClassLoader get() = object {}::class.java.classLoader

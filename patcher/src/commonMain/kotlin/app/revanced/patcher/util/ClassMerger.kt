@@ -1,11 +1,11 @@
 package app.revanced.patcher.util
 
-import com.android.tools.smali.dexlib2.mutable.MutableClassDef
-import com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
-import com.android.tools.smali.dexlib2.mutable.MutableField
-import com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
-import com.android.tools.smali.dexlib2.mutable.MutableMethod
-import com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
 import app.revanced.patcher.util.ClassMerger.Utils.filterAny

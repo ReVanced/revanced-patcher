@@ -1,5 +1,7 @@
 package app.revanced.patcher.extensions
 
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
@@ -7,24 +9,23 @@ import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21s
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
-import com.android.tools.smali.dexlib2.mutable.MutableMethod
-import com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class MethodExtensionsTest {
     private val testInstructions = (0..9).map { i -> TestInstruction(i) }
-    private var method = ImmutableMethod(
-        "TestClass;",
-        "testMethod",
-        null,
-        "V",
-        AccessFlags.PUBLIC.value,
-        null,
-        null,
-        MutableMethodImplementation(16)
-    ).toMutable()
+    private var method =
+        ImmutableMethod(
+            "TestClass;",
+            "testMethod",
+            null,
+            "V",
+            AccessFlags.PUBLIC.value,
+            null,
+            null,
+            MutableMethodImplementation(16),
+        ).toMutable()
 
     @BeforeEach
     fun setup() {
@@ -249,5 +250,7 @@ internal class MethodExtensionsTest {
 
     // endregion
 
-    private class TestInstruction(register: Int) : BuilderInstruction21s(Opcode.CONST_16, register, 0)
+    private class TestInstruction(
+        register: Int,
+    ) : BuilderInstruction21s(Opcode.CONST_16, register, 0)
 }

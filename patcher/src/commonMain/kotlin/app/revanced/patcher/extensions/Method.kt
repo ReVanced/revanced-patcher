@@ -1,5 +1,6 @@
 package app.revanced.patcher.extensions
 
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
@@ -9,10 +10,8 @@ import com.android.tools.smali.dexlib2.builder.instruction.*
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodImplementation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
-import com.android.tools.smali.dexlib2.mutable.MutableMethod
 
-fun Method.accessFlags(vararg flags: AccessFlags) =
-    accessFlags.and(flags.map { it.ordinal }.reduce { acc, i -> acc or i }) != 0
+fun Method.accessFlags(vararg flags: AccessFlags) = accessFlags.and(flags.map { it.ordinal }.reduce { acc, i -> acc or i }) != 0
 
 /**
  * Add instructions to a method at the given index.
@@ -31,8 +30,7 @@ fun MutableMethodImplementation.addInstructions(
  *
  * @param instructions The instructions to add.
  */
-fun MutableMethodImplementation.addInstructions(instructions: List<BuilderInstruction>) =
-    instructions.forEach { addInstruction(it) }
+fun MutableMethodImplementation.addInstructions(instructions: List<BuilderInstruction>) = instructions.forEach { addInstruction(it) }
 
 /**
  * Remove instructions from a method at the given index.
@@ -119,8 +117,7 @@ fun MutableMethod.addInstructions(
  *
  * @param instructions The instructions to add.
  */
-fun MutableMethod.addInstructions(instructions: List<BuilderInstruction>) =
-    implementation!!.addInstructions(instructions)
+fun MutableMethod.addInstructions(instructions: List<BuilderInstruction>) = implementation!!.addInstructions(instructions)
 
 /**
  * Add instructions to a method.
@@ -137,8 +134,7 @@ fun MutableMethod.addInstructions(
  *
  * @param smaliInstructions The instructions to add.
  */
-fun MutableMethod.addInstructions(smaliInstructions: String) =
-    implementation!!.addInstructions(smaliInstructions.toInstructions(this))
+fun MutableMethod.addInstructions(smaliInstructions: String) = implementation!!.addInstructions(smaliInstructions.toInstructions(this))
 
 /**
  * Add instructions to a method at the given index.
@@ -155,11 +151,12 @@ fun MutableMethod.addInstructionsWithLabels(
 ) {
     // Create reference dummy instructions for the instructions.
     val nopSmali =
-        StringBuilder(smaliInstructions).also { builder ->
-            externalLabels.forEach { (name, _) ->
-                builder.append("\n:$name\nnop")
-            }
-        }.toString()
+        StringBuilder(smaliInstructions)
+            .also { builder ->
+                externalLabels.forEach { (name, _) ->
+                    builder.append("\n:$name\nnop")
+                }
+            }.toString()
 
     // Compile the instructions with the dummy labels
     val compiledInstructions = nopSmali.toInstructions(this)
@@ -171,7 +168,9 @@ fun MutableMethod.addInstructionsWithLabels(
     )
 
     implementation!!.apply {
-        this@apply.instructions.subList(index, index + compiledInstructions.size - externalLabels.size)
+        this@apply
+            .instructions
+            .subList(index, index + compiledInstructions.size - externalLabels.size)
             .forEachIndexed { compiledInstructionIndex, compiledInstruction ->
                 // If the compiled instruction is not an offset instruction, skip it.
                 if (compiledInstruction !is BuilderOffsetInstruction) return@forEachIndexed
@@ -184,26 +183,43 @@ fun MutableMethod.addInstructionsWithLabels(
                     fun replaceOffset(
                         i: BuilderOffsetInstruction,
                         label: Label,
-                    ): BuilderOffsetInstruction {
-                        return when (i) {
-                            is BuilderInstruction10t -> BuilderInstruction10t(i.opcode, label)
-                            is BuilderInstruction20t -> BuilderInstruction20t(i.opcode, label)
-                            is BuilderInstruction21t -> BuilderInstruction21t(i.opcode, i.registerA, label)
-                            is BuilderInstruction22t ->
+                    ): BuilderOffsetInstruction =
+                        when (i) {
+                            is BuilderInstruction10t -> {
+                                BuilderInstruction10t(i.opcode, label)
+                            }
+
+                            is BuilderInstruction20t -> {
+                                BuilderInstruction20t(i.opcode, label)
+                            }
+
+                            is BuilderInstruction21t -> {
+                                BuilderInstruction21t(i.opcode, i.registerA, label)
+                            }
+
+                            is BuilderInstruction22t -> {
                                 BuilderInstruction22t(
                                     i.opcode,
                                     i.registerA,
                                     i.registerB,
                                     label,
                                 )
+                            }
 
-                            is BuilderInstruction30t -> BuilderInstruction30t(i.opcode, label)
-                            is BuilderInstruction31t -> BuilderInstruction31t(i.opcode, i.registerA, label)
-                            else -> throw IllegalStateException(
-                                "A non-offset instruction was given, this should never happen!",
-                            )
+                            is BuilderInstruction30t -> {
+                                BuilderInstruction30t(i.opcode, label)
+                            }
+
+                            is BuilderInstruction31t -> {
+                                BuilderInstruction31t(i.opcode, i.registerA, label)
+                            }
+
+                            else -> {
+                                throw IllegalStateException(
+                                    "A non-offset instruction was given, this should never happen!",
+                                )
+                            }
                         }
-                    }
 
                     // Create the final label.
                     val label = newLabelForIndex(this@apply.instructions.indexOf(this))
@@ -443,4 +459,7 @@ fun MutableMethod.newLabel(index: Int) = implementation!!.newLabelForIndex(index
  * @param name The label name.
  * @param instruction The instruction that this label is for.
  */
-data class ExternalLabel(internal val name: String, internal val instruction: Instruction)
+data class ExternalLabel(
+    internal val name: String,
+    internal val instruction: Instruction,
+)

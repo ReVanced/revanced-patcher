@@ -1,5 +1,6 @@
 package app.revanced.patcher.patch
 
+import app.revanced.java.io.kmpResolve
 import app.revanced.patcher.PatchesResult
 import app.revanced.patcher.util.Document
 import brut.androlib.AaptInvoker
@@ -16,7 +17,6 @@ import brut.directory.ExtFile
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-import java.io.resolve
 import java.nio.file.Files
 import java.util.logging.Logger
 import kotlin.reflect.jvm.jvmName
@@ -41,10 +41,11 @@ class ResourcePatchContext internal constructor(
 
     private val logger = Logger.getLogger(ResourcePatchContext::class.jvmName)
 
-    private val resourceConfig = Config.getDefaultConfig().apply {
-        aaptBinary = aaptBinaryPath
-        frameworkDirectory = frameworkFileDirectory
-    }
+    private val resourceConfig =
+        Config.getDefaultConfig().apply {
+            aaptBinary = aaptBinaryPath
+            frameworkDirectory = frameworkFileDirectory
+        }
 
     internal var decodingMode = ResourceDecodingMode.MANIFEST
 
@@ -105,18 +106,20 @@ class ResourcePatchContext internal constructor(
     internal fun decodeResources() {
         logger.info("Decoding resources")
 
-        val resourcesDecoder = ResourcesDecoder(resourceConfig, apkInfo).also {
-            it.decodeResources(apkFilesPath)
-            it.decodeManifest(apkFilesPath)
-        }
+        val resourcesDecoder =
+            ResourcesDecoder(resourceConfig, apkInfo).also {
+                it.decodeResources(apkFilesPath)
+                it.decodeManifest(apkFilesPath)
+            }
 
         // Record uncompressed files to preserve their state when recompiling.
         ApkDecoder(apkInfo, resourceConfig).recordUncompressedFiles(resourcesDecoder.resFileMapping)
 
         // Get the ids of the used framework packages to include them for reference when recompiling.
-        apkInfo.usesFramework = UsesFramework().apply {
-            ids = resourcesDecoder.resTable.listFramePackages().map { it.id }
-        }
+        apkInfo.usesFramework =
+            UsesFramework().apply {
+                ids = resourcesDecoder.resTable.listFramePackages().map { it.id }
+            }
     }
 
     /**
@@ -127,51 +130,59 @@ class ResourcePatchContext internal constructor(
     override fun get(): PatchesResult.PatchedResources {
         logger.info("Compiling patched resources")
 
-        val resourcesPath = patchedFilesPath.resolve("resources").also { it.mkdirs() }
+        val resourcesPath = patchedFilesPath.kmpResolve("resources").also { it.mkdirs() }
 
-        val resourcesApkFile = if (decodingMode == ResourceDecodingMode.ALL) {
-            val resourcesApkFile = resourcesPath.resolve("resources.apk").also { it.createNewFile() }
+        val resourcesApkFile =
+            if (decodingMode == ResourceDecodingMode.ALL) {
+                val resourcesApkFile = resourcesPath.kmpResolve("resources.apk").also { it.createNewFile() }
 
-            val manifestFile = apkFilesPath.resolve("AndroidManifest.xml").also {
-                ResXmlUtils.fixingPublicAttrsInProviderAttributes(it)
+                val manifestFile =
+                    apkFilesPath.kmpResolve("AndroidManifest.xml").also {
+                        ResXmlUtils.fixingPublicAttrsInProviderAttributes(it)
+                    }
+                val resPath = apkFilesPath.kmpResolve("res")
+                val frameworkApkFiles =
+                    with(Framework(resourceConfig)) {
+                        apkInfo.usesFramework.ids.map { id -> getFrameworkApk(id, null) }
+                    }.toTypedArray()
+
+                AaptInvoker(
+                    resourceConfig,
+                    apkInfo,
+                ).invoke(resourcesApkFile, manifestFile, resPath, null, null, frameworkApkFiles)
+
+                resourcesApkFile
+            } else {
+                null
             }
-            val resPath = apkFilesPath.resolve("res")
-            val frameworkApkFiles = with(Framework(resourceConfig)) {
-                apkInfo.usesFramework.ids.map { id -> getFrameworkApk(id, null) }
-            }.toTypedArray()
 
-            AaptInvoker(
-                resourceConfig,
-                apkInfo
-            ).invoke(resourcesApkFile, manifestFile, resPath, null, null, frameworkApkFiles)
-
-            resourcesApkFile
-        } else null
-
-
-        val otherFiles = apkFilesPath.listFiles()!!.filter {
-            // Excluded because present in resources.other.
-            // TODO: We are reusing apkFiles as a temporarily directory for extracting resources.
-            //  This is not ideal as it could conflict with files such as the ones that are filtered here.
-            //  The problem is that ResourcePatchContext#get returns a File relative to apkFiles,
-            //  and we need to extract files to that directory.
-            //  A solution would be to use apkFiles as the working directory for the patching process.
-            //  Once all patches have been executed, we can move the decoded resources to a new directory.
-            //  The filters wouldn't be needed anymore.
-            //  For now, we assume that the files we filter here are not needed for the patching process.
-            it.name != "AndroidManifest.xml" &&
+        val otherFiles =
+            apkFilesPath.listFiles()!!.filter {
+                // Excluded because present in resources.other.
+                // TODO: We are reusing apkFiles as a temporarily directory for extracting resources.
+                //  This is not ideal as it could conflict with files such as the ones that are filtered here.
+                //  The problem is that ResourcePatchContext#get returns a File relative to apkFiles,
+                //  and we need to extract files to that directory.
+                //  A solution would be to use apkFiles as the working directory for the patching process.
+                //  Once all patches have been executed, we can move the decoded resources to a new directory.
+                //  The filters wouldn't be needed anymore.
+                //  For now, we assume that the files we filter here are not needed for the patching process.
+                it.name != "AndroidManifest.xml" &&
                     it.name != "res" &&
                     // Generated by Androlib.
                     it.name != "build"
-        }
-        val otherResourceFiles = if (otherFiles.isNotEmpty()) {
-            // Move the other resources files.
-            resourcesPath.resolve("other").also { it.mkdirs() }.apply {
-                otherFiles.forEach { file ->
-                    Files.move(file.toPath(), resolve(file.name).toPath())
-                }
             }
-        } else null
+        val otherResourceFiles =
+            if (otherFiles.isNotEmpty()) {
+                // Move the other resources files.
+                resourcesPath.kmpResolve("other").also { it.mkdirs() }.apply {
+                    otherFiles.forEach { file ->
+                        Files.move(file.toPath(), resolve(file.name).toPath())
+                    }
+                }
+            } else {
+                null
+            }
 
         return PatchesResult.PatchedResources(
             resourcesApkFile,
@@ -190,7 +201,7 @@ class ResourcePatchContext internal constructor(
     operator fun get(
         path: String,
         copy: Boolean = true,
-    ) = apkFilesPath.resolve(path).apply {
+    ) = apkFilesPath.kmpResolve(path).apply {
         if (copy && !exists()) {
             with(ExtFile(apkFile).directory) {
                 if (containsFile(path) || containsDir(path)) {

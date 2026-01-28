@@ -2,6 +2,7 @@
 
 package app.revanced.patcher
 
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import app.revanced.patcher.extensions.*
 import app.revanced.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -13,7 +14,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.*
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.Reference
-import com.android.tools.smali.dexlib2.mutable.MutableMethod
 import com.android.tools.smali.dexlib2.util.MethodUtil
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -131,8 +131,7 @@ fun Iterable<Method>.firstMutableMethodOrNull(methodReference: MethodReference) 
 
 @JvmName("firstMutableMethodInMethods")
 context(_: BytecodePatchContext)
-fun Iterable<Method>.firstMutableMethod(methodReference: MethodReference) =
-    requireNotNull(firstMutableMethodOrNull(methodReference))
+fun Iterable<Method>.firstMutableMethod(methodReference: MethodReference) = requireNotNull(firstMutableMethodOrNull(methodReference))
 
 @JvmName("firstMethodOrNullInMethods")
 fun Iterable<Method>.firstMethodOrNull(
@@ -210,8 +209,7 @@ fun Iterable<ClassDef>.firstMethodOrNull(methodReference: MethodReference) =
     asSequence().flatMap { it.methods.asSequence() }.asIterable().firstMethodOrNull(methodReference)
 
 @JvmName("firstMethodInClassDefs")
-fun Iterable<ClassDef>.firstMethod(methodReference: MethodReference) =
-    requireNotNull(firstMethodOrNull(methodReference))
+fun Iterable<ClassDef>.firstMethod(methodReference: MethodReference) = requireNotNull(firstMethodOrNull(methodReference))
 
 @JvmName("firstMutableMethodOrNullInClassDefs")
 context(_: BytecodePatchContext)
@@ -220,8 +218,7 @@ fun Iterable<ClassDef>.firstMutableMethodOrNull(methodReference: MethodReference
 
 @JvmName("firstMutableMethodInClassDefs")
 context(_: BytecodePatchContext)
-fun Iterable<ClassDef>.firstMutableMethod(methodReference: MethodReference) =
-    requireNotNull(firstMutableMethodOrNull(methodReference))
+fun Iterable<ClassDef>.firstMutableMethod(methodReference: MethodReference) = requireNotNull(firstMutableMethodOrNull(methodReference))
 
 @JvmName("firstMethodOrNullInClassDefs")
 fun Iterable<ClassDef>.firstMethodOrNull(predicate: MethodPredicate = { true }) =
@@ -296,13 +293,11 @@ fun ClassDef.firstMethod(methodReference: MethodReference) = requireNotNull(firs
 
 @JvmName("firstMutableMethodOrNullInClassDef")
 context(_: BytecodePatchContext)
-fun ClassDef.firstMutableMethodOrNull(methodReference: MethodReference) =
-    methods.firstMutableMethodOrNull(methodReference)
+fun ClassDef.firstMutableMethodOrNull(methodReference: MethodReference) = methods.firstMutableMethodOrNull(methodReference)
 
 @JvmName("firstMutableMethodInClassDef")
 context(_: BytecodePatchContext)
-fun ClassDef.firstMutableMethod(methodReference: MethodReference) =
-    requireNotNull(firstMutableMethodOrNull(methodReference))
+fun ClassDef.firstMutableMethod(methodReference: MethodReference) = requireNotNull(firstMutableMethodOrNull(methodReference))
 
 @JvmName("firstMethodOrNullInClassDef")
 fun ClassDef.firstMethodOrNull(
@@ -481,8 +476,7 @@ fun gettingFirstMethodOrNull(method: MethodReference) = cachedReadOnlyProperty {
 
 fun gettingFirstMethod(method: MethodReference) = cachedReadOnlyProperty { firstMethod(method) }
 
-fun gettingFirstMutableMethodOrNull(method: MethodReference) =
-    cachedReadOnlyProperty { firstMutableMethodOrNull(method) }
+fun gettingFirstMutableMethodOrNull(method: MethodReference) = cachedReadOnlyProperty { firstMutableMethodOrNull(method) }
 
 fun gettingFirstMutableMethod(method: MethodReference) = cachedReadOnlyProperty { firstMutableMethod(method) }
 
@@ -959,9 +953,9 @@ fun MutablePredicateList<Method>.definingClass(
 fun MutablePredicateList<Method>.parameterTypes(vararg parameterTypePrefixes: String) =
     predicate {
         parameterTypes.size == parameterTypePrefixes.size &&
-                parameterTypes
-                    .zip(parameterTypePrefixes)
-                    .all { (a, b) -> a.startsWith(b) }
+            parameterTypes
+                .zip(parameterTypePrefixes)
+                .all { (a, b) -> a.startsWith(b) }
     }
 
 fun MutablePredicateList<Method>.strings(build: Function<IndexedMatcher<Instruction>>) {
@@ -1039,8 +1033,7 @@ fun MutablePredicateList<Method>.opcodes(vararg opcodes: Opcode) = instructions 
 inline fun <reified T : Instruction> `is`(crossinline predicate: Predicate<T> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ -> (this as? T)?.predicate() == true }
 
-fun instruction(predicate: Predicate<Instruction> = { true }): IndexedMatcherPredicate<Instruction> =
-    { _, _, _ -> predicate() }
+fun instruction(predicate: Predicate<Instruction> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ -> predicate() }
 
 fun registers(predicate: Predicate<IntArray> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ ->
@@ -1084,8 +1077,7 @@ fun registers(
     },
 ) = registers({ compare(registers) })
 
-fun literal(predicate: Predicate<Long> = { true }): IndexedMatcherPredicate<Instruction> =
-    { _, _, _ -> wideLiteral?.predicate() == true }
+fun literal(predicate: Predicate<Long> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ -> wideLiteral?.predicate() == true }
 
 fun literal(
     literal: Long,
@@ -1112,8 +1104,7 @@ fun field(
     compare: String.(String) -> Boolean = String::equals,
 ) = field { this.name.compare(name) }
 
-fun type(predicate: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> =
-    { _, _, _ -> type?.predicate() == true }
+fun type(predicate: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ -> type?.predicate() == true }
 
 fun type(
     type: String,
@@ -1158,13 +1149,13 @@ operator fun String.invoke(compare: String.(String) -> Boolean = String::equals)
 operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> = { _, _, _ -> opcode == this@invoke }
 
 typealias BuildCompositeDeclarativePredicate<Method> =
-        context(
+    context(
         BytecodePatchContext,
         PredicateContext,
         IndexedMatcher<Instruction>,
         MutableList<String>
-        )
-        MutablePredicateList<Method>.() -> Unit
+    )
+    MutablePredicateList<Method>.() -> Unit
 
 fun firstMethodComposite(
     vararg strings: String,

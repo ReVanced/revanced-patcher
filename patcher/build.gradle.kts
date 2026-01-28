@@ -1,5 +1,5 @@
+
 import com.android.build.api.dsl.androidLibrary
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
@@ -33,12 +33,6 @@ kotlin {
         withDeviceTestBuilder {
             sourceSetTreeName = "test"
         }
-
-        compilations.configureEach {
-            compilerOptions.configure {
-                jvmTarget.set(JvmTarget.JVM_11)
-            }
-        }
     }
 
     sourceSets {
@@ -61,6 +55,8 @@ kotlin {
             "-Xexplicit-backing-fields",
             "-Xcontext-parameters",
         )
+
+        jvmToolchain(11)
     }
 }
 

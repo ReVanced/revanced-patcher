@@ -21,42 +21,44 @@ class MatchingTest : PatcherTestBase() {
 
     @Test
     fun `finds via builder api`() {
-        fun firstMethodComposite(fail: Boolean = false) = firstMethodComposite {
-            name("method")
-            definingClass("class")
+        fun firstMethodComposite(fail: Boolean = false) =
+            firstMethodComposite {
+                name("method")
+                definingClass("class")
 
-            if (fail) returnType("doesnt exist")
+                if (fail) returnType("doesnt exist")
 
-            instructions(
-                at(0, Opcode.CONST_STRING()),
-                `is`<TwoRegisterInstruction>(),
-                noneOf(registers()),
-                string("test", String::contains),
-                after(1..3, allOf(Opcode.INVOKE_VIRTUAL(), registers(1, 0))),
-                allOf(),
-                type("PrintStream;", String::endsWith)
-            )
-        }
+                instructions(
+                    at(0, Opcode.CONST_STRING()),
+                    `is`<TwoRegisterInstruction>(),
+                    noneOf(registers()),
+                    string("test", String::contains),
+                    after(1..3, allOf(Opcode.INVOKE_VIRTUAL(), registers(1, 0))),
+                    allOf(),
+                    type("PrintStream;", String::endsWith),
+                )
+            }
 
         with(bytecodePatchContext) {
             val match = firstMethodComposite()
             assertNotNull(
                 match.methodOrNull,
-                "Expected to find a method"
+                "Expected to find a method",
             )
             assertEquals(
-                4, match.indices[3],
-                "Expected to find the string instruction at index 5"
+                4,
+                match.indices[3],
+                "Expected to find the string instruction at index 4",
             )
 
             assertNull(
                 firstMethodComposite(fail = true).immutableMethodOrNull,
-                "Expected to not find a method"
+                "Expected to not find a method",
             )
 
             assertNotNull(
                 firstMethodComposite().match(classDefs.first()).methodOrNull,
-                "Expected to find a method matching in a specific class"
+                "Expected to find a method matching in a specific class",
             )
         }
     }
@@ -65,16 +67,17 @@ class MatchingTest : PatcherTestBase() {
     fun `finds via declarative api`() {
         bytecodePatch {
             apply {
-                val method = firstMethodDeclarativelyOrNull {
-                    anyOf {
-                        predicate { name == "method" }
-                        add { false }
+                val method =
+                    firstMethodDeclarativelyOrNull {
+                        anyOf {
+                            predicate { name == "method" }
+                            add { false }
+                        }
+                        allOf {
+                            predicate { returnType == "V" }
+                        }
+                        predicate { definingClass == "class" }
                     }
-                    allOf {
-                        predicate { returnType == "V" }
-                    }
-                    predicate { definingClass == "class" }
-                }
                 assertNotNull(method) { "Expected to find a method" }
             }
         }()
@@ -99,7 +102,7 @@ class MatchingTest : PatcherTestBase() {
         }
         assertFalse(
             matcher(iterable),
-            "Should not match at any other index than first"
+            "Should not match at any other index than first",
         )
         matcher.clear()
 
@@ -107,7 +110,7 @@ class MatchingTest : PatcherTestBase() {
         assertEquals(
             listOf(0),
             matcher.indices,
-            "Should match at first index."
+            "Should match at first index.",
         )
         matcher.clear()
 
@@ -119,7 +122,7 @@ class MatchingTest : PatcherTestBase() {
         assertEquals(
             listOf(1),
             matcher.indices,
-            "Should find the index correctly."
+            "Should find the index correctly.",
         )
         matcher.clear()
 
@@ -131,7 +134,7 @@ class MatchingTest : PatcherTestBase() {
         assertEquals(
             listOf(0, 1, 3),
             matcher.indices,
-            "Should match 1, 2 and 4 at indices 0, 1 and 3."
+            "Should match 1, 2 and 4 at indices 0, 1 and 3.",
         )
         matcher.clear()
 
@@ -141,7 +144,7 @@ class MatchingTest : PatcherTestBase() {
         assertEquals(
             listOf(0),
             matcher.indices,
-            "Should match index 0 after nothing"
+            "Should match index 0 after nothing",
         )
         matcher.clear()
 
@@ -150,7 +153,7 @@ class MatchingTest : PatcherTestBase() {
         }
         assertFalse(
             matcher(iterable),
-            "Should not match, because 1 is out of range"
+            "Should not match, because 1 is out of range",
         )
         matcher.clear()
 
@@ -159,7 +162,7 @@ class MatchingTest : PatcherTestBase() {
         }
         assertFalse(
             matcher(iterable),
-            "Should not match, because 2 is at index 1"
+            "Should not match, because 2 is at index 1",
         )
         matcher.clear()
 
@@ -172,13 +175,18 @@ class MatchingTest : PatcherTestBase() {
         assertEquals(
             listOf(0, 3, 7, 8),
             matcher.indices,
-            "Should match indices correctly."
+            "Should match indices correctly.",
         )
     }
 
     @Test
     fun `unordered matching works correctly`() {
-        val list = bytecodePatchContext.classDefs.first().methods.first().instructions
+        val list =
+            bytecodePatchContext.classDefs
+                .first()
+                .methods
+                .first()
+                .instructions
         val matcher = indexedMatcher<Instruction>()
 
         matcher.apply {
@@ -187,13 +195,13 @@ class MatchingTest : PatcherTestBase() {
                     afterAtLeast(1, Opcode.RETURN_OBJECT()),
                     string(),
                     Opcode.INVOKE_VIRTUAL(),
-                )
+                ),
             )
         }(list)
         assertEquals(
             listOf(4, 5, 6),
             matcher.indices,
-            "Should match because after(1) luckily only matches after the string at index 4."
+            "Should match because after(1) luckily only matches after the string at index 4.",
         )
         matcher.clear()
 
@@ -203,23 +211,25 @@ class MatchingTest : PatcherTestBase() {
                     string("test", String::contains),
                     string("Hello", String::contains),
                     afterAtLeast(1, Opcode.RETURN_OBJECT()),
-                )
+                ),
             )
         }(list)
         assertEquals(
             listOf(0, 4, 5),
             matcher.indices,
-            "Should first match indices 4 due to the string, then after due to step 1, then the invoke."
+            "Should first match indices 4 due to the string, then after due to step 1, then the invoke.",
         )
 
         assertFalse(
             indexedMatcher<Int>(
-                items = unorderedAllOf(
-                    { _, _, _ -> this == 1 },
-                    { _, _, _ -> this == -1 },
-                    after(2) { this == -2 }
-                ))(listOf(1, -1, 1, 2, -2)),
-            "Should not match because because 1 is matched at index 0, too early for after(2)."
+                items =
+                    unorderedAllOf(
+                        { _, _, _ -> this == 1 },
+                        { _, _, _ -> this == -1 },
+                        after(2) { this == -2 },
+                    ),
+            )(listOf(1, -1, 1, 2, -2)),
+            "Should not match because because 1 is matched at index 0, too early for after(2).",
         )
     }
 }

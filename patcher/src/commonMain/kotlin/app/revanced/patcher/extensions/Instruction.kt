@@ -1,5 +1,6 @@
 package app.revanced.patcher.extensions
 
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.builder.BuilderInstruction
@@ -16,9 +17,7 @@ import org.antlr.runtime.TokenSource
 import org.antlr.runtime.tree.CommonTreeNodeStream
 import java.io.StringReader
 
-
-private inline fun <reified T : Reference> Instruction.reference(): T? =
-    (this as? ReferenceInstruction)?.reference as? T
+private inline fun <reified T : Reference> Instruction.reference(): T? = (this as? ReferenceInstruction)?.reference as? T
 
 val Instruction.reference: Reference?
     get() = reference()
@@ -64,7 +63,6 @@ val Instruction.string
 val Instruction.wideLiteral
     get() = (this as? NarrowLiteralInstruction)?.wideLiteral
 
-
 private const val CLASS_HEADER = ".class LInlineCompiler;\n.super Ljava/lang/Object;\n"
 private const val STATIC_HEADER = "$CLASS_HEADER.method public static dummyMethod("
 private const val HEADER = "$CLASS_HEADER.method public dummyMethod("
@@ -78,7 +76,7 @@ private val sb by lazy { StringBuilder(512) }
  * @param templateMethod The method to compile the instructions against.
  * @returns A list of instructions.
  */
-fun String.toInstructions(templateMethod: com.android.tools.smali.dexlib2.mutable.MutableMethod? = null): List<BuilderInstruction> {
+fun String.toInstructions(templateMethod: MutableMethod? = null): List<BuilderInstruction> {
     val parameters = templateMethod?.parameterTypes?.joinToString("") { it } ?: ""
     val registers = templateMethod?.implementation?.registerCount ?: 1 // TODO: Should this be 0?
     val isStatic = templateMethod?.let { AccessFlags.STATIC.isSet(it.accessFlags) } ?: true
@@ -99,17 +97,21 @@ fun String.toInstructions(templateMethod: com.android.tools.smali.dexlib2.mutabl
 
     if (lexer.numberOfSyntaxErrors > 0 || parser.numberOfSyntaxErrors > 0) {
         throw IllegalStateException(
-            "Lexer errors: ${lexer.numberOfSyntaxErrors}, Parser errors: ${parser.numberOfSyntaxErrors}"
+            "Lexer errors: ${lexer.numberOfSyntaxErrors}, Parser errors: ${parser.numberOfSyntaxErrors}",
         )
     }
 
-    val treeStream = CommonTreeNodeStream(fileTree.tree).apply {
-        tokenStream = tokens
-    }
+    val treeStream =
+        CommonTreeNodeStream(fileTree.tree).apply {
+            tokenStream = tokens
+        }
 
     val walker = smaliTreeWalker(treeStream)
     walker.setDexBuilder(DexBuilder(Opcodes.getDefault()))
 
     val classDef = walker.smali_file()
-    return classDef.methods.first().instructions.map { it as BuilderInstruction }
+    return classDef.methods
+        .first()
+        .instructions
+        .map { it as BuilderInstruction }
 }

@@ -24,9 +24,14 @@ actual fun loadPatches(
 ) = loadPatches(
     patchesFiles = patchesFiles,
     { file ->
-        JarFile(file).entries().toList().filter { it.name.endsWith(".class") }
+        JarFile(file)
+            .entries()
+            .toList()
+            .filter { it.name.endsWith(".class") }
             .map { it.name.substringBeforeLast('.').replace('/', '.') }
     },
     URLClassLoader(patchesFiles.map { it.toURI().toURL() }.toTypedArray()),
-    onFailedToLoad = onFailedToLoad
+    onFailedToLoad = onFailedToLoad,
 )
+
+actual inline val currentClassLoader get() = object {}::class.java.classLoader

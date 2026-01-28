@@ -1,5 +1,10 @@
 package app.revanced.patcher.patch
 
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
+import app.revanced.java.io.kmpDeleteRecursively
+import app.revanced.java.io.kmpInputStream
+import app.revanced.java.io.kmpResolve
 import app.revanced.patcher.PatchesResult
 import app.revanced.patcher.extensions.instructionsOrNull
 import app.revanced.patcher.extensions.string
@@ -9,13 +14,12 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-import com.android.tools.smali.dexlib2.mutable.MutableClassDef
-import com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.DexIO
 import lanchon.multidexlib2.MultiDexIO
 import lanchon.multidexlib2.RawDexIO
-import java.io.*
+import java.io.File
+import java.io.InputStream
 import java.util.logging.Logger
 import kotlin.reflect.jvm.jvmName
 
@@ -34,9 +38,8 @@ class BytecodePatchContext internal constructor(
 
     inner class ClassDefs private constructor(
         dexFile: DexFile,
-        private val classDefs: MutableSet<ClassDef> = dexFile.classes.toMutableSet()
-    ) :
-        MutableSet<ClassDef> by classDefs {
+        private val classDefs: MutableSet<ClassDef> = dexFile.classes.toMutableSet(),
+    ) : MutableSet<ClassDef> by classDefs {
         private val byType = mutableMapOf<String, ClassDef>()
 
         operator fun get(name: String): ClassDef? = byType[name]
@@ -58,8 +61,8 @@ class BytecodePatchContext internal constructor(
                 apkFile,
                 BasicDexFileNamer(),
                 null,
-                null
-            )
+                null,
+            ),
         )
 
         internal val opcodes = dexFile.opcodes
@@ -113,8 +116,7 @@ class BytecodePatchContext internal constructor(
             return anyRemoved
         }
 
-        override fun retainAll(elements: Collection<ClassDef>) =
-            removeAll(classDefs.asSequence().filter { it !in elements })
+        override fun retainAll(elements: Collection<ClassDef>) = removeAll(classDefs.asSequence().filter { it !in elements })
 
         private fun addCache(classDef: ClassDef) {
             byType[classDef.type] = classDef
@@ -131,15 +133,16 @@ class BytecodePatchContext internal constructor(
             byType -= classDef.type
 
             classDef.forEachString { method, string ->
-                if (_methodsByStrings[string]?.also { it -= method }?.isEmpty() == true)
+                if (_methodsByStrings[string]?.also { it -= method }?.isEmpty() == true) {
                     _methodsByStrings -= string
+                }
             }
         }
 
-
         private fun ClassDef.forEachString(action: (Method, String) -> Unit) {
             methods.asSequence().forEach { method ->
-                method.instructionsOrNull?.asSequence()
+                method.instructionsOrNull
+                    ?.asSequence()
                     ?.mapNotNull { it.string }
                     ?.forEach { string -> action(method, string) }
             }
@@ -184,16 +187,15 @@ class BytecodePatchContext internal constructor(
      * @param extensionInputStream The input stream for an extension dex file.
      */
     internal fun extendWith(extensionInputStream: InputStream) {
-        RawDexIO.readRawDexFile(
-            extensionInputStream, 0, null
-        ).classes.forEach { classDef ->
-            val existingClass = classDefs[classDef.type] ?: run {
-                logger.fine { "Adding class \"$classDef\"" }
+        RawDexIO.readRawDexFile(extensionInputStream, 0, null).classes.forEach { classDef ->
+            val existingClass =
+                classDefs[classDef.type] ?: run {
+                    logger.fine { "Adding class \"$classDef\"" }
 
-                classDefs += classDef
+                    classDefs += classDef
 
-                return@forEach
-            }
+                    return@forEach
+                }
 
             logger.fine { "Class \"$classDef\" exists already. Adding missing methods and fields." }
 
@@ -232,32 +234,36 @@ class BytecodePatchContext internal constructor(
         System.gc()
 
         val patchedDexFileResults =
-            patchedFilesPath.resolve("dex").also {
-                it.deleteRecursively() // Make sure the directory is empty.
-                it.mkdirs()
-            }.apply {
-                MultiDexIO.writeDexFile(
-                    true,
-                    -1,
-                    this,
-                    BasicDexFileNamer(),
-                    object : DexFile {
-                        override fun getClasses() = classDefs.let {
-                            // More performant according to
-                            // https://github.com/LisoUseInAIKyrios/revanced-patcher/
-                            // commit/8c26ad08457fb1565ea5794b7930da42a1c81cf1
-                            // #diff-be698366d9868784ecf7da3fd4ac9d2b335b0bb637f9f618fbe067dbd6830b8fR197
-                            // TODO: Benchmark, if actually faster.
-                            HashSet<ClassDef>(it.size * 3 / 2).apply { addAll(it) }
-                        }
+            patchedFilesPath
+                .kmpResolve("dex")
+                .also {
+                    it.kmpDeleteRecursively() // Make sure the directory is empty.
+                    it.mkdirs()
+                }.apply {
+                    MultiDexIO.writeDexFile(
+                        true,
+                        -1,
+                        this,
+                        BasicDexFileNamer(),
+                        object : DexFile {
+                            override fun getClasses() =
+                                classDefs.let {
+                                    // More performant according to
+                                    // https://github.com/LisoUseInAIKyrios/revanced-patcher/
+                                    // commit/8c26ad08457fb1565ea5794b7930da42a1c81cf1
+                                    // #diff-be698366d9868784ecf7da3fd4ac9d2b335b0bb637f9f618fbe067dbd6830b8fR197
+                                    // TODO: Benchmark, if actually faster.
+                                    HashSet<ClassDef>(it.size * 3 / 2).apply { addAll(it) }
+                                }
 
-                        override fun getOpcodes() = classDefs.opcodes
-                    },
-                    DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
-                ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
-            }.listFiles { it.isFile }!!.map {
-                PatchesResult.PatchedDexFile(it.name, it.inputStream())
-            }.toSet()
+                            override fun getOpcodes() = classDefs.opcodes
+                        },
+                        DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
+                    ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
+                }.listFiles { it.isFile }!!
+                .map {
+                    PatchesResult.PatchedDexFile(it.name, it.kmpInputStream())
+                }.toSet()
 
         return patchedDexFileResults
     }
