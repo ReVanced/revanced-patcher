@@ -20,8 +20,14 @@ kotlin {
 
     androidLibrary {
         namespace = "app.revanced.patcher"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        compileSdk =
+            libs.versions.android.compileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
 
         withHostTestBuilder {}.configure {}
         withDeviceTestBuilder {
@@ -30,9 +36,7 @@ kotlin {
 
         compilations.configureEach {
             compilerOptions.configure {
-                jvmTarget.set(
-                    JvmTarget.JVM_11
-                )
+                jvmTarget.set(JvmTarget.JVM_11)
             }
         }
     }
@@ -55,7 +59,7 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
             "-Xexplicit-backing-fields",
-            "-Xcontext-parameters"
+            "-Xcontext-parameters",
         )
     }
 }
@@ -107,4 +111,3 @@ mavenPublishing {
         }
     }
 }
-
