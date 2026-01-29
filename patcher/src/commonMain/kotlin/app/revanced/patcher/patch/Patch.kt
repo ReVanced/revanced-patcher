@@ -130,16 +130,17 @@ class BytecodePatchBuilder private constructor(
     context(_: BytecodePatchContext, _: ResourcePatchContext)
     override val context get() = contextOf<BytecodePatchContext>()
 
+    init {
+        apply = { context.addExtension() }
+    }
+
     override fun apply(block: BytecodePatchContext.() -> Unit) {
         apply = {
-            block(
-                // Extend the context with the extension, before returning it to the patch before applying it.
-                context.apply {
-                    getExtensionInputStream?.let { get -> extendWith(get()) }
-                },
-            )
+            block(context.apply { addExtension() })
         }
     }
+
+    private fun BytecodePatchContext.addExtension() = getExtensionInputStream?.let { get -> addExtension(get()) }
 }
 
 open class ResourcePatchBuilder internal constructor(

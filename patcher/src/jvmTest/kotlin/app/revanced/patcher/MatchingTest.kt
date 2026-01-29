@@ -20,9 +20,9 @@ class MatchingTest : PatcherTestBase() {
     fun setup() = setupMock()
 
     @Test
-    fun `finds via builder api`() {
-        fun firstMethodComposite(fail: Boolean = false) =
-            firstMethodComposite {
+    fun `finds via composite api`() {
+        fun build(fail: Boolean = false): DeclarativePredicateCompositeBuilder =
+            {
                 name("method")
                 definingClass("class")
 
@@ -40,24 +40,24 @@ class MatchingTest : PatcherTestBase() {
             }
 
         with(bytecodePatchContext) {
-            val match = firstMethodComposite()
+            val match = firstMethodComposite(build = build())
             assertNotNull(
                 match.methodOrNull,
                 "Expected to find a method",
             )
             assertEquals(
                 4,
-                match.indices[3],
+                match[3],
                 "Expected to find the string instruction at index 4",
             )
 
             assertNull(
-                firstMethodComposite(fail = true).immutableMethodOrNull,
+                firstMethodComposite(build = build(fail = true)).immutableMethodOrNull,
                 "Expected to not find a method",
             )
 
             assertNotNull(
-                firstMethodComposite().match(classDefs.first()).methodOrNull,
+                classDefs.first().firstMethodComposite(build = build()).methodOrNull,
                 "Expected to find a method matching in a specific class",
             )
         }

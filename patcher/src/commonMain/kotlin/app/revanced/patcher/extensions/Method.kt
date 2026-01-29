@@ -11,7 +11,10 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.MethodImplementation
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 
-fun Method.accessFlags(vararg flags: AccessFlags) = accessFlags.and(flags.map { it.ordinal }.reduce { acc, i -> acc or i }) != 0
+fun Method.accessFlags(vararg flags: AccessFlags): Boolean {
+    val mask = flags.fold(0) { acc, i -> acc or i.value }
+    return mask and accessFlags == mask
+}
 
 /**
  * Add instructions to a method at the given index.

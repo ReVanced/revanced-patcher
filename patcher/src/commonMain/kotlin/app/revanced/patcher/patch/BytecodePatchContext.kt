@@ -182,11 +182,11 @@ class BytecodePatchContext internal constructor(
     val classDefs = ClassDefs()
 
     /**
-     * Extend this [BytecodePatchContext] with [extensionInputStream].
+     * Add classes from  [extensionInputStream] to this [BytecodePatchContext].
      *
      * @param extensionInputStream The input stream for an extension dex file.
      */
-    internal fun extendWith(extensionInputStream: InputStream) {
+    internal fun addExtension(extensionInputStream: InputStream) {
         RawDexIO.readRawDexFile(extensionInputStream, 0, null).classes.forEach { classDef ->
             val existingClass =
                 classDefs[classDef.type] ?: run {

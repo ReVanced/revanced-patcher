@@ -22,17 +22,18 @@ abstract class PatcherTestBase {
     protected lateinit var resourcePatchContext: ResourcePatchContext
 
     protected fun setupMock(
-        method: ImmutableMethod = ImmutableMethod(
-            "class",
-            "method",
-            emptyList(),
-            "V",
-            0,
-            null,
-            null,
-            ImmutableMethodImplementation(
-                2,
-                """
+        method: ImmutableMethod =
+            ImmutableMethod(
+                "class",
+                "method",
+                emptyList(),
+                "V",
+                0,
+                null,
+                null,
+                ImmutableMethodImplementation(
+                    2,
+                    """
                     const-string v0, "Hello, World!"
                     iput-object v0, p0, Ljava/lang/System;->out:Ljava/io/PrintStream;
                     iget-object v0, p0, Ljava/lang/System;->out:Ljava/io/PrintStream;
@@ -43,61 +44,67 @@ abstract class PatcherTestBase {
                     invoke-static { p0 }, Ljava/lang/System;->currentTimeMillis()J
                     check-cast p0, Ljava/io/PrintStream;
                 """.toInstructions(),
-                null,
-                null
+                    null,
+                    null,
+                ),
             ),
-        ),
     ) {
         resourcePatchContext = mockk<ResourcePatchContext>(relaxed = true)
-        bytecodePatchContext = mockk<BytecodePatchContext> bytecodePatchContext@{
-            mockkStatic(MultiDexIO::readDexFile)
-            every {
-                MultiDexIO.readDexFile(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any()
-                )
-            } returns mockk<DexFile> {
-                every { classes } returns mutableSetOf(
-                    ImmutableClassDef(
-                        "class",
-                        0,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        listOf(method),
+        bytecodePatchContext =
+            mockk<BytecodePatchContext> bytecodePatchContext@{
+                mockkStatic(MultiDexIO::readDexFile)
+                every {
+                    MultiDexIO.readDexFile(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
                     )
-                )
-                every { opcodes } returns Opcodes.getDefault()
+                } returns
+                    mockk<DexFile> {
+                        every { classes } returns
+                            mutableSetOf(
+                                ImmutableClassDef(
+                                    "class",
+                                    0,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    listOf(method),
+                                ),
+                            )
+                        every { opcodes } returns Opcodes.getDefault()
+                    }
+
+                every { this@bytecodePatchContext.getProperty("apkFile") } returns mockk<File>()
+
+                every { this@bytecodePatchContext.classDefs } returns
+                    ClassDefs().apply {
+                        javaClass
+                            .getDeclaredMethod($$"initializeCache$patcher")
+                            .apply {
+                                isAccessible = true
+                            }.invoke(this)
+                    }
+
+                every { get() } returns emptySet()
+
+                justRun { this@bytecodePatchContext["addExtension"](any<InputStream>()) }
             }
-
-            every { this@bytecodePatchContext.getProperty("apkFile") } returns mockk<File>()
-
-            every { this@bytecodePatchContext.classDefs } returns ClassDefs().apply {
-                javaClass.getDeclaredMethod($$"initializeCache$patcher").apply {
-                    isAccessible = true
-                }.invoke(this)
-            }
-
-            every { get() } returns emptySet()
-
-            justRun { this@bytecodePatchContext["extendWith"](any<InputStream>()) }
-        }
     }
 
     protected operator fun Set<Patch>.invoke() {
         runCatching {
             apply(
                 bytecodePatchContext,
-                resourcePatchContext
+                resourcePatchContext,
             ) { }
         }.fold(
             { it.dexFiles },
-            { it.printStackTrace() }
+            { it.printStackTrace() },
         )
     }
 

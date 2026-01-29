@@ -56,7 +56,7 @@ kotlin {
             "-Xcontext-parameters",
         )
 
-        jvmToolchain(11)
+        jvmToolchain(17)
     }
 }
 
