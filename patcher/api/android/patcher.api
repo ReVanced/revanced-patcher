@@ -454,8 +454,8 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun anyVirtualMethod (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lkotlin/jvm/functions/Function1;)Z
 	public static final fun at (ILkotlin/jvm/functions/Function1;)Lkotlin/jvm/functions/Function4;
 	public static final fun at (ILkotlin/jvm/functions/Function4;)Lkotlin/jvm/functions/Function4;
-	public static final fun composingFirstMethod ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
-	public static synthetic fun composingFirstMethod$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
+	public static final fun composingFirstMethod ([Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lkotlin/properties/ReadOnlyProperty;
+	public static synthetic fun composingFirstMethod$default ([Ljava/lang/String;Lkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
 	public static final fun composingMethod (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
 	public static synthetic fun composingMethod$default (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lkotlin/properties/ReadOnlyProperty;
 	public static final fun custom (Lapp/revanced/patcher/MutablePredicateList;Lkotlin/jvm/functions/Function1;)V
@@ -485,10 +485,10 @@ public final class app/revanced/patcher/MatchingKt {
 	public static final fun firstMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;Lcom/android/tools/smali/dexlib2/iface/reference/MethodReference;)Lcom/android/tools/smali/dexlib2/iface/Method;
 	public static final fun firstMethod (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/android/tools/smali/dexlib2/iface/Method;
 	public static synthetic fun firstMethod$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lcom/android/tools/smali/dexlib2/iface/Method;
-	public static final fun firstMethodComposite (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lapp/revanced/patcher/Match;
+	public static final fun firstMethodComposite (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function4;)Lapp/revanced/patcher/Match;
 	public static final fun firstMethodComposite (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lapp/revanced/patcher/Match;
 	public static final fun firstMethodComposite (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lapp/revanced/patcher/Match;
-	public static synthetic fun firstMethodComposite$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lapp/revanced/patcher/Match;
+	public static synthetic fun firstMethodComposite$default (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function4;ILjava/lang/Object;)Lapp/revanced/patcher/Match;
 	public static synthetic fun firstMethodComposite$default (Lcom/android/tools/smali/dexlib2/iface/ClassDef;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lapp/revanced/patcher/Match;
 	public static synthetic fun firstMethodComposite$default (Ljava/lang/Iterable;[Ljava/lang/String;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lapp/revanced/patcher/Match;
 	public static final fun firstMethodDeclaratively (Lapp/revanced/patcher/patch/BytecodePatchContext;[Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lcom/android/tools/smali/dexlib2/iface/Method;

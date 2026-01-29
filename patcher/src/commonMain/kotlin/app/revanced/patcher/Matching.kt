@@ -99,7 +99,7 @@ fun Iterable<Method>.firstMethod(methodReference: MethodReference) = requireNotN
 @JvmName("firstMutableMethodOrNullInMethods")
 context(context: BytecodePatchContext)
 fun Iterable<Method>.firstMutableMethodOrNull(methodReference: MethodReference) =
-    firstMethodOrNull(methodReference)?.let { app.revanced.patcher.firstMutableMethod(it) }
+    firstMethodOrNull(methodReference)?.let { context.firstMutableMethod(it) }
 
 @JvmName("firstMutableMethodInMethods")
 context(_: BytecodePatchContext)
@@ -132,14 +132,14 @@ fun Iterable<Method>.firstMethod(
 ) = requireNotNull(firstMethodOrNull(strings = strings, predicate))
 
 @JvmName("firstMutableMethodOrNullInMethods")
-context(_: BytecodePatchContext)
+context(context: BytecodePatchContext)
 fun Iterable<Method>.firstMutableMethodOrNull(
     vararg strings: String,
     predicate: MethodPredicate = { true },
 ) = firstMethodOrNull(
     strings = strings,
     predicate,
-)?.let { app.revanced.patcher.firstMutableMethod(it) }
+)?.let { context.firstMutableMethod(it) }
 
 @JvmName("firstMutableMethodInMethods")
 context(_: BytecodePatchContext)
@@ -184,14 +184,14 @@ fun Iterable<ClassDef>.firstMethod(
 ) = requireNotNull(firstMethodOrNull(strings = strings, predicate))
 
 @JvmName("firstMutableMethodOrNullInClassDefs")
-context(_: BytecodePatchContext)
+context(context: BytecodePatchContext)
 fun Iterable<ClassDef>.firstMutableMethodOrNull(
     vararg strings: String,
     predicate: MethodPredicate = { true },
 ) = firstMethodOrNull(
     strings = strings,
     predicate,
-)?.let { app.revanced.patcher.firstMutableMethod(it) }
+)?.let { context.firstMutableMethod(it) }
 
 @JvmName("firstMutableMethodInClassDefs")
 context(_: BytecodePatchContext)
@@ -274,15 +274,12 @@ fun Iterable<ClassDef>.firstMutableClassDef(
     predicate: ClassDefPredicate = { true },
 ) = requireNotNull(firstMutableClassDefOrNull(type, predicate))
 
-context(_: BytecodePatchContext)
-fun firstMethodOrNull(methodReference: MethodReference) =
+fun BytecodePatchContext.firstMethodOrNull(methodReference: MethodReference) =
     firstClassDefOrNull(methodReference.definingClass)?.methods?.firstMethodOrNull(methodReference)
 
-context(_: BytecodePatchContext)
-fun firstMethod(method: MethodReference) = requireNotNull(firstMethodOrNull(method))
+fun BytecodePatchContext.firstMethod(method: MethodReference) = requireNotNull(firstMethodOrNull(method))
 
-context(_: BytecodePatchContext)
-fun firstMutableMethodOrNull(methodReference: MethodReference): MutableMethod? =
+fun BytecodePatchContext.firstMutableMethodOrNull(methodReference: MethodReference): MutableMethod? =
     firstMutableClassDefOrNull(methodReference.definingClass)?.methods?.first {
         MethodUtil.methodSignaturesMatch(
             methodReference,
@@ -290,20 +287,18 @@ fun firstMutableMethodOrNull(methodReference: MethodReference): MutableMethod? =
         )
     }
 
-context(_: BytecodePatchContext)
-fun firstMutableMethod(method: MethodReference) = requireNotNull(firstMutableMethodOrNull(method))
+fun BytecodePatchContext.firstMutableMethod(method: MethodReference) = requireNotNull(firstMutableMethodOrNull(method))
 
-context(context: BytecodePatchContext)
-fun firstMethodOrNull(
+fun BytecodePatchContext.firstMethodOrNull(
     vararg strings: String,
     predicate: MethodPredicate = { true },
 ): Method? {
-    if (strings.isEmpty()) return context.classDefs.firstMethodOrNull(predicate)
+    if (strings.isEmpty()) return classDefs.firstMethodOrNull(predicate)
 
     // TODO: Get rid of duplicates, but this isn't needed for functionality. Perhaps worse performance-wise?
     val strings = strings.toSet()
 
-    val methodsWithStrings = strings.mapNotNull { context.classDefs.methodsByString[it] }
+    val methodsWithStrings = strings.mapNotNull { classDefs.methodsByString[it] }
     if (methodsWithStrings.size != strings.size) return null
 
     return methodsWithStrings.minBy { it.size }.firstOrNull { method ->
@@ -312,22 +307,19 @@ fun firstMethodOrNull(
     }
 }
 
-context(_: BytecodePatchContext)
-fun firstMethod(
+fun BytecodePatchContext.firstMethod(
     vararg strings: String,
     predicate: MethodPredicate = { true },
 ) = requireNotNull(firstMethodOrNull(strings = strings, predicate))
 
-context(_: BytecodePatchContext)
-fun firstMutableMethodOrNull(
+fun BytecodePatchContext.firstMutableMethodOrNull(
     vararg strings: String,
     predicate: MethodPredicate = { true },
 ) = firstMethodOrNull(strings = strings, predicate)?.let { method ->
     firstMutableMethodOrNull(method)
 }
 
-context(_: BytecodePatchContext)
-fun firstMutableMethod(
+fun BytecodePatchContext.firstMutableMethod(
     vararg strings: String,
     predicate: MethodPredicate = { true },
 ) = requireNotNull(firstMutableMethodOrNull(strings = strings, predicate))
@@ -360,30 +352,26 @@ fun gettingFirstMutableMethod(
     predicate: BytecodePatchContextMethodPredicate = { true },
 ) = cachedReadOnlyProperty { firstMutableMethod(strings = strings) { predicate() } }
 
-context(context: BytecodePatchContext)
-fun firstClassDefOrNull(
+fun BytecodePatchContext.firstClassDefOrNull(
     type: String? = null,
     predicate: ClassDefPredicate = { true },
 ) = if (type == null) {
-    context.classDefs.firstClassDefOrNull(type, predicate)
+    classDefs.firstClassDefOrNull(type, predicate)
 } else {
-    context.classDefs[type]?.takeIf { it.predicate() }
+    classDefs[type]?.takeIf { it.predicate() }
 }
 
-context(_: BytecodePatchContext)
-fun firstClassDef(
+fun BytecodePatchContext.firstClassDef(
     type: String? = null,
     predicate: ClassDefPredicate = { true },
 ) = requireNotNull(firstClassDefOrNull(type, predicate))
 
-context(context: BytecodePatchContext)
-fun firstMutableClassDefOrNull(
+fun BytecodePatchContext.firstMutableClassDefOrNull(
     type: String? = null,
     predicate: ClassDefPredicate = { true },
-) = firstClassDefOrNull(type, predicate)?.let { context.classDefs.getOrReplaceMutable(it) }
+) = firstClassDefOrNull(type, predicate)?.let { classDefs.getOrReplaceMutable(it) }
 
-context(_: BytecodePatchContext)
-fun firstMutableClassDef(
+fun BytecodePatchContext.firstMutableClassDef(
     type: String? = null,
     predicate: ClassDefPredicate = { true },
 ) = requireNotNull(firstMutableClassDefOrNull(type, predicate))
@@ -528,26 +516,22 @@ fun Iterable<ClassDef>.firstMutableClassDefDeclaratively(
     build: MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = requireNotNull(firstMutableClassDefDeclarativelyOrNull(type, build))
 
-context(_: BytecodePatchContext)
-fun firstMethodDeclarativelyOrNull(
+fun BytecodePatchContext.firstMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
 ) = buildPredicate(strings, build) { strings, predicate -> firstMethodOrNull(strings = strings, predicate) }
 
-context(_: BytecodePatchContext)
-fun firstMethodDeclaratively(
+fun BytecodePatchContext.firstMethodDeclaratively(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
 ) = requireNotNull(firstMethodDeclarativelyOrNull(strings = strings, build))
 
-context(_: BytecodePatchContext)
-fun firstMutableMethodDeclarativelyOrNull(
+fun BytecodePatchContext.firstMutableMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
 ) = buildPredicate(strings, build) { strings, predicate -> firstMutableMethodOrNull(strings = strings, predicate) }
 
-context(_: BytecodePatchContext)
-fun firstMutableMethodDeclaratively(
+fun BytecodePatchContext.firstMutableMethodDeclaratively(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
 ) = requireNotNull(firstMutableMethodDeclarativelyOrNull(strings = strings, build))
@@ -572,26 +556,22 @@ fun gettingFirstMutableMethodDeclaratively(
     build: context(BytecodePatchContext, MutableList<String>) MutablePredicateList<Method>.() -> Unit = {},
 ) = cachedReadOnlyProperty { firstMutableMethodDeclaratively(strings = strings) { build() } }
 
-context(_: BytecodePatchContext)
-fun firstClassDefDeclarativelyOrNull(
+fun BytecodePatchContext.firstClassDefDeclarativelyOrNull(
     type: String? = null,
     build: MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = buildPredicate(build) { predicate -> firstClassDefOrNull(type, predicate) }
 
-context(_: BytecodePatchContext)
-fun firstClassDefDeclaratively(
+fun BytecodePatchContext.firstClassDefDeclaratively(
     type: String? = null,
     build: MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = buildPredicate(build) { predicate -> firstClassDef(type, predicate) }
 
-context(_: BytecodePatchContext)
-fun firstMutableClassDefDeclarativelyOrNull(
+fun BytecodePatchContext.firstMutableClassDefDeclarativelyOrNull(
     type: String? = null,
     build: MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = buildPredicate(build) { predicate -> firstMutableClassDefOrNull(type, predicate) }
 
-context(_: BytecodePatchContext)
-fun firstMutableClassDefDeclaratively(
+fun BytecodePatchContext.firstMutableClassDefDeclaratively(
     type: String? = null,
     build: MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = buildPredicate(build) { predicate -> firstMutableClassDef(type, predicate) }
@@ -1079,10 +1059,18 @@ typealias DeclarativePredicateCompositeBuilder =
     )
     MutablePredicateList<Method>.() -> Unit
 
+typealias BytecodePatchContextDeclarativePredicateCompositeBuilder =
+    context(
+        BytecodePatchContext,
+        MutableList<IndexedMatcher<Instruction>>,
+        MutableList<String>
+    )
+    MutablePredicateList<Method>.() -> Unit
+
 fun BytecodePatchContext.firstMethodComposite(
     vararg strings: String,
-    build: DeclarativePredicateCompositeBuilder = {},
-) = Match(strings, build) { strings, build -> firstMethodOrNull(strings = strings, build) }
+    build: BytecodePatchContextDeclarativePredicateCompositeBuilder = {},
+) = Match(strings, { build() }) { strings, build -> firstMethodOrNull(strings = strings, build) }
 
 fun Iterable<ClassDef>.firstMethodComposite(
     vararg strings: String,
@@ -1096,7 +1084,7 @@ fun ClassDef.firstMethodComposite(
 
 fun composingFirstMethod(
     vararg strings: String,
-    build: DeclarativePredicateCompositeBuilder = {},
+    build: BytecodePatchContextDeclarativePredicateCompositeBuilder = {},
 ) = cachedReadOnlyProperty { firstMethodComposite(strings = strings, build) }
 
 // Such objects can be made for the getting functions as well, if desired.
@@ -1195,13 +1183,13 @@ open class Match(
 }
 
 context(context: BytecodePatchContext)
-val Method.immutableClassDefOrNull get() = firstClassDefOrNull(definingClass)
+val Method.immutableClassDefOrNull get() = context.firstClassDefOrNull(definingClass)
 
 context(_: BytecodePatchContext)
 val Method.immutableClassDef get() = requireNotNull(immutableClassDefOrNull)
 
-context(_: BytecodePatchContext)
-val Method.classDefOrNull get() = firstMutableClassDefOrNull(definingClass)
+context(context: BytecodePatchContext)
+val Method.classDefOrNull get() = context.firstMutableClassDefOrNull(definingClass)
 
 context(_: BytecodePatchContext)
 val Method.classDef get() = requireNotNull(classDefOrNull)

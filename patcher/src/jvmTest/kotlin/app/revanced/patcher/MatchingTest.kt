@@ -21,7 +21,7 @@ class MatchingTest : PatcherTestBase() {
 
     @Test
     fun `finds via composite api`() {
-        fun build(fail: Boolean = false): DeclarativePredicateCompositeBuilder =
+        fun build(fail: Boolean = false): BytecodePatchContextDeclarativePredicateCompositeBuilder =
             {
                 name("method")
                 definingClass("class")
@@ -57,7 +57,7 @@ class MatchingTest : PatcherTestBase() {
             )
 
             assertNotNull(
-                classDefs.first().firstMethodComposite(build = build()).methodOrNull,
+                classDefs.first().firstMethodComposite().methodOrNull,
                 "Expected to find a method matching in a specific class",
             )
         }
