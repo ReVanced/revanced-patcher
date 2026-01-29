@@ -1186,12 +1186,12 @@ open class Match(
     context(_: BytecodePatchContext)
     operator fun component3() = immutableClassDef
 
-    operator fun get(index: Int) = indices[0][index]
+    operator fun get(index: Int) = indices.first().let { first -> first[index.mod(first.size)] }
 
     operator fun get(
         matcherIndex: Int,
         index: Int,
-    ) = indices[matcherIndex][index]
+    ) = indices[matcherIndex.mod(indices[0].size)].let { indices -> indices[index.mod(indices.size)] }
 }
 
 context(context: BytecodePatchContext)
