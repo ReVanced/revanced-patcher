@@ -922,10 +922,18 @@ fun MutablePredicateList<Method>.custom(block: Predicate<Method>) {
     predicate { block() }
 }
 
-fun MutablePredicateList<Method>.opcodes(vararg opcodes: Opcode) = instructions { opcodes.forEach { +it() } }
+fun MutablePredicateList<Method>.opcodes(vararg opcodes: Opcode) =
+    instructions {
+        +opcodes.first()()
+        opcodes.drop(1).forEach { +after(it()) }
+    }
 
 context(matchers: MutableList<IndexedMatcher<Instruction>>)
-fun MutablePredicateList<Method>.opcodes(vararg opcodes: Opcode) = instructions { opcodes.forEach { +it() } }
+fun MutablePredicateList<Method>.opcodes(vararg opcodes: Opcode) =
+    instructions {
+        +opcodes.first()()
+        opcodes.drop(1).forEach { +after(it()) }
+    }
 
 private fun Array<out String>.toUnorderedStringPredicates() = unorderedAllOf(predicates = map { string(it) }.toTypedArray())
 
