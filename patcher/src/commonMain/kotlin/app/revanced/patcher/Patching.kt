@@ -95,9 +95,7 @@ fun Set<Patch>.apply(
         val patchResult = patch.apply()
 
         // If an exception occurred or the patch has no finalize block, emit the result.
-        if (patchResult.exception != null || patch.afterDependents == null) {
-            emit(patchResult)
-        }
+        if (patchResult.exception != null || patch.afterDependents == null) emit(patchResult)
     }
 
     val succeededPatchesWithFinalizeBlock =
@@ -108,7 +106,7 @@ fun Set<Patch>.apply(
     succeededPatchesWithFinalizeBlock.asReversed().forEach { result ->
         val patch = result.patch
         runCatching { patch.afterDependents!!.invoke(bytecodePatchContext, resourcePatchContext) }.fold(
-            { emit(result) },
+            { if (patch in this) emit(result) },
             {
                 emit(
                     PatchResult(
