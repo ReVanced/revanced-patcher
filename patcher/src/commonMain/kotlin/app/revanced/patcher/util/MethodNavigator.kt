@@ -92,7 +92,8 @@ class MethodNavigator internal constructor(
      */
     context(context: BytecodePatchContext)
     fun stop() =
-        context.classDefs[lastNavigatedMethodReference.definingClass]!!
+        context.classDefs
+            .getOrReplaceMutable(context.classDefs[lastNavigatedMethodReference.definingClass]!!)
             .firstMethodBySignature as MutableMethod
 
     /**
@@ -117,10 +118,7 @@ class MethodNavigator internal constructor(
      * Find the first [lastNavigatedMethodReference] in the class.
      */
     private val ClassDef.firstMethodBySignature
-        get() =
-            methods.first {
-                MethodUtil.methodSignaturesMatch(it, lastNavigatedMethodReference)
-            }
+        get() = methods.first { MethodUtil.methodSignaturesMatch(it, lastNavigatedMethodReference) }
 
     /**
      * An exception thrown when navigating fails.
