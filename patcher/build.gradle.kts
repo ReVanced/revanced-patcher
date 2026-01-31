@@ -41,7 +41,6 @@ kotlin {
             implementation(libs.kotlin.reflect)
             implementation(libs.multidexlib2)
             implementation(libs.smali)
-            implementation(libs.xpp3)
         }
 
         jvmTest.dependencies {

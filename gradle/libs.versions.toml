@@ -10,7 +10,6 @@ multidexlib2 = "3.0.3.r3"
 # Tracking https://github.com/google/smali/issues/64.
 #noinspection GradleDependency
 smali = "3.0.9"
-xpp3 = "1.1.4c"
 vanniktechMavenPublish = "0.35.0"
 
 [libraries]
@@ -20,7 +19,6 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 multidexlib2 = { module = "app.revanced:multidexlib2", version.ref = "multidexlib2" }
 smali = { module = "com.android.tools.smali:smali", version.ref = "smali" }
-xpp3 = { module = "xpp3:xpp3", version.ref = "xpp3" }
 
 [plugins]
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
