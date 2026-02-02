@@ -60,48 +60,52 @@
 
 # 💉 Introduction to ReVanced Patcher
 
-To create patches for Android apps, it is recommended to know the basic concept of ReVanced Patcher.
+ReVanced Patcher is made out of three structural components.
 
 ## 📙 How it works
 
-ReVanced Patcher is a library that allows modifying Android apps by applying patches.
+ReVanced Patcher is a library that makes modifying Android apps easy and modular by applying patches.
 It is built on top of [Smali](https://github.com/google/smali) for bytecode manipulation and [Androlib (Apktool)](https://github.com/iBotPeaches/Apktool)
 for resource decoding and encoding.
 
-ReVanced Patcher receives a list of patches and applies them to a given APK file.
-It then returns the modified components of the APK file, such as modified dex files and resources,
-that can be repackaged into a new APK file.
-
-ReVanced Patcher has a simple API that allows you to load patches from RVP (JAR or DEX container) files
-and apply them to an APK file. Later on, you will learn how to create patches.
+First, you load a set of patches to filter as desired based on their attributes:
 
 ```kt
-val patches = loadPatchesFromJar(setOf(File("revanced-patches.rvp")))
+val patches = loadPatches(File("revanced-patches.rvp"))
+```
 
-val patcherResult = Patcher(PatcherConfig(apkFile = File("some.apk"))).use { patcher ->
-    // Here you can access metadata about the APK file through patcher.context.packageMetadata
-    // such as package name, version code, version name, etc.
+Afterward, you create a patcher instance for a specific APK file.
+In the `getPatches` lambda, you receive the packageName and versionName of the APK file being patched.
+This is useful to decide which patches to return to the patcher based on the target application:
 
-    // Add patches.
-    patcher += patches
-
-    // Execute the patches.
-    runBlocking {
-        patcher().collect { patchResult ->
-            if (patchResult.exception != null)
-                logger.info { "\"${patchResult.patch}\" failed:\n${patchResult.exception}" }
-            else
-                logger.info { "\"${patchResult.patch}\" succeeded" }
-        }
-    }
-
-    // Compile and save the patched APK file components.
-    patcher.get()
+```kt
+val patch = patcher(apkFile = File("app.apk")) { packageName, versionName ->
+    patches // Optionally filter this set - for example based on packageName and versionName.
 }
+```
 
-// The result of the patcher contains the modified components of the APK file that can be repackaged into a new APK file.
-val dexFiles = patcherResult.dexFiles
-val resources = patcherResult.resources
+The `patcher` function returns a `patch` lambda that you can later execute to apply the patches to the APK file.
+On execution, `PatchResult` objects for each patch are emitted in the provided lambda.
+You can use this to log the success or failure of each patch:
+
+```kt
+val patchesResult = patch { patchResult ->
+    val exception = patchResult.exception
+        ?: return@patch logger.info("\"${patchResult.patch}\" succeeded")
+
+    StringWriter().use { writer ->
+        exception.printStackTrace(PrintWriter(writer))
+
+        logger.severe("\"${patchResult.patch}\" failed:\n$writer")
+    }
+}
+```
+
+At last, the `patchesResult` returned by the `patch` lambda contains the modified components of the APK file.
+
+```kt
+val dexFiles = patchesResult.dexFiles
+val resources = patchesResult.resources
 ```
 
 ## ⏭️ What's next
