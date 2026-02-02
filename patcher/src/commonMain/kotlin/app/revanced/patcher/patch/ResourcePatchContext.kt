@@ -2,6 +2,7 @@ package app.revanced.patcher.patch
 
 import app.revanced.java.io.kmpResolve
 import app.revanced.patcher.PatchesResult
+import app.revanced.patcher.patch.ResourcePatchContext.ResourceDecodingMode.ALL
 import app.revanced.patcher.util.Document
 import brut.androlib.AaptInvoker
 import brut.androlib.ApkDecoder
@@ -47,7 +48,7 @@ class ResourcePatchContext internal constructor(
             frameworkDirectory = frameworkFileDirectory
         }
 
-    internal var decodingMode = ResourceDecodingMode.MANIFEST
+    private var decodingMode = ResourceDecodingMode.MANIFEST
 
     /**
      * Read a document from an [InputStream].
@@ -106,6 +107,8 @@ class ResourcePatchContext internal constructor(
     internal fun decodeResources() {
         logger.info("Decoding resources")
 
+        decodingMode = ALL
+
         val resourcesDecoder =
             ResourcesDecoder(resourceConfig, apkInfo).also {
                 it.decodeResources(apkFilesPath)
@@ -137,9 +140,8 @@ class ResourcePatchContext internal constructor(
                 val resourcesApkFile = resourcesPath.kmpResolve("resources.apk").also { it.createNewFile() }
 
                 val manifestFile =
-                    apkFilesPath.kmpResolve("AndroidManifest.xml").also {
-                        ResXmlUtils.fixingPublicAttrsInProviderAttributes(it)
-                    }
+                    apkFilesPath.kmpResolve("AndroidManifest.xml").also(ResXmlUtils::fixingPublicAttrsInProviderAttributes)
+
                 val resPath = apkFilesPath.kmpResolve("res")
                 val frameworkApkFiles =
                     with(Framework(resourceConfig)) {
@@ -177,7 +179,7 @@ class ResourcePatchContext internal constructor(
                 // Move the other resources files.
                 resourcesPath.kmpResolve("other").also { it.mkdirs() }.apply {
                     otherFiles.forEach { file ->
-                        Files.move(file.toPath(), resolve(file.name).toPath())
+                        Files.move(file.toPath(), kmpResolve(file.name).toPath())
                     }
                 }
             } else {
