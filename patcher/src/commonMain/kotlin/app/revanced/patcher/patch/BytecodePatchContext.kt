@@ -149,7 +149,7 @@ class BytecodePatchContext internal constructor(
         }
 
         /**
-         * Get a mutable version of the given [classDef], replacing it in the set if necessary.
+         * Create a mutable version of an existing class by the type of the given [classDef], replacing it in the set if necessary.
          *
          * @param classDef The [ClassDef] to get or replace.
          * @return The mutable version of the [classDef].
@@ -157,15 +157,17 @@ class BytecodePatchContext internal constructor(
          * @see toMutable
          */
         fun getOrReplaceMutable(classDef: ClassDef): MutableClassDef {
-            if (classDef !is MutableClassDef) {
-                val mutableClassDef = classDef.toMutable()
+            val currentClassDef = get(classDef.type)!!
+
+            if (currentClassDef !is MutableClassDef) {
+                val mutableClassDef = currentClassDef.toMutable()
                 this -= classDef
                 this += mutableClassDef
 
                 return mutableClassDef
             }
 
-            return classDef
+            return currentClassDef
         }
 
         internal fun initializeCache() = classDefs.forEach(::addCache)

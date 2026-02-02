@@ -7,6 +7,7 @@ import com.android.tools.smali.dexlib2.builder.BuilderInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.*
 import com.android.tools.smali.dexlib2.writer.builder.DexBuilder
 import com.android.tools.smali.smali.smaliFlexLexer
@@ -61,7 +62,7 @@ val Instruction.type
 val Instruction.string
     get() = stringReference?.string
 val Instruction.wideLiteral
-    get() = (this as? NarrowLiteralInstruction)?.wideLiteral
+    get() = (this as? WideLiteralInstruction)?.wideLiteral
 
 private const val CLASS_HEADER = ".class LInlineCompiler;\n.super Ljava/lang/Object;\n"
 private const val STATIC_HEADER = "$CLASS_HEADER.method public static dummyMethod("
