@@ -1003,7 +1003,7 @@ inline fun <reified T : Reference> reference(crossinline predicate: Predicate<T>
 
 fun reference(
     reference: String,
-    compare: String.(String) -> Boolean = String::equals,
+    compare: String.(String) -> Boolean = String::contains,
 ): IndexedMatcherPredicate<Instruction> = { _, _, _ -> this.reference?.toString()?.compare(reference) == true }
 
 fun field(predicate: Predicate<FieldReference> = { true }): IndexedMatcherPredicate<Instruction> =
