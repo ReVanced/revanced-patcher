@@ -870,7 +870,7 @@ fun MutablePredicateList<Method>.returnType(predicate: Predicate<String>) = pred
 
 fun MutablePredicateList<Method>.returnType(
     returnType: String,
-    compare: String.(String) -> Boolean = String::startsWith,
+    compare: String.(String) -> Boolean = returnType.typeComparer(),
 ) = predicate { this.returnType.compare(returnType) }
 
 fun MutablePredicateList<Method>.name(predicate: Predicate<String>) = predicate { name.predicate() }
@@ -884,7 +884,7 @@ fun MutablePredicateList<Method>.definingClass(predicate: Predicate<String>) = p
 
 fun MutablePredicateList<Method>.definingClass(
     definingClass: String,
-    compare: String.(String) -> Boolean = String::equals,
+    compare: String.(String) -> Boolean = definingClass.typeComparer()
 ) = predicate { this.definingClass.compare(definingClass) }
 
 fun MutablePredicateList<Method>.parameterTypes(vararg parameterTypePrefixes: String) =
@@ -1020,7 +1020,7 @@ fun type(predicate: Predicate<String> = { true }): IndexedMatcherPredicate<Instr
 
 fun type(
     type: String,
-    compare: String.(type: String) -> Boolean = String::equals,
+    compare: String.(type: String) -> Boolean = type.typeComparer(),
 ) = type { compare(type) }
 
 fun method(predicate: Predicate<MethodReference> = { true }): IndexedMatcherPredicate<Instruction> =
@@ -1059,6 +1059,14 @@ context(stringsList: MutableList<String>)
 operator fun String.invoke(compare: String.(String) -> Boolean = String::equals) = string(this, compare)
 
 operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> = { _, _, _ -> opcode == this@invoke }
+
+// Returns a comparer function based on the format of a type descriptor string.
+private fun String.typeComparer(): String.(String)-> Boolean = when {
+    startsWith("L") && endsWith(";") -> String::equals
+    startsWith("L") -> String::startsWith
+    endsWith(";") -> String::endsWith
+    else -> String::contains
+}
 
 typealias DeclarativePredicateCompositeBuilder =
     context(
