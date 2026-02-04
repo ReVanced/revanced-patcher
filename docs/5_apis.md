@@ -4,24 +4,24 @@ A handful of APIs are available to make patch development easier and more effici
 
 ## 📙 Overview
 
-1. 👹 Create mutable replacements of classes with `BytecodePatchContext.classDefs[classDef]`
+1. 👹 Create mutable replacements of classes with `BytecodePatchContext.classDefs.getOrReplaceMutable(classDef)`
 2. 🏃‍ Navigate method calls recursively by index with `navigate(Method)`
 3. 💾 Read and write resource files with `get(String, Boolean)` and `delete(String)`
 4. 📃 Read and write DOM files using `document(String)` and  `document(InputStream)`
 
 ### 🧰 APIs
 
-#### 👹 `BytecodePatchContext.classDefs[classDef]`
+#### 👹 `BytecodePatchContext.classDefs.getOrReplaceMutable(classDef)`
 
 By default, the classes are immutable, meaning they cannot be modified.
-To make a class mutable, use the `BytecodePatchContext.classDefs[classDef]` function.
+To make a class mutable, use the `BytecodePatchContext.classDefs.getOrReplaceMutable(classDef)` function.
 This function creates a lazy mutable copy of the class definition.
 Accessing the property will replace the original class definition with the mutable copy,
 thus allowing you to make changes to the class. Subsequent accesses will return the same mutable copy.
 
 ```kt
-execute {
-    val mutableClass = proxy(classDef)
+apply {
+    val mutableClass = classDefs.getOrReplaceMutable(classDef)
     mutableClass.methods.add(Method())
 }
 ```
@@ -31,7 +31,7 @@ execute {
 The `navigate(Method)` function allows you to navigate method calls recursively by index.
 
 ```kt
-execute {
+apply {
     // Sequentially navigate to the instructions at index 1 within 'someMethod'.
     val method = navigate(someMethod).to(1).original() // original() returns the original immutable method.
     
@@ -52,7 +52,7 @@ execute {
 The `get(String, Boolean)` function returns a `File` object that can be used to read and write resource files.
 
 ```kt
-execute {
+apply {
     val file = get("res/values/strings.xml")
     val content = file.readText()
     file.writeText(content)
@@ -62,7 +62,7 @@ execute {
 The `delete` function can mark files for deletion when the APK is rebuilt.
 
 ```kt
-execute {
+apply {
     delete("res/values/strings.xml")
 }
 ```
@@ -72,7 +72,7 @@ execute {
 The `document` function is used to read and write DOM files.
 
 ```kt
-execute {
+apply {
     document("res/values/strings.xml").use { document ->
         val element = doc.createElement("string").apply {
             textContent = "Hello, World!"
@@ -85,7 +85,7 @@ execute {
 You can also read documents from an `InputStream`:
 
 ```kt
-execute {
+apply {
     val inputStream = classLoader.getResourceAsStream("some.xml")
     document(inputStream).use { document ->
         // ...
