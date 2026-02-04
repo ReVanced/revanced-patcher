@@ -36,7 +36,7 @@ actual fun loadPatches(
         patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
         null,
         null,
-        null,
+        currentClassLoader,
     ),
     onFailedToLoad,
 )
