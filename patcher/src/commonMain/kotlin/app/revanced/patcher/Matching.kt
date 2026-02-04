@@ -324,30 +324,30 @@ fun BytecodePatchContext.firstMethod(
     predicate: MethodPredicate = { true },
 ) = requireNotNull(firstMethodOrNull(strings = strings, predicate))
 
-fun gettingfirstImmutableMethodOrNull(method: MethodReference) = cachedReadOnlyProperty { firstImmutableMethodOrNull(method) }
+fun gettingFirstImmutableMethodOrNull(method: MethodReference) = cachedReadOnlyProperty { firstImmutableMethodOrNull(method) }
 
-fun gettingfirstImmutableMethod(method: MethodReference) = cachedReadOnlyProperty { firstImmutableMethod(method) }
+fun gettingFirstImmutableMethod(method: MethodReference) = cachedReadOnlyProperty { firstImmutableMethod(method) }
 
-fun gettingfirstMethodOrNull(method: MethodReference) = cachedReadOnlyProperty { firstMethodOrNull(method) }
+fun gettingFirstMethodOrNull(method: MethodReference) = cachedReadOnlyProperty { firstMethodOrNull(method) }
 
-fun gettingfirstMethod(method: MethodReference) = cachedReadOnlyProperty { firstMethod(method) }
+fun gettingFirstMethod(method: MethodReference) = cachedReadOnlyProperty { firstMethod(method) }
 
-fun gettingfirstImmutableMethodOrNull(
+fun gettingFirstImmutableMethodOrNull(
     vararg strings: String,
     predicate: BytecodePatchContextMethodPredicate = { true },
 ) = cachedReadOnlyProperty { firstImmutableMethodOrNull(strings = strings) { predicate() } }
 
-fun gettingfirstImmutableMethod(
+fun gettingFirstImmutableMethod(
     vararg strings: String,
     predicate: BytecodePatchContextMethodPredicate = { true },
 ) = cachedReadOnlyProperty { firstImmutableMethod(strings = strings) { predicate() } }
 
-fun gettingfirstMethodOrNull(
+fun gettingFirstMethodOrNull(
     vararg strings: String,
     predicate: BytecodePatchContextMethodPredicate = { true },
 ) = cachedReadOnlyProperty { firstMethodOrNull(strings = strings) { predicate() } }
 
-fun gettingfirstMethod(
+fun gettingFirstMethod(
     vararg strings: String,
     predicate: BytecodePatchContextMethodPredicate = { true },
 ) = cachedReadOnlyProperty { firstMethod(strings = strings) { predicate() } }
@@ -376,22 +376,22 @@ fun BytecodePatchContext.firstClassDef(
     predicate: ClassDefPredicate = { true },
 ) = requireNotNull(firstClassDefOrNull(type, predicate))
 
-fun gettingfirstImmutableClassDefOrNull(
+fun gettingFirstImmutableClassDefOrNull(
     type: String? = null,
     predicate: BytecodePatchContextClassDefPredicate = { true },
 ) = cachedReadOnlyProperty { firstImmutableClassDefOrNull(type) { predicate() } }
 
-fun gettingfirstImmutableClassDef(
+fun gettingFirstImmutableClassDef(
     type: String? = null,
     predicate: BytecodePatchContextClassDefPredicate = { true },
 ) = cachedReadOnlyProperty { firstImmutableClassDef(type) { predicate() } }
 
-fun gettingfirstClassDefOrNull(
+fun gettingFirstClassDefOrNull(
     type: String? = null,
     predicate: BytecodePatchContextClassDefPredicate = { true },
 ) = cachedReadOnlyProperty { firstClassDefOrNull(type) { predicate() } }
 
-fun gettingfirstClassDef(
+fun gettingFirstClassDef(
     type: String? = null,
     predicate: BytecodePatchContextClassDefPredicate = { true },
 ) = cachedReadOnlyProperty { firstClassDef(type) { predicate() } }
@@ -536,22 +536,22 @@ fun BytecodePatchContext.firstMethodDeclaratively(
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
 ) = requireNotNull(firstMethodDeclarativelyOrNull(strings = strings, build))
 
-fun gettingfirstImmutableMethodDeclarativelyOrNull(
+fun gettingFirstImmutableMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(BytecodePatchContext, MutableList<String>) MutablePredicateList<Method>.() -> Unit = {},
 ) = cachedReadOnlyProperty { firstImmutableMethodDeclarativelyOrNull(strings = strings) { build() } }
 
-fun gettingfirstImmutableMethodDeclaratively(
+fun gettingFirstImmutableMethodDeclaratively(
     vararg strings: String,
     build: context(BytecodePatchContext, MutableList<String>) MutablePredicateList<Method>.() -> Unit = {},
 ) = cachedReadOnlyProperty { firstImmutableMethodDeclaratively(strings = strings) { build() } }
 
-fun gettingfirstMethodDeclarativelyOrNull(
+fun gettingFirstMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(BytecodePatchContext, MutableList<String>) MutablePredicateList<Method>.() -> Unit = {},
 ) = cachedReadOnlyProperty { firstMethodDeclarativelyOrNull(strings = strings) { build() } }
 
-fun gettingfirstMethodDeclaratively(
+fun gettingFirstMethodDeclaratively(
     vararg strings: String,
     build: context(BytecodePatchContext, MutableList<String>) MutablePredicateList<Method>.() -> Unit = {},
 ) = cachedReadOnlyProperty { firstMethodDeclaratively(strings = strings) { build() } }
@@ -576,22 +576,22 @@ fun BytecodePatchContext.firstClassDefDeclaratively(
     build: MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = buildPredicate(build) { predicate -> firstClassDef(type, predicate) }
 
-fun gettingfirstImmutableClassDefDeclarativelyOrNull(
+fun gettingFirstImmutableClassDefDeclarativelyOrNull(
     type: String? = null,
     build: context(BytecodePatchContext) MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = cachedReadOnlyProperty { firstImmutableClassDefDeclarativelyOrNull(type) { build() } }
 
-fun gettingfirstImmutableClassDefDeclaratively(
+fun gettingFirstImmutableClassDefDeclaratively(
     type: String? = null,
     build: context(BytecodePatchContext) MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = cachedReadOnlyProperty { firstImmutableClassDefDeclaratively(type) { build() } }
 
-fun gettingfirstClassDefDeclarativelyOrNull(
+fun gettingFirstClassDefDeclarativelyOrNull(
     type: String? = null,
     build: context(BytecodePatchContext) MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = cachedReadOnlyProperty { firstClassDefDeclarativelyOrNull(type) { build() } }
 
-fun gettingfirstClassDefDeclaratively(
+fun gettingFirstClassDefDeclaratively(
     type: String? = null,
     build: context(BytecodePatchContext) MutablePredicateList<ClassDef>.() -> Unit = { },
 ) = cachedReadOnlyProperty { firstClassDefDeclaratively { build() } }
