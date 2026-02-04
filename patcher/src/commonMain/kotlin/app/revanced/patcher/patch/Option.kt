@@ -814,3 +814,382 @@ sealed class OptionException(errorMessage: String) : Exception(errorMessage, nul
      */
     class OptionNotFoundException(name: String) : OptionException("No option with name $name")
 }
+
+@Deprecated("Use the keyless version instead")
+fun stringOption(
+    key: String,
+    default: String? = null,
+    values: Map<String, String?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<String>.(String?) -> Boolean = { true },
+) = stringOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.stringOption(
+    key: String,
+    default: String? = null,
+    values: Map<String, String?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<String>.(String?) -> Boolean = { true },
+) = stringOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun intOption(
+    key: String,
+    default: Int? = null,
+    values: Map<String, Int?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Int>.(Int?) -> Boolean = { true },
+) = intOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.intOption(
+    key: String,
+    default: Int? = null,
+    values: Map<String, Int?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Int>.(Int?) -> Boolean = { true },
+) = intOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun booleanOption(
+    key: String,
+    default: Boolean? = null,
+    values: Map<String, Boolean?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Boolean>.(Boolean?) -> Boolean = { true },
+) = booleanOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.booleanOption(
+    key: String,
+    default: Boolean? = null,
+    values: Map<String, Boolean?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Boolean>.(Boolean?) -> Boolean = { true },
+) = booleanOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun floatOption(
+    key: String,
+    default: Float? = null,
+    values: Map<String, Float?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Float>.(Float?) -> Boolean = { true },
+) = floatOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.floatOption(
+    key: String,
+    default: Float? = null,
+    values: Map<String, Float?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Float>.(Float?) -> Boolean = { true },
+) = floatOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun longOption(
+    key: String,
+    default: Long? = null,
+    values: Map<String, Long?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Long>.(Long?) -> Boolean = { true },
+) = longOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.longOption(
+    key: String,
+    default: Long? = null,
+    values: Map<String, Long?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<Long>.(Long?) -> Boolean = { true },
+) = longOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun stringsOption(
+    key: String,
+    default: List<String>? = null,
+    values: Map<String, List<String>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<String>>.(List<String>?) -> Boolean = { true },
+) = stringsOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.stringsOption(
+    key: String,
+    default: List<String>? = null,
+    values: Map<String, List<String>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<String>>.(List<String>?) -> Boolean = { true },
+) = stringsOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun intsOption(
+    key: String,
+    default: List<Int>? = null,
+    values: Map<String, List<Int>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Int>>.(List<Int>?) -> Boolean = { true },
+) = intsOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.intsOption(
+    key: String,
+    default: List<Int>? = null,
+    values: Map<String, List<Int>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Int>>.(List<Int>?) -> Boolean = { true },
+) = intsOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun booleansOption(
+    key: String,
+    default: List<Boolean>? = null,
+    values: Map<String, List<Boolean>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Boolean>>.(List<Boolean>?) -> Boolean = { true },
+) = booleansOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.booleansOption(
+    key: String,
+    default: List<Boolean>? = null,
+    values: Map<String, List<Boolean>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Boolean>>.(List<Boolean>?) -> Boolean = { true },
+) = booleansOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.floatsOption(
+    key: String,
+    default: List<Float>? = null,
+    values: Map<String, List<Float>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Float>>.(List<Float>?) -> Boolean = { true },
+) = floatsOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun longsOption(
+    key: String,
+    default: List<Long>? = null,
+    values: Map<String, List<Long>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Long>>.(List<Long>?) -> Boolean = { true },
+) = longsOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+fun PatchBuilder<*>.longsOption(
+    key: String,
+    default: List<Long>? = null,
+    values: Map<String, List<Long>?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    validator: Option<List<Long>>.(List<Long>?) -> Boolean = { true },
+) = longsOption(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+inline fun <reified T> option(
+    key: String,
+    default: T? = null,
+    values: Map<String, T?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    noinline validator: Option<T>.(T?) -> Boolean = { true },
+) = Option(
+    key,
+    default,
+    values,
+    description,
+    required,
+    typeOf<T>(),
+    validator,
+)
+
+@Deprecated("Use the keyless version instead")
+inline fun <reified T> PatchBuilder<*>.option(
+    key: String,
+    default: T? = null,
+    values: Map<String, T?>? = null,
+    title: String? = null,
+    description: String? = null,
+    required: Boolean = false,
+    noinline validator: Option<T>.(T?) -> Boolean = { true },
+) = app.revanced.patcher.patch.option(
+    key,
+    default,
+    values,
+    description,
+    required,
+    validator,
+).also { it() }

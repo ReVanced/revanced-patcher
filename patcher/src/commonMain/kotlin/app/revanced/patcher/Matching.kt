@@ -1086,17 +1086,17 @@ typealias BytecodePatchContextDeclarativePredicateCompositeBuilder =
 fun BytecodePatchContext.firstMethodComposite(
     vararg strings: String,
     build: BytecodePatchContextDeclarativePredicateCompositeBuilder = {},
-) = Match(strings, { build() }) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
+) = CompositeMatch(strings, { build() }) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
 
 fun Iterable<ClassDef>.firstMethodComposite(
     vararg strings: String,
     build: DeclarativePredicateCompositeBuilder = {},
-) = Match(strings, build) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
+) = CompositeMatch(strings, build) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
 
 fun ClassDef.firstMethodComposite(
     vararg strings: String,
     build: DeclarativePredicateCompositeBuilder = {},
-) = Match(strings, build) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
+) = CompositeMatch(strings, build) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
 
 fun composingFirstMethod(
     vararg strings: String,
@@ -1109,24 +1109,25 @@ object ClassDefComposing {
     fun composingFirstMethod(
         vararg strings: String,
         build: DeclarativePredicateCompositeBuilder = {},
-    ) = cachedReadOnlyProperty<ClassDef, Match> { firstMethodComposite(strings = strings, build) }
+    ) = cachedReadOnlyProperty<ClassDef, CompositeMatch> { firstMethodComposite(strings = strings, build) }
 }
 
 object IterableClassDefComposing {
     fun composingFirstMethod(
         vararg strings: String,
         build: DeclarativePredicateCompositeBuilder = {},
-    ) = cachedReadOnlyProperty<Iterable<ClassDef>, Match> { firstMethodComposite(strings = strings, build) }
+    ) = cachedReadOnlyProperty<Iterable<ClassDef>, CompositeMatch> { firstMethodComposite(strings = strings, build) }
 }
 
 fun <T> composingMethod(
     getMethod: T.(strings: Array<out String>, predicate: Predicate<Method>) -> Method?,
     build: DeclarativePredicateCompositeBuilder = {},
-) = cachedReadOnlyProperty<T, Match> {
-    Match(emptyArray(), build) { strings, predicate -> getMethod(strings, predicate) }
+) = cachedReadOnlyProperty<T, CompositeMatch> {
+    CompositeMatch(emptyArray(), build) { strings, predicate -> getMethod(strings, predicate) }
 }
 
-open class Match(
+// TODO: Rename this to Match after old Match is removed.
+open class CompositeMatch(
     private val strings: Array<out String>,
     private val build: DeclarativePredicateCompositeBuilder,
     private val getImmutableMethodOrNull: (strings: Array<out String>, predicate: Predicate<Method>) -> Method?,

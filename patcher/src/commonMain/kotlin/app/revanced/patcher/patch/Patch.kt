@@ -62,6 +62,12 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     context(_: BytecodePatchContext, _: ResourcePatchContext)
     abstract val context: C
 
+    @Deprecated("Renamed to apply for clarity", ReplaceWith("apply(block)"))
+    fun execute(block: C.() -> Unit) = apply(block)
+
+    @Deprecated("Renamed to afterDependents for clarity", ReplaceWith("afterDependents(block)"))
+    fun finalize(block: C.() -> Unit) = afterDependents(block)
+
     open fun apply(block: C.() -> Unit) {
         apply = { block(context) }
     }
