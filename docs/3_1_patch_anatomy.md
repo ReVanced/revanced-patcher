@@ -60,15 +60,14 @@
 
 # 🧩 Anatomy of a ReVanced patch
 
-Learn the API to create patches using ReVanced Patcher.
+ReVanced Patches offer a couple APIs to create patches for Android applications.
 
 ## ⛳️ Example patch
 
-The following example patch disables ads in an app.  
-In the following sections, each part of the patch will be explained in detail.
+The following example demonstrates how to disable ads in an app:
 
 ```kt
-package app.revanced.patches.ads
+package app.revanced.patches.com.some.app
 
 val disableAdsPatch = bytecodePatch(
     name = "Disable ads",
@@ -76,23 +75,21 @@ val disableAdsPatch = bytecodePatch(
 ) {
     compatibleWith("com.some.app"("1.0.0"))
 
-    // Patches can depend on other patches, executing them first.
+    // Patches can depend on other patches, applying them first.
     dependsOn(disableAdsResourcePatch)
 
-    // Merge precompiled DEX files into the patched app, before the patch is executed.
+    // Merge precompiled DEX files into the patched app, before the patch is applied.
     extendWith("disable-ads.rve")
 
     // Business logic of the patch to disable ads in the app.
-    execute {
-        // Fingerprint to find the method to patch.
-        val showAdsFingerprint = fingerprint {
-            // More about fingerprints on the next page of the documentation.
+    apply {
+        // Find the method to patch.
+        val showAdsMethod = firstMethod {
+            // More about this on the next page of the documentation.
         }
 
-        // In the method that shows ads,
-        // call DisableAdsPatch.shouldDisableAds() from the extension (precompiled DEX file)
-        // to enable or disable ads.
-        showAdsFingerprint.method.addInstructions(
+        // DisableAdsPatch.shouldDisableAds() is available from the `disable-ads.rve` extension (precompiled DEX file).
+        showAdsMethod.addInstructions(
             0,
             """
                 invoke-static {}, LDisableAdsPatch;->shouldDisableAds()Z
@@ -112,44 +109,43 @@ val disableAdsPatch = bytecodePatch(
 
 ### ⚙️ Patch options
 
-Patches can have options to get and set before a patch is executed.
-Options are useful for making patches configurable.
-After loading the patches using `PatchLoader`, options can be set for a patch.
-Multiple types are already built into ReVanced Patcher and are supported by any application that uses ReVanced Patcher.
-
+Patch options allow parametrizing a patch before applying it.
+After loading the patches, options can be set for a patch.
+Multiple types of options are already built into ReVanced Patcher. 
 To define an option, use the available `option` functions:
 
 ```kt
 val patch = bytecodePatch(name = "Patch") {
-    // Add an inbuilt option and delegate it to a property.
-    val value by stringOption(name = "Inbuilt option")
+    // Add an inbuilt option and delegate its value to a property.
+    val value by stringOption(name = "String option")
 
-    // Add an option with a custom type and delegate it to a property.
-    val string by option<String>(name = "String option")
+    // Add an option with a custom type and delegate its value to a property.
+    val someValue by option<SomeType>(name = "Some type option")
 
-    execute {
+    apply {
         println(value)
-        println(string)
+        println(someValue)
     }
 }
 ```
 
-Options of a patch can be set after loading the patches with `PatchLoader` by obtaining the instance for the patch:
+To set the options of a patch, access the `options` map of the patch after loading it:
 
 ```kt
-loadPatchesJar(patches).apply {
+loadPatches(patches).apply {
     // Type is checked at runtime.
-    first { it.name == "Patch" }.options["Option"] = "Value"
+    first { it.name == "Patch" }.options["String option"] = "Value"
 }
 ```
 
-The type of an option can be obtained from the `type` property of the option:
+The type of option can be obtained from the `type` property of the option:
 
 ```kt
-option.type // The KType of the option. Captures the full type information of the option.
+option.type // The KType of the option. Captures the full type information of the option, including generics.
 ```
 
-Options can be declared outside a patch and added to a patch manually:
+Options can be declared outside a patch and added to a patch afterward by invoking them inside the patch.
+This is useful when you want to use same option in multiple patches directly:
 
 ```kt
 val option = stringOption(name = "Option")
@@ -157,15 +153,18 @@ val option = stringOption(name = "Option")
 bytecodePatch(name = "Patch") {
     val value by option()
 }
+
+bytecodePatch(name = "Another patch") {
+    val value by option()
+}
 ```
 
-This is useful when the same option is referenced in multiple patches.
 
 ### 🧩 Extensions
 
-An extension is a precompiled DEX file merged into the patched app before a patch is executed.
-While patches are compile-time constructs, extensions are runtime constructs
-that extend the patched app with additional classes.
+Extensions are precompiled DEX file merged into the `BytecodePatchContext` before a patch is applied.
+While patches deal with the compile-time side of apps, extensions take care of the apps runtime 
+by extending the patched app with additional classes.
 
 Assume you want to add a complex feature to an app that would need multiple classes and methods:
 
@@ -184,14 +183,21 @@ and use it in a patch:
 val patch = bytecodePatch(name = "Complex patch") {
     extendWith("complex-patch.rve")
 
-    execute {
-        fingerprint.method.addInstructions(0, "invoke-static { }, LComplexPatch;->doSomething()V")
+    apply {
+        someMethod.addInstructions(0, "invoke-static { }, LComplexPatch;->doSomething()V")
     }
 }
 ```
 
-ReVanced Patcher merges the classes from the extension into `context.classes` before executing the patch.
-When the patch is executed, it can reference the classes and methods from the extension.
+Alternatively, you can use another overload of `extendWith` to provide your own `InputStream` to an extension:
+
+```kt
+extendWith { File("complex-patch.rve").inputStream() }
+```
+
+Before calling the `apply` block of the patch,
+the classes from the extension are merged into `BytecodePatchContext.classDefs`.
+When the patch is applied, it can reference the classes and methods from the extension.
 
 > [!NOTE]
 >
@@ -202,61 +208,58 @@ When the patch is executed, it can reference the classes and methods from the ex
 > To see real-world examples of extensions,
 > check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
 
-### ♻️ Finalization
+### ♻️ The `afterDependents` block
 
-Patches can have a finalization block called after all patches have been executed, in reverse order of patch execution.
-The finalization block is called after all patches that depend on the patch have been executed.
-This is useful for doing post-processing tasks.
-A simple real-world example would be a patch that opens a resource file of the app for writing.
-Other patches that depend on this patch can write to the file, and the finalization block can close the file.
+Patches can define an `afterDependents` block, which is called after all dependent patches have been applied.
+This is useful for post-processing the work of dependent patches.
 
 ```kt
 val patch = bytecodePatch(name = "Patch") {
     dependsOn(
         bytecodePatch(name = "Dependency") {
-            execute {
+            apply {
                 print("1")
             }
 
-            finalize {
-                print("4")
-            }
+          afterDependents {
+            print("4")
+          }
         }
     )
 
-    execute {
+    apply {
         print("2")
     }
 
-    finalize {
+    afterDependents {
         print("3")
     }
 }
 ```
 
-Because `Patch` depends on `Dependency`, first `Dependency` is executed, then `Patch`.
-Finalization blocks are called in reverse order of patch execution, which means,
-first, the finalization block of `Patch`, then the finalization block of `Dependency` is called.
-The output after executing the patch above would be `1234`.
+Because `Patch` depends on `Dependency`, first `Dependency` is applied, then `Patch`.
+The `afterDependents` blocks are called in reverse order, which means,
+first, the `afterDependents` block of `Patch`, then the `afterDependents` block of `Dependency` is called.
+The output after applying the patch above would be `1234`.
 The same order is followed for multiple patches depending on the patch.
 
 ## 💡 Additional tips
 
-- When using `PatchLoader` to load patches, only patches with a name are loaded.
-  Refer to the inline documentation of `PatchLoader` for detailed information.
-- Patches can depend on others. Dependencies are executed first.
-  The dependent patch will not be executed if a dependency raises an exception while executing.
+- When using `loadPatches` to load patches, only patches with a name are loaded.
+  Refer to the inline documentation of `loadPatches` for detailed information.
+- Patches can depend on others. Dependencies are applied first.
+  The dependent patch will not be applied if a dependency raises an exception during application.
 - A patch can declare compatibility with specific packages and versions,
-  but patches can still be executed on any package or version.
+  but it patches can still be applied on any package or version, if provided to the patcher.
   It is recommended that compatibility is specified to present known compatible packages and versions.
     - If `compatibleWith` is not used, the patch is treated as compatible with any package
 - If a package is specified with no versions, the patch is compatible with any version of the package
 - If an empty array of versions is specified, the patch is not compatible with any version of the package.
   This is useful for declaring incompatibility with a specific package.
-- A patch can raise a `PatchException` at any time of execution to indicate that the patch failed to execute.
+- A patch can raise a `PatchException` inside `apply` to indicate that the patch failed to apply.
 
 ## ⏭️ What's next
 
 The next page explains the concept of fingerprinting in ReVanced Patcher.
 
-Continue: [🔎 Fingerprinting](2_2_1_fingerprinting.md)
+Continue: [🔎 Matching](3_2_matching.md)

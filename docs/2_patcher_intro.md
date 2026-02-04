@@ -84,9 +84,11 @@ val patch = patcher(apkFile = File("app.apk")) { packageName, versionName ->
 }
 ```
 
-The `patcher` function returns a `patch` lambda that you can later execute to apply the patches to the APK file.
+The `patcher` function returns a `patch` function that you can later execute to apply the patches to the APK file.
 On execution, `PatchResult` objects for each patch are emitted in the provided lambda.
-You can use this to log the success or failure of each patch:
+You can use this to log the success or failure of each patch.
+The `patch` function finally returns a `patchesResult` containing the modified components of the APK file,
+ready for repackaging:
 
 ```kt
 val patchesResult = patch { patchResult ->
@@ -99,17 +101,14 @@ val patchesResult = patch { patchResult ->
         logger.severe("\"${patchResult.patch}\" failed:\n$writer")
     }
 }
-```
 
-At last, the `patchesResult` returned by the `patch` lambda contains the modified components of the APK file.
-
-```kt
 val dexFiles = patchesResult.dexFiles
 val resources = patchesResult.resources
 ```
 
+
 ## ⏭️ What's next
 
-The next page teaches the fundamentals of ReVanced Patches.
+The next page introduces the basics of ReVanced Patches.
 
-Continue: [🧩 Introduction to ReVanced Patches](2_patches_intro.md)
+Continue: [🧩 Introduction to ReVanced Patches](3_patches_intro.md)

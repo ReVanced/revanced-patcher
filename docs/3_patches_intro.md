@@ -58,55 +58,79 @@
    Continuing the legacy of Vanced
 </p>
 
-# 👶 Setting up a development environment
+# 🧩 Introduction to ReVanced Patches
 
-To start developing patches with ReVanced Patcher, you must prepare a development environment.
+ReVanced Patches is a subset of the ReVanced Patcher API
+providing a modular way to modify specific parts of an Android application.
 
-## 📝 Prerequisites
+## 📙 Fundamentals
 
-- A Java IDE with Kotlin support, such as [IntelliJ IDEA](https://www.jetbrains.com/idea/)
-- Knowledge of Java, [Kotlin](https://kotlinlang.org), and [Dalvik bytecode](https://source.android.com/docs/core/runtime/dalvik-bytecode)
-- Android reverse engineering skills and tools such as [jadx](https://github.com/skylot/jadx)
+There are three kinds of patches. Each kind can modify a different part of the APK, such as the Dalvik VM bytecode, 
+the APK resources, or arbitrary files in the APK:
 
-## 🏃 Prepare the environment
+- A `BytecodePatch` focuses on Dalvik VM bytecode
+- A `ResourcePatch` focuses on (decoded) resources
+- A `RawResourcePatch` focuses on arbitrary files inside an APK
 
-Throughout the documentation, [ReVanced Patches](https://github.com/revanced/revanced-patches) will be used as an example project.
+Each patch can declare a set of dependencies on other patches. ReVanced Patcher will first apply dependencies
+before applying the patch itself. This way, multiple patches can work together for abstract purposes in a modular way.
 
-> [!NOTE]
-> To start a fresh project, 
-> you can use the [ReVanced Patches template](https://github.com/revanced/revanced-patches-template).
+The `apply` function is the entry point for a patch. It is called by ReVanced Patcher when the patch is applied.
+The `apply` function receives an instance of a context object that provides access to the APK
+corresponding to the kind of patch. The patch can use this context to modify the APK.
 
-1. Clone the repository
+Each type of context provides different APIs to modify the APK. For example, `BytecodePatchContext` provides APIs
+to access Dalvik VM bytecode, while `ResourcePatchContext` provides APIs to access resources.
 
-   ```bash
-   git clone https://github.com/revanced/revanced-patches && cd revanced-patches
-   ```
+The subtle difference between `ResourcePatch` and `RawResourcePatch` is that ReVanced Patcher decodes
+all APK resources for a `ResourcePatch` when it is executed but not for `RawResourcePatch`.
+Both, `ResourcePatch` and `RawResourcePatch` can modify arbitrary files in the APK.
+The choice of which kind of patch to use depends on the use case.
+Decoding and building resources is a time- and resource-consuming,
+so if the patch does not need to modify decoded resources, it is better to use `RawResourcePatch` or `BytecodePatch`.
 
-2. Build the project
+Example of patches:
 
-   ```bash
-   ./gradlew build
-   ```
+```kt
+@Surpress("unused")
+val bytecodePatch = bytecodePatch(name = "Bytecode patch") {
+    apply { 
+        // More about this on the next page of the documentation.
+    }
+}
 
-> [!NOTE]
-> If the build fails due to authentication, you may need to authenticate to GitHub Packages.
-> Create a PAT with the scope `read:packages` [here](https://github.com/settings/tokens/new?scopes=read:packages&description=ReVanced) and add your token to ~/.gradle/gradle.properties.
->
-> Example `gradle.properties` file:
->
-> ```properties
-> gpr.user = user
-> gpr.key = key
-> ```
+@Surpress("unused")
+val rawResourcePatch = rawResourcePatch(name = "Raw resource patch") {
+    apply {
+        // More about this on the next page of the documentation.
+    }
+}
 
-3. Open the project in your IDE
+@Surpress("unused")
+val resourcePatch = resourcePatch(name = "Resource patch") {
+    apply {
+        // More about this on the next page of the documentation.
+    }
+}
+```
+
+In modern versions of Android, fields can have whitespace.
+The `creating` variants for these APIs allow you to omit the name and infer it from the variable name:
+
+```kt
+val `Some patch` by creatingBytecodePatch {
+    apply {
+        // More about this on the next page of the documentation.
+    }
+}
+```
 
 > [!TIP]
-> It is a good idea to set up a complete development environment for ReVanced, so that you can also test your patches
-> by following the [ReVanced documentation](https://github.com/ReVanced/revanced-documentation).
+> To see real-world examples of patches,
+> check out the repository for [ReVanced Patches](https://github.com/revanced/revanced-patches).
 
-## ⏭️ What's next
+## ⏭️ Whats next
 
-The next page will go into details about a ReVanced patch.
+The next page shows how a patch is used based on an example.
 
-Continue: [🧩 Anatomy of a patch](2_2_patch_anatomy.md)
+Continue: [🧩 Anatomy of a ReVanced patch](3_1_patch_anatomy.md)

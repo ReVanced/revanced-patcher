@@ -35,7 +35,7 @@ open class Patch internal constructor(
     // Must be nullable, so that Patcher.invoke can check,
     // if a patch has an "afterDependents" in order to not emit it twice.
     internal var afterDependents: (
-        context(BytecodePatchContext, ResourcePatchContext)
+    context(BytecodePatchContext, ResourcePatchContext)
         () -> Unit
     )?,
     internal val type: PatchType,
@@ -53,9 +53,9 @@ sealed class PatchBuilder<C : PatchContext<*>>(
     private val options = mutableSetOf<Option<*>>()
 
     internal var apply: context(BytecodePatchContext, ResourcePatchContext)
-    () -> Unit = { }
+        () -> Unit = { }
     internal var afterDependents: (
-        context(BytecodePatchContext, ResourcePatchContext)
+    context(BytecodePatchContext, ResourcePatchContext)
         () -> Unit
     )? = null
 
@@ -125,6 +125,10 @@ class BytecodePatchBuilder private constructor(
             classLoader.getResourceAsStream(extension)
                 ?: throw PatchException("Extension \"$extension\" not found")
         }
+    }
+
+    fun extendWith(getExtensionStream: () -> InputStream) {
+        getExtensionInputStream = getExtensionStream
     }
 
     context(_: BytecodePatchContext, _: ResourcePatchContext)
@@ -263,7 +267,7 @@ private fun Exception.toPatchException() = this as? PatchException ?: PatchExcep
 class Patches internal constructor(
     val patchesByFile: Map<File, Set<Patch>>,
 ) : Set<Patch>
-    by patchesByFile.values.flatten().toSet()
+by patchesByFile.values.flatten().toSet()
 
 // Must be internal and a separate function for testing.
 @Suppress("MISSING_DEPENDENCY_IN_INFERRED_TYPE_ANNOTATION_WARNING")
@@ -271,7 +275,8 @@ internal fun getPatches(
     classNames: List<String>,
     classLoader: ClassLoader,
 ): Set<Patch> {
-    fun Member.isUsable() = Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && (this !is Method || parameterCount == 0)
+    fun Member.isUsable() =
+        Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && (this !is Method || parameterCount == 0)
 
     fun Class<*>.getPatchFields() =
         fields

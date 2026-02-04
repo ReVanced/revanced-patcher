@@ -4,18 +4,17 @@ A handful of APIs are available to make patch development easier and more effici
 
 ## 📙 Overview
 
-1. 👹 Create mutable replacements of classes with `proxy(ClassDef)`
-2. 🔍 Find and create mutable replaces with `classBy(Predicate)`
-3. 🏃‍ Navigate method calls recursively by index with `navigate(Method)`
-4. 💾 Read and write resource files with `get(String, Boolean)` and `delete(String)`
-5. 📃 Read and write DOM files using `document(String)` and  `document(InputStream)`
+1. 👹 Create mutable replacements of classes with `BytecodePatchContext.classDefs[classDef]`
+2. 🏃‍ Navigate method calls recursively by index with `navigate(Method)`
+3. 💾 Read and write resource files with `get(String, Boolean)` and `delete(String)`
+4. 📃 Read and write DOM files using `document(String)` and  `document(InputStream)`
 
 ### 🧰 APIs
 
-#### 👹 `proxy(ClassDef)`
+#### 👹 `BytecodePatchContext.classDefs[classDef]`
 
 By default, the classes are immutable, meaning they cannot be modified.
-To make a class mutable, use the `proxy(ClassDef)` function.
+To make a class mutable, use the `BytecodePatchContext.classDefs[classDef]` function.
 This function creates a lazy mutable copy of the class definition.
 Accessing the property will replace the original class definition with the mutable copy,
 thus allowing you to make changes to the class. Subsequent accesses will return the same mutable copy.
@@ -24,18 +23,6 @@ thus allowing you to make changes to the class. Subsequent accesses will return 
 execute {
     val mutableClass = proxy(classDef)
     mutableClass.methods.add(Method())
-}
-```
-
-#### 🔍 `classBy(Predicate)`
-
-The `classBy(Predicate)` function is an alternative to finding and creating mutable classes by a predicate.
-It automatically proxies the class definition, making it mutable.
-
-```kt
-execute {
-    // Alternative to proxy(classes.find { it.name == "Lcom/example/MyClass;" })?.classDef
-    val classDef = classBy { it.name == "Lcom/example/MyClass;" }?.classDef
 }
 ```
 

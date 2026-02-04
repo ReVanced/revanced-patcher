@@ -67,13 +67,14 @@ Over time, a specific project structure and conventions have been established.
 Patches are organized in a specific way. The file structure looks as follows:
 
 ```text
-📦your.patches.app.category
- ├ 🔍Fingerprints.kt
+📦your.org.patches.app.package
+ ├ 🔍SomePatchMatching.kt
  └ 🧩SomePatch.kt
 ```
 
 > [!NOTE]
-> Moving fingerprints to a separate file isn't strictly necessary, but it helps the organization when a patch uses multiple fingerprints.
+> Moving matching code to a separate file isn't strictly necessary, 
+> but it helps the organization when a patch relies on multiple matches.
 
 ## 📙 Conventions
 
@@ -90,10 +91,10 @@ Patches are organized in a specific way. The file structure looks as follows:
   before this patch is executed.
   Patches can then reference methods and classes from extensions.
   A real-world example of extensions can be found in the [ReVanced Patches](https://github.com/ReVanced/revanced-patches) repository
-- 🔥🔥🔥 Do not overload a fingerprint with information about a method that's likely to change.
-  In the example of an obfuscated method, it's better to fingerprint the method by its return type
+- 🔥🔥🔥 Do not overload a matcher with attributes about a method that's likely to change.
+  In the example of an obfuscated method, it's better to check the method by its return type
   and parameters rather than its name because the name is likely to change. An intelligent selection
-  of an opcode pattern or strings in a method can result in a strong fingerprint dynamic to app updates.
+  of an opcode pattern or strings in a method can result in reliable results dynamic to app updates.
 - 🔥🔥🔥 Document your patches. Patches are abstract, so it is important to document parts of the code
   that are not self-explanatory. For example, explain why and how a certain method is patched or large blocks
   of instructions that are modified or added to a method
@@ -102,4 +103,4 @@ Patches are organized in a specific way. The file structure looks as follows:
 
 The next page discusses useful APIs for patch development.
 
-Continue: [💪 Advanced APIs](4_apis.md)
+Continue: [💪 Advanced APIs](5_apis.md)
