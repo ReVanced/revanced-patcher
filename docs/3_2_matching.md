@@ -154,6 +154,15 @@ If only read-only access is needed, immutable variants of these APIs should be u
 firstImmutableClassDef { type == "Lcom/some/Class;" }
 ```
 
+Another specific trait of the APIs to match methods is the ability to utilize a lookup map 
+using strings for faster matching. This can be done by specifying complete strings of the target method.
+All the variants of the method matching API support this feature.:
+
+```kt
+firstMethod("someString", "someOtherString")
+```
+
+
 ## 🎨 Extensions
 
 To make matching more expressive, multiple extension functions are available to match
@@ -266,6 +275,10 @@ indexedMatcher(
 )
 ```
 
+> [!TIP]
+> Using the string() API or its variations uses String::equals for comparison by default and
+> unless specified otherwise, the string will be used for fast lookup in the method's strings.
+
 These APIs have lambda as well as invoke variants as well for convenience:
 
 ```kt
@@ -316,12 +329,9 @@ the following APIs are available to use indexed matchers in a declarative way:
 
 ```kt
 firstMethodDeclaratively {
-    instructions(
-        string(),
-        method()
-    )
+    instructions( string(),  method())
     opcodes(Opcode.CONST_STRING, Opcodes.INVOKE_VIRTUAL) // Matches sequentially using after().
-    strings("A", "B", "C") // Matches using unorderedAllOf().
+    strings("A", "B", "C") // Matches full strings using unorderedAllOf(); Also uses them for fast lookup.
 }
 ```
 
