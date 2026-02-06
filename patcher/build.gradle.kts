@@ -1,19 +1,16 @@
+@file:OptIn(ExperimentalAbiValidation::class)
+
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 group = "app.revanced"
 
 kotlin {
-    @OptIn(ExperimentalAbiValidation::class)
-    abiValidation {
-        enabled = true
-    }
-
     jvm()
 
     androidLibrary {
@@ -34,6 +31,10 @@ kotlin {
             implementation(libs.mockk)
             implementation(libs.kotlin.test)
         }
+    }
+
+    abiValidation {
+        enabled = true
     }
 
     compilerOptions {

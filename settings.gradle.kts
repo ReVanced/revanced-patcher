@@ -1,4 +1,5 @@
 rootProject.name = "revanced-patcher"
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
