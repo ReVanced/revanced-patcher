@@ -117,9 +117,9 @@ you can follow the [ReVanced documentation](https://github.com/ReVanced/revanced
 The documentation contains the fundamentals of ReVanced Patcher and how to use ReVanced Patcher to create patches.
 You can find it [here](https://github.com/ReVanced/revanced-patcher/tree/main/docs).
 
-## 📜 Licence
+## 📜 License
 
-ReVanced Patcher is licensed under the GPLv3 license. Please see the [licence file](LICENSE) for more information.
+ReVanced Patcher is licensed under the GPLv3 license. Please see the [license file](LICENSE) for more information.
 [tl;dr](https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3) you may copy, distribute and modify ReVanced Patcher as long as you track changes/dates in source files.
 Any modifications to ReVanced Patcher must also be made available under the GPL,
 along with build & install instructions.
