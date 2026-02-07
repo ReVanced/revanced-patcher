@@ -3,14 +3,14 @@
 agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 apktool-lib = "2.10.1.1"
-mockk = "1.14.7"
+mockk = "1.14.9"
 multidexlib2 = "3.0.3.r3"
 # Tracking https://github.com/google/smali/issues/64.
 #noinspection GradleDependency
 smali = "3.0.9"
-vanniktechMavenPublish = "0.35.0"
+vanniktechMavenPublish = "0.36.0"
 
 [libraries]
 apktool-lib = { module = "app.revanced:apktool-lib", version.ref = "apktool-lib" }
