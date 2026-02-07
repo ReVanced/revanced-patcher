@@ -39,7 +39,8 @@ fun ClassDef.anyInterface(predicate: Predicate<String>) = interfaces.any(predica
 
 fun ClassDef.anyAnnotation(predicate: Predicate<Annotation>) = annotations.any(predicate)
 
-fun Method.implementation(predicate: Predicate<MethodImplementation>) = implementation?.predicate() ?: false
+fun Method.implementation(predicate: Predicate<MethodImplementation>) =
+    implementation?.predicate() ?: false
 
 fun Method.anyParameter(predicate: Predicate<MethodParameter>) = parameters.any(predicate)
 
@@ -47,21 +48,24 @@ fun Method.anyParameterType(predicate: Predicate<CharSequence>) = parameterTypes
 
 fun Method.anyAnnotation(predicate: Predicate<Annotation>) = annotations.any(predicate)
 
-fun Method.anyHiddenApiRestriction(predicate: Predicate<HiddenApiRestriction>) = hiddenApiRestrictions.any(predicate)
+fun Method.anyHiddenApiRestriction(predicate: Predicate<HiddenApiRestriction>) =
+    hiddenApiRestrictions.any(predicate)
 
-fun MethodImplementation.anyInstruction(predicate: Predicate<Instruction>) = instructions.any(predicate)
+fun MethodImplementation.anyInstruction(predicate: Predicate<Instruction>) =
+    instructions.any(predicate)
 
-fun MethodImplementation.anyTryBlock(predicate: Predicate<TryBlock<out ExceptionHandler>>) = tryBlocks.any(predicate)
+fun MethodImplementation.anyTryBlock(predicate: Predicate<TryBlock<out ExceptionHandler>>) =
+    tryBlocks.any(predicate)
 
 fun MethodImplementation.anyDebugItem(predicate: Predicate<Any>) = debugItems.any(predicate)
 
 fun Iterable<Instruction>.anyInstruction(predicate: Predicate<Instruction>) = any(predicate)
 
 typealias ClassDefPredicate =
-    ClassDef.() -> Boolean
+        ClassDef.() -> Boolean
 
 typealias MethodPredicate =
-    Method.() -> Boolean
+        Method.() -> Boolean
 
 typealias BytecodePatchContextMethodPredicate = context(BytecodePatchContext)
 Method.() -> Boolean
@@ -94,7 +98,8 @@ fun Iterable<Method>.firstImmutableMethodOrNull(methodReference: MethodReference
     firstOrNull { MethodUtil.methodSignaturesMatch(methodReference, it) }
 
 @JvmName("firstImmutableMethodInMethods")
-fun Iterable<Method>.firstImmutableMethod(methodReference: MethodReference) = requireNotNull(firstImmutableMethodOrNull(methodReference))
+fun Iterable<Method>.firstImmutableMethod(methodReference: MethodReference) =
+    requireNotNull(firstImmutableMethodOrNull(methodReference))
 
 @JvmName("firstMethodOrNullInMethods")
 context(context: BytecodePatchContext)
@@ -103,7 +108,8 @@ fun Iterable<Method>.firstMethodOrNull(methodReference: MethodReference) =
 
 @JvmName("firstMethodInMethods")
 context(_: BytecodePatchContext)
-fun Iterable<Method>.firstMethod(methodReference: MethodReference) = requireNotNull(firstMethodOrNull(methodReference))
+fun Iterable<Method>.firstMethod(methodReference: MethodReference) =
+    requireNotNull(firstMethodOrNull(methodReference))
 
 @JvmName("firstImmutableMethodOrNullInMethods")
 fun Iterable<Method>.firstImmutableMethodOrNull(
@@ -150,10 +156,12 @@ fun Iterable<Method>.firstMethod(
 
 @JvmName("firstImmutableMethodOrNullInClassDefs")
 fun Iterable<ClassDef>.firstImmutableMethodOrNull(methodReference: MethodReference) =
-    asSequence().flatMap { it.methods.asSequence() }.asIterable().firstImmutableMethodOrNull(methodReference)
+    asSequence().flatMap { it.methods.asSequence() }.asIterable()
+        .firstImmutableMethodOrNull(methodReference)
 
 @JvmName("firstImmutableMethodInClassDefs")
-fun Iterable<ClassDef>.firstImmutableMethod(methodReference: MethodReference) = requireNotNull(firstImmutableMethodOrNull(methodReference))
+fun Iterable<ClassDef>.firstImmutableMethod(methodReference: MethodReference) =
+    requireNotNull(firstImmutableMethodOrNull(methodReference))
 
 @JvmName("firstMethodOrNullInClassDefs")
 context(_: BytecodePatchContext)
@@ -162,20 +170,24 @@ fun Iterable<ClassDef>.firstMethodOrNull(methodReference: MethodReference) =
 
 @JvmName("firstMethodInClassDefs")
 context(_: BytecodePatchContext)
-fun Iterable<ClassDef>.firstMethod(methodReference: MethodReference) = requireNotNull(firstMethodOrNull(methodReference))
+fun Iterable<ClassDef>.firstMethod(methodReference: MethodReference) =
+    requireNotNull(firstMethodOrNull(methodReference))
 
 @JvmName("firstImmutableMethodOrNullInClassDefs")
 fun Iterable<ClassDef>.firstImmutableMethodOrNull(predicate: MethodPredicate = { true }) =
-    asSequence().flatMap { it.methods.asSequence() }.asIterable().firstImmutableMethodOrNull(strings = emptyArray(), predicate)
+    asSequence().flatMap { it.methods.asSequence() }.asIterable()
+        .firstImmutableMethodOrNull(strings = emptyArray(), predicate)
 
 @JvmName("firstImmutableMethodInClassDefs")
-fun Iterable<ClassDef>.firstImmutableMethod(predicate: MethodPredicate = { true }) = requireNotNull(firstImmutableMethodOrNull(predicate))
+fun Iterable<ClassDef>.firstImmutableMethod(predicate: MethodPredicate = { true }) =
+    requireNotNull(firstImmutableMethodOrNull(predicate))
 
 @JvmName("firstImmutableMethodOrNullInClassDefs")
 fun Iterable<ClassDef>.firstImmutableMethodOrNull(
     vararg strings: String,
     predicate: MethodPredicate = { true },
-) = asSequence().flatMap { it.methods.asSequence() }.asIterable().firstImmutableMethodOrNull(strings = strings, predicate)
+) = asSequence().flatMap { it.methods.asSequence() }.asIterable()
+    .firstImmutableMethodOrNull(strings = strings, predicate)
 
 @JvmName("firstImmutableMethodInClassDefs")
 fun Iterable<ClassDef>.firstImmutableMethod(
@@ -201,18 +213,22 @@ fun Iterable<ClassDef>.firstMethod(
 ) = requireNotNull(firstMethodOrNull(strings = strings, predicate))
 
 @JvmName("firstImmutableMethodOrNullInClassDef")
-fun ClassDef.firstImmutableMethodOrNull(methodReference: MethodReference) = methods.firstImmutableMethodOrNull(methodReference)
+fun ClassDef.firstImmutableMethodOrNull(methodReference: MethodReference) =
+    methods.firstImmutableMethodOrNull(methodReference)
 
 @JvmName("firstImmutableMethodInClassDef")
-fun ClassDef.firstImmutableMethod(methodReference: MethodReference) = requireNotNull(firstImmutableMethodOrNull(methodReference))
+fun ClassDef.firstImmutableMethod(methodReference: MethodReference) =
+    requireNotNull(firstImmutableMethodOrNull(methodReference))
 
 @JvmName("firstMethodOrNullInClassDef")
 context(_: BytecodePatchContext)
-fun ClassDef.firstMethodOrNull(methodReference: MethodReference) = methods.firstMethodOrNull(methodReference)
+fun ClassDef.firstMethodOrNull(methodReference: MethodReference) =
+    methods.firstMethodOrNull(methodReference)
 
 @JvmName("firstMethodInClassDef")
 context(_: BytecodePatchContext)
-fun ClassDef.firstMethod(methodReference: MethodReference) = requireNotNull(firstMethodOrNull(methodReference))
+fun ClassDef.firstMethod(methodReference: MethodReference) =
+    requireNotNull(firstMethodOrNull(methodReference))
 
 @JvmName("firstImmutableMethodOrNullInClassDef")
 fun ClassDef.firstImmutableMethodOrNull(
@@ -275,9 +291,12 @@ fun Iterable<ClassDef>.firstClassDef(
 ) = requireNotNull(firstClassDefOrNull(type, predicate))
 
 fun BytecodePatchContext.firstImmutableMethodOrNull(methodReference: MethodReference) =
-    firstImmutableClassDefOrNull(methodReference.definingClass)?.methods?.firstImmutableMethodOrNull(methodReference)
+    firstImmutableClassDefOrNull(methodReference.definingClass)?.methods?.firstImmutableMethodOrNull(
+        methodReference
+    )
 
-fun BytecodePatchContext.firstImmutableMethod(method: MethodReference) = requireNotNull(firstImmutableMethodOrNull(method))
+fun BytecodePatchContext.firstImmutableMethod(method: MethodReference) =
+    requireNotNull(firstImmutableMethodOrNull(method))
 
 fun BytecodePatchContext.firstMethodOrNull(methodReference: MethodReference): MutableMethod? =
     firstClassDefOrNull(methodReference.definingClass)?.methods?.first {
@@ -287,7 +306,8 @@ fun BytecodePatchContext.firstMethodOrNull(methodReference: MethodReference): Mu
         )
     }
 
-fun BytecodePatchContext.firstMethod(method: MethodReference) = requireNotNull(firstMethodOrNull(method))
+fun BytecodePatchContext.firstMethod(method: MethodReference) =
+    requireNotNull(firstMethodOrNull(method))
 
 fun BytecodePatchContext.firstImmutableMethodOrNull(
     vararg strings: String,
@@ -324,11 +344,14 @@ fun BytecodePatchContext.firstMethod(
     predicate: MethodPredicate = { true },
 ) = requireNotNull(firstMethodOrNull(strings = strings, predicate))
 
-fun gettingFirstImmutableMethodOrNull(method: MethodReference) = cachedReadOnlyProperty { firstImmutableMethodOrNull(method) }
+fun gettingFirstImmutableMethodOrNull(method: MethodReference) =
+    cachedReadOnlyProperty { firstImmutableMethodOrNull(method) }
 
-fun gettingFirstImmutableMethod(method: MethodReference) = cachedReadOnlyProperty { firstImmutableMethod(method) }
+fun gettingFirstImmutableMethod(method: MethodReference) =
+    cachedReadOnlyProperty { firstImmutableMethod(method) }
 
-fun gettingFirstMethodOrNull(method: MethodReference) = cachedReadOnlyProperty { firstMethodOrNull(method) }
+fun gettingFirstMethodOrNull(method: MethodReference) =
+    cachedReadOnlyProperty { firstMethodOrNull(method) }
 
 fun gettingFirstMethod(method: MethodReference) = cachedReadOnlyProperty { firstMethod(method) }
 
@@ -426,7 +449,12 @@ context(_: BytecodePatchContext)
 fun Iterable<Method>.firstMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
-) = buildPredicate(strings, build) { strings, predicate -> firstMethodOrNull(strings = strings, predicate) }
+) = buildPredicate(strings, build) { strings, predicate ->
+    firstMethodOrNull(
+        strings = strings,
+        predicate
+    )
+}
 
 @JvmName("firstMethodDeclarativelyInMethods")
 context(_: BytecodePatchContext)
@@ -460,7 +488,12 @@ context(context: BytecodePatchContext)
 fun Iterable<ClassDef>.firstMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
-) = buildPredicate(strings, build) { strings, predicate -> firstMethodOrNull(strings = strings, predicate) }
+) = buildPredicate(strings, build) { strings, predicate ->
+    firstMethodOrNull(
+        strings = strings,
+        predicate
+    )
+}
 
 @JvmName("firstImmutableMethodDeclarativelyOrNullInClassDef")
 fun ClassDef.firstImmutableMethodDeclarativelyOrNull(
@@ -519,7 +552,10 @@ fun Iterable<ClassDef>.firstClassDefDeclaratively(
 fun BytecodePatchContext.firstImmutableMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
-) = buildPredicate(strings, build) { strings, predicate -> firstImmutableMethodOrNull(strings = strings, predicate) }
+) = buildPredicate(
+    strings,
+    build
+) { strings, predicate -> firstImmutableMethodOrNull(strings = strings, predicate) }
 
 fun BytecodePatchContext.firstImmutableMethodDeclaratively(
     vararg strings: String,
@@ -529,7 +565,12 @@ fun BytecodePatchContext.firstImmutableMethodDeclaratively(
 fun BytecodePatchContext.firstMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(MutableList<String>) MutablePredicateList<Method>.() -> Unit = { },
-) = buildPredicate(strings, build) { strings, predicate -> firstMethodOrNull(strings = strings, predicate) }
+) = buildPredicate(strings, build) { strings, predicate ->
+    firstMethodOrNull(
+        strings = strings,
+        predicate
+    )
+}
 
 fun BytecodePatchContext.firstMethodDeclaratively(
     vararg strings: String,
@@ -539,7 +580,8 @@ fun BytecodePatchContext.firstMethodDeclaratively(
 fun gettingFirstImmutableMethodDeclarativelyOrNull(
     vararg strings: String,
     build: context(BytecodePatchContext, MutableList<String>) MutablePredicateList<Method>.() -> Unit = {},
-) = cachedReadOnlyProperty { firstImmutableMethodDeclarativelyOrNull(strings = strings) { build() } }
+) =
+    cachedReadOnlyProperty { firstImmutableMethodDeclarativelyOrNull(strings = strings) { build() } }
 
 fun gettingFirstImmutableMethodDeclaratively(
     vararg strings: String,
@@ -787,7 +829,13 @@ class IndexedMatcher<T> : Matcher<T, IndexedMatcherPredicate<T>>() {
             lastMatchedIndex = frame.lastMatchedIndex
             nextIndex = null
 
-            if (this[frame.patternIndex](hay[i], lastMatchedIndex, currentIndex, this::nextIndex::set)) {
+            if (this[frame.patternIndex](
+                    hay[i],
+                    lastMatchedIndex,
+                    currentIndex,
+                    this::nextIndex::set
+                )
+            ) {
                 Frame(
                     patternIndex = frame.patternIndex + 1,
                     lastMatchedIndex = i,
@@ -864,9 +912,11 @@ fun <T> MutablePredicateList<T>.all(target: T): Boolean = all { target.it() }
 
 fun <T> MutablePredicateList<T>.any(target: T): Boolean = any { target.it() }
 
-fun MutablePredicateList<Method>.accessFlags(vararg flags: AccessFlags) = predicate { accessFlags(flags = flags) }
+fun MutablePredicateList<Method>.accessFlags(vararg flags: AccessFlags) =
+    predicate { accessFlags(flags = flags) }
 
-fun MutablePredicateList<Method>.returnType(predicate: Predicate<String>) = predicate { returnType.predicate() }
+fun MutablePredicateList<Method>.returnType(predicate: Predicate<String>) =
+    predicate { returnType.predicate() }
 
 fun MutablePredicateList<Method>.returnType(
     returnType: String,
@@ -880,7 +930,8 @@ fun MutablePredicateList<Method>.name(
     compare: String.(String) -> Boolean = String::equals,
 ) = predicate { this.name.compare(name) }
 
-fun MutablePredicateList<Method>.definingClass(predicate: Predicate<String>) = predicate { definingClass.predicate() }
+fun MutablePredicateList<Method>.definingClass(predicate: Predicate<String>) =
+    predicate { definingClass.predicate() }
 
 fun MutablePredicateList<Method>.definingClass(
     definingClass: String,
@@ -890,7 +941,7 @@ fun MutablePredicateList<Method>.definingClass(
 fun MutablePredicateList<Method>.parameterTypes(vararg parameterTypePrefixes: String) =
     predicate {
         parameterTypes.size == parameterTypePrefixes.size &&
-            parameterTypes.zip(parameterTypePrefixes).all { (a, b) -> a.startsWith(b) }
+                parameterTypes.zip(parameterTypePrefixes).all { (a, b) -> a.startsWith(b) }
     }
 
 fun MutablePredicateList<Method>.instructions(build: Function<IndexedMatcher<Instruction>>) {
@@ -935,17 +986,21 @@ fun MutablePredicateList<Method>.opcodes(vararg opcodes: Opcode) =
         opcodes.drop(1).forEach { +after(it()) }
     }
 
-private fun Array<out String>.toUnorderedStringPredicates() = unorderedAllOf(predicates = map { string(it) }.toTypedArray())
+private fun Array<out String>.toUnorderedStringPredicates() =
+    unorderedAllOf(predicates = map { string(it) }.toTypedArray())
 
-fun MutablePredicateList<Method>.strings(vararg strings: String) = instructions(predicates = strings.toUnorderedStringPredicates())
+fun MutablePredicateList<Method>.strings(vararg strings: String) =
+    instructions(predicates = strings.toUnorderedStringPredicates())
 
 context(matchers: MutableList<IndexedMatcher<Instruction>>)
-fun MutablePredicateList<Method>.strings(vararg strings: String) = instructions(predicates = strings.toUnorderedStringPredicates())
+fun MutablePredicateList<Method>.strings(vararg strings: String) =
+    instructions(predicates = strings.toUnorderedStringPredicates())
 
 inline fun <reified T : Instruction> `is`(crossinline predicate: Predicate<T> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ -> (this as? T)?.predicate() == true }
 
-fun instruction(predicate: Predicate<Instruction> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ -> predicate() }
+fun instruction(predicate: Predicate<Instruction> = { true }): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> predicate() }
 
 fun registers(predicate: Predicate<IntArray> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ ->
@@ -989,7 +1044,8 @@ fun registers(
     },
 ) = registers({ compare(registers) })
 
-fun literal(predicate: Predicate<Long> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ -> wideLiteral?.predicate() == true }
+fun literal(predicate: Predicate<Long> = { true }): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> wideLiteral?.predicate() == true }
 
 fun literal(
     literal: Long,
@@ -1004,7 +1060,8 @@ inline fun <reified T : Reference> reference(crossinline predicate: Predicate<T>
 fun reference(
     reference: String,
     compare: String.(String) -> Boolean = String::contains,
-): IndexedMatcherPredicate<Instruction> = { _, _, _ -> this.reference?.toString()?.compare(reference) == true }
+): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> this.reference?.toString()?.compare(reference) == true }
 
 fun field(predicate: Predicate<FieldReference> = { true }): IndexedMatcherPredicate<Instruction> =
     { _, _, _ ->
@@ -1016,7 +1073,8 @@ fun field(
     compare: String.(String) -> Boolean = String::equals,
 ) = field { this.name.compare(name) }
 
-fun type(predicate: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> = { _, _, _ -> type?.predicate() == true }
+fun type(predicate: Predicate<String> = { true }): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> type?.predicate() == true }
 
 fun type(
     type: String,
@@ -1053,15 +1111,21 @@ fun string(
     compare: String.(String) -> Boolean = String::equals,
 ) = string { compare(string) }
 
-operator fun String.invoke(compare: String.(String) -> Boolean = String::equals) = string(this, compare)
+operator fun String.invoke(compare: String.(String) -> Boolean = String::equals) =
+    string(this, compare)
 
 context(stringsList: MutableList<String>)
-operator fun String.invoke(compare: String.(String) -> Boolean = String::equals) = string(this, compare)
+operator fun String.invoke(compare: String.(String) -> Boolean = String::equals) =
+    string(this, compare)
 
-operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> = { _, _, _ -> opcode == this@invoke }
+operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> =
+    { _, _, _ -> opcode == this@invoke }
+
+val primitiveTypes = setOf("V", "Z", "B", "S", "C", "I", "J", "F", "D")
 
 // Returns a comparer function based on the format of a type descriptor string.
-private fun String.typeComparer(): String.(String)-> Boolean = when {
+private fun String.typeComparer(): String.(String) -> Boolean = when {
+    this in primitiveTypes -> String::equals
     startsWith("L") && endsWith(";") -> String::equals
     startsWith("L") -> String::startsWith
     endsWith(";") -> String::endsWith
@@ -1069,34 +1133,46 @@ private fun String.typeComparer(): String.(String)-> Boolean = when {
 }
 
 typealias DeclarativePredicateCompositeBuilder =
-    context(
+        context(
         MutableList<IndexedMatcher<Instruction>>,
         MutableList<String>
-    )
-    MutablePredicateList<Method>.() -> Unit
+        )
+        MutablePredicateList<Method>.() -> Unit
 
 typealias BytecodePatchContextDeclarativePredicateCompositeBuilder =
-    context(
+        context(
         BytecodePatchContext,
         MutableList<IndexedMatcher<Instruction>>,
         MutableList<String>
-    )
-    MutablePredicateList<Method>.() -> Unit
+        )
+        MutablePredicateList<Method>.() -> Unit
 
 fun BytecodePatchContext.firstMethodComposite(
     vararg strings: String,
     build: BytecodePatchContextDeclarativePredicateCompositeBuilder = {},
-) = CompositeMatch(strings, { build() }) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
+) = CompositeMatch(
+    strings,
+    { build() }) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
 
 fun Iterable<ClassDef>.firstMethodComposite(
     vararg strings: String,
     build: DeclarativePredicateCompositeBuilder = {},
-) = CompositeMatch(strings, build) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
+) = CompositeMatch(strings, build) { strings, build ->
+    firstImmutableMethodOrNull(
+        strings = strings,
+        build
+    )
+}
 
 fun ClassDef.firstMethodComposite(
     vararg strings: String,
     build: DeclarativePredicateCompositeBuilder = {},
-) = CompositeMatch(strings, build) { strings, build -> firstImmutableMethodOrNull(strings = strings, build) }
+) = CompositeMatch(strings, build) { strings, build ->
+    firstImmutableMethodOrNull(
+        strings = strings,
+        build
+    )
+}
 
 fun composingFirstMethod(
     vararg strings: String,
@@ -1109,14 +1185,24 @@ object ClassDefComposing {
     fun composingFirstMethod(
         vararg strings: String,
         build: DeclarativePredicateCompositeBuilder = {},
-    ) = cachedReadOnlyProperty<ClassDef, CompositeMatch> { firstMethodComposite(strings = strings, build) }
+    ) = cachedReadOnlyProperty<ClassDef, CompositeMatch> {
+        firstMethodComposite(
+            strings = strings,
+            build
+        )
+    }
 }
 
 object IterableClassDefComposing {
     fun composingFirstMethod(
         vararg strings: String,
         build: DeclarativePredicateCompositeBuilder = {},
-    ) = cachedReadOnlyProperty<Iterable<ClassDef>, CompositeMatch> { firstMethodComposite(strings = strings, build) }
+    ) = cachedReadOnlyProperty<Iterable<ClassDef>, CompositeMatch> {
+        firstMethodComposite(
+            strings = strings,
+            build
+        )
+    }
 }
 
 fun <T> composingMethod(
@@ -1196,7 +1282,8 @@ open class CompositeMatch(
     operator fun get(
         matcherIndex: Int,
         index: Int,
-    ) = indices[matcherIndex.mod(indices[0].size)].let { indices -> indices[index.mod(indices.size)] }
+    ) =
+        indices[matcherIndex.mod(indices[0].size)].let { indices -> indices[index.mod(indices.size)] }
 }
 
 context(context: BytecodePatchContext)
