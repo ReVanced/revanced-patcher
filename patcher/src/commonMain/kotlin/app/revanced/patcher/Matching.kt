@@ -1121,7 +1121,7 @@ operator fun String.invoke(compare: String.(String) -> Boolean = String::equals)
 operator fun Opcode.invoke(): IndexedMatcherPredicate<Instruction> =
     { _, _, _ -> opcode == this@invoke }
 
-val primitiveTypes = setOf("V", "Z", "B", "S", "C", "I", "J", "F", "D")
+internal val primitiveTypes = setOf("V", "Z", "B", "S", "C", "I", "J", "F", "D")
 
 // Returns a comparer function based on the format of a type descriptor string.
 private fun String.typeComparer(): String.(String) -> Boolean = when {
