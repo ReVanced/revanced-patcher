@@ -117,7 +117,8 @@ class BytecodePatchContext internal constructor(
             return anyRemoved
         }
 
-        override fun retainAll(elements: Collection<ClassDef>) = removeAll(classDefs.asSequence().filter { it !in elements })
+        override fun retainAll(elements: Collection<ClassDef>) =
+            removeAll(classDefs.asSequence().filter { it !in elements })
 
         private fun addCache(classDef: ClassDef) {
             byType[classDef.type] = classDef
@@ -187,26 +188,16 @@ class BytecodePatchContext internal constructor(
     @Deprecated("Use classDefs instead")
     val classes = classDefs
 
-    /**
-     * Find a class with a predicate.
-     *
-     * @param predicate A predicate to match the class.
-     * @return A proxy for the first class that matches the predicate.
-     */
     @Deprecated("Use classDefs.firstOrNull instead")
     fun classBy(predicate: (ClassDef) -> Boolean) =
         classDefs.firstOrNull { predicate(it) }?.let {
             ClassProxy(classDefs.getOrReplaceMutable(it))
         }
 
-    /**
-     * Proxy the class to allow mutation.
-     *
-     * @param classDef The class to proxy.
-     *
-     * @return A proxy for the class.
-     */
-    @Deprecated("Use classDefs.getOrReplaceMutable instead", ReplaceWith("classDefs.getOrReplaceMutable(classDef)"))
+    @Deprecated(
+        "Use classDefs.getOrReplaceMutable instead",
+        ReplaceWith("classDefs.getOrReplaceMutable(classDef)")
+    )
     fun proxy(classDef: ClassDef) = ClassProxy(classDefs.getOrReplaceMutable(classDef))
 
     /**
