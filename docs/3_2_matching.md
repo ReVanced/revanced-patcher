@@ -270,7 +270,7 @@ indexedMatcher(
     reference("Lcom/some/Class;->someMethod()V"),
     literal(1L),
     registers(1, 2, 3),
-    instruction { opcode == Opcode.INVOKEVIRTUAL },
+    instruction { opcode == Opcode.INVOKE_VIRTUAL },
     allOf(noneOf(opcode(Opcode.CONST_STRING), opcode(Opcode.CONST)), anyOf(string("A"), string("B")))
 )
 ```
@@ -330,7 +330,7 @@ the following APIs are available to use indexed matchers in a declarative way:
 ```kt
 firstMethodDeclaratively {
     instructions( string(),  method())
-    opcodes(Opcode.CONST_STRING, Opcodes.INVOKE_VIRTUAL) // Matches sequentially using after().
+    opcodes(Opcode.CONST_STRING, Opcode.INVOKE_VIRTUAL) // Matches sequentially using after().
     strings("A", "B", "C") // Matches full strings using unorderedAllOf(); Also uses them for fast lookup.
 }
 ```
@@ -350,7 +350,7 @@ val match = firstMethodComposite {
         after(2..3, method("name"))
     )
     strings("someString", "anotherString")
-    opcodes(Opcode.INVOKEVIRTUAL, Opcode.INVOKEINTERFACE)
+    opcodes(Opcode.INVOKE_VIRTUAL, Opcode.INVOKE_INTERFACE)
 }
 
 match.method
