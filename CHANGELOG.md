@@ -1,3 +1,10 @@
+# [22.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v22.0.0-dev.1...v22.0.0-dev.2) (2026-02-19)
+
+
+### Bug Fixes
+
+* Return first indexed matcher indices as CompositeMatch.component2 ([c9796a8](https://github.com/ReVanced/revanced-patcher/commit/c9796a811fc15d9901f5d151fc3ea84dc2f77e99))
+
 # [22.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.5...v22.0.0-dev.1) (2026-02-07)
 
 
