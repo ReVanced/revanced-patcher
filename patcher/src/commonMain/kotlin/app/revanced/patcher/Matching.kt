@@ -1272,7 +1272,7 @@ open class CompositeMatch(
     operator fun component1() = method
 
     context(_: BytecodePatchContext)
-    operator fun component2() = indices
+    operator fun component2() = indices.first()
 
     context(_: BytecodePatchContext)
     operator fun component3() = immutableClassDef
