@@ -162,8 +162,8 @@ bytecodePatch(name = "Another patch") {
 
 ### 🧩 Extensions
 
-Extensions are precompiled DEX file merged into the `BytecodePatchContext` before a patch is applied.
-While patches deal with the compile-time side of apps, extensions take care of the apps runtime 
+Extensions are precompiled DEX files merged into the `BytecodePatchContext` before a patch is applied.
+While patches deal with the compile-time side of an app, extensions take care of the app's runtime 
 by extending the patched app with additional classes.
 
 Assume you want to add a complex feature to an app that would need multiple classes and methods:
