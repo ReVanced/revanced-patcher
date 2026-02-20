@@ -1,3 +1,20 @@
+# [22.0.0-dev.2](https://github.com/ReVanced/revanced-patcher/compare/v22.0.0-dev.1...v22.0.0-dev.2) (2026-02-19)
+
+
+### Bug Fixes
+
+* Return first indexed matcher indices as CompositeMatch.component2 ([c9796a8](https://github.com/ReVanced/revanced-patcher/commit/c9796a811fc15d9901f5d151fc3ea84dc2f77e99))
+
+# [22.0.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v21.1.0-dev.5...v22.0.0-dev.1) (2026-02-07)
+
+
+* feat!: Replace fingerprint with matching and add Kotlin DSL to patcher API ([#385](https://github.com/ReVanced/revanced-patcher/issues/385)) ([c638090](https://github.com/ReVanced/revanced-patcher/commit/c6380902539bb1abb5e529c184d78659777ff36f))
+
+
+### BREAKING CHANGES
+
+* Some APIs have been changed or removed, but most are deprecated and have backwards compatibility.
+
 # [21.1.0](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0...v21.1.0) (2025-10-16)
 
 
