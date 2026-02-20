@@ -28,10 +28,9 @@
       }
     ],
     [
-      "@saithodev/semantic-release-backmerge",
+      "@kilianpaquier/semantic-release-backmerge",
       {
-        backmergeBranches: [{"from": "main", "to": "dev"}],
-        clearWorkspace: true
+        "targets": [{ "from": "main", "to": "dev" }]
       }
     ],
     [
