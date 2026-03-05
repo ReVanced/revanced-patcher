@@ -636,7 +636,7 @@ fun gettingFirstClassDefDeclarativelyOrNull(
 fun gettingFirstClassDefDeclaratively(
     type: String? = null,
     build: context(BytecodePatchContext) MutablePredicateList<ClassDef>.() -> Unit = { },
-) = cachedReadOnlyProperty { firstClassDefDeclaratively { build() } }
+) = cachedReadOnlyProperty { firstClassDefDeclaratively(type) { build() } }
 
 typealias IndexedMatcherPredicate<T> = T.(lastMatchedIndex: Int, currentIndex: Int, setNextIndex: (Int?) -> Unit) -> Boolean
 

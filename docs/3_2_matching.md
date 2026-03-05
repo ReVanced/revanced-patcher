@@ -206,7 +206,7 @@ Some of the APIs also have variants such as predicates:
 ```kt
 firstMethodDeclaratively  {
     name { startsWith("some") }
-    definingClass { startsWith("Lcom/some/") }
+    definingClass("Lcom/some/")
     returnType { it == "V" || it == "Z" }
 }
 ```
