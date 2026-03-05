@@ -754,7 +754,7 @@ fun <T> unorderedAllOf(vararg predicates: IndexedMatcherPredicate<T>): Array<Ind
                 // Detect backtracking: if revisiting an earlier pattern position, truncate the list to that position.
                 if (patternIndex <= lastPatternIndex) {
                     while (usedPredicateIndices.size > patternIndex) {
-                        usedPredicateIndices.removeLast()
+                        usedPredicateIndices.removeAt(usedPredicateIndices.lastIndex)
                     }
                 }
 
