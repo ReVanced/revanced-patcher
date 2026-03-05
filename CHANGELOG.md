@@ -1,3 +1,11 @@
+## [22.0.1-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v22.0.0...v22.0.1-dev.1) (2026-03-05)
+
+
+### Bug Fixes
+
+* Add missing type parameter to match ([4a506b7](https://github.com/ReVanced/revanced-patcher/commit/4a506b7efafddd27d9cf35d4f59be1eec5caed82))
+* Use API available below SDK 35 ([92fec83](https://github.com/ReVanced/revanced-patcher/commit/92fec8350af9d2936b8d3b0c3975552b5bdbfe21))
+
 # [22.0.0](https://github.com/ReVanced/revanced-patcher/compare/v21.0.0...v22.0.0) (2026-02-20)
 
 
