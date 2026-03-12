@@ -79,7 +79,7 @@ abstract class PatcherTestBase {
                         every { opcodes } returns Opcodes.getDefault()
                     }
 
-                every { this@bytecodePatchContext.getProperty("apkFile") } returns mockk<File>()
+                every { this@bytecodePatchContext.getProperty("apk") } returns Apk.Single(mockk<File>())
 
                 every { this@bytecodePatchContext.classDefs } returns
                     ClassDefs().apply {

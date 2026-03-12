@@ -327,6 +327,20 @@ public final class app/revanced/com/android/tools/smali/dexlib2/mutable/MutableM
 	public final fun toMutable (Lcom/android/tools/smali/dexlib2/iface/MethodParameter;)Lapp/revanced/com/android/tools/smali/dexlib2/mutable/MutableMethodParameter;
 }
 
+public abstract class app/revanced/patcher/Apk {
+	public synthetic fun <init> (Ljava/io/File;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getFile ()Ljava/io/File;
+}
+
+public final class app/revanced/patcher/Apk$Single : app/revanced/patcher/Apk {
+	public fun <init> (Ljava/io/File;)V
+}
+
+public final class app/revanced/patcher/Apk$Split : app/revanced/patcher/Apk {
+	public fun <init> (Ljava/io/File;Ljava/util/Map;)V
+	public final fun getSplitApkFiles ()Ljava/util/Map;
+}
+
 public final class app/revanced/patcher/ClassDefComposing {
 	public static final field INSTANCE Lapp/revanced/patcher/ClassDefComposing;
 	public final fun composingFirstMethod ([Ljava/lang/String;Lkotlin/jvm/functions/Function3;)Lkotlin/properties/ReadOnlyProperty;
@@ -781,6 +795,7 @@ public final class app/revanced/patcher/MutablePredicateList : java/util/List, k
 public final class app/revanced/patcher/PatchesResult {
 	public final fun getDexFiles ()Ljava/util/Set;
 	public final fun getResources ()Lapp/revanced/patcher/PatchesResult$PatchedResources;
+	public final fun getSplitResources ()Ljava/util/Map;
 }
 
 public final class app/revanced/patcher/PatchesResult$PatchedDexFile {
@@ -797,7 +812,9 @@ public final class app/revanced/patcher/PatchesResult$PatchedResources {
 
 public final class app/revanced/patcher/PatchingKt {
 	public static final fun apply (Ljava/util/Set;Lapp/revanced/patcher/patch/BytecodePatchContext;Lapp/revanced/patcher/patch/ResourcePatchContext;Lkotlin/jvm/functions/Function1;)Lapp/revanced/patcher/PatchesResult;
+	public static final fun patcher (Lapp/revanced/patcher/Apk;Ljava/io/File;Ljava/io/File;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
 	public static final fun patcher (Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/lang/String;Lkotlin/jvm/functions/Function2;)Lkotlin/jvm/functions/Function1;
+	public static synthetic fun patcher$default (Lapp/revanced/patcher/Apk;Ljava/io/File;Ljava/io/File;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
 	public static synthetic fun patcher$default (Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ILjava/lang/Object;)Lkotlin/jvm/functions/Function1;
 }
 
@@ -1209,12 +1226,16 @@ public class app/revanced/patcher/patch/ResourcePatchBuilder : app/revanced/patc
 
 public final class app/revanced/patcher/patch/ResourcePatchContext : app/revanced/patcher/patch/PatchContext {
 	public final fun delete (Ljava/lang/String;)Z
+	public final fun deleteSplit (Ljava/lang/String;Ljava/lang/String;)V
 	public final fun document (Ljava/io/InputStream;)Lapp/revanced/patcher/util/Document;
 	public final fun document (Ljava/lang/String;)Lapp/revanced/patcher/util/Document;
 	public fun get ()Lapp/revanced/patcher/PatchesResult$PatchedResources;
 	public synthetic fun get ()Ljava/lang/Object;
 	public final fun get (Ljava/lang/String;Z)Ljava/io/File;
 	public static synthetic fun get$default (Lapp/revanced/patcher/patch/ResourcePatchContext;Ljava/lang/String;ZILjava/lang/Object;)Ljava/io/File;
+	public final fun split (Ljava/lang/String;Ljava/lang/String;Z)Ljava/io/File;
+	public static synthetic fun split$default (Lapp/revanced/patcher/patch/ResourcePatchContext;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/io/File;
+	public final fun splitDocument (Ljava/lang/String;Ljava/lang/String;)Lapp/revanced/patcher/util/Document;
 }
 
 public final class app/revanced/patcher/util/Document : java/io/Closeable, org/w3c/dom/Document {
