@@ -13,6 +13,14 @@ fun patcher(
     aaptBinaryPath: File? = null,
     frameworkFileDirectory: String? = null,
     getPatches: (packageName: String, versionName: String) -> Set<Patch>,
+) = patcher(Apk.Single(apkFile), temporaryFilesPath, aaptBinaryPath, frameworkFileDirectory, getPatches)
+
+fun patcher(
+    apk: Apk,
+    temporaryFilesPath: File = File("revanced-patcher-temporary-files"),
+    aaptBinaryPath: File? = null,
+    frameworkFileDirectory: String? = null,
+    getPatches: (packageName: String, versionName: String) -> Set<Patch>,
 ): (emit: (PatchResult) -> Unit) -> PatchesResult {
     val logger = Logger.getLogger("Patcher")
 
@@ -25,12 +33,14 @@ fun patcher(
     }
 
     val apkFilesPath = temporaryFilesPath.kmpResolve("apk").also { it.mkdirs() }
+    val splitApkFilesPath = temporaryFilesPath.kmpResolve("splits").also { it.mkdirs() }
     val patchedFilesPath = temporaryFilesPath.kmpResolve("patched").also { it.mkdirs() }
 
     val resourcePatchContext =
         ResourcePatchContext(
-            apkFile,
+            apk,
             apkFilesPath,
+            splitApkFilesPath,
             patchedFilesPath,
             aaptBinaryPath,
             frameworkFileDirectory,
@@ -45,7 +55,7 @@ fun patcher(
         // After initializing the resource context, to keep memory usage time low.
         val bytecodePatchContext =
             BytecodePatchContext(
-                apkFile,
+                apk,
                 patchedFilesPath,
             )
 
@@ -121,18 +131,22 @@ fun Set<Patch>.apply(
         )
     }
 
-    return PatchesResult(bytecodePatchContext.get(), resourcePatchContext.get())
+    val (baseResources, splitResources) = resourcePatchContext.getCompiledResources()
+
+    return PatchesResult(bytecodePatchContext.get(), baseResources, splitResources)
 }
 
 /**
  * The result of applying patches.
  *
  * @param dexFiles The patched dex files.
- * @param resources The patched resources.
+ * @param resources The patched base APK resources.
+ * @param splitResources The patched resources for each split APK, keyed by split name.
  */
 class PatchesResult internal constructor(
     val dexFiles: Set<PatchedDexFile>,
     val resources: PatchedResources?,
+    val splitResources: Map<String, PatchedResources> = emptyMap(),
 ) {
     /**
      * A dex file.

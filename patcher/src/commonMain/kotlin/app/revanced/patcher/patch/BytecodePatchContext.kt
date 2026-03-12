@@ -5,6 +5,7 @@ import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef.Comp
 import app.revanced.java.io.kmpDeleteRecursively
 import app.revanced.java.io.kmpInputStream
 import app.revanced.java.io.kmpResolve
+import app.revanced.patcher.Apk
 import app.revanced.patcher.PatchesResult
 import app.revanced.patcher.extensions.instructionsOrNull
 import app.revanced.patcher.extensions.string
@@ -27,12 +28,12 @@ import kotlin.reflect.jvm.jvmName
 /**
  * A context for patches containing the current state of the bytecode.
  *
- * @param apkFile The apk [File] to patch.
+ * @param apk The [Apk] to patch.
  * @param patchedFilesPath The path to the temporary apk files directory.
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class BytecodePatchContext internal constructor(
-    internal val apkFile: File,
+    internal val apk: Apk,
     internal val patchedFilesPath: File,
 ) : PatchContext<Set<PatchesResult.PatchedDexFile>> {
     private val logger = Logger.getLogger(this::class.jvmName)
@@ -56,15 +57,7 @@ class BytecodePatchContext internal constructor(
         // private val _methodsWithString = methodsByString.values.flatten().toMutableSet()
         // val methodsWithString: Set<Method> = _methodsWithString
 
-        constructor() : this(
-            MultiDexIO.readDexFile(
-                true,
-                apkFile,
-                BasicDexFileNamer(),
-                null,
-                null,
-            ),
-        )
+        constructor() : this(readDexFiles(apk))
 
         internal val opcodes = dexFile.opcodes
 
@@ -285,5 +278,40 @@ class BytecodePatchContext internal constructor(
                 }.toSet()
 
         return patchedDexFileResults
+    }
+}
+
+private fun readDexFiles(apk: Apk): DexFile {
+    val baseDex = MultiDexIO.readDexFile(
+        true,
+        apk.file,
+        BasicDexFileNamer(),
+        null,
+        null,
+    )
+
+    if (apk !is Apk.Split) return baseDex
+
+    val allClasses = baseDex.classes.toMutableSet()
+
+    for ((_, splitFile) in apk.splitApkFiles) {
+        val splitDex = try {
+            MultiDexIO.readDexFile(
+                true,
+                splitFile,
+                BasicDexFileNamer(),
+                null,
+                null,
+            )
+        } catch (_: lanchon.multidexlib2.EmptyMultiDexContainerException) {
+            // Config splits (ABI, density, language) contain no dex files.
+            continue
+        }
+        allClasses += splitDex.classes
+    }
+
+    return object : DexFile {
+        override fun getClasses() = allClasses
+        override fun getOpcodes() = baseDex.opcodes
     }
 }
