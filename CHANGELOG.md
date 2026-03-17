@@ -1,3 +1,10 @@
+## [22.0.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v22.0.1...v22.0.2-dev.1) (2026-03-17)
+
+
+### Bug Fixes
+
+* Use PathClassLoader to fix not being able to load patches on Android 8 or below ([f4b65f5](https://github.com/ReVanced/revanced-patcher/commit/f4b65f53447356e9ba186c0515da8c1bc1db92d1))
+
 ## [22.0.1](https://github.com/ReVanced/revanced-patcher/compare/v22.0.0...v22.0.1) (2026-03-13)
 
 
