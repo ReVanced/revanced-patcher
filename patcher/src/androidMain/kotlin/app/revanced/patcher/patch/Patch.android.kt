@@ -1,6 +1,6 @@
 package app.revanced.patcher.patch
 
-import dalvik.system.DexClassLoader
+import dalvik.system.PathClassLoader
 import lanchon.multidexlib2.BasicDexFileNamer
 import lanchon.multidexlib2.MultiDexIO
 import java.io.File
@@ -32,10 +32,8 @@ actual fun loadPatches(
                 classDef.type.substring(1, classDef.length - 1)
             }
     },
-    DexClassLoader(
+    PathClassLoader(
         patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },
-        null,
-        null,
         currentClassLoader,
     ),
     onFailedToLoad,
