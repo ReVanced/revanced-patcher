@@ -1,8 +1,8 @@
 package app.revanced.patcher.patch
 
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
+import com.android.tools.smali.dexlib2.util.DexUtil
 import dalvik.system.PathClassLoader
-import lanchon.multidexlib2.BasicDexFileNamer
-import lanchon.multidexlib2.MultiDexIO
 import java.io.File
 
 actual val Class<*>.isPatch get() = Patch::class.java.isAssignableFrom(this)
@@ -24,13 +24,14 @@ actual fun loadPatches(
     onFailedToLoad: (patchesFile: File, throwable: Throwable) -> Unit,
 ) = loadPatches(
     patchesFiles = patchesFiles,
-    { patchBundle ->
-        MultiDexIO
-            .readDexFile(true, patchBundle, BasicDexFileNamer(), null, null)
-            .classes
-            .map { classDef ->
-                classDef.type.substring(1, classDef.length - 1)
-            }
+    { patchesFile ->
+        val patchesFileBytes = patchesFile.readBytes()
+
+        patchesFileBytes.also { DexUtil.verifyDexHeader(it, 0); }
+
+        DexBackedDexFile(null, patchesFileBytes, 0).classes.map { classDef ->
+            classDef.type.substring(1, classDef.length - 1)
+        }
     },
     PathClassLoader(
         patchesFiles.joinToString(File.pathSeparator) { it.absolutePath },

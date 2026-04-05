@@ -1,9 +1,7 @@
 package app.revanced.patcher.util
 
-import app.revanced.collections.merge
 import app.revanced.java.io.kmpBufferedWriter
 import app.revanced.java.io.kmpInputStream
-import com.google.common.base.Charsets
 import org.w3c.dom.Document
 import java.io.Closeable
 import java.io.File

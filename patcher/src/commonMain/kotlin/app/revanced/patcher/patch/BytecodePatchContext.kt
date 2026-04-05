@@ -1,7 +1,11 @@
 package app.revanced.patcher.patch
 
+import app.revanced.com.android.tools.smali.dexlib2.ReadResult
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.nullingArrayIteratorOf
+import app.revanced.com.android.tools.smali.dexlib2.readMultiDex
+import app.revanced.com.android.tools.smali.dexlib2.writeMultiDex
 import app.revanced.java.io.kmpDeleteRecursively
 import app.revanced.java.io.kmpInputStream
 import app.revanced.java.io.kmpResolve
@@ -11,14 +15,11 @@ import app.revanced.patcher.extensions.string
 import app.revanced.patcher.util.ClassMerger.merge
 import app.revanced.patcher.util.MethodNavigator
 import app.revanced.patcher.util.proxy.ClassProxy
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.android.tools.smali.dexlib2.iface.ClassDef
-import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-import lanchon.multidexlib2.BasicDexFileNamer
-import lanchon.multidexlib2.DexIO
-import lanchon.multidexlib2.MultiDexIO
-import lanchon.multidexlib2.RawDexIO
+import com.android.tools.smali.dexlib2.util.DexUtil
 import java.io.File
 import java.io.InputStream
 import java.util.logging.Logger
@@ -38,17 +39,15 @@ class BytecodePatchContext internal constructor(
     private val logger = Logger.getLogger(this::class.jvmName)
 
     inner class ClassDefs private constructor(
-        dexFile: DexFile,
-        private val classDefs: MutableSet<ClassDef> = dexFile.classes.toMutableSet(),
+        readResult: ReadResult,
+        private val classDefs: MutableSet<ClassDef> = readResult.classDefs,
     ) : MutableSet<ClassDef> by classDefs {
-        private val byType = mutableMapOf<String, ClassDef>()
+        private val byType = HashMap<String, ClassDef>(size)
 
         operator fun get(name: String): ClassDef? = byType[name]
 
-        // Better performance according to
-        // https://github.com/LisoUseInAIKyrios/revanced-patcher/commit/9b6d95d4f414a35ed68da37b0ecd8549df1ef63a
-        private val _methodsByStrings =
-            LinkedHashMap<String, MutableSet<Method>>(2 * size, 0.5f)
+        // Assuming that each class has at least 2 unique strings.
+        private val _methodsByStrings = HashMap<String, MutableSet<Method>>(2 * size)
 
         val methodsByString: Map<String, Set<Method>> = _methodsByStrings
 
@@ -56,17 +55,9 @@ class BytecodePatchContext internal constructor(
         // private val _methodsWithString = methodsByString.values.flatten().toMutableSet()
         // val methodsWithString: Set<Method> = _methodsWithString
 
-        constructor() : this(
-            MultiDexIO.readDexFile(
-                true,
-                apkFile,
-                BasicDexFileNamer(),
-                null,
-                null,
-            ),
-        )
+        constructor() : this(readMultiDex(apkFile))
 
-        internal val opcodes = dexFile.opcodes
+        internal val opcodes = readResult.opcodes
 
         override fun add(element: ClassDef): Boolean {
             val added = classDefs.add(element)
@@ -206,7 +197,10 @@ class BytecodePatchContext internal constructor(
      * @param extensionInputStream The input stream for an extension dex file.
      */
     internal fun addExtension(extensionInputStream: InputStream) {
-        RawDexIO.readRawDexFile(extensionInputStream, 0, null).classes.forEach { classDef ->
+        val extensionBytes =
+            extensionInputStream.readBytes().also { DexUtil.verifyDexHeader(it, 0); }
+
+        DexBackedDexFile(null, extensionBytes, 0).classes.forEach { classDef ->
             val existingClass =
                 classDefs[classDef.type] ?: run {
                     logger.fine { "Adding class \"$classDef\"" }
@@ -252,38 +246,27 @@ class BytecodePatchContext internal constructor(
         classDefs.clearCache()
         System.gc()
 
-        val patchedDexFileResults =
-            patchedFilesPath
-                .kmpResolve("dex")
-                .also {
-                    it.kmpDeleteRecursively() // Make sure the directory is empty.
-                    it.mkdirs()
-                }.apply {
-                    MultiDexIO.writeDexFile(
-                        true,
-                        -1,
-                        this,
-                        BasicDexFileNamer(),
-                        object : DexFile {
-                            override fun getClasses() =
-                                classDefs.let {
-                                    // More performant according to
-                                    // https://github.com/LisoUseInAIKyrios/revanced-patcher/
-                                    // commit/8c26ad08457fb1565ea5794b7930da42a1c81cf1
-                                    // #diff-be698366d9868784ecf7da3fd4ac9d2b335b0bb637f9f618fbe067dbd6830b8fR197
-                                    // TODO: Benchmark, if actually faster.
-                                    HashSet<ClassDef>(it.size * 3 / 2).apply { addAll(it) }
-                                }
+        val patchedDexFilesPath = patchedFilesPath
+            .kmpResolve("dex")
+            .also {
+                it.kmpDeleteRecursively() // Make sure the directory is empty.
+                it.mkdirs()
+            }
 
-                            override fun getOpcodes() = classDefs.opcodes
-                        },
-                        DexIO.DEFAULT_MAX_DEX_POOL_SIZE,
-                    ) { _, entryName, _ -> logger.info { "Compiled $entryName" } }
-                }.listFiles { it.isFile }!!
-                .map {
-                    PatchesResult.PatchedDexFile(it.name, it.kmpInputStream())
-                }.toSet()
+        val classDefsIterator = nullingArrayIteratorOf(classDefs)
 
-        return patchedDexFileResults
+        classDefs.clear() // Make it possible to GC written classes while writing dex files.
+
+        writeMultiDex(
+            patchedDexFilesPath,
+            classDefsIterator,
+            classDefs.opcodes,
+            -1
+        ) { index, _ ->
+            logger.info { "Compiled classes$index.dex" }
+        }
+
+        return patchedDexFilesPath.listFiles { it.isFile }!!
+            .map { PatchesResult.PatchedDexFile(it.name, it.kmpInputStream()) }.toSet()
     }
 }
