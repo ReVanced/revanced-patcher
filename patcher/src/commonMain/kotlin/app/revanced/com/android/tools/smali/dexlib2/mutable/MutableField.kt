@@ -1,8 +1,8 @@
 package app.revanced.com.android.tools.smali.dexlib2.mutable
 
 import app.revanced.com.android.tools.smali.dexlib2.iface.value.MutableEncodedValue
-import app.revanced.com.android.tools.smali.dexlib2.iface.value.MutableEncodedValue.Companion.toMutable
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableAnnotation.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.iface.value.MutableEncodedValue.Companion.toMutableEncodedValue
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableAnnotation
 import com.android.tools.smali.dexlib2.base.reference.BaseFieldReference
 import com.android.tools.smali.dexlib2.iface.Field
 
@@ -15,8 +15,10 @@ class MutableField(
     private var type = field.type
     private var accessFlags = field.accessFlags
 
-    private var initialValue = field.initialValue?.toMutable()
-    private val _annotations by lazy { field.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
+    private var initialValue = field.initialValue?.toMutableEncodedValue()
+    private val _annotations by lazy {
+        field.annotations.map { annotation -> MutableAnnotation(annotation) }.toMutableSet()
+    }
     private val _hiddenApiRestrictions by lazy { field.hiddenApiRestrictions }
 
     fun setDefiningClass(definingClass: String) {
@@ -54,6 +56,7 @@ class MutableField(
     override fun getInitialValue() = this.initialValue
 
     companion object {
+        @Deprecated("Use MutableField constructor instead.", ReplaceWith("MutableField(this)"))
         fun Field.toMutable() = MutableField(this)
     }
 }

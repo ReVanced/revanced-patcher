@@ -1,6 +1,6 @@
 package app.revanced.patcher.util
 
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import app.revanced.patcher.extensions.*
 import app.revanced.patcher.util.smali.ExternalLabel
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -15,16 +15,18 @@ import kotlin.test.assertTrue
 
 internal class SmaliTest {
     val method =
-        ImmutableMethod(
-            "Ldummy;",
-            "name",
-            emptyList(), // parameters
-            "V",
-            AccessFlags.PUBLIC.value,
-            null,
-            null,
-            MutableMethodImplementation(1),
-        ).toMutable()
+        MutableMethod(
+            ImmutableMethod(
+                "Ldummy;",
+                "name",
+                emptyList(), // parameters
+                "V",
+                AccessFlags.PUBLIC.value,
+                null,
+                null,
+                MutableMethodImplementation(1),
+            )
+        )
 
     @BeforeEach
     fun setup() {

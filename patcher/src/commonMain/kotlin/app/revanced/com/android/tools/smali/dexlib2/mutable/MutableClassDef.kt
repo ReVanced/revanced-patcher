@@ -1,8 +1,8 @@
 package app.revanced.com.android.tools.smali.dexlib2.mutable
 
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableAnnotation.Companion.toMutable
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableAnnotation
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import com.android.tools.smali.dexlib2.base.reference.BaseTypeReference
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.util.FieldUtil
@@ -20,18 +20,30 @@ class MutableClassDef(
 
     private val _interfaces by lazy { classDef.interfaces.toMutableList() }
     private val _annotations by lazy {
-        classDef.annotations.map { annotation -> annotation.toMutable() }.toMutableSet()
+        classDef.annotations.map { annotation -> MutableAnnotation(annotation) }.toMutableSet()
     }
 
     // Methods
-    private val _methods by lazy { classDef.methods.map { method -> method.toMutable() }.toMutableSet() }
-    private val _directMethods by lazy { methods.filter { method -> MethodUtil.isDirect(method) }.toMutableSet() }
-    private val _virtualMethods by lazy { methods.filter { method -> !MethodUtil.isDirect(method) }.toMutableSet() }
+    private val _methods by lazy {
+        classDef.methods.map { method -> MutableMethod(method) }.toMutableSet()
+    }
+    private val _directMethods by lazy {
+        methods.filter { method -> MethodUtil.isDirect(method) }.toMutableSet()
+    }
+    private val _virtualMethods by lazy {
+        methods.filter { method -> !MethodUtil.isDirect(method) }.toMutableSet()
+    }
 
     // Fields
-    private val _fields by lazy { classDef.fields.map { field -> field.toMutable() }.toMutableSet() }
-    private val _staticFields by lazy { _fields.filter { field -> FieldUtil.isStatic(field) }.toMutableSet() }
-    private val _instanceFields by lazy { _fields.filter { field -> !FieldUtil.isStatic(field) }.toMutableSet() }
+    private val _fields by lazy {
+        classDef.fields.map { field -> MutableField(field) }.toMutableSet()
+    }
+    private val _staticFields by lazy {
+        _fields.filter { field -> FieldUtil.isStatic(field) }.toMutableSet()
+    }
+    private val _instanceFields by lazy {
+        _fields.filter { field -> !FieldUtil.isStatic(field) }.toMutableSet()
+    }
 
     fun setType(type: String) {
         this.type = type
@@ -74,6 +86,10 @@ class MutableClassDef(
     override fun getMethods() = _methods
 
     companion object {
+        @Deprecated(
+            "Use MutableClassDef constructor instead.",
+            ReplaceWith("MutableClassDef(this)")
+        )
         fun ClassDef.toMutable(): MutableClassDef = MutableClassDef(this)
     }
 }

@@ -16,6 +16,10 @@ class MutableTypeEncodedValue(
     override fun getValue() = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableTypeEncodedValue constructor instead.",
+            ReplaceWith("MutableTypeEncodedValue(this)")
+        )
         fun TypeEncodedValue.toMutable(): MutableTypeEncodedValue = MutableTypeEncodedValue(this)
     }
 }
