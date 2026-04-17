@@ -16,6 +16,10 @@ class MutableIntEncodedValue(
     override fun getValue(): Int = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableIntEncodedValue constructor instead.",
+            ReplaceWith("MutableIntEncodedValue(this)")
+        )
         fun IntEncodedValue.toMutable(): MutableIntEncodedValue = MutableIntEncodedValue(this)
     }
 }

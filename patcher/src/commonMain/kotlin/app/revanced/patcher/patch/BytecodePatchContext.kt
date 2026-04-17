@@ -2,7 +2,6 @@ package app.revanced.patcher.patch
 
 import app.revanced.com.android.tools.smali.dexlib2.ReadResult
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
 import app.revanced.com.android.tools.smali.dexlib2.nullingArrayIteratorOf
 import app.revanced.com.android.tools.smali.dexlib2.readMultiDex
 import app.revanced.com.android.tools.smali.dexlib2.writeMultiDex
@@ -44,7 +43,7 @@ class BytecodePatchContext internal constructor(
     ) : MutableSet<ClassDef> by classDefs {
         private val byType = HashMap<String, ClassDef>(size)
 
-        operator fun get(name: String): ClassDef? = byType[name]
+        operator fun get(type: String): ClassDef? = byType[type]
 
         // Assuming that each class has at least 2 unique strings.
         private val _methodsByStrings = HashMap<String, MutableSet<Method>>(2 * size)
@@ -153,7 +152,7 @@ class BytecodePatchContext internal constructor(
             val currentClassDef = get(classDef.type)!!
 
             if (currentClassDef !is MutableClassDef) {
-                val mutableClassDef = currentClassDef.toMutable()
+                val mutableClassDef = MutableClassDef(currentClassDef)
                 this -= classDef
                 this += mutableClassDef
 

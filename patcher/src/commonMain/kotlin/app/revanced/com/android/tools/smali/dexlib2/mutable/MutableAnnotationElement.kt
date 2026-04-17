@@ -1,7 +1,7 @@
 package app.revanced.com.android.tools.smali.dexlib2.mutable
 
 import app.revanced.com.android.tools.smali.dexlib2.iface.value.MutableEncodedValue
-import app.revanced.com.android.tools.smali.dexlib2.iface.value.MutableEncodedValue.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.iface.value.MutableEncodedValue.Companion.toMutableEncodedValue
 import com.android.tools.smali.dexlib2.base.BaseAnnotationElement
 import com.android.tools.smali.dexlib2.iface.AnnotationElement
 
@@ -9,7 +9,7 @@ class MutableAnnotationElement(
     annotationElement: AnnotationElement,
 ) : BaseAnnotationElement() {
     private var name = annotationElement.name
-    private var value = annotationElement.value.toMutable()
+    private var value = annotationElement.value.toMutableEncodedValue()
 
     fun setName(name: String) {
         this.name = name
@@ -24,6 +24,10 @@ class MutableAnnotationElement(
     override fun getValue() = value
 
     companion object {
+        @Deprecated(
+            "Use MutableAnnotationElement constructor instead.",
+            ReplaceWith("MutableAnnotationElement(this)")
+        )
         fun AnnotationElement.toMutable() = MutableAnnotationElement(this)
     }
 }

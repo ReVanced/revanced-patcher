@@ -7,6 +7,10 @@ class MutableNullEncodedValue :
     BaseNullEncodedValue(),
     MutableEncodedValue {
     companion object {
+        @Deprecated(
+            "Use MutableByteEncodedValue constructor instead.",
+            ReplaceWith("MutableByteEncodedValue(this)")
+        )
         fun ByteEncodedValue.toMutable(): MutableByteEncodedValue = MutableByteEncodedValue(this)
     }
 }

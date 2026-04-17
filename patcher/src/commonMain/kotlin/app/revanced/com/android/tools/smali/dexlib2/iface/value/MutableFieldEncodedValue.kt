@@ -20,6 +20,10 @@ class MutableFieldEncodedValue(
     override fun getValue(): FieldReference = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableFieldEncodedValue constructor instead.",
+            ReplaceWith("MutableFieldEncodedValue(this)")
+        )
         fun FieldEncodedValue.toMutable(): MutableFieldEncodedValue = MutableFieldEncodedValue(this)
     }
 }

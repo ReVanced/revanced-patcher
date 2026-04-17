@@ -17,6 +17,11 @@ class MutableMethodTypeEncodedValue(
     override fun getValue(): MethodProtoReference = this.value
 
     companion object {
-        fun MethodTypeEncodedValue.toMutable(): MutableMethodTypeEncodedValue = MutableMethodTypeEncodedValue(this)
+        @Deprecated(
+            "Use MutableMethodTypeEncodedValue constructor instead.",
+            ReplaceWith("MutableMethodTypeEncodedValue(this)")
+        )
+        fun MethodTypeEncodedValue.toMutable(): MutableMethodTypeEncodedValue =
+            MutableMethodTypeEncodedValue(this)
     }
 }

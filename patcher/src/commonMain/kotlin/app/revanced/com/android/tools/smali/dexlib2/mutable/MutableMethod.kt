@@ -1,7 +1,5 @@
 package app.revanced.com.android.tools.smali.dexlib2.mutable
 
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableAnnotation.Companion.toMutable
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethodParameter.Companion.toMutable
 import com.android.tools.smali.dexlib2.base.reference.BaseMethodReference
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.iface.Method
@@ -17,8 +15,20 @@ class MutableMethod(
 
     // TODO: Create own mutable MethodImplementation (due to not being able to change members like register count).
     private var implementation = method.implementation?.let(::MutableMethodImplementation)
-    private val _annotations by lazy { method.annotations.map { annotation -> annotation.toMutable() }.toMutableSet() }
-    private val _parameters by lazy { method.parameters.map { parameter -> parameter.toMutable() }.toMutableList() }
+    private val _annotations by lazy {
+        method.annotations.map { annotation ->
+            MutableAnnotation(
+                annotation
+            )
+        }.toMutableSet()
+    }
+    private val _parameters by lazy {
+        method.parameters.map { parameter ->
+            MutableMethodParameter(
+                parameter
+            )
+        }.toMutableList()
+    }
     private val _parameterTypes by lazy { method.parameterTypes.toMutableList() }
     private val _hiddenApiRestrictions by lazy { method.hiddenApiRestrictions }
 
@@ -61,6 +71,7 @@ class MutableMethod(
     override fun getImplementation() = implementation
 
     companion object {
+        @Deprecated("Use MutableMethod constructor instead.", ReplaceWith("MutableMethod(this)"))
         fun Method.toMutable() = MutableMethod(this)
     }
 }

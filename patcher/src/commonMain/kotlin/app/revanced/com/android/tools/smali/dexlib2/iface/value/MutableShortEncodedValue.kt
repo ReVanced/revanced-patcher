@@ -16,6 +16,10 @@ class MutableShortEncodedValue(
     override fun getValue(): Short = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableShortEncodedValue constructor instead.",
+            ReplaceWith("MutableShortEncodedValue(this)")
+        )
         fun ShortEncodedValue.toMutable(): MutableShortEncodedValue = MutableShortEncodedValue(this)
     }
 }

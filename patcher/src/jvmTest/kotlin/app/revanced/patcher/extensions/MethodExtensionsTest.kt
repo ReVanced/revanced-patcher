@@ -1,7 +1,6 @@
 package app.revanced.patcher.extensions
 
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
@@ -16,16 +15,18 @@ import kotlin.test.assertEquals
 internal class MethodExtensionsTest {
     private val testInstructions = (0..9).map { i -> TestInstruction(i) }
     private var method =
-        ImmutableMethod(
-            "TestClass;",
-            "testMethod",
-            null,
-            "V",
-            AccessFlags.PUBLIC.value,
-            null,
-            null,
-            MutableMethodImplementation(16),
-        ).toMutable()
+        MutableMethod(
+            ImmutableMethod(
+                "TestClass;",
+                "testMethod",
+                null,
+                "V",
+                AccessFlags.PUBLIC.value,
+                null,
+                null,
+                MutableMethodImplementation(16),
+            )
+        )
 
     @BeforeEach
     fun setup() {
