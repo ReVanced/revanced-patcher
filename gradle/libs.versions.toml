@@ -3,7 +3,7 @@
 agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
-kotlin = "2.3.10"
+kotlin = "2.3.21"
 apktool-lib = "2.10.1.1"
 mockk = "1.14.9"
 # Tracking https://github.com/google/smali/issues/64.
