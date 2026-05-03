@@ -80,7 +80,8 @@ sealed class PatchBuilder<C : PatchContext<*>>(
 
     operator fun String.invoke(vararg versions: VersionName) = invoke(versions.toSet())
 
-    private operator fun String.invoke(versions: Set<VersionName>? = null): Package = this to versions
+    private operator fun String.invoke(versions: Set<VersionName>? = null): Package =
+        this to versions
 
     fun compatibleWith(vararg packages: Package) {
         if (compatiblePackages == null) {
@@ -90,7 +91,8 @@ sealed class PatchBuilder<C : PatchContext<*>>(
         compatiblePackages!! += packages
     }
 
-    fun compatibleWith(vararg packages: String) = compatibleWith(*packages.map { it() }.toTypedArray())
+    fun compatibleWith(vararg packages: String) =
+        compatibleWith(*packages.map { it() }.toTypedArray())
 
     fun dependsOn(vararg patches: Patch) {
         dependencies += patches
@@ -150,7 +152,8 @@ class BytecodePatchBuilder private constructor(
         }
     }
 
-    private fun BytecodePatchContext.addExtension() = getExtensionInputStream?.let { get -> addExtension(get()) }
+    private fun BytecodePatchContext.addExtension() =
+        getExtensionInputStream?.let { get -> addExtension(get()) }
 }
 
 open class ResourcePatchBuilder internal constructor(
@@ -190,7 +193,14 @@ private fun <B : PatchBuilder<*>> creatingPatch(
     use: Boolean = true,
     block: B.() -> Unit,
     patchSupplier: (String?, String?, Boolean, B.() -> Unit) -> Patch,
-) = ReadOnlyProperty<Any?, Patch> { _, property -> patchSupplier(property.name, description, use, block) }
+) = ReadOnlyProperty<Any?, Patch> { _, property ->
+    patchSupplier(
+        property.name,
+        description,
+        use,
+        block
+    )
+}
 
 fun creatingBytecodePatch(
     description: String? = null,
@@ -253,7 +263,8 @@ class PatchResult internal constructor(
  * @param exception The [PatchException] thrown, if any.
  * @return The created [PatchResult].
  */
-internal fun Patch.patchResult(exception: Exception? = null) = PatchResult(this, exception?.toPatchException())
+internal fun Patch.patchResult(exception: Exception? = null) =
+    PatchResult(this, exception?.toPatchException())
 
 /**
  * Creates a [PatchResult] for this [Patch] with the given error message.
@@ -261,7 +272,8 @@ internal fun Patch.patchResult(exception: Exception? = null) = PatchResult(this,
  * @param errorMessage The error message.
  * @return The created [PatchResult].
  */
-internal fun Patch.patchResult(errorMessage: String) = PatchResult(this, PatchException(errorMessage))
+internal fun Patch.patchResult(errorMessage: String) =
+    PatchResult(this, PatchException(errorMessage))
 
 private fun Exception.toPatchException() = this as? PatchException ?: PatchException(this)
 
@@ -307,14 +319,13 @@ internal fun loadPatches(
     classLoader: ClassLoader,
     onFailedToLoad: (File, Throwable) -> Unit,
 ) = Patches(
-    patchesFiles
-        .map { file ->
-            file to getBinaryClassNames(file)
-        }.mapNotNull { (file, classNames) ->
-            runCatching { file to getPatches(classNames, classLoader) }
-                .onFailure { onFailedToLoad(file, it) }
-                .getOrNull()
-        }.toMap(),
+    patchesFiles.mapNotNull { file ->
+        runCatching {
+            val classNames = getBinaryClassNames(file)
+
+            file to getPatches(classNames, classLoader)
+        }.onFailure { onFailedToLoad(file, it) }.getOrNull()
+    }.toMap(),
 )
 
 expect fun loadPatches(
