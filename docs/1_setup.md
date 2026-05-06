@@ -95,8 +95,8 @@ Throughout the documentation, [ReVanced Patches](https://github.com/revanced/rev
 > Example `gradle.properties` file:
 >
 > ```properties
-> gpr.user = user
-> gpr.key = key
+> githubPackagesUsername = user
+> githubPackagesPassword = key
 > ```
 
 3. Open the project in your IDE
