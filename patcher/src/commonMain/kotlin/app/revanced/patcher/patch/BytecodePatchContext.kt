@@ -2,6 +2,7 @@ package app.revanced.patcher.patch
 
 import app.revanced.com.android.tools.smali.dexlib2.ReadResult
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import app.revanced.com.android.tools.smali.dexlib2.nullingArrayIteratorOf
 import app.revanced.com.android.tools.smali.dexlib2.readMultiDex
 import app.revanced.com.android.tools.smali.dexlib2.writeMultiDex
@@ -141,25 +142,55 @@ class BytecodePatchContext internal constructor(
         }
 
         /**
-         * Create a mutable version of an existing class by the type of the given [classDef], replacing it in the set if necessary.
+         * Create a mutable instance of an existing class with the type of the given [classDef],
+         * replacing it in the set if necessary.
          *
          * @param classDef The [ClassDef] to get or replace.
          * @return The mutable version of the [classDef].
          * @see MutableClassDef
-         * @see toMutable
          */
-        fun getOrReplaceMutable(classDef: ClassDef): MutableClassDef {
+        @Deprecated("Use makeMutable(ClassDef) instead", ReplaceWith("makeMutable(classDef)"))
+        fun getOrReplaceMutable(classDef: ClassDef) = makeMutable(classDef)
+
+        /**
+         * Create a mutable instance of an existing class with the type of the given [classDef],
+         * replacing it in the set if necessary.
+         *
+         * @param classDef The [ClassDef] to get or replace.
+         * @return The mutable instance.
+         * @see MutableClassDef
+         */
+        fun makeMutable(classDef: ClassDef): MutableClassDef {
             val currentClassDef = get(classDef.type)!!
 
-            if (currentClassDef !is MutableClassDef) {
-                val mutableClassDef = MutableClassDef(currentClassDef)
-                this -= classDef
-                this += mutableClassDef
+            if (classDef !== currentClassDef) throw IllegalStateException(
+                "The instance of the given classDef is not the same as the instance in the set. " +
+                        "This can lead to desynchronization. Use the instance from the set instead."
+            )
 
-                return mutableClassDef
-            }
+            if (currentClassDef is MutableClassDef) return currentClassDef
 
-            return currentClassDef
+            val mutableClassDef = MutableClassDef(currentClassDef)
+            this -= currentClassDef
+            this += mutableClassDef
+
+            return mutableClassDef
+        }
+
+        /**
+         * Create a mutable instance of an existing method, replacing it in the class if necessary.
+         *
+         * @param method The [Method] to get or replace.
+         * @return The mutable instance.
+         * @see MutableMethod
+         */
+        fun makeMutable(method: Method): MutableMethod {
+            val classDef = get(method.definingClass)!!
+            if (classDef.methods.none { method === it }) throw IllegalArgumentException(
+                "The instance of this method is not present in the class ${classDef.type} in the context."
+            )
+
+            return makeMutable(classDef).methods.first { it == method }
         }
 
         internal fun initializeCache() = classDefs.forEach(::addCache)
