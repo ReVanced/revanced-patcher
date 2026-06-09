@@ -51,6 +51,13 @@ class ResourcePatchContext internal constructor(
     private var decodingMode = ResourceDecodingMode.MANIFEST
 
     /**
+     * Get an [InputStream] of the input APK file.
+     * The stream is opened every time this property is accessed,
+     * and should be closed after use to prevent resource leaks.
+     */
+    val inputApkFileInputStream get() = apkInfo.apkFile.inputStream()
+
+    /**
      * Read a document from an [InputStream].
      */
     fun document(inputStream: InputStream) = Document(inputStream)
@@ -65,7 +72,7 @@ class ResourcePatchContext internal constructor(
      */
     private val deleteResources = mutableSetOf<String>()
 
-    internal fun decodeManifest(): Pair<PackageName, VersionName> {
+    internal fun decodeManifest(): PackageName {
         logger.info("Decoding manifest")
 
         val resourcesDecoder = ResourcesDecoder(resourceConfig, apkInfo)
@@ -86,9 +93,7 @@ class ResourcePatchContext internal constructor(
 
         // Get the package name and version from the manifest using the XmlPullStreamDecoder.
         // The call to AndroidManifestPullStreamDecoder.decode() above sets apkInfo.
-        val packageName = resourcesDecoder.resTable.packageRenamed
-        val packageVersion =
-            apkInfo.versionInfo.versionName ?: apkInfo.versionInfo.versionCode
+        val packageName = resourcesDecoder.resTable.packageOriginal
 
         /*
          When the main resource package is not loaded, the ResTable is flagged as sparse.
@@ -101,7 +106,7 @@ class ResourcePatchContext internal constructor(
          */
         apkInfo.sparseResources = false
 
-        return packageName to packageVersion
+        return packageName
     }
 
     internal fun decodeResources() {
@@ -136,7 +141,7 @@ class ResourcePatchContext internal constructor(
         val resourcesPath = patchedFilesPath.kmpResolve("resources").also { it.mkdirs() }
 
         val resourcesApkFile =
-            if (decodingMode == ResourceDecodingMode.ALL) {
+            if (decodingMode == ALL) {
                 val resourcesApkFile = resourcesPath.kmpResolve("resources.apk").also { it.createNewFile() }
 
                 val manifestFile =
