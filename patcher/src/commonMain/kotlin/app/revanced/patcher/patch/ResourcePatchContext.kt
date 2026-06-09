@@ -11,13 +11,11 @@ import brut.androlib.apk.ApkInfo
 import brut.androlib.apk.UsesFramework
 import brut.androlib.res.Framework
 import brut.androlib.res.ResourcesDecoder
-import brut.androlib.res.decoder.AndroidManifestPullStreamDecoder
 import brut.androlib.res.decoder.AndroidManifestResourceParser
 import brut.androlib.res.xml.ResXmlUtils
 import brut.directory.ExtFile
 import java.io.File
 import java.io.InputStream
-import java.io.OutputStream
 import java.nio.file.Files
 import java.util.logging.Logger
 import kotlin.reflect.jvm.jvmName
@@ -51,6 +49,36 @@ class ResourcePatchContext internal constructor(
     private var decodingMode = ResourceDecodingMode.MANIFEST
 
     /**
+     * The version name of the APK, obtained from the manifest.
+     */
+    lateinit var packageVersionName: VersionName
+        private set
+
+    /**
+     * The package name of the APK, obtained from the manifest.
+     */
+    lateinit var packageName: PackageName
+        private set
+
+    init {
+        val resourcesDecoder = ResourcesDecoder(resourceConfig, apkInfo)
+        val parser = AndroidManifestResourceParser(resourcesDecoder.resTable).apply {
+            setInput(apkInfo.apkFile.directory.getFileInput("AndroidManifest.xml"), null)
+
+            while (name != "manifest") nextToken()
+        }
+
+        (0 until parser.attributeCount).forEach { i ->
+            when (parser.getAttributeName(i)) {
+                "package" -> packageName = parser.getAttributeValue(i)
+                "versionName" -> packageVersionName = parser.getAttributeValue(i)
+            }
+
+            if (::packageVersionName.isInitialized && this::packageName.isInitialized) return@forEach
+        }
+    }
+
+    /**
      * Get an [InputStream] of the input APK file.
      * The stream is opened every time this property is accessed,
      * and should be closed after use to prevent resource leaks.
@@ -71,43 +99,6 @@ class ResourcePatchContext internal constructor(
      * Set of resources from [apkFile] to delete.
      */
     private val deleteResources = mutableSetOf<String>()
-
-    internal fun decodeManifest(): PackageName {
-        logger.info("Decoding manifest")
-
-        val resourcesDecoder = ResourcesDecoder(resourceConfig, apkInfo)
-
-        // Decode manually instead of using resourceDecoder.decodeManifest
-        // because it does not support decoding to an OutputStream.
-        AndroidManifestPullStreamDecoder(
-            AndroidManifestResourceParser(resourcesDecoder.resTable),
-            resourcesDecoder.newXmlSerializer(),
-        ).decode(
-            apkInfo.apkFile.directory.getFileInput("AndroidManifest.xml"),
-            // Older Android versions do not support OutputStream.nullOutputStream()
-            object : OutputStream() {
-                override fun write(b: Int) { // Do nothing.
-                }
-            },
-        )
-
-        // Get the package name and version from the manifest using the XmlPullStreamDecoder.
-        // The call to AndroidManifestPullStreamDecoder.decode() above sets apkInfo.
-        val packageName = resourcesDecoder.resTable.packageOriginal
-
-        /*
-         When the main resource package is not loaded, the ResTable is flagged as sparse.
-         Because ResourcesDecoder.decodeResources loads the main package and is not called here,
-         set sparseResources to false again to prevent the ResTable from being flagged as sparse falsely,
-         in case ResourcesDecoder.decodeResources is not later used in the patching process
-          to set sparseResources correctly.
-
-         See ARSCDecoder.readTableType for more info.
-         */
-        apkInfo.sparseResources = false
-
-        return packageName
-    }
 
     internal fun decodeResources() {
         logger.info("Decoding resources")
