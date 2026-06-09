@@ -165,7 +165,7 @@ open class ResourcePatchBuilder internal constructor(
     override val context get() = contextOf<ResourcePatchContext>()
 }
 
-class RawResourcePatchBuilder internal constructor() : ResourcePatchBuilder()
+class RawResourcePatchBuilder internal constructor() : ResourcePatchBuilder(PatchType.RAW_RESOURCE)
 
 fun bytecodePatch(
     name: String? = null,
