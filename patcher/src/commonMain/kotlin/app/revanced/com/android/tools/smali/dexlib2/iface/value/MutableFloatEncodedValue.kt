@@ -16,6 +16,10 @@ class MutableFloatEncodedValue(
     override fun getValue(): Float = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableFloatEncodedValue constructor instead.",
+            ReplaceWith("MutableFloatEncodedValue(this)")
+        )
         fun FloatEncodedValue.toMutable(): MutableFloatEncodedValue = MutableFloatEncodedValue(this)
     }
 }

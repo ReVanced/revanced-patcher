@@ -16,6 +16,11 @@ class MutableBooleanEncodedValue(
     override fun getValue(): Boolean = this.value
 
     companion object {
-        fun BooleanEncodedValue.toMutable(): MutableBooleanEncodedValue = MutableBooleanEncodedValue(this)
+        @Deprecated(
+            "Use MutableBooleanEncodedValue constructor instead.",
+            ReplaceWith("MutableBooleanEncodedValue(this)")
+        )
+        fun BooleanEncodedValue.toMutable(): MutableBooleanEncodedValue =
+            MutableBooleanEncodedValue(this)
     }
 }

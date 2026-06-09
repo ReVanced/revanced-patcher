@@ -16,6 +16,10 @@ class MutableLongEncodedValue(
     override fun getValue(): Long = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableLongEncodedValue constructor instead.",
+            ReplaceWith("MutableLongEncodedValue(this)")
+        )
         fun LongEncodedValue.toMutable(): MutableLongEncodedValue = MutableLongEncodedValue(this)
     }
 }

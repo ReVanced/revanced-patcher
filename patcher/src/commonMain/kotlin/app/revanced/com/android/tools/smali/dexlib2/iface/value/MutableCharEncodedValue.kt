@@ -16,6 +16,10 @@ class MutableCharEncodedValue(
     override fun getValue(): Char = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableCharEncodedValue constructor instead.",
+            ReplaceWith("MutableCharEncodedValue(this)")
+        )
         fun CharEncodedValue.toMutable(): MutableCharEncodedValue = MutableCharEncodedValue(this)
     }
 }

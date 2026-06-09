@@ -5,7 +5,7 @@ import com.android.tools.smali.dexlib2.iface.value.*
 
 interface MutableEncodedValue : EncodedValue {
     companion object {
-        fun EncodedValue.toMutable(): MutableEncodedValue =
+        fun EncodedValue.toMutableEncodedValue(): MutableEncodedValue =
             when (this.valueType) {
                 ValueType.TYPE -> MutableTypeEncodedValue(this as TypeEncodedValue)
                 ValueType.FIELD -> MutableFieldEncodedValue(this as FieldEncodedValue)

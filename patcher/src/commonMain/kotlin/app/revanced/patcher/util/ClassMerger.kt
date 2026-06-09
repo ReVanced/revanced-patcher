@@ -1,11 +1,8 @@
 package app.revanced.patcher.util
 
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef.Companion.toMutable
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod.Companion.toMutable
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.util.ClassMerger.Utils.asMutableClass
 import app.revanced.patcher.util.ClassMerger.Utils.filterAny
@@ -64,7 +61,7 @@ internal object ClassMerger {
         logger.fine { "Found ${missingMethods.size} missing methods" }
 
         return asMutableClass().apply {
-            methods.addAll(missingMethods.map { it.toMutable() })
+            methods.addAll(missingMethods.map { MutableMethod(it) })
         }
     }
 
@@ -84,7 +81,7 @@ internal object ClassMerger {
         logger.fine { "Found ${missingFields.size} missing fields" }
 
         return asMutableClass().apply {
-            fields.addAll(missingFields.map { it.toMutable() })
+            fields.addAll(missingFields.map { MutableField(it) })
         }
     }
 
@@ -186,7 +183,7 @@ internal object ClassMerger {
             }
         }
 
-        fun ClassDef.asMutableClass() = this as? MutableClassDef ?: this.toMutable()
+        fun ClassDef.asMutableClass() = this as? MutableClassDef ?: MutableClassDef(this)
 
         /**
          * Check if the [AccessFlags.PUBLIC] flag is set.

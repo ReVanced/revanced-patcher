@@ -3,16 +3,32 @@ package app.revanced.patcher
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patcher.patch.patchesResources
+import app.revanced.patcher.patch.rawResourcePatch
+import app.revanced.patcher.patch.resourcePatch
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class PatcherTest : PatcherTestBase() {
     @BeforeAll
     fun setup() = setupMock()
+
+    @Test
+    fun `detect resource patches`() {
+        resourcePatch { }
+            .patchesResources.let(::assertTrue)
+        rawResourcePatch { }
+            .patchesResources.let(::assertFalse)
+        bytecodePatch { dependsOn(bytecodePatch { }, resourcePatch { }) }
+            .patchesResources.let(::assertTrue)
+        bytecodePatch { dependsOn(bytecodePatch { }, rawResourcePatch { }) }
+            .patchesResources.let(::assertFalse)
+    }
 
     @Test
     fun `applies patches in correct order`() {

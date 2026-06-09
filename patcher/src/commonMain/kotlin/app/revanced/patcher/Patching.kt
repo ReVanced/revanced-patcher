@@ -2,7 +2,13 @@ package app.revanced.patcher
 
 import app.revanced.java.io.kmpDeleteRecursively
 import app.revanced.java.io.kmpResolve
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.BytecodePatchContext
+import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchException
+import app.revanced.patcher.patch.PatchResult
+import app.revanced.patcher.patch.ResourcePatchContext
+import app.revanced.patcher.patch.patchResult
+import app.revanced.patcher.patch.patchesResources
 import java.io.File
 import java.io.InputStream
 import java.util.logging.Logger
@@ -36,8 +42,10 @@ fun patcher(
             frameworkFileDirectory,
         )
 
-    val (packageName, versionName) = resourcePatchContext.decodeManifest()
-    val patches = getPatches(packageName, versionName)
+    val patches = getPatches(
+        resourcePatchContext.packageName,
+        resourcePatchContext.packageVersionName
+    )
 
     return { emit: (PatchResult) -> Unit ->
         if (patches.any { patch -> patch.patchesResources }) resourcePatchContext.decodeResources()
@@ -72,11 +80,12 @@ fun Set<Patch>.apply(
             val result = appliedPatches[this]
 
             return if (result == null) {
-                val failedDependency = dependencies.asSequence().map { it.apply() }.firstOrNull { it.exception != null }
+                val failedDependency = dependencies.asSequence().map { it.apply() }
+                    .firstOrNull { it.exception != null }
                 if (failedDependency != null) {
                     return patchResult(
                         "The dependant patch \"${failedDependency.patch}\" of the patch \"$this\" raised an exception:\n" +
-                            failedDependency.exception!!.stackTraceToString(),
+                                failedDependency.exception!!.stackTraceToString(),
                     )
                 }
 
@@ -105,7 +114,12 @@ fun Set<Patch>.apply(
 
     succeededPatchesWithFinalizeBlock.asReversed().forEach { result ->
         val patch = result.patch
-        runCatching { patch.afterDependents!!.invoke(bytecodePatchContext, resourcePatchContext) }.fold(
+        runCatching {
+            patch.afterDependents!!.invoke(
+                bytecodePatchContext,
+                resourcePatchContext
+            )
+        }.fold(
             { if (patch in this) emit(result) },
             {
                 emit(
@@ -140,6 +154,7 @@ class PatchesResult internal constructor(
      * The patched resources, or null if no resources were patched.
      */
     val resources by lazy(getResources)
+
     /**
      * A dex file.
      *

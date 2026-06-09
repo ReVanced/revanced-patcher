@@ -1,11 +1,12 @@
 package app.revanced.patcher
 
+import app.revanced.com.android.tools.smali.dexlib2.ReadResult
+import app.revanced.com.android.tools.smali.dexlib2.readMultiDex
 import app.revanced.patcher.extensions.toInstructions
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.ResourcePatchContext
 import com.android.tools.smali.dexlib2.Opcodes
-import com.android.tools.smali.dexlib2.iface.DexFile
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
@@ -13,7 +14,6 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import lanchon.multidexlib2.MultiDexIO
 import java.io.File
 import java.io.InputStream
 
@@ -52,18 +52,12 @@ abstract class PatcherTestBase {
         resourcePatchContext = mockk<ResourcePatchContext>(relaxed = true)
         bytecodePatchContext =
             mockk<BytecodePatchContext> bytecodePatchContext@{
-                mockkStatic(MultiDexIO::readDexFile)
+                mockkStatic(::readMultiDex)
                 every {
-                    MultiDexIO.readDexFile(
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                        any(),
-                    )
+                    readMultiDex(any())
                 } returns
-                    mockk<DexFile> {
-                        every { classes } returns
+                    mockk<ReadResult> {
+                        every { classDefs } returns
                             mutableSetOf(
                                 ImmutableClassDef(
                                     "class",

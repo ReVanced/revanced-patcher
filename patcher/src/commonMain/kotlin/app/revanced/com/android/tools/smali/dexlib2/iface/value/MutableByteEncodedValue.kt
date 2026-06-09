@@ -16,6 +16,10 @@ class MutableByteEncodedValue(
     override fun getValue(): Byte = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableByteEncodedValue constructor instead.",
+            ReplaceWith("MutableByteEncodedValue(this)")
+        )
         fun ByteEncodedValue.toMutable(): MutableByteEncodedValue = MutableByteEncodedValue(this)
     }
 }

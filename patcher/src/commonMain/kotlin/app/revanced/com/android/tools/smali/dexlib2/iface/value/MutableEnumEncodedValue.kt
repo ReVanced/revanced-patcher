@@ -17,6 +17,10 @@ class MutableEnumEncodedValue(
     override fun getValue(): FieldReference = this.value
 
     companion object {
+        @Deprecated(
+            "Use MutableEnumEncodedValue constructor instead.",
+            ReplaceWith("MutableEnumEncodedValue(this)")
+        )
         fun EnumEncodedValue.toMutable(): MutableEnumEncodedValue = MutableEnumEncodedValue(this)
     }
 }

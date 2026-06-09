@@ -34,4 +34,4 @@ actual fun loadPatches(
     onFailedToLoad = onFailedToLoad,
 )
 
-actual inline val currentClassLoader get() = object {}::class.java.classLoader
+actual inline val currentClassLoader: ClassLoader get() = object {}::class.java.classLoader

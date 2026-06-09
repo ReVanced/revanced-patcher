@@ -16,6 +16,11 @@ class MutableDoubleEncodedValue(
     override fun getValue(): Double = this.value
 
     companion object {
-        fun DoubleEncodedValue.toMutable(): MutableDoubleEncodedValue = MutableDoubleEncodedValue(this)
+        @Deprecated(
+            "Use MutableDoubleEncodedValue constructor instead.",
+            ReplaceWith("MutableDoubleEncodedValue(this)")
+        )
+        fun DoubleEncodedValue.toMutable(): MutableDoubleEncodedValue =
+            MutableDoubleEncodedValue(this)
     }
 }
