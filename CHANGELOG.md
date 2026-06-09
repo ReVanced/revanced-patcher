@@ -1,3 +1,24 @@
+# [22.1.0-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v22.0.2-dev.1...v22.1.0-dev.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* Handle exceptions when trying to read the list of classes from invalid patches files ([ff66ffd](https://github.com/ReVanced/revanced-patcher/commit/ff66ffd047a3b99e874c91577133bffaee8e250b))
+* Set the correct patch type for raw resource patches ([fee79af](https://github.com/ReVanced/revanced-patcher/commit/fee79afb4f9b978aa46186e8b9bbebf8ec15082e))
+
+
+### Features
+
+* Add `ResourcePatchContext#packageVersionName` and `ResourcePatchContext#packageName` ([457dfd4](https://github.com/ReVanced/revanced-patcher/commit/457dfd4a62c805e056b0b764c740b8e255153a36))
+* Add ResourcePatchContext#inputApkFileInputStream for patches to be able to read the full input APK ([22365a9](https://github.com/ReVanced/revanced-patcher/commit/22365a9b603f7babe68e43d06454da921010ab7e))
+* Deprecate unnecessary toMutable extension functions ([023afba](https://github.com/ReVanced/revanced-patcher/commit/023afbaf92ec6f4979e1ad203ba6243c3b3794d7))
+
+
+### Performance Improvements
+
+* Unpin classes before starting to write them so they can be garbage collected. ([d166863](https://github.com/ReVanced/revanced-patcher/commit/d166863c95757203e5611f6051fded3e5a921c8c))
+* Use existing `ExtFile` from `apkInfo` to read the original APK file contents ([afae858](https://github.com/ReVanced/revanced-patcher/commit/afae858edd74846ed7c2c7a5386567a9b177470d))
+
 ## [22.0.2-dev.1](https://github.com/ReVanced/revanced-patcher/compare/v22.0.1...v22.0.2-dev.1) (2026-03-17)
 
 
