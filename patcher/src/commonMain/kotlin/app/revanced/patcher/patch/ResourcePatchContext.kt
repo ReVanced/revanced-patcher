@@ -148,6 +148,8 @@ class ResourcePatchContext internal constructor(
                         apkInfo.usesFramework.ids.map { id -> getFrameworkApk(id, null) }
                     }.toTypedArray()
 
+                ResourceFileSanitizer.sanitizePngResources(resPath, logger)
+
                 AaptInvoker(
                     resourceConfig,
                     apkInfo,
