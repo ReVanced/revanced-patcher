@@ -5,7 +5,10 @@ import app.revanced.java.io.kmpResolve
 import app.revanced.patcher.patch.*
 import java.io.File
 import java.io.InputStream
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.FutureTask
 import java.util.logging.Logger
+import kotlin.reflect.jvm.jvmName
 
 fun patcher(
     apkFile: File,
@@ -131,6 +134,19 @@ class PatchesResult internal constructor(
     getDexFiles: () -> Set<PatchedDexFile>,
     getResources: () -> PatchedResources?,
 ) {
+    private val logger = Logger.getLogger(PatchesResult::class.jvmName)
+
+    /**
+     * The task compiling the resources.
+     *
+     * The resources are compiled in the background, started before the dex files are compiled,
+     * so that both compilations run in parallel.
+     */
+    private val resourcesTask =
+        FutureTask { getResources() }.also { task ->
+            Thread(task, "Resources compilation").apply { isDaemon = true }.start()
+        }
+
     /**
      * The patched dex files.
      */
@@ -138,8 +154,20 @@ class PatchesResult internal constructor(
 
     /**
      * The patched resources, or null if no resources were patched.
+     *
+     * Waits for the compilation of the resources to finish.
      */
-    val resources by lazy(getResources)
+    val resources: PatchedResources?
+        get() {
+            if (!resourcesTask.isDone) logger.info("Waiting for the resources compilation to finish")
+
+            return try {
+                resourcesTask.get()
+            } catch (exception: ExecutionException) {
+                throw exception.cause ?: exception
+            }
+        }
+
     /**
      * A dex file.
      *
