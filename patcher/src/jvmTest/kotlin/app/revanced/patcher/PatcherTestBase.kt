@@ -5,7 +5,9 @@ import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.Patch
 import app.revanced.patcher.patch.ResourcePatchContext
 import com.android.tools.smali.dexlib2.Opcodes
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.android.tools.smali.dexlib2.iface.DexFile
+import com.android.tools.smali.dexlib2.iface.MultiDexContainer
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
@@ -14,6 +16,7 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import lanchon.multidexlib2.MultiDexIO
+import lanchon.multidexlib2.SingletonDexContainer
 import java.io.File
 import java.io.InputStream
 
@@ -52,32 +55,36 @@ abstract class PatcherTestBase {
         resourcePatchContext = mockk<ResourcePatchContext>(relaxed = true)
         bytecodePatchContext =
             mockk<BytecodePatchContext> bytecodePatchContext@{
-                mockkStatic(MultiDexIO::readDexFile)
+                mockkStatic(MultiDexIO::class)
+                @Suppress("UNCHECKED_CAST")
                 every {
-                    MultiDexIO.readDexFile(
-                        any(),
-                        any(),
+                    MultiDexIO.readMultiDexContainer(
+                        any<Boolean>(),
+                        any<File>(),
                         any(),
                         any(),
                         any(),
                     )
                 } returns
-                    mockk<DexFile> {
-                        every { classes } returns
-                            mutableSetOf(
-                                ImmutableClassDef(
-                                    "class",
-                                    0,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    listOf(method),
-                                ),
-                            )
-                        every { opcodes } returns Opcodes.getDefault()
-                    }
+                    SingletonDexContainer(
+                        "classes.dex",
+                        mockk<DexFile> {
+                            every { classes } returns
+                                mutableSetOf(
+                                    ImmutableClassDef(
+                                        "class",
+                                        0,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        listOf(method),
+                                    ),
+                                )
+                            every { opcodes } returns Opcodes.getDefault()
+                        },
+                    ) as MultiDexContainer<DexBackedDexFile>
 
                 every { this@bytecodePatchContext.getProperty("apkFile") } returns mockk<File>()
 
