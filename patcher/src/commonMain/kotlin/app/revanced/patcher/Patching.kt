@@ -84,7 +84,7 @@ fun Set<Patch>.apply(
                     .firstOrNull { it.exception != null }
                 if (failedDependency != null) {
                     return patchResult(
-                        "The dependant patch \"${failedDependency.patch}\" of the patch \"$this\" raised an exception:\n" +
+                        "The dependency \"${failedDependency.patch}\" of the patch \"$this\" raised an exception:\n" +
                                 failedDependency.exception!!.stackTraceToString(),
                     )
                 }

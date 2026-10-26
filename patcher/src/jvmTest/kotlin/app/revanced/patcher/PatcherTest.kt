@@ -91,6 +91,6 @@ internal class PatcherTest : PatcherTestBase() {
             afterDependents { throw PatchException("-1") }
         } resultsIn listOf("1", "2", "-2") because
                 "afterDependents of a patch should be called " +
-                "regardless of dependant patches failing."
+                "regardless of dependent patches failing."
     }
 }
