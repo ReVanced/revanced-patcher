@@ -5,6 +5,7 @@ import app.revanced.com.android.tools.smali.dexlib2.readMultiDex
 import app.revanced.patcher.extensions.toInstructions
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.Patch
+import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.ResourcePatchContext
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
@@ -103,4 +104,10 @@ abstract class PatcherTestBase {
     }
 
     protected operator fun Patch.invoke() = setOf(this)()
+
+    protected fun Set<Patch>.applyAndCollectResults(): Map<Patch, PatchResult> {
+        val results = mutableListOf<PatchResult>()
+        apply(bytecodePatchContext, resourcePatchContext) { results += it }
+        return results.associateBy { it.patch }
+    }
 }
