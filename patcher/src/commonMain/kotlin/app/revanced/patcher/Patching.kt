@@ -9,6 +9,7 @@ import app.revanced.patcher.patch.PatchResult
 import app.revanced.patcher.patch.ResourcePatchContext
 import app.revanced.patcher.patch.patchResult
 import app.revanced.patcher.patch.patchesResources
+import app.revanced.patcher.patch.toPatchException
 import java.io.File
 import java.io.InputStream
 import java.util.logging.Logger
@@ -91,7 +92,8 @@ fun Set<Patch>.apply(
 
                 val exception =
                     runCatching { apply(bytecodePatchContext, resourcePatchContext) }
-                        .exceptionOrNull() as? Exception
+                        .exceptionOrNull()
+                        ?.toPatchException()
 
                 patchResult(exception).also { result -> appliedPatches[this] = result }
             } else if (result.exception == null) {

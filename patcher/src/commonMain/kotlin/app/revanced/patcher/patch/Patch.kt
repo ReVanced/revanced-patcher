@@ -263,7 +263,7 @@ class PatchResult internal constructor(
  * @param exception The [PatchException] thrown, if any.
  * @return The created [PatchResult].
  */
-internal fun Patch.patchResult(exception: Exception? = null) =
+internal fun Patch.patchResult(exception: Throwable? = null) =
     PatchResult(this, exception?.toPatchException())
 
 /**
@@ -275,7 +275,7 @@ internal fun Patch.patchResult(exception: Exception? = null) =
 internal fun Patch.patchResult(errorMessage: String) =
     PatchResult(this, PatchException(errorMessage))
 
-private fun Exception.toPatchException() = this as? PatchException ?: PatchException(this)
+internal fun Throwable.toPatchException(): PatchException = this as? PatchException ?: PatchException(this)
 
 /**
  * A collection of patches loaded from patches files.
